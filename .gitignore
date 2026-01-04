@@ -17,11 +17,10 @@ build/
 **/*.xcworkspace/xcuserdata/
 
 # Tuist
+Derived/
 Tuist/Dependencies/
 Tuist/.build/
 Tuist/.cache/
-Tuist/Plugin/
-Tuist/ProjectDescriptionHelpers/
 
 # Swift Package Manager
 .swiftpm/
