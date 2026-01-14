@@ -2,16 +2,16 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let project = Project(
-    name: "Challenge",
+    name: appName,
     settings: .settings(
         base: ["SWIFT_VERSION": .string(swiftVersion)]
     ),
     targets: [
         .target(
-            name: "Challenge",
+            name: appName,
             destinations: [.iPhone, .iPad],
             product: .app,
-            bundleId: "com.app.Challenge",
+            bundleId: "com.app.\(appName)",
             deploymentTargets: developmentTarget,
             infoPlist: .extendingDefault(with: [
                 "UILaunchStoryboardName": "LaunchScreen",
@@ -32,19 +32,19 @@ let project = Project(
             resources: ["App/Sources/Resources/**"]
         ),
         .target(
-            name: "ChallengeTests",
+            name: "\(appName)Tests",
             destinations: [.iPhone, .iPad],
             product: .unitTests,
-            bundleId: "com.app.ChallengeTests",
+            bundleId: "com.app.\(appName)Tests",
             deploymentTargets: developmentTarget,
             infoPlist: .default,
             sources: ["App/Tests/**"]
         ),
         .target(
-            name: "ChallengeUITests",
+            name: "\(appName)UITests",
             destinations: [.iPhone, .iPad],
             product: .uiTests,
-            bundleId: "com.app.ChallengeUITests",
+            bundleId: "com.app.\(appName)UITests",
             deploymentTargets: developmentTarget,
             infoPlist: .default,
             sources: ["App/UITests/**"]
