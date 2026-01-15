@@ -271,54 +271,11 @@ final class UserListViewModel: ObservableObject {
 
 ### Use Case
 
-Use Cases encapsulate single business operations:
-
-```swift
-protocol GetUsersUseCaseContract: Sendable {
-  func execute() async throws -> [User]
-}
-
-struct GetUsersUseCase: GetUsersUseCaseContract {
-  private let repository: UserRepositoryContract
-
-  init(repository: UserRepositoryContract) {
-    self.repository = repository
-  }
-
-  func execute() async throws -> [User] {
-    try await repository.getUsers()
-  }
-}
-```
+Use Cases encapsulate single business operations. See `/usecase` skill for detailed patterns and examples.
 
 ### Repository
 
-Repositories abstract data access:
-
-```swift
-protocol UserRepositoryContract: Sendable {
-  func getUsers() async throws -> [User]
-  func getUser(id: UUID) async throws -> User
-}
-
-struct UserRepository: UserRepositoryContract {
-  private let remoteDataSource: UserRemoteDataSourceContract
-
-  init(remoteDataSource: UserRemoteDataSourceContract) {
-    self.remoteDataSource = remoteDataSource
-  }
-
-  func getUsers() async throws -> [User] {
-    let dtos = try await remoteDataSource.fetchUsers()
-    return dtos.map { $0.toDomain() }
-  }
-
-  func getUser(id: UUID) async throws -> User {
-    let dto = try await remoteDataSource.fetchUser(id: id)
-    return dto.toDomain()
-  }
-}
-```
+Repositories abstract data access and transform DTOs to Domain models. See `/repository` skill for detailed patterns (remote only, local only, local-first).
 
 ### Coordinator
 
@@ -612,34 +569,7 @@ let users: [User] = try await client.request(endpoint)
 
 ### Unit Tests with Swift Testing
 
-```swift
-import Testing
-
-@testable import UserFeature
-
-struct GetUsersUseCaseTests {
-  @Test
-  func returnsUsersFromRepository() async throws {
-    let expectedUsers = [User.stub(), User.stub()]
-    let repository = UserRepositoryMock(users: expectedUsers)
-    let sut = GetUsersUseCase(repository: repository)
-
-    let result = try await sut.execute()
-
-    #expect(result == expectedUsers)
-  }
-
-  @Test
-  func throwsErrorWhenRepositoryFails() async {
-    let repository = UserRepositoryMock(error: TestError.networkError)
-    let sut = GetUsersUseCase(repository: repository)
-
-    await #expect(throws: TestError.networkError) {
-      try await sut.execute()
-    }
-  }
-}
-```
+For DataSource, Repository, and UseCase tests, see the respective skills (`/datasource`, `/repository`, `/usecase`).
 
 ### ViewModel Tests
 
@@ -750,80 +680,14 @@ Mock names must end with `Mock` suffix. Place mocks based on their visibility:
 ```
 FeatureName/
 ├── Mocks/                    # Public mocks (ChallengeFeatureNameMocks framework)
-│   └── UserRepositoryMock.swift
+│   └── {Name}RepositoryMock.swift
 └── Tests/
     ├── Mocks/                # Internal test-only mocks
-    │   └── TestHelperMock.swift
-    └── UseCaseTests.swift
+    │   └── {Name}DataSourceMock.swift
+    └── {Name}UseCaseTests.swift
 ```
 
-**Public mock** (in `Mocks/` framework, usable by other modules):
-
-```swift
-// Mocks/UserRepositoryMock.swift
-import Foundation
-import ChallengeUserFeature
-
-public final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendable {
-	public var users: [User]
-	public var error: Error?
-
-	public init(users: [User] = [], error: Error? = nil) {
-		self.users = users
-		self.error = error
-	}
-
-	public func getUsers() async throws -> [User] {
-		if let error { throw error }
-		return users
-	}
-
-	public func getUser(id: UUID) async throws -> User {
-		if let error { throw error }
-		guard let user = users.first(where: { $0.id == id }) else {
-			throw NotFoundError.notFound
-		}
-		return user
-	}
-}
-```
-
-**Internal mock** (in `Tests/Mocks/`, only for this test target):
-
-```swift
-// Tests/Mocks/URLProtocolMock.swift
-import Foundation
-
-final class URLProtocolMock: URLProtocol, @unchecked Sendable {
-	nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
-
-	nonisolated override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
-		super.init(request: request, cachedResponse: cachedResponse, client: client)
-	}
-
-	nonisolated override class func canInit(with request: URLRequest) -> Bool { true }
-	nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-	nonisolated override func startLoading() {
-		guard let handler = URLProtocolMock.requestHandler else {
-			assertionFailure("Request handler not set")
-			return
-		}
-		do {
-			let (response, data) = try handler(request)
-			client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-			if let data {
-				client?.urlProtocol(self, didLoad: data)
-			}
-			client?.urlProtocolDidFinishLoading(self)
-		} catch {
-			client?.urlProtocol(self, didFailWithError: error)
-		}
-	}
-
-	nonisolated override func stopLoading() {}
-}
-```
+For mock implementation patterns, see the skills: `/datasource`, `/repository`, `/usecase`.
 
 ### Stubs (Test Data)
 
@@ -1511,25 +1375,6 @@ let project = Project(
 | Unit Tests | `ChallengeNetworkingTests` | Test target (Tests/) |
 | Scheme | `ChallengeNetworking` | With **code coverage enabled** |
 
-### External Dependencies
-
-External xcframeworks are stored in `Tuist/Dependencies/`. This directory is **ignored by git** and should not be committed to the repository.
-
-For detailed instructions on adding xcframeworks, use the `/tuist` skill.
-
-### Commands
-
-```bash
-# Generate Xcode project
-tuist generate
-
-# Clean derived data
-tuist clean
-
-# Run tests
-tuist test
-```
-
 ---
 
 ## Skills Reference
@@ -1546,8 +1391,9 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | Skill | Description |
 |-------|-------------|
 | `/tuist` | Tuist configuration: adding xcframeworks, managing dependencies |
-| `/datasource` | Create RemoteDataSources that consume REST APIs |
-| `/repository` | Create Repositories that abstract data sources (Contract in Domain, Implementation in Data) |
+| `/datasource` | Create DataSources (RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage) |
+| `/repository` | Create Repositories with optional local-first caching policy |
+| `/usecase` | Create UseCases that encapsulate business logic |
 
 ---
 
@@ -1578,18 +1424,3 @@ Mock suffix for mocks (e.g., UserRepositoryMock)
 Alphabetically ordered imports
 ```
 
-### Commands
-
-```bash
-# Generate Xcode project
-tuist generate
-
-# Clean derived data
-tuist clean
-
-# Run tests
-tuist test
-
-# Lint code
-swiftlint
-```
