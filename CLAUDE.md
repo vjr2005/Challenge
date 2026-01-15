@@ -729,7 +729,7 @@ All generated code **must** follow these rules. For the complete guide, see `doc
 
 | Rule | Value |
 |------|-------|
-| Indentation | 2 tabs |
+| Indentation | 1 tab |
 | Maximum line width | 140 characters |
 | Trailing commas | Required in multi-line collections |
 | Blank lines | Single blank line between declarations |
@@ -946,7 +946,30 @@ SwiftLint is installed via **mise** (not SPM). Configuration is in `.swiftlint.y
 
 ```bash
 mise install swiftlint
+swiftlint          # Run linter
+swiftlint --fix    # Auto-fix issues
 ```
+
+#### Enforced Limits
+
+| Rule | Warning | Error |
+|------|---------|-------|
+| Line length | 140 | 200 |
+| File length | 500 | 1000 |
+| Type body length | 300 | 500 |
+| Function body length | 50 | 100 |
+| Cyclomatic complexity | 10 | 20 |
+
+#### Custom Rules
+
+The following project-specific rules are enforced:
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `protocol_contract_suffix` | warning | Protocols must end with `Contract` |
+| `mock_suffix` | warning | Mocks must end with `Mock` |
+| `no_dispatch_queue` | error | Use async/await, not DispatchQueue |
+| `no_completion_handler` | warning | Use async/await, not completion handlers |
 
 ---
 
