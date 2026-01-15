@@ -6,7 +6,10 @@
       "Bash(xcodebuild:*)",
       "Bash(tuist test:*)",
       "WebFetch(domain:rickandmortyapi.com)",
-      "Bash(tuist clean:*)"
+      "Bash(tuist clean:*)",
+      "Bash(swiftlint version:*)",
+      "Bash(swiftlint lint:*)",
+      "Bash(swiftlint rules:*)"
     ]
   }
 }

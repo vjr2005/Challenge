@@ -187,7 +187,8 @@ private struct TestUser: Decodable {
 private extension HTTPClientTests {
 	func mockResponse(url: URL?, statusCode: Int = 200) -> HTTPURLResponse {
 		guard let url,
-		      let response = HTTPURLResponse.withStatus(statusCode, url: url) else {
+			let response = HTTPURLResponse.withStatus(statusCode, url: url)
+		else {
 			preconditionFailure("Failed to create HTTPURLResponse with status \(statusCode)")
 		}
 		return response

@@ -19,6 +19,6 @@ enum CharacterStatus: String {
 	case unknown
 
 	init(from string: String) {
-		self = CharacterStatus(rawValue: string) ?? .unknown
+		self = Self(rawValue: string) ?? .unknown
 	}
 }

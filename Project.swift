@@ -49,7 +49,8 @@ let project = Project(
 				],
 			]),
 			sources: ["App/Sources/**"],
-			resources: ["App/Sources/Resources/**"]
+			resources: ["App/Sources/Resources/**"],
+			scripts: [SwiftLint.script(path: "App/Sources")]
 		),
 		.target(
 			name: "\(appName)Tests",

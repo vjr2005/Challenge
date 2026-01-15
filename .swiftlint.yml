@@ -75,7 +75,7 @@ opt_in_rules:
   - quick_discouraged_pending_test
   - reduce_into
   - redundant_nil_coalescing
-  - redundant_self_in_closure
+  - redundant_self
   - redundant_type_annotation
   - return_value_from_void_function
   - self_binding
@@ -112,13 +112,6 @@ line_length:
   ignores_urls: true
   ignores_comments: true
   ignores_interpolated_strings: true
-
-# Indentation: 1 tab
-indentation_width:
-  indentation_width: 1
-  include_comments: true
-  include_compiler_directives: true
-  include_multiline_strings: false
 
 # File length
 file_length:
@@ -202,20 +195,9 @@ multiline_arguments:
   first_argument_location: next_line
   only_enforce_after_first_closure_on_first_line: true
 
-# Modifier order (matches MARK order in CLAUDE.md)
+# Modifier order (uses default order: override before other modifiers)
 modifier_order:
-  preferred_modifier_order:
-    - acl
-    - setterACL
-    - override
-    - dynamic
-    - mutating
-    - lazy
-    - final
-    - required
-    - convenience
-    - typeMethods
-    - owned
+  severity: warning
 
 # Type contents order (matches MARK order in CLAUDE.md)
 type_contents_order:

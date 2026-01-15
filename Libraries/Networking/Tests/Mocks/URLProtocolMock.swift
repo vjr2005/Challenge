@@ -3,20 +3,20 @@ import Foundation
 final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
 
-	nonisolated override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
+	override nonisolated init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
 		super.init(request: request, cachedResponse: cachedResponse, client: client)
 	}
 
-	nonisolated override class func canInit(with request: URLRequest) -> Bool {
+	override nonisolated static func canInit(with request: URLRequest) -> Bool {
 		true
 	}
 
-	nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+	override nonisolated static func canonicalRequest(for request: URLRequest) -> URLRequest {
 		request
 	}
 
-	nonisolated override func startLoading() {
-		guard let handler = URLProtocolMock.requestHandler else {
+	override nonisolated func startLoading() {
+		guard let handler = Self.requestHandler else {
 			assertionFailure("The handler is not provided!")
 			return
 		}
@@ -33,5 +33,5 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 		}
 	}
 
-	nonisolated override func stopLoading() {}
+	override nonisolated func stopLoading() {}
 }

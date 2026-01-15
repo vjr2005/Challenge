@@ -34,7 +34,8 @@ public struct FrameworkModule {
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			sources: ["Libraries/\(sourcesPath)/Sources/**"],
-			dependencies: dependencies,
+			scripts: [SwiftLint.script(path: "Libraries/\(sourcesPath)/Sources")],
+			dependencies: dependencies
 		)
 
 		var targets = [framework]

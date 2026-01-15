@@ -5,9 +5,14 @@ public enum APIConfiguration {
 	case rickAndMorty
 
 	public var baseURL: URL {
+		let urlString: String
 		switch self {
 		case .rickAndMorty:
-			URL(string: "https://rickandmortyapi.com/api")!
+			urlString = "https://rickandmortyapi.com/api"
 		}
+		guard let url = URL(string: urlString) else {
+			preconditionFailure("Invalid URL: \(urlString)")
+		}
+		return url
 	}
 }
