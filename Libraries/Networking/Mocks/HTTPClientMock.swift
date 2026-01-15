@@ -11,7 +11,7 @@ public final class HTTPClientMock: HTTPClientContract, @unchecked Sendable {
 		self.result = result
 	}
 
-	public func request<T: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> T {
+	public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		requestedEndpoints.append(endpoint)
 		let data = try result.get()
 		return try JSONDecoder().decode(T.self, from: data)

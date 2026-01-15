@@ -29,6 +29,7 @@ This document defines the coding standards, architecture patterns, and developme
 ### Requirements
 
 - **Swift 6** with strict concurrency checking enabled
+- **Default Actor Isolation: MainActor** - All types are MainActor-isolated by default
 - **iOS 16.0+** minimum deployment target
 - **SwiftUI** as the primary UI framework
 
@@ -88,6 +89,36 @@ actor NetworkManager {
   func request(_ endpoint: Endpoint) async throws -> Data {
     // Network operations isolated to this actor
   }
+}
+```
+
+### Opting Out of MainActor Isolation
+
+With `MainActor` as the default isolation, types that need to run off the main thread must explicitly opt out using `nonisolated`. This is mainly needed for subclasses of framework types that are called from background threads:
+
+```swift
+// URLProtocol subclasses are called from background threads by the URL loading system
+final class URLProtocolMock: URLProtocol, @unchecked Sendable {
+	nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
+
+	// Must override init with nonisolated
+	nonisolated override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
+		super.init(request: request, cachedResponse: cachedResponse, client: client)
+	}
+
+	nonisolated override class func canInit(with request: URLRequest) -> Bool {
+		true
+	}
+
+	nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+		request
+	}
+
+	nonisolated override func startLoading() {
+		// Implementation
+	}
+
+	nonisolated override func stopLoading() {}
 }
 ```
 
@@ -487,7 +518,7 @@ Native networking layer using **URLSession with async/await**. No external depen
 | Component | Description |
 |-----------|-------------|
 | `HTTPClientContract` | Protocol for HTTP client (enables DI) |
-| `HTTPClient` | Actor-based implementation |
+| `HTTPClient` | Sendable final class implementation |
 | `Endpoint` | Request configuration |
 | `HTTPMethod` | GET, POST, PUT, PATCH, DELETE |
 | `HTTPError` | Error types |
@@ -717,22 +748,33 @@ public final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendab
 import Foundation
 
 final class URLProtocolMock: URLProtocol, @unchecked Sendable {
-	nonisolated(unsafe) static var requestHandler: ((URLRequest) -> (HTTPURLResponse, Data))?
+	nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
 
-	override class func canInit(with request: URLRequest) -> Bool { true }
-	override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-	override func startLoading() {
-		guard let handler = URLProtocolMock.requestHandler else {
-			fatalError("Request handler not set")
-		}
-		let (response, data) = handler(request)
-		client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-		client?.urlProtocol(self, didLoad: data)
-		client?.urlProtocolDidFinishLoading(self)
+	nonisolated override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
+		super.init(request: request, cachedResponse: cachedResponse, client: client)
 	}
 
-	override func stopLoading() {}
+	nonisolated override class func canInit(with request: URLRequest) -> Bool { true }
+	nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+	nonisolated override func startLoading() {
+		guard let handler = URLProtocolMock.requestHandler else {
+			assertionFailure("Request handler not set")
+			return
+		}
+		do {
+			let (response, data) = try handler(request)
+			client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+			if let data {
+				client?.urlProtocol(self, didLoad: data)
+			}
+			client?.urlProtocolDidFinishLoading(self)
+		} catch {
+			client?.urlProtocol(self, didFailWithError: error)
+		}
+	}
+
+	nonisolated override func stopLoading() {}
 }
 ```
 

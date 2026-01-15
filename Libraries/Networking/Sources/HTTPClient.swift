@@ -1,7 +1,7 @@
 import Foundation
 
 /// HTTP client implementation using URLSession with async/await.
-public actor HTTPClient: HTTPClientContract {
+public final class HTTPClient: HTTPClientContract, Sendable {
 	private let session: URLSession
 	private let baseURL: URL
 	private let decoder: JSONDecoder
@@ -16,7 +16,7 @@ public actor HTTPClient: HTTPClientContract {
 		self.decoder = decoder
 	}
 
-	public func request<T: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> T {
+	public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		let data = try await request(endpoint)
 		return try decoder.decode(T.self, from: data)
 	}

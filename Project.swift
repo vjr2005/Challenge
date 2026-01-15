@@ -12,7 +12,10 @@ let appTestsTarget: TestableTarget = "\(appName)Tests"
 let project = Project(
 	name: appName,
 	settings: .settings(
-		base: ["SWIFT_VERSION": .string(swiftVersion)]
+		base: [
+			"SWIFT_VERSION": .string(swiftVersion),
+			"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),
+		]
 	),
 	targets: [
 		.target(

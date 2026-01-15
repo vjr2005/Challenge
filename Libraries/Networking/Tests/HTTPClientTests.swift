@@ -179,7 +179,7 @@ struct HTTPClientTests {
 	}
 }
 
-private struct TestUser: Decodable, Sendable {
+private struct TestUser: Decodable {
 	let id: Int
 	let name: String
 }
