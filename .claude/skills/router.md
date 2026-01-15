@@ -1,0 +1,281 @@
+# Skill: Router
+
+Guide for creating Routers that manage navigation using `NavigationStack`.
+
+## When to use this skill
+
+- Create navigation for a feature
+- Add type-safe navigation destinations
+- Create Router tests
+
+## File structure
+
+```
+Libraries/Features/{FeatureName}/
+├── Sources/
+│   └── Presentation/
+│       └── Router/
+│           └── {Feature}Router.swift             # Router
+└── Tests/
+    └── Presentation/
+        └── Router/
+            └── {Feature}RouterTests.swift        # Tests
+```
+
+---
+
+## Router Pattern
+
+```swift
+import SwiftUI
+
+@MainActor
+@Observable
+final class {Feature}Router {
+    var path = NavigationPath()
+
+    enum Destination: Hashable {
+        case detail({Name})
+        case settings
+    }
+
+    func navigate(to destination: Destination) {
+        path.append(destination)
+    }
+
+    func pop() {
+        guard !path.isEmpty else { return }
+        path.removeLast()
+    }
+
+    func popToRoot() {
+        path.removeLast(path.count)
+    }
+}
+```
+
+**Rules:**
+- `@MainActor` for UI thread safety
+- `@Observable` for SwiftUI integration (iOS 17+)
+- `final class` to prevent subclassing
+- **Internal visibility** (not public)
+- One Router per feature
+- `Destination` enum with all possible destinations
+- `path` is public for binding to `NavigationStack`
+- Models used in `Destination` must conform to `Hashable`
+
+---
+
+## Using Router in ViewModel
+
+Inject Router as optional dependency:
+
+```swift
+@MainActor
+@Observable
+final class {Name}ViewModel {
+    private let router: {Feature}Router?
+
+    init(router: {Feature}Router? = nil) {
+        self.router = router
+    }
+
+    func didSelectItem(_ item: {Name}) {
+        router?.navigate(to: .detail(item))
+    }
+}
+```
+
+---
+
+## Testing
+
+### Router Tests
+
+```swift
+import Foundation
+import Testing
+
+@testable import Challenge{FeatureName}
+
+@MainActor
+struct {Feature}RouterTests {
+    @Test
+    func initialPathIsEmpty() {
+        // Given
+        let sut = {Feature}Router()
+
+        // Then
+        #expect(sut.path.isEmpty)
+    }
+
+    @Test
+    func navigateAddsDestinationToPath() {
+        // Given
+        let sut = {Feature}Router()
+        let destination = {Feature}Router.Destination.detail(.stub())
+
+        // When
+        sut.navigate(to: destination)
+
+        // Then
+        #expect(sut.path.count == 1)
+    }
+
+    @Test
+    func popRemovesLastDestination() {
+        // Given
+        let sut = {Feature}Router()
+        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .settings)
+
+        // When
+        sut.pop()
+
+        // Then
+        #expect(sut.path.count == 1)
+    }
+
+    @Test
+    func popDoesNothingWhenPathIsEmpty() {
+        // Given
+        let sut = {Feature}Router()
+
+        // When
+        sut.pop()
+
+        // Then
+        #expect(sut.path.isEmpty)
+    }
+
+    @Test
+    func popToRootRemovesAllDestinations() {
+        // Given
+        let sut = {Feature}Router()
+        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .settings)
+
+        // When
+        sut.popToRoot()
+
+        // Then
+        #expect(sut.path.isEmpty)
+    }
+}
+```
+
+**Testing Rules:**
+- `@MainActor` on test struct to access Router
+- Test initial state, navigation, pop, and popToRoot
+- Use `.stub()` for model instances
+
+---
+
+## Example: CharacterRouter
+
+### Router
+
+```swift
+// Sources/Presentation/Router/CharacterRouter.swift
+import SwiftUI
+
+@MainActor
+@Observable
+final class CharacterRouter {
+    var path = NavigationPath()
+
+    enum Destination: Hashable {
+        case detail(Character)
+    }
+
+    func navigate(to destination: Destination) {
+        path.append(destination)
+    }
+
+    func pop() {
+        guard !path.isEmpty else { return }
+        path.removeLast()
+    }
+
+    func popToRoot() {
+        path.removeLast(path.count)
+    }
+}
+```
+
+### Tests
+
+```swift
+// Tests/Presentation/Router/CharacterRouterTests.swift
+import Foundation
+import Testing
+
+@testable import ChallengeCharacter
+
+@MainActor
+struct CharacterRouterTests {
+    @Test
+    func initialPathIsEmpty() {
+        let sut = CharacterRouter()
+
+        #expect(sut.path.isEmpty)
+    }
+
+    @Test
+    func navigateAddsDestinationToPath() {
+        let sut = CharacterRouter()
+
+        sut.navigate(to: .detail(.stub()))
+
+        #expect(sut.path.count == 1)
+    }
+
+    @Test
+    func popRemovesLastDestination() {
+        let sut = CharacterRouter()
+        sut.navigate(to: .detail(.stub()))
+
+        sut.pop()
+
+        #expect(sut.path.isEmpty)
+    }
+
+    @Test
+    func popDoesNothingWhenPathIsEmpty() {
+        let sut = CharacterRouter()
+
+        sut.pop()
+
+        #expect(sut.path.isEmpty)
+    }
+
+    @Test
+    func popToRootRemovesAllDestinations() {
+        let sut = CharacterRouter()
+        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(.stub()))
+
+        sut.popToRoot()
+
+        #expect(sut.path.isEmpty)
+    }
+}
+```
+
+---
+
+## Visibility Summary
+
+| Component | Visibility | Location |
+|-----------|------------|----------|
+| Router | internal | `Sources/Presentation/Router/` |
+
+---
+
+## Checklist
+
+- [ ] Create Router class with @MainActor and @Observable
+- [ ] Define Destination enum with all navigation targets (models must be Hashable)
+- [ ] Implement navigate, pop, popToRoot methods
+- [ ] Create tests for initial state, navigate, pop, popToRoot
+- [ ] Run tests

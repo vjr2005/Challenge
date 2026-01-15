@@ -31,7 +31,7 @@ This document defines the coding standards, architecture patterns, and developme
 - **Swift 6** with:
   - `SWIFT_APPROACHABLE_CONCURRENCY = YES` (inferencia mejorada)
   - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` (aislamiento por defecto)
-- **iOS 16.0+** minimum deployment target
+- **iOS 17.0+** minimum deployment target
 - **SwiftUI** as the primary UI framework
 
 ### Approachable Concurrency
@@ -176,7 +176,7 @@ final class AppState: ObservableObject, Sendable {
 
 ## Architecture
 
-This project follows **MVVM + Clean Architecture + Coordinators** pattern without external dependencies.
+This project follows **MVVM + Clean Architecture + Router** pattern without external dependencies.
 
 ### Layer Responsibilities
 
@@ -184,8 +184,8 @@ This project follows **MVVM + Clean Architecture + Coordinators** pattern withou
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                        │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │    View     │  │  ViewModel  │  │    Coordinator      │  │
-│  │  (SwiftUI)  │◄─┤ @MainActor  │◄─┤  (Navigation)       │  │
+│  │    View     │  │  ViewModel  │  │       Router        │  │
+│  │  (SwiftUI)  │◄─┤ @Observable │◄─┤  (Navigation)       │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                             │
@@ -210,64 +210,11 @@ This project follows **MVVM + Clean Architecture + Coordinators** pattern withou
 
 ### View (SwiftUI)
 
-Views are pure UI components with no business logic:
-
-```swift
-struct UserListView: View {
-  @StateObject private var viewModel: UserListViewModel
-
-  var body: some View {
-    List(viewModel.users) { user in
-      UserRowView(user: user)
-        .onTapGesture {
-          viewModel.didSelectUser(user)
-        }
-    }
-    .task {
-      await viewModel.loadUsers()
-    }
-  }
-}
-```
+Views are pure UI components with no business logic. See `/viewmodel` skill for detailed patterns.
 
 ### ViewModel
 
-ViewModels manage state and coordinate between View and Use Cases:
-
-```swift
-@MainActor
-final class UserListViewModel: ObservableObject {
-  @Published private(set) var users: [User] = []
-  @Published private(set) var isLoading = false
-  @Published private(set) var error: Error?
-
-  private let getUsersUseCase: GetUsersUseCaseContract
-  private weak var coordinator: UserCoordinator?
-
-  init(
-    getUsersUseCase: GetUsersUseCaseContract,
-    coordinator: UserCoordinator?
-  ) {
-    self.getUsersUseCase = getUsersUseCase
-    self.coordinator = coordinator
-  }
-
-  func loadUsers() async {
-    isLoading = true
-    defer { isLoading = false }
-
-    do {
-      users = try await getUsersUseCase.execute()
-    } catch {
-      self.error = error
-    }
-  }
-
-  func didSelectUser(_ user: User) {
-    coordinator?.showUserDetail(user)
-  }
-}
-```
+ViewModels manage state and coordinate between View and Use Cases. See `/viewmodel` skill for detailed patterns and examples.
 
 ### Use Case
 
@@ -277,73 +224,9 @@ Use Cases encapsulate single business operations. See `/usecase` skill for detai
 
 Repositories abstract data access and transform DTOs to Domain models. See `/repository` skill for detailed patterns (remote only, local only, local-first).
 
-### Coordinator
+### Router
 
-Coordinators manage navigation using `NavigationStack`:
-
-```swift
-@MainActor
-final class UserCoordinator: ObservableObject {
-  @Published var path = NavigationPath()
-
-  enum Destination: Hashable {
-    case userDetail(User)
-    case userSettings(User)
-  }
-
-  func showUserDetail(_ user: User) {
-    path.append(Destination.userDetail(user))
-  }
-
-  func showUserSettings(_ user: User) {
-    path.append(Destination.userSettings(user))
-  }
-
-  func pop() {
-    path.removeLast()
-  }
-
-  func popToRoot() {
-    path.removeLast(path.count)
-  }
-
-  @ViewBuilder
-  func build(destination: Destination) -> some View {
-    switch destination {
-    case .userDetail(let user):
-      UserDetailView(viewModel: makeUserDetailViewModel(user: user))
-    case .userSettings(let user):
-      UserSettingsView(viewModel: makeUserSettingsViewModel(user: user))
-    }
-  }
-
-  private func makeUserDetailViewModel(user: User) -> UserDetailViewModel {
-    // Create and inject dependencies
-  }
-
-  private func makeUserSettingsViewModel(user: User) -> UserSettingsViewModel {
-    // Create and inject dependencies
-  }
-}
-```
-
-Usage in SwiftUI:
-
-```swift
-struct UserFlowView: View {
-  @StateObject private var coordinator = UserCoordinator()
-
-  var body: some View {
-    NavigationStack(path: $coordinator.path) {
-      UserListView(viewModel: makeUserListViewModel())
-        .navigationDestination(for: UserCoordinator.Destination.self) { destination in
-          coordinator.build(destination: destination)
-        }
-    }
-    .environmentObject(coordinator)
-  }
-}
-```
+Routers manage navigation using `NavigationStack`. See `/router` skill for detailed patterns and examples.
 
 ---
 
@@ -399,7 +282,7 @@ Challenge/
 │       │   │   └── Presentation/
 │       │   │       ├── Views/
 │       │   │       ├── ViewModels/
-│       │   │       └── Coordinators/
+│       │   │       └── Router/
 │       │   ├── Tests/
 │       │   └── Mocks/
 │       └── Home/
@@ -431,7 +314,7 @@ FeatureName/
 │   └── Presentation/
 │       ├── Views/              # SwiftUI views
 │       ├── ViewModels/         # ViewModels
-│       └── Coordinators/       # Navigation coordinators
+│       └── Router/             # Navigation router
 ├── Tests/
 │   ├── Domain/
 │   │   └── UseCases/           # Use case tests
@@ -579,29 +462,44 @@ import Testing
 @MainActor
 struct UserListViewModelTests {
   @Test
-  func loadUsersUpdatesState() async {
-    let users = [User.stub()]
-    let useCase = GetUsersUseCaseMock(result: .success(users))
-    let sut = UserListViewModel(getUsersUseCase: useCase, coordinator: nil)
+  func loadSetsLoadedStateOnSuccess() async {
+    // Given
+    let expected = [User.stub()]
+    let useCase = GetUsersUseCaseMock()
+    useCase.result = .success(expected)
+    let sut = UserListViewModel(getUsersUseCase: useCase)
 
-    await sut.loadUsers()
+    // When
+    await sut.load()
 
-    #expect(sut.users == users)
-    #expect(sut.isLoading == false)
-    #expect(sut.error == nil)
+    // Then
+    guard case .loaded(let users) = sut.state else {
+      Issue.record("Expected loaded state")
+      return
+    }
+    #expect(users == expected)
   }
 
   @Test
-  func loadUsersHandlesError() async {
-    let useCase = GetUsersUseCaseMock(result: .failure(TestError.networkError))
-    let sut = UserListViewModel(getUsersUseCase: useCase, coordinator: nil)
+  func loadSetsErrorStateOnFailure() async {
+    // Given
+    let useCase = GetUsersUseCaseMock()
+    useCase.result = .failure(TestError.network)
+    let sut = UserListViewModel(getUsersUseCase: useCase)
 
-    await sut.loadUsers()
+    // When
+    await sut.load()
 
-    #expect(sut.users.isEmpty)
-    #expect(sut.isLoading == false)
-    #expect(sut.error != nil)
+    // Then
+    guard case .error = sut.state else {
+      Issue.record("Expected error state")
+      return
+    }
   }
+}
+
+private enum TestError: Error {
+  case network
 }
 ```
 
@@ -1392,6 +1290,8 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | `/datasource` | Create DataSources (RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage) |
 | `/repository` | Create Repositories with optional local-first caching policy |
 | `/usecase` | Create UseCases that encapsulate business logic |
+| `/viewmodel` | Create ViewModels with ViewState pattern |
+| `/router` | Create Routers for navigation using NavigationStack |
 
 ---
 

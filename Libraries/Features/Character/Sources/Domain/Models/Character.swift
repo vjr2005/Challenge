@@ -1,7 +1,7 @@
 import Foundation
 
 /// Domain model representing a character.
-struct Character: Equatable {
+struct Character: Equatable, Hashable {
 	let id: Int
 	let name: String
 	let status: CharacterStatus
