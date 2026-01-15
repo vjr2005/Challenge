@@ -827,76 +827,35 @@ mise install swiftlint
 
 ## Tuist Configuration
 
-### Project Configuration
-
 The project uses Tuist for project generation and module management.
 
-**Key Files:**
-- `Project.swift` - Main project definition
-- `Tuist.swift` - Tuist configuration
-- `Tuist/ProjectDescriptionHelpers/Config.swift` - Shared configuration
-- `Tuist/ProjectDescriptionHelpers/Target+Framework.swift` - Framework helpers
+### Key Files
 
-### Creating a New Feature Module
+| File | Purpose |
+|------|---------|
+| `Project.swift` | Main project definition |
+| `Tuist.swift` | Tuist configuration |
+| `Tuist/ProjectDescriptionHelpers/Config.swift` | Shared configuration |
+| `Tuist/ProjectDescriptionHelpers/Target+Framework.swift` | Framework helpers |
+| `Tuist/ProjectDescriptionHelpers/Dependencies.swift` | XCFramework dependencies |
 
-1. Create the directory structure:
+### External Dependencies
 
-```bash
-mkdir -p Libraries/Features/NewFeature/{Sources,Tests,Mocks}
-mkdir -p Libraries/Features/NewFeature/Sources/{Domain,Data,Presentation}
-mkdir -p Libraries/Features/NewFeature/Sources/Domain/{Models,UseCases,Repositories}
-mkdir -p Libraries/Features/NewFeature/Sources/Data/{DataSources,DTOs,Repositories}
-mkdir -p Libraries/Features/NewFeature/Sources/Presentation/{Views,ViewModels,Coordinators}
-```
+External xcframeworks are stored in `Tuist/Dependencies/`. This directory is **ignored by git** and should not be committed to the repository.
 
-2. Add the target in `Project.swift`:
+For detailed instructions on adding xcframeworks, use the `/tuist` skill.
 
-```swift
-.createFramework(name: "Features/NewFeature")
-```
-
-3. Generate the project:
+### Commands
 
 ```bash
+# Generate Xcode project
 tuist generate
-```
 
-### Framework Helper
+# Clean derived data
+tuist clean
 
-```swift
-// Tuist/ProjectDescriptionHelpers/Target+Framework.swift
-public extension Target {
-  static func createFramework(
-    name: String,
-    destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
-    dependencies: [TargetDependency] = []
-  ) -> Self {
-    let targetName = "\(appName)\(name.replacingOccurrences(of: "/", with: ""))"
-    return .target(
-      name: targetName,
-      destinations: destinations,
-      product: .framework,
-      bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
-      sources: ["Libraries/\(name)/Sources/**"],
-      dependencies: dependencies
-    )
-  }
-
-  static func createFrameworkTests(
-    name: String,
-    dependencies: [TargetDependency] = []
-  ) -> Self {
-    let targetName = "\(appName)\(name.replacingOccurrences(of: "/", with: ""))Tests"
-    return .target(
-      name: targetName,
-      destinations: [.iPhone, .iPad],
-      product: .unitTests,
-      bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
-      sources: ["Libraries/\(name)/Tests/**"],
-      dependencies: dependencies
-    )
-  }
-}
+# Run tests
+tuist test
 ```
 
 ---
@@ -910,10 +869,9 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 
 ### Available Skills
 
-Skills will be added as the project evolves. Common skills include:
-- Feature generation
-- Test generation
-- Module scaffolding
+| Skill | Description |
+|-------|-------------|
+| `/tuist` | Tuist configuration: adding xcframeworks, managing dependencies |
 
 ---
 
