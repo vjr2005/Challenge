@@ -103,7 +103,30 @@ actor NetworkManager {
 
 ### Opting Out of MainActor Isolation
 
-With `MainActor` as the default isolation, types that need to run off the main thread must explicitly opt out using `nonisolated`. This is mainly needed for subclasses of framework types that are called from background threads:
+With `MainActor` as the default isolation, types that need to run off the main thread must explicitly opt out using `nonisolated`. Common cases:
+
+#### DTOs used with actors
+
+DTOs that will be stored or processed by actors must be marked as `nonisolated`:
+
+```swift
+// DTOs need nonisolated to be used inside actors (e.g., MemoryDataSource)
+nonisolated struct CharacterDTO: Decodable, Equatable {
+	let id: Int
+	let name: String
+}
+
+// Then they can be safely used inside actors
+actor CharacterMemoryDataSource {
+	private var storage: [Int: CharacterDTO] = [:]
+
+	func save(_ character: CharacterDTO) {
+		storage[character.id] = character  // No isolation error
+	}
+}
+```
+
+#### Framework subclasses called from background threads
 
 ```swift
 // URLProtocol subclasses are called from background threads by the URL loading system
