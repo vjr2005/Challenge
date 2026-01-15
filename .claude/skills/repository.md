@@ -7,6 +7,7 @@ Guide for creating Repositories that abstract data access following Clean Archit
 - Create a new Repository to abstract data sources
 - Transform DTOs to Domain models
 - Provide a clean API for Use Cases
+- Implement caching with local-first policy
 
 ## File structure
 
@@ -20,7 +21,8 @@ Libraries/Features/{FeatureName}/
 │   │       └── {Name}RepositoryContract.swift    # Contract (protocol)
 │   └── Data/
 │       ├── DataSources/
-│       │   └── {Name}RemoteDataSource.swift      # DataSource (see /datasource skill)
+│       │   ├── {Name}RemoteDataSource.swift      # Remote DataSource (see /datasource skill)
+│       │   └── {Name}MemoryDataSource.swift      # Memory DataSource (see /datasource skill)
 │       ├── DTOs/
 │       │   └── {Name}DTO.swift                   # DTO (see /datasource skill)
 │       └── Repositories/
@@ -32,7 +34,19 @@ Libraries/Features/{FeatureName}/
         └── {Name}RepositoryMock.swift            # Mock for testing Use Cases
 ```
 
-## Repository Pattern
+## Repository Scenarios
+
+A Repository can be configured with:
+
+| Scenario | DataSources | Use case |
+|----------|-------------|----------|
+| Remote only | `RemoteDataSource` | Simple API consumption |
+| Local only | `MemoryDataSource` | Offline-first, local state |
+| Both (local-first) | `RemoteDataSource` + `MemoryDataSource` | Caching with remote fallback |
+
+---
+
+## Common Components
 
 ### 1. Domain Model
 
@@ -68,35 +82,7 @@ protocol {Name}RepositoryContract: Sendable {
 - Methods are `async throws`
 - **Return Domain models, NOT DTOs**
 
-### 3. Implementation - Data Layer
-
-```swift
-struct {Name}Repository: {Name}RepositoryContract {
-    private let remoteDataSource: {Name}RemoteDataSourceContract
-
-    init(remoteDataSource: {Name}RemoteDataSourceContract) {
-        self.remoteDataSource = remoteDataSource
-    }
-
-    func get{Name}(id: Int) async throws -> {Name} {
-        let dto = try await remoteDataSource.fetch{Name}(id: id)
-        return dto.toDomain()
-    }
-
-    func getAll{Name}s() async throws -> [{Name}] {
-        let dtos = try await remoteDataSource.fetchAll{Name}s()
-        return dtos.map { $0.toDomain() }
-    }
-}
-```
-
-**Rules:**
-- Located in `Data/Repositories/`
-- **Internal visibility** (not public)
-- Inject DataSource via protocol (not concrete type)
-- Transform DTOs to Domain models using `toDomain()` extension
-
-### 4. DTO to Domain Mapping
+### 3. DTO to Domain Mapping
 
 ```swift
 extension {Name}DTO {
@@ -114,7 +100,7 @@ extension {Name}DTO {
 - Located in the same file as the Repository implementation or in a separate `{Name}DTO+Domain.swift` file
 - Keep mapping logic simple and pure
 
-### 5. Mock (in Tests/Mocks/)
+### 4. Mock (in Tests/Mocks/)
 
 ```swift
 import Foundation
@@ -153,9 +139,35 @@ private enum NotConfiguredError: Error {
 - Separate result properties for each method
 - Call tracking properties
 
-## Testing
+---
 
-### Repository Test
+## Scenario 1: Remote Only
+
+Use when the repository only needs to fetch data from a remote API.
+
+### Implementation
+
+```swift
+struct {Name}Repository: {Name}RepositoryContract {
+    private let remoteDataSource: {Name}RemoteDataSourceContract
+
+    init(remoteDataSource: {Name}RemoteDataSourceContract) {
+        self.remoteDataSource = remoteDataSource
+    }
+
+    func get{Name}(id: Int) async throws -> {Name} {
+        let dto = try await remoteDataSource.fetch{Name}(id: id)
+        return dto.toDomain()
+    }
+
+    func getAll{Name}s() async throws -> [{Name}] {
+        let dtos = try await remoteDataSource.fetchAll{Name}s()
+        return dtos.map { $0.toDomain() }
+    }
+}
+```
+
+### Tests
 
 ```swift
 import Foundation
@@ -165,44 +177,41 @@ import Testing
 
 struct {Name}RepositoryTests {
     @Test
-    func getsModelFromDataSource() async throws {
+    func getsModelFromRemoteDataSource() async throws {
         // Given
-        let expectedDTO = {Name}DTO(id: 1, name: "Test")
-        let dataSource = {Name}RemoteDataSourceMock()
-        dataSource.result = .success(expectedDTO)
-        let sut = {Name}Repository(remoteDataSource: dataSource)
+        let expected = {Name}.stub()
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .success(.stub())
+        let sut = {Name}Repository(remoteDataSource: remoteDataSource)
 
         // When
-        let result = try await sut.get{Name}(id: 1)
+        let value = try await sut.get{Name}(id: 1)
 
         // Then
-        #expect(result.id == expectedDTO.id)
-        #expect(result.name == expectedDTO.name)
-        #expect(dataSource.fetchCallCount == 1)
-        #expect(dataSource.lastFetchedId == 1)
+        #expect(value == expected)
     }
 
     @Test
-    func transformsDTOToDomainModel() async throws {
+    func callsRemoteDataSourceWithCorrectId() async throws {
         // Given
-        let dto = {Name}DTO(id: 42, name: "Domain Test")
-        let dataSource = {Name}RemoteDataSourceMock()
-        dataSource.result = .success(dto)
-        let sut = {Name}Repository(remoteDataSource: dataSource)
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .success(.stub())
+        let sut = {Name}Repository(remoteDataSource: remoteDataSource)
 
         // When
-        let result = try await sut.get{Name}(id: 42)
+        _ = try await sut.get{Name}(id: 42)
 
         // Then
-        #expect(result == {Name}(id: 42, name: "Domain Test"))
+        #expect(remoteDataSource.fetchCallCount == 1)
+        #expect(remoteDataSource.lastFetchedId == 42)
     }
 
     @Test
-    func propagatesDataSourceError() async throws {
+    func propagatesRemoteDataSourceError() async throws {
         // Given
-        let dataSource = {Name}RemoteDataSourceMock()
-        dataSource.result = .failure(TestError.network)
-        let sut = {Name}Repository(remoteDataSource: dataSource)
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .failure(TestError.network)
+        let sut = {Name}Repository(remoteDataSource: remoteDataSource)
 
         // When / Then
         await #expect(throws: TestError.network) {
@@ -216,7 +225,310 @@ private enum TestError: Error {
 }
 ```
 
-## Complete Example: Character
+---
+
+## Scenario 2: Local Only
+
+Use when the repository only needs to manage local (in-memory) state.
+
+### Implementation
+
+```swift
+struct {Name}Repository: {Name}RepositoryContract {
+    private let memoryDataSource: {Name}MemoryDataSourceContract
+
+    init(memoryDataSource: {Name}MemoryDataSourceContract) {
+        self.memoryDataSource = memoryDataSource
+    }
+
+    func get{Name}(id: Int) async throws -> {Name} {
+        guard let dto = await memoryDataSource.get{Name}(id: id) else {
+            throw {Name}RepositoryError.notFound
+        }
+        return dto.toDomain()
+    }
+
+    func getAll{Name}s() async throws -> [{Name}] {
+        let dtos = await memoryDataSource.getAll{Name}s()
+        return dtos.map { $0.toDomain() }
+    }
+
+    func save{Name}(_ model: {Name}) async {
+        let dto = model.toDTO()
+        await memoryDataSource.save{Name}(dto)
+    }
+}
+
+enum {Name}RepositoryError: Error {
+    case notFound
+}
+```
+
+### Domain to DTO Mapping (for saving)
+
+```swift
+extension {Name} {
+    func toDTO() -> {Name}DTO {
+        {Name}DTO(
+            id: id,
+            name: name
+        )
+    }
+}
+```
+
+### Tests
+
+```swift
+import Foundation
+import Testing
+
+@testable import Challenge{FeatureName}
+
+struct {Name}RepositoryTests {
+    @Test
+    func getsModelFromMemoryDataSource() async throws {
+        // Given
+        let expected = {Name}.stub()
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        await memoryDataSource.save{Name}(.stub())
+        let sut = {Name}Repository(memoryDataSource: memoryDataSource)
+
+        // When
+        let value = try await sut.get{Name}(id: expected.id)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test
+    func throwsNotFoundWhenItemDoesNotExist() async throws {
+        // Given
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(memoryDataSource: memoryDataSource)
+
+        // When / Then
+        await #expect(throws: {Name}RepositoryError.notFound) {
+            _ = try await sut.get{Name}(id: 999)
+        }
+    }
+
+    @Test
+    func savesModelToMemoryDataSource() async throws {
+        // Given
+        let model = {Name}.stub()
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(memoryDataSource: memoryDataSource)
+
+        // When
+        await sut.save{Name}(model)
+        let value = await memoryDataSource.get{Name}(id: model.id)
+
+        // Then
+        #expect(value == model.toDTO())
+    }
+}
+```
+
+---
+
+## Scenario 3: Local-First (Both DataSources)
+
+Use when the repository needs caching with remote fallback. The **local-first policy** means:
+
+1. Check local cache first
+2. If found in cache, return cached data
+3. If not found, fetch from remote
+4. Save to local cache
+5. Return the data
+
+### Implementation
+
+```swift
+struct {Name}Repository: {Name}RepositoryContract {
+    private let remoteDataSource: {Name}RemoteDataSourceContract
+    private let memoryDataSource: {Name}MemoryDataSourceContract
+
+    init(
+        remoteDataSource: {Name}RemoteDataSourceContract,
+        memoryDataSource: {Name}MemoryDataSourceContract
+    ) {
+        self.remoteDataSource = remoteDataSource
+        self.memoryDataSource = memoryDataSource
+    }
+
+    func get{Name}(id: Int) async throws -> {Name} {
+        // 1. Check local cache first
+        if let cachedDTO = await memoryDataSource.get{Name}(id: id) {
+            return cachedDTO.toDomain()
+        }
+
+        // 2. Fetch from remote
+        let dto = try await remoteDataSource.fetch{Name}(id: id)
+
+        // 3. Save to cache
+        await memoryDataSource.save{Name}(dto)
+
+        // 4. Return domain model
+        return dto.toDomain()
+    }
+
+    func getAll{Name}s() async throws -> [{Name}] {
+        // 1. Check local cache first
+        let cachedDTOs = await memoryDataSource.getAll{Name}s()
+        if !cachedDTOs.isEmpty {
+            return cachedDTOs.map { $0.toDomain() }
+        }
+
+        // 2. Fetch from remote
+        let dtos = try await remoteDataSource.fetchAll{Name}s()
+
+        // 3. Save to cache
+        await memoryDataSource.save{Name}s(dtos)
+
+        // 4. Return domain models
+        return dtos.map { $0.toDomain() }
+    }
+}
+```
+
+### Tests
+
+```swift
+import Foundation
+import Testing
+
+@testable import Challenge{FeatureName}
+
+struct {Name}RepositoryTests {
+    // MARK: - Cache Hit Tests
+
+    @Test
+    func returnsCachedDataWhenAvailable() async throws {
+        // Given
+        let expected = {Name}.stub()
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        await memoryDataSource.save{Name}(.stub())
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSource,
+            memoryDataSource: memoryDataSource
+        )
+
+        // When
+        let value = try await sut.get{Name}(id: expected.id)
+
+        // Then
+        #expect(value == expected)
+        #expect(remoteDataSource.fetchCallCount == 0)
+    }
+
+    @Test
+    func doesNotCallRemoteWhenCacheHit() async throws {
+        // Given
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        await memoryDataSource.save{Name}(.stub())
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSource,
+            memoryDataSource: memoryDataSource
+        )
+
+        // When
+        _ = try await sut.get{Name}(id: 1)
+
+        // Then
+        #expect(remoteDataSource.fetchCallCount == 0)
+    }
+
+    // MARK: - Cache Miss Tests
+
+    @Test
+    func fetchesFromRemoteWhenCacheMiss() async throws {
+        // Given
+        let expected = {Name}.stub()
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .success(.stub())
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSource,
+            memoryDataSource: memoryDataSource
+        )
+
+        // When
+        let value = try await sut.get{Name}(id: 1)
+
+        // Then
+        #expect(value == expected)
+        #expect(remoteDataSource.fetchCallCount == 1)
+    }
+
+    @Test
+    func savesToCacheAfterRemoteFetch() async throws {
+        // Given
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .success(.stub())
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSource,
+            memoryDataSource: memoryDataSource
+        )
+
+        // When
+        _ = try await sut.get{Name}(id: 1)
+        let cachedValue = await memoryDataSource.get{Name}(id: 1)
+
+        // Then
+        #expect(cachedValue == .stub())
+        #expect(await memoryDataSource.saveCallCount == 1)
+    }
+
+    // MARK: - Error Tests
+
+    @Test
+    func propagatesRemoteErrorOnCacheMiss() async throws {
+        // Given
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .failure(TestError.network)
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSource,
+            memoryDataSource: memoryDataSource
+        )
+
+        // When / Then
+        await #expect(throws: TestError.network) {
+            _ = try await sut.get{Name}(id: 1)
+        }
+    }
+
+    @Test
+    func doesNotSaveToCacheOnRemoteError() async throws {
+        // Given
+        let remoteDataSource = {Name}RemoteDataSourceMock()
+        remoteDataSource.result = .failure(TestError.network)
+        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSource,
+            memoryDataSource: memoryDataSource
+        )
+
+        // When
+        _ = try? await sut.get{Name}(id: 1)
+
+        // Then
+        #expect(await memoryDataSource.saveCallCount == 0)
+    }
+}
+
+private enum TestError: Error {
+    case network
+}
+```
+
+---
+
+## Complete Example: Character (Local-First)
 
 ### Domain Model
 
@@ -245,19 +557,34 @@ protocol CharacterRepositoryContract: Sendable {
 }
 ```
 
-### Implementation
+### Implementation (Local-First)
 
 ```swift
 // Sources/Data/Repositories/CharacterRepository.swift
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
+    private let memoryDataSource: CharacterMemoryDataSourceContract
 
-    init(remoteDataSource: CharacterRemoteDataSourceContract) {
+    init(
+        remoteDataSource: CharacterRemoteDataSourceContract,
+        memoryDataSource: CharacterMemoryDataSourceContract
+    ) {
         self.remoteDataSource = remoteDataSource
+        self.memoryDataSource = memoryDataSource
     }
 
     func getCharacter(id: Int) async throws -> Character {
+        // Check cache first
+        if let cachedDTO = await memoryDataSource.getCharacter(id: id) {
+            return cachedDTO.toDomain()
+        }
+
+        // Fetch from remote
         let dto = try await remoteDataSource.fetchCharacter(id: id)
+
+        // Save to cache
+        await memoryDataSource.saveCharacter(dto)
+
         return dto.toDomain()
     }
 }
@@ -274,6 +601,8 @@ extension CharacterDTO {
 }
 ```
 
+---
+
 ## Visibility Summary
 
 | Component | Visibility | Location |
@@ -284,12 +613,41 @@ extension CharacterDTO {
 | DTO Mapping | internal | `Sources/Data/Repositories/` |
 | Mock | internal | `Tests/Mocks/` |
 
+---
+
 ## Checklist
+
+### Remote Only Repository
 
 - [ ] Create Domain model with Equatable and Sendable conformance
 - [ ] Create Contract in Domain/Repositories/ with async throws methods
-- [ ] Create Implementation in Data/Repositories/ injecting DataSource
+- [ ] Create Implementation injecting RemoteDataSource
 - [ ] Add DTO to Domain mapping extension
 - [ ] Create Mock in Tests/Mocks/ with call tracking
 - [ ] Create tests verifying transformation and error propagation
+- [ ] Run tests
+
+### Local Only Repository
+
+- [ ] Create Domain model with Equatable and Sendable conformance
+- [ ] Create Contract in Domain/Repositories/ with async throws methods
+- [ ] Create Implementation injecting MemoryDataSource
+- [ ] Add DTO to Domain mapping extension
+- [ ] Add Domain to DTO mapping extension (for saving)
+- [ ] Create error enum for not found cases
+- [ ] Create Mock in Tests/Mocks/ with call tracking
+- [ ] Create tests verifying CRUD operations and error handling
+- [ ] Run tests
+
+### Local-First Repository (Both DataSources)
+
+- [ ] Create Domain model with Equatable and Sendable conformance
+- [ ] Create Contract in Domain/Repositories/ with async throws methods
+- [ ] Create Implementation injecting both RemoteDataSource and MemoryDataSource
+- [ ] Add DTO to Domain mapping extension
+- [ ] Implement local-first policy (cache check → remote fetch → cache save)
+- [ ] Create Mock in Tests/Mocks/ with call tracking
+- [ ] Create tests for cache hit scenarios (no remote call)
+- [ ] Create tests for cache miss scenarios (remote call + cache save)
+- [ ] Create tests for error propagation
 - [ ] Run tests
