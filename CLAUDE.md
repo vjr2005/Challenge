@@ -723,15 +723,11 @@ final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendable {
 
 ## Style Guide
 
-All code must follow the **Airbnb Swift Style Guide** with project-specific conventions. The full guide is available at:
-- Local copy: `docs/StyleGuide.md`
-- Online: https://github.com/airbnb/swift
-
 ### Key Rules Summary
 
 1. **Formatting**
-   - 2 spaces indentation
-   - 100 characters maximum line width
+   - 2 tabs indentation
+   - 140 characters maximum line width
    - Trailing commas in multi-line collections
 
 2. **Imports**
