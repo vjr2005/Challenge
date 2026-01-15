@@ -15,6 +15,7 @@ let project = Project(
 		base: [
 			"SWIFT_VERSION": .string(swiftVersion),
 			"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
+			"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),
 		]
 	),
 	targets: [

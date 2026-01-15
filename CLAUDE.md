@@ -28,7 +28,9 @@ This document defines the coding standards, architecture patterns, and developme
 
 ### Requirements
 
-- **Swift 6** with **Approachable Concurrency** enabled (`SWIFT_APPROACHABLE_CONCURRENCY = YES`)
+- **Swift 6** with:
+  - `SWIFT_APPROACHABLE_CONCURRENCY = YES` (inferencia mejorada)
+  - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` (aislamiento por defecto)
 - **iOS 16.0+** minimum deployment target
 - **SwiftUI** as the primary UI framework
 
