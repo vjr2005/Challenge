@@ -408,8 +408,6 @@ Challenge/
 │           └── Mocks/
 ├── Tuist/
 │   └── ProjectDescriptionHelpers/
-├── docs/
-│   └── StyleGuide.md
 ├── Project.swift
 ├── Tuist.swift
 └── CLAUDE.md
@@ -765,7 +763,7 @@ extension UserDTO {
 
 ## Style Guide
 
-All generated code **must** follow these rules. For the complete guide, see `docs/StyleGuide.md`.
+All generated code **must** follow these rules. Based on the [Airbnb Swift Style Guide](https://github.com/airbnb/swift).
 
 ### Formatting
 
