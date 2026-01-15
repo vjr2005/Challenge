@@ -371,6 +371,21 @@ struct UserFlowView: View {
 
 The project uses **feature-based modularization**. Each feature is a separate framework module.
 
+### Feature Naming
+
+Feature directory names must **not** contain the word "Feature". Use simple, descriptive names:
+
+```
+// RIGHT
+Libraries/Features/User/
+Libraries/Features/Character/
+Libraries/Features/Home/
+
+// WRONG
+Libraries/Features/UserFeature/
+Libraries/Features/CharacterFeature/
+```
+
 ### Directory Structure
 
 ```
@@ -391,7 +406,7 @@ Challenge/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   └── Features/
-│       ├── UserFeature/
+│       ├── User/
 │       │   ├── Sources/
 │       │   │   ├── Domain/
 │       │   │   │   ├── Models/
@@ -407,7 +422,7 @@ Challenge/
 │       │   │       └── Coordinators/
 │       │   ├── Tests/
 │       │   └── Mocks/
-│       └── HomeFeature/
+│       └── Home/
 │           ├── Sources/
 │           ├── Tests/
 │           └── Mocks/
@@ -1283,16 +1298,45 @@ The project uses Tuist for project generation and module management.
 | `Tuist/ProjectDescriptionHelpers/FrameworkModule.swift` | Framework module helper (targets + schemes) |
 | `Tuist/ProjectDescriptionHelpers/Dependencies.swift` | XCFramework dependencies |
 
+### Module Naming Rules
+
+- Module `name` must **not** contain "/" or special characters
+- Module `name` becomes the target name (e.g., `name: "Character"` → `ChallengeCharacter`)
+- Use `path` parameter when the directory differs from the name (e.g., `path: "Features/Character"`)
+
+```
+// RIGHT
+name: "Character", path: "Features/Character"  → Target: ChallengeCharacter
+name: "Networking"                              → Target: ChallengeNetworking
+
+// WRONG
+name: "Features/Character"  → "/" not allowed in name
+```
+
 ### Creating a Framework
 
 Use `FrameworkModule.create()` to generate targets and schemes together:
 
 ```swift
 // In Project.swift
+
+// Simple module (sources in Libraries/Networking/)
 let networkingModule = FrameworkModule.create(name: "Networking")
+
+// Feature module (sources in Libraries/Features/Home/)
+// Use `path` when the directory differs from the module name
 let homeModule = FrameworkModule.create(
-	name: "Features/Home",
+	name: "Home",
+	path: "Features/Home",
 	dependencies: [.target(name: "\(appName)Networking")],
+)
+
+// Module with internal mocks only (no public Mocks framework)
+let characterModule = FrameworkModule.create(
+	name: "Character",
+	path: "Features/Character",
+	dependencies: [.target(name: "\(appName)Networking")],
+	hasMocks: false,
 )
 
 let project = Project(
@@ -1340,6 +1384,8 @@ tuist test
 
 This project supports Claude Code Skills for automating common tasks. Skills are configured in `.claude/skills/` directory.
 
+**Important:** All skills must be written in **English**.
+
 For more information about Claude Code Skills, see:
 https://docs.anthropic.com/en/docs/claude-code/skills
 
@@ -1348,6 +1394,7 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | Skill | Description |
 |-------|-------------|
 | `/tuist` | Tuist configuration: adding xcframeworks, managing dependencies |
+| `/datasource` | Create RemoteDataSources following the Repository pattern |
 
 ---
 

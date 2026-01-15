@@ -3,7 +3,15 @@ import ProjectDescriptionHelpers
 
 // MARK: - Framework Modules
 
+let coreModule = FrameworkModule.create(name: "Core")
 let networkingModule = FrameworkModule.create(name: "Networking")
+let characterModule = FrameworkModule.create(
+	name: "Character",
+	path: "Features/Character",
+	dependencies: [.target(name: "\(appName)Networking")],
+	testDependencies: [.target(name: "\(appName)NetworkingMocks")],
+	hasMocks: false,
+)
 
 // MARK: - Project
 
@@ -61,7 +69,7 @@ let project = Project(
 			infoPlist: .default,
 			sources: ["App/UITests/**"]
 		),
-	] + networkingModule.targets,
+	] + coreModule.targets + networkingModule.targets + characterModule.targets,
 	schemes: [
 		.scheme(
 			name: appName,
@@ -72,5 +80,5 @@ let project = Project(
 			),
 			runAction: .runAction(executable: .target(appName))
 		),
-	] + networkingModule.schemes
+	] + coreModule.schemes + networkingModule.schemes + characterModule.schemes
 )
