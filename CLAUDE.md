@@ -723,101 +723,226 @@ final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendable {
 
 ## Style Guide
 
-### Key Rules Summary
+All generated code **must** follow these rules. For the complete guide, see `docs/StyleGuide.md`.
 
-1. **Formatting**
-   - 2 tabs indentation
-   - 140 characters maximum line width
-   - Trailing commas in multi-line collections
+### Formatting
 
-2. **Imports**
-   - Alphabetize all imports
-   - Deduplicate imports
-   - `@testable import` goes after regular imports, separated by blank line
+| Rule | Value |
+|------|-------|
+| Indentation | 2 tabs |
+| Maximum line width | 140 characters |
+| Trailing commas | Required in multi-line collections |
+| Blank lines | Single blank line between declarations |
+| End of file | Single newline at end |
 
-   ```swift
-   // RIGHT
-   import Foundation
-   import SwiftUI
-   import UIKit
+### Spacing
 
-   @testable import UserFeature
-   ```
+```swift
+// Colons: space after, not before
+let name: String
+func method(param: Int) -> String
+let dict: [String: Int]
 
-3. **Naming**
-   - PascalCase for types and protocols
-   - lowerCamelCase for everything else
-   - Boolean names: `isEnabled`, `hasLoaded`, `canSubmit`
-   - **Protocols must end with `Contract` suffix**
-   - **Mocks must end with `Mock` suffix**
+// Operators: space on both sides
+let sum = a + b
+let range = 0..<10
 
-   ```swift
-   // RIGHT
-   protocol UserRepositoryContract { }
-   protocol HTTPClientContract { }
-   protocol GetUsersUseCaseContract { }
+// Braces: space before opening, space inside for single-line
+func method() { }
+array.map { $0 * 2 }
 
-   // WRONG
-   protocol UserRepositoryProtocol { }
-   protocol UserRepository { }
-   protocol IUserRepository { }
-   ```
+// Parentheses: no space inside
+func method(param: Int)
+if condition {
+```
 
-   ```swift
-   // RIGHT
-   class UserRepositoryMock { }
-   class HTTPClientMock { }
+### Imports
 
-   // WRONG
-   class MockUserRepository { }
-   class UserRepositoryFake { }
-   ```
+```swift
+// Alphabetized, @testable after blank line
+import Foundation
+import SwiftUI
+import UIKit
 
-4. **Dependency Injection**
-   - **Always use protocols (contracts) instead of concrete implementations**
-   - This enables easy testing and mocking
-   - Inject dependencies through initializers
+@testable import UserFeature
+```
 
-   ```swift
-   // RIGHT - Using protocol
-   final class UserListViewModel {
-     private let useCase: GetUsersUseCaseContract
+### Naming
 
-     init(useCase: GetUsersUseCaseContract) {
-       self.useCase = useCase
-     }
-   }
+| Type | Convention | Example |
+|------|------------|---------|
+| Types, Protocols | PascalCase | `UserRepository`, `SpaceThing` |
+| Variables, Functions | lowerCamelCase | `userName`, `fetchData()` |
+| Booleans | is/has/can prefix | `isEnabled`, `hasLoaded`, `canSubmit` |
+| **Protocols** | **`Contract` suffix** | `UserRepositoryContract` |
+| **Mocks** | **`Mock` suffix** | `UserRepositoryMock` |
 
-   // WRONG - Using concrete type
-   final class UserListViewModel {
-     private let useCase: GetUsersUseCase
+### Code Style
 
-     init(useCase: GetUsersUseCase) {
-       self.useCase = useCase
-     }
-   }
-   ```
+```swift
+// WRONG - Redundant type
+let name: String = "John"
+let count: Int = 0
 
-5. **Organization**
-   - Alphabetize and deduplicate imports
-   - Use `// MARK:` comments to organize code
-   - Order: Lifecycle, Open, Public, Package, Internal, Fileprivate, Private
+// RIGHT - Inferred type
+let name = "John"
+let count = 0
+```
 
-6. **SwiftUI**
-   - Use synthesized memberwise initializers
-   - Prefer `@Entry` macro for EnvironmentValues
-   - Omit redundant `@ViewBuilder`
+```swift
+// WRONG - Unnecessary self
+self.name = "John"
+self.save()
 
-7. **Testing**
-   - No `test` prefix in Swift Testing methods
-   - Avoid `guard` in tests - use `#require` and `#expect`
-   - Avoid force unwrapping - use `try #require`
+// RIGHT - Omit self unless required
+name = "John"
+save()
+```
+
+```swift
+// WRONG - Explicit return in single expression
+var body: some View {
+  return Text("Hello")
+}
+
+// RIGHT - Implicit return
+var body: some View {
+  Text("Hello")
+}
+```
+
+```swift
+// WRONG - Redundant closure
+let action = { performAction() }()
+
+// RIGHT - Direct call
+let action = performAction()
+```
+
+### Trailing Commas
+
+```swift
+// RIGHT - Trailing comma in multi-line
+let planets = [
+  "Mercury",
+  "Venus",
+  "Earth",
+]
+
+func configure(
+  name: String,
+  age: Int,
+) { }
+
+// RIGHT - No trailing comma in single-line
+let planets = ["Mercury", "Venus", "Earth"]
+```
+
+### Protocol Conformance
+
+```swift
+// RIGHT - Separate extensions for protocol conformance
+class MyViewController: UIViewController {
+  // Core implementation
+}
+
+// MARK: - UITableViewDelegate
+
+extension MyViewController: UITableViewDelegate {
+  // Delegate methods
+}
+```
+
+### Dependency Injection
+
+```swift
+// RIGHT - Protocol injection
+final class UserListViewModel {
+  private let useCase: GetUsersUseCaseContract
+
+  init(useCase: GetUsersUseCaseContract) {
+    self.useCase = useCase
+  }
+}
+
+// WRONG - Concrete type
+final class UserListViewModel {
+  private let useCase: GetUsersUseCase
+}
+```
+
+### MARK Comments
+
+Use `// MARK:` to organize type contents in this order:
+
+1. `// MARK: Lifecycle` - init, deinit
+2. `// MARK: Open` - open properties and methods
+3. `// MARK: Public` - public properties and methods
+4. `// MARK: Package` - package properties and methods
+5. `// MARK: Internal` - internal properties and methods
+6. `// MARK: Fileprivate` - fileprivate properties and methods
+7. `// MARK: Private` - private properties and methods
+
+### SwiftUI
+
+```swift
+// RIGHT - Implicit ViewBuilder, no redundant return
+var body: some View {
+  VStack {
+    Text("Title")
+    Button("Action") { }
+  }
+}
+
+// WRONG - Explicit ViewBuilder and return
+@ViewBuilder
+var body: some View {
+  return VStack {
+    Text("Title")
+    Button("Action") { }
+  }
+}
+```
+
+### Testing (Swift Testing)
+
+```swift
+// RIGHT - No test prefix, use #expect
+@Test
+func returnsCorrectValue() async throws {
+  let result = try await sut.execute()
+  #expect(result == expected)
+}
+
+// WRONG - test prefix, XCTAssert
+@Test
+func testReturnsCorrectValue() async throws {
+  let result = try await sut.execute()
+  XCTAssertEqual(result, expected)
+}
+```
+
+```swift
+// RIGHT - Use #require instead of guard
+@Test
+func processesData() throws {
+  let data = try #require(response.data)
+  #expect(data.count > 0)
+}
+
+// WRONG - Guard in tests
+@Test
+func processesData() throws {
+  guard let data = response.data else {
+    XCTFail("No data")
+    return
+  }
+}
+```
 
 ### SwiftLint
 
 SwiftLint is installed via **mise** (not SPM). Configuration is in `.swiftlint.yml`.
-
-To install SwiftLint:
 
 ```bash
 mise install swiftlint
