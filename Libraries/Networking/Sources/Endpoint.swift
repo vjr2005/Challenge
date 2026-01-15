@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents an API endpoint configuration.
-public struct Endpoint: Sendable {
+public struct Endpoint {
 	public let path: String
 	public let method: HTTPMethod
 	public let headers: [String: String]

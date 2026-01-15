@@ -28,10 +28,17 @@ This document defines the coding standards, architecture patterns, and developme
 
 ### Requirements
 
-- **Swift 6** with strict concurrency checking enabled
-- **Default Actor Isolation: MainActor** - All types are MainActor-isolated by default
+- **Swift 6** with **Approachable Concurrency** enabled (`SWIFT_APPROACHABLE_CONCURRENCY = YES`)
 - **iOS 16.0+** minimum deployment target
 - **SwiftUI** as the primary UI framework
+
+### Approachable Concurrency
+
+This project uses Swift 6's Approachable Concurrency mode, which provides:
+
+- **Default MainActor isolation** - Types are MainActor-isolated by default
+- **Improved Sendable inference** - Less explicit `Sendable` annotations needed
+- **Flexible closures** - Fewer restrictions on closures crossing isolation boundaries
 
 ### Concurrency Rules
 
