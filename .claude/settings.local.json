@@ -5,7 +5,8 @@
       "Bash(tuist generate:*)",
       "Bash(xcodebuild:*)",
       "Bash(tuist test:*)",
-      "WebFetch(domain:rickandmortyapi.com)"
+      "WebFetch(domain:rickandmortyapi.com)",
+      "Bash(tuist clean:*)"
     ]
   }
 }

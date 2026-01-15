@@ -113,7 +113,7 @@ import Foundation
 @testable import Challenge{FeatureName}
 
 final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
-    var result: Result<{Name}DTO, Error> = .failure(MockError.notConfigured)
+    var result: Result<{Name}DTO, Error> = .failure(NotConfiguredError.notConfigured)
     private(set) var fetchCallCount = 0
     private(set) var lastFetchedId: Int?
 
@@ -124,7 +124,7 @@ final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @uncheck
     }
 }
 
-private enum MockError: Error {
+private enum NotConfiguredError: Error {
     case notConfigured
 }
 ```

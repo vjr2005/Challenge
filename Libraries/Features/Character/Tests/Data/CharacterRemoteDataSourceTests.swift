@@ -23,17 +23,15 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharacterDecodesResponseCorrectly() async throws {
 		// Given
+		let expected = CharacterDTO.stub()
 		let httpClient = HTTPClientMock(result: .success(makeCharacterData()))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
-		let result = try await sut.fetchCharacter(id: 1)
+		let value = try await sut.fetchCharacter(id: 1)
 
 		// Then
-		#expect(result.id == 1)
-		#expect(result.name == "Rick Sanchez")
-		#expect(result.status == "Alive")
-		#expect(result.species == "Human")
+		#expect(value == expected)
 	}
 
 	@Test

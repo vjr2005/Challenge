@@ -294,3 +294,13 @@ custom_rules:
     match_kinds:
       - identifier
       - keyword
+
+  # No Mock prefix (Mock must only be used as suffix)
+  no_mock_prefix:
+    name: "No Mock Prefix"
+    regex: "(class|struct|enum|actor)\\s+Mock[A-Z][a-zA-Z0-9]*|(let|var)\\s+mock[A-Z][a-zA-Z0-9]*"
+    message: "'Mock' must only be used as a suffix, not a prefix (e.g., use 'userMock' instead of 'mockUser')"
+    severity: error
+    match_kinds:
+      - keyword
+      - identifier

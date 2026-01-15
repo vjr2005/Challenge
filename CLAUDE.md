@@ -758,7 +758,7 @@ public final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendab
 	public func getUser(id: UUID) async throws -> User {
 		if let error { throw error }
 		guard let user = users.first(where: { $0.id == id }) else {
-			throw MockError.notFound
+			throw NotFoundError.notFound
 		}
 		return user
 	}
@@ -799,6 +799,78 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	}
 
 	nonisolated override func stopLoading() {}
+}
+```
+
+### Stubs (Test Data)
+
+Use the **stub pattern** to create test data. Stubs are extensions on domain models that provide factory methods with sensible defaults.
+
+**Location:** `Tests/Stubs/`
+
+```
+FeatureName/
+└── Tests/
+    ├── Stubs/                    # Test data factories
+    │   ├── Character+Stub.swift
+    │   └── Location+Stub.swift
+    ├── Mocks/
+    └── Data/
+```
+
+**Stub extension pattern:**
+
+```swift
+// Tests/Stubs/User+Stub.swift
+extension User {
+    static func stub(
+        id: Int = 1,
+        name: String = "John Doe",
+        email: String = "john@example.com",
+    ) -> User {
+        User(
+            id: id,
+            name: name,
+            email: email
+        )
+    }
+}
+```
+
+**Rules:**
+- File naming: `{TypeName}+Stub.swift`
+- Method name: `static func stub(...)`
+- All parameters must have default values
+- Defaults should be valid, realistic values
+- Located in `Tests/Stubs/` (internal to test target)
+
+**Usage in tests:**
+
+```swift
+@Test
+func processesUserCorrectly() {
+    // Default stub
+    let user = User.stub()
+
+    // Customized stub
+    let admin = User.stub(name: "Admin", role: .admin)
+
+    // Multiple stubs
+    let users = [User.stub(id: 1), User.stub(id: 2)]
+}
+```
+
+**DTOs also use stubs** when needed for repository/datasource tests:
+
+```swift
+// Tests/Stubs/UserDTO+Stub.swift
+extension UserDTO {
+    static func stub(
+        id: Int = 1,
+        name: String = "John Doe",
+    ) -> UserDTO {
+        UserDTO(id: id, name: name)
+    }
 }
 ```
 
@@ -858,7 +930,24 @@ import UIKit
 | Variables, Functions | lowerCamelCase | `userName`, `fetchData()` |
 | Booleans | is/has/can prefix | `isEnabled`, `hasLoaded`, `canSubmit` |
 | **Protocols** | **`Contract` suffix** | `UserRepositoryContract` |
-| **Mocks** | **`Mock` suffix** | `UserRepositoryMock` |
+| **Mocks** | **`Mock` suffix only** | `UserRepositoryMock` |
+
+**Mock naming rule:** `Mock` must **only** be used as a suffix, **never as a prefix**:
+
+```swift
+// RIGHT - Mock as suffix
+class UserRepositoryMock { }
+class HTTPClientMock { }
+let userMock = UserMock()
+var dataMock: DataMock
+
+// WRONG - Mock as prefix (PROHIBITED)
+class MockUserRepository { }
+enum MockError { }
+struct MockData { }
+let mockUser = UserMock()
+var mockData: DataMock
+```
 
 ### Code Style
 
@@ -1224,9 +1313,9 @@ func httpErrorStatusCodeEquality(
 
 ```swift
 // Use #expect for assertions
-#expect(result == expected)
+#expect(value == expected)
 #expect(array.isEmpty)
-#expect(value > 0)
+#expect(count > 0)
 
 // Use #require for unwrapping (fails test if nil)
 let data = try #require(response.data)
@@ -1237,6 +1326,45 @@ await #expect(throws: HTTPError.invalidURL) {
 	try await client.request(invalidEndpoint)
 }
 ```
+
+#### Comparing Results
+
+**Always compare full objects** instead of checking individual properties. This ensures all fields are verified and makes tests more maintainable.
+
+```swift
+// RIGHT - Compare full objects using stubs
+@Test
+func fetchesCharacterCorrectly() async throws {
+	// Given
+	let expected = Character.stub()
+	let dataSource = CharacterDataSourceMock(result: .success(.stub()))
+	let sut = CharacterRepository(dataSource: dataSource)
+
+	// When
+	let value = try await sut.getCharacter(id: 1)
+
+	// Then
+	#expect(value == expected)
+}
+
+// WRONG - Checking individual properties
+@Test
+func fetchesCharacterCorrectly() async throws {
+	// ...
+	let result = try await sut.getCharacter(id: 1)
+
+	#expect(result.id == 1)
+	#expect(result.name == "Rick Sanchez")
+	#expect(result.status == .alive)
+	#expect(result.species == "Human")
+}
+```
+
+**Rules:**
+- Use `value` as the variable name for the result being tested (not `result`)
+- Create an `expected` variable with the stub matching the expected output
+- Compare with a single `#expect(value == expected)`
+- Use customized stubs when testing specific transformations
 
 #### Naming
 
@@ -1279,6 +1407,7 @@ The following project-specific rules are enforced:
 |------|----------|-------------|
 | `protocol_contract_suffix` | warning | Protocols must end with `Contract` |
 | `mock_suffix` | warning | Mocks must end with `Mock` |
+| `no_mock_prefix` | error | `Mock` cannot be used as prefix (only suffix) |
 | `no_dispatch_queue` | error | Use async/await, not DispatchQueue |
 | `no_completion_handler` | warning | Use async/await, not completion handlers |
 
@@ -1394,7 +1523,8 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | Skill | Description |
 |-------|-------------|
 | `/tuist` | Tuist configuration: adding xcframeworks, managing dependencies |
-| `/datasource` | Create RemoteDataSources following the Repository pattern |
+| `/datasource` | Create RemoteDataSources that consume REST APIs |
+| `/repository` | Create Repositories that abstract data sources (Contract in Domain, Implementation in Data) |
 
 ---
 

@@ -67,7 +67,7 @@ public struct FrameworkModule {
 
 		let scheme = Scheme.scheme(
 			name: targetName,
-			buildAction: .buildAction(targets: [.target(targetName)]),
+			buildAction: .buildAction(targets: [.target(targetName), .target(testsTargetName)]),
 			testAction: .targets(
 				[testableTarget],
 				options: .options(coverage: true)

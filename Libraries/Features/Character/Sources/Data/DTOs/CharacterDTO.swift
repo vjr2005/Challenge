@@ -1,7 +1,7 @@
 import Foundation
 
 /// DTO for character data from the Rick and Morty API.
-struct CharacterDTO: Decodable {
+struct CharacterDTO: Decodable, Equatable {
 	let id: Int
 	let name: String
 	let status: String

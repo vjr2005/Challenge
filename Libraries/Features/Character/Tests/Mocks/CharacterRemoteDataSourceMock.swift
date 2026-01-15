@@ -4,7 +4,7 @@ import Foundation
 
 /// Mock implementation of CharacterRemoteDataSourceContract for testing.
 final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @unchecked Sendable {
-	var result: Result<CharacterDTO, Error> = .failure(MockError.notConfigured)
+	var result: Result<CharacterDTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetchCharacterCallCount = 0
 	private(set) var lastFetchedId: Int?
 
@@ -15,6 +15,6 @@ final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @u
 	}
 }
 
-private enum MockError: Error {
+private enum NotConfiguredError: Error {
 	case notConfigured
 }
