@@ -2,6 +2,14 @@
 
 This document defines the coding standards, architecture patterns, and development practices for this iOS project. All code and documentation must be written in **English**.
 
+> **CRITICAL:** All generated code must compile without errors or warnings. Before writing code, carefully analyze for:
+> - Unused variables, parameters, or imports
+> - Missing protocol conformances
+> - Type mismatches
+> - Concurrency issues (Sendable, actor isolation)
+> - Implicit returns where explicit are needed
+> - **Never use force unwrap (`!`)** - use `guard let`, `if let`, or `try?` instead
+
 ## Table of Contents
 
 - [Swift Version and Concurrency](#swift-version-and-concurrency)
@@ -405,6 +413,40 @@ FeatureName/
     └── DataSourcesMock.swift
 ```
 
+### Extensions
+
+Extensions of external framework types (Foundation, UIKit, SwiftUI, etc.) must be placed in an `Extensions/` folder. Create one file per extended type using the naming convention `TypeName+Purpose.swift`.
+
+```
+Sources/
+├── Extensions/
+│   ├── URL+QueryItems.swift
+│   ├── Date+Formatting.swift
+│   └── String+Validation.swift
+└── ...
+
+Tests/
+├── Extensions/
+│   ├── URLSession+Mock.swift
+│   ├── HTTPURLResponse+Mock.swift
+│   └── URLRequest+BodyData.swift
+└── ...
+```
+
+**Naming convention:** `TypeName+Purpose.swift`
+
+```swift
+// URL+QueryItems.swift
+extension URL {
+	func appendingQueryItems(_ items: [URLQueryItem]) -> URL { ... }
+}
+
+// URLSession+Mock.swift (in Tests)
+extension URLSession {
+	static func mockSession() -> URLSession { ... }
+}
+```
+
 ---
 
 ## Dependencies
@@ -434,108 +476,41 @@ When absolutely necessary to add a dependency:
 
 ## Networking
 
-All networking uses native **URLSession with async/await**. No external libraries.
+Native networking layer using **URLSession with async/await**. No external dependencies.
 
-### HTTP Client Contract
+**Location:** `Libraries/Networking/`
 
-```swift
-protocol HTTPClientContract: Sendable {
-  func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
-  func request(_ endpoint: Endpoint) async throws -> Data
-}
-```
+**Documentation:** See [Libraries/Networking/README.md](Libraries/Networking/README.md)
 
-### Endpoint Definition
+### Components
 
-```swift
-struct Endpoint: Sendable {
-  let path: String
-  let method: HTTPMethod
-  let headers: [String: String]
-  let queryItems: [URLQueryItem]?
-  let body: Data?
+| Component | Description |
+|-----------|-------------|
+| `HTTPClientContract` | Protocol for HTTP client (enables DI) |
+| `HTTPClient` | Actor-based implementation |
+| `Endpoint` | Request configuration |
+| `HTTPMethod` | GET, POST, PUT, PATCH, DELETE |
+| `HTTPError` | Error types |
+| `HTTPClientMock` | Mock for testing |
 
-  init(
-    path: String,
-    method: HTTPMethod = .get,
-    headers: [String: String] = [:],
-    queryItems: [URLQueryItem]? = nil,
-    body: Data? = nil
-  ) {
-    self.path = path
-    self.method = method
-    self.headers = headers
-    self.queryItems = queryItems
-    self.body = body
-  }
-}
-
-enum HTTPMethod: String, Sendable {
-  case get = "GET"
-  case post = "POST"
-  case put = "PUT"
-  case patch = "PATCH"
-  case delete = "DELETE"
-}
-```
-
-### HTTP Client Implementation
+### Quick Example
 
 ```swift
-actor HTTPClient: HTTPClientContract {
-  private let session: URLSession
-  private let baseURL: URL
-  private let decoder: JSONDecoder
+import ChallengeNetworking
 
-  init(
-    baseURL: URL,
-    session: URLSession = .shared,
-    decoder: JSONDecoder = JSONDecoder()
-  ) {
-    self.baseURL = baseURL
-    self.session = session
-    self.decoder = decoder
-  }
-
-  func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
-    let data = try await request(endpoint)
-    return try decoder.decode(T.self, from: data)
-  }
-
-  func request(_ endpoint: Endpoint) async throws -> Data {
-    let request = try buildRequest(for: endpoint)
-    let (data, response) = try await session.data(for: request)
-
-    guard let httpResponse = response as? HTTPURLResponse else {
-      throw HTTPError.invalidResponse
-    }
-
-    guard (200...299).contains(httpResponse.statusCode) else {
-      throw HTTPError.statusCode(httpResponse.statusCode, data)
-    }
-
-    return data
-  }
-
-  private func buildRequest(for endpoint: Endpoint) throws -> URLRequest {
-    var components = URLComponents(url: baseURL.appendingPathComponent(endpoint.path), resolvingAgainstBaseURL: true)
-    components?.queryItems = endpoint.queryItems
-
-    guard let url = components?.url else {
-      throw HTTPError.invalidURL
-    }
-
-    var request = URLRequest(url: url)
-    request.httpMethod = endpoint.method.rawValue
-    request.httpBody = endpoint.body
-
-    for (key, value) in endpoint.headers {
-      request.setValue(value, forHTTPHeaderField: key)
-    }
-
-    return request
-  }
+// Production code: handle URL creation safely
+guard let baseURL = URL(string: "https://api.example.com") else {
+	throw ConfigurationError.invalidURL
 }
+
+let client = HTTPClient(baseURL: baseURL)
+
+let endpoint = Endpoint(
+	path: "/users",
+	method: .get,
+)
+
+let users: [User] = try await client.request(endpoint)
 ```
 
 ---
@@ -687,35 +662,77 @@ final class UserFlowUITests: XCTestCase {
 
 ### Mocks
 
-Create mocks in the `Mocks/` directory of each feature. Mock names must end with `Mock` suffix:
+Mock names must end with `Mock` suffix. Place mocks based on their visibility:
+
+| Location | Visibility | Usage |
+|----------|------------|-------|
+| `Mocks/` (framework) | Public | Mocks used by other modules (e.g., `ChallengeNetworkingMocks`) |
+| `Tests/Mocks/` | Internal | Mocks only used within the test target |
+
+```
+FeatureName/
+├── Mocks/                    # Public mocks (ChallengeFeatureNameMocks framework)
+│   └── UserRepositoryMock.swift
+└── Tests/
+    ├── Mocks/                # Internal test-only mocks
+    │   └── TestHelperMock.swift
+    └── UseCaseTests.swift
+```
+
+**Public mock** (in `Mocks/` framework, usable by other modules):
 
 ```swift
 // Mocks/UserRepositoryMock.swift
 import Foundation
+import ChallengeUserFeature
 
-@testable import UserFeature
+public final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendable {
+	public var users: [User]
+	public var error: Error?
 
-final class UserRepositoryMock: UserRepositoryContract, @unchecked Sendable {
-  private let users: [User]
-  private let error: Error?
+	public init(users: [User] = [], error: Error? = nil) {
+		self.users = users
+		self.error = error
+	}
 
-  init(users: [User] = [], error: Error? = nil) {
-    self.users = users
-    self.error = error
-  }
+	public func getUsers() async throws -> [User] {
+		if let error { throw error }
+		return users
+	}
 
-  func getUsers() async throws -> [User] {
-    if let error { throw error }
-    return users
-  }
+	public func getUser(id: UUID) async throws -> User {
+		if let error { throw error }
+		guard let user = users.first(where: { $0.id == id }) else {
+			throw MockError.notFound
+		}
+		return user
+	}
+}
+```
 
-  func getUser(id: UUID) async throws -> User {
-    if let error { throw error }
-    guard let user = users.first(where: { $0.id == id }) else {
-      throw TestError.notFound
-    }
-    return user
-  }
+**Internal mock** (in `Tests/Mocks/`, only for this test target):
+
+```swift
+// Tests/Mocks/URLProtocolMock.swift
+import Foundation
+
+final class URLProtocolMock: URLProtocol, @unchecked Sendable {
+	nonisolated(unsafe) static var requestHandler: ((URLRequest) -> (HTTPURLResponse, Data))?
+
+	override class func canInit(with request: URLRequest) -> Bool { true }
+	override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+	override func startLoading() {
+		guard let handler = URLProtocolMock.requestHandler else {
+			fatalError("Request handler not set")
+		}
+		let (response, data) = handler(request)
+		client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+		client?.urlProtocol(self, didLoad: data)
+		client?.urlProtocolDidFinishLoading(self)
+	}
+
+	override func stopLoading() {}
 }
 ```
 
@@ -819,6 +836,95 @@ let action = { performAction() }()
 let action = performAction()
 ```
 
+### Force Unwrap
+
+**Never use force unwrap (`!`).** Always handle optionals safely:
+
+```swift
+// WRONG - Force unwrap
+let url = URL(string: urlString)!
+let user = users.first!
+let value = dictionary["key"]!
+
+// RIGHT - guard let
+guard let url = URL(string: urlString) else {
+	throw ConfigurationError.invalidURL
+}
+
+// RIGHT - if let
+if let user = users.first {
+	process(user)
+}
+
+// RIGHT - nil coalescing
+let value = dictionary["key"] ?? defaultValue
+
+// RIGHT - Optional chaining
+let name = user?.profile?.name
+```
+
+**In tests**, use `#require` for safe unwrapping:
+
+```swift
+// RIGHT - #require in tests (fails test if nil)
+let baseURL = try #require(URL(string: "https://api.example.com"))
+let data = try #require(response.data)
+let user = try #require(users.first)
+
+// RIGHT - Optional comparison (no unwrap needed)
+#expect(request.url?.absoluteString == "https://api.example.com/users")
+
+// RIGHT - Nil coalescing for non-throwing contexts (e.g., closures)
+return (HTTPURLResponse.ok(url: request.url ?? baseURL), Data())
+```
+
+### Avoiding Warnings
+
+```swift
+// WRONG - Unused variable
+let client = HTTPClient(baseURL: url)
+// client never used → warning
+
+// RIGHT - Use the variable or don't declare it
+let client = HTTPClient(baseURL: url)
+let result = try await client.request(endpoint)
+
+// RIGHT - If intentionally unused, use underscore
+let _ = HTTPClient(baseURL: url)
+```
+
+```swift
+// WRONG - Unused parameter
+func process(data: Data, options: Options) {
+	print(data)
+	// options never used → warning
+}
+
+// RIGHT - Use underscore for intentionally unused
+func process(data: Data, options _: Options) {
+	print(data)
+}
+```
+
+```swift
+// WRONG - Unused import
+import UIKit  // Not used in this file
+
+// RIGHT - Only import what you use
+import Foundation
+```
+
+```swift
+// WRONG - Result of call unused
+array.map { $0 * 2 }  // warning: result unused
+
+// RIGHT - Assign or use @discardableResult
+let doubled = array.map { $0 * 2 }
+
+// RIGHT - Explicitly discard if intentional
+_ = array.map { $0 * 2 }
+```
+
 ### Trailing Commas
 
 ```swift
@@ -871,17 +977,65 @@ final class UserListViewModel {
 }
 ```
 
-### MARK Comments
+### Code Organization
 
-Use `// MARK:` to organize type contents in this order:
+Organize type contents in this order:
 
-1. `// MARK: Lifecycle` - init, deinit
-2. `// MARK: Open` - open properties and methods
-3. `// MARK: Public` - public properties and methods
-4. `// MARK: Package` - package properties and methods
-5. `// MARK: Internal` - internal properties and methods
-6. `// MARK: Fileprivate` - fileprivate properties and methods
-7. `// MARK: Private` - private properties and methods
+1. **Properties first** - All properties (private, internal, public) at the beginning
+2. **Initializers** - init, deinit
+3. **Public/Internal methods** - API methods
+4. **Private methods** - In a `private extension` of the same type
+
+```swift
+// RIGHT - Properties first, private methods in extension
+public actor HTTPClient {
+	private let session: URLSession
+	private let baseURL: URL
+	private let decoder: JSONDecoder
+
+	public init(baseURL: URL, session: URLSession = .shared) {
+		self.baseURL = baseURL
+		self.session = session
+		self.decoder = JSONDecoder()
+	}
+
+	public func request(_ endpoint: Endpoint) async throws -> Data {
+		let request = try buildRequest(for: endpoint)
+		// ...
+	}
+}
+
+private extension HTTPClient {
+	func buildRequest(for endpoint: Endpoint) throws -> URLRequest {
+		// ...
+	}
+}
+```
+
+```swift
+// WRONG - Mixed organization with MARK comments
+public actor HTTPClient {
+	// MARK: Lifecycle
+	public init(...) { }
+
+	// MARK: Public
+	public func request(...) { }
+
+	// MARK: Private
+	private let session: URLSession
+	private func buildRequest(...) { }
+}
+```
+
+Use `// MARK:` only for protocol conformance extensions:
+
+```swift
+// MARK: - CustomStringConvertible
+
+extension HTTPError: CustomStringConvertible {
+	var description: String { ... }
+}
+```
 
 ### SwiftUI
 
@@ -906,38 +1060,129 @@ var body: some View {
 
 ### Testing (Swift Testing)
 
-```swift
-// RIGHT - No test prefix, use #expect
-@Test
-func returnsCorrectValue() async throws {
-  let result = try await sut.execute()
-  #expect(result == expected)
-}
+#### Naming: System Under Test (SUT)
 
-// WRONG - test prefix, XCTAssert
+Always name the object being tested as `sut` (System Under Test):
+
+```swift
+// RIGHT - Object under test named sut
+let sut = GetUserUseCase(client: mockClient)
+let result = try await sut.execute()
+
+// WRONG - Generic or unclear names
+let useCase = GetUserUseCase(client: mockClient)
+let getUserUseCase = GetUserUseCase(client: mockClient)
+```
+
+#### Structure: Given / When / Then
+
+All tests must use `// Given`, `// When`, `// Then` comments:
+
+```swift
 @Test
-func testReturnsCorrectValue() async throws {
-  let result = try await sut.execute()
-  XCTAssertEqual(result, expected)
+func fetchesUserSuccessfully() async throws {
+	// Given
+	let expectedUser = User(id: 1, name: "John")
+	let mockClient = HTTPClientMock(result: .success(expectedUser.encoded()))
+	let sut = GetUserUseCase(client: mockClient)
+
+	// When
+	let result = try await sut.execute(userId: 1)
+
+	// Then
+	#expect(result == expectedUser)
 }
 ```
 
+#### Parameterized Tests: Use `@Test(arguments:)`
+
+Always prefer `@Test(arguments:)` for testing multiple cases:
+
 ```swift
-// RIGHT - Use #require instead of guard
-@Test
-func processesData() throws {
-  let data = try #require(response.data)
-  #expect(data.count > 0)
+// RIGHT - Parameterized test
+@Test(arguments: [
+	HTTPMethod.get,
+	HTTPMethod.post,
+	HTTPMethod.put,
+	HTTPMethod.patch,
+	HTTPMethod.delete,
+])
+func endpointSupportsHTTPMethod(_ method: HTTPMethod) {
+	// Given
+	let path = "/test"
+
+	// When
+	let sut = Endpoint(path: path, method: method)
+
+	// Then
+	#expect(sut.method == method)
 }
 
-// WRONG - Guard in tests
+// WRONG - Loop inside test
 @Test
-func processesData() throws {
-  guard let data = response.data else {
-    XCTFail("No data")
-    return
-  }
+func endpointSupportsAllMethods() {
+	for method in [HTTPMethod.get, .post, .put] {
+		let endpoint = Endpoint(path: "/test", method: method)
+		#expect(endpoint.method == method)
+	}
 }
+```
+
+#### Multiple Arguments
+
+```swift
+@Test(arguments: [
+	(404, 404, true),
+	(404, 500, false),
+	(200, 200, true),
+])
+func httpErrorStatusCodeEquality(
+	lhsCode: Int,
+	rhsCode: Int,
+	expectedEqual: Bool,
+) {
+	// Given
+	let data = Data("test".utf8)
+	let lhs = HTTPError.statusCode(lhsCode, data)
+	let rhs = HTTPError.statusCode(rhsCode, data)
+
+	// When
+	let areEqual = lhs == rhs
+
+	// Then
+	#expect(areEqual == expectedEqual)
+}
+```
+
+#### Assertions
+
+```swift
+// Use #expect for assertions
+#expect(result == expected)
+#expect(array.isEmpty)
+#expect(value > 0)
+
+// Use #require for unwrapping (fails test if nil)
+let data = try #require(response.data)
+let user = try #require(users.first)
+
+// Use #expect(throws:) for error testing
+await #expect(throws: HTTPError.invalidURL) {
+	try await client.request(invalidEndpoint)
+}
+```
+
+#### Naming
+
+```swift
+// RIGHT - Descriptive, no "test" prefix
+func returnsCorrectValue() { }
+func throwsErrorWhenInvalid() { }
+func fetchesUserSuccessfully() { }
+
+// WRONG - "test" prefix
+func testReturnsCorrectValue() { }
+func testThrowsError() { }
 ```
 
 ### SwiftLint
@@ -984,8 +1229,40 @@ The project uses Tuist for project generation and module management.
 | `Project.swift` | Main project definition |
 | `Tuist.swift` | Tuist configuration |
 | `Tuist/ProjectDescriptionHelpers/Config.swift` | Shared configuration |
-| `Tuist/ProjectDescriptionHelpers/Target+Framework.swift` | Framework helpers |
+| `Tuist/ProjectDescriptionHelpers/FrameworkModule.swift` | Framework module helper (targets + schemes) |
 | `Tuist/ProjectDescriptionHelpers/Dependencies.swift` | XCFramework dependencies |
+
+### Creating a Framework
+
+Use `FrameworkModule.create()` to generate targets and schemes together:
+
+```swift
+// In Project.swift
+let networkingModule = FrameworkModule.create(name: "Networking")
+let homeModule = FrameworkModule.create(
+	name: "Features/Home",
+	dependencies: [.target(name: "\(appName)Networking")],
+)
+
+let project = Project(
+	name: appName,
+	targets: [
+		// App targets...
+	] + networkingModule.targets + homeModule.targets,
+	schemes: [
+		// App scheme...
+	] + networkingModule.schemes + homeModule.schemes
+)
+```
+
+**Each module creates:**
+
+| Type | Name | Description |
+|------|------|-------------|
+| Framework | `ChallengeNetworking` | Main framework (Sources/) |
+| Framework | `ChallengeNetworkingMocks` | Mocks for testing (Mocks/) |
+| Unit Tests | `ChallengeNetworkingTests` | Test target (Tests/) |
+| Scheme | `ChallengeNetworking` | With **code coverage enabled** |
 
 ### External Dependencies
 
