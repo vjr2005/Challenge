@@ -29,18 +29,19 @@ This document defines the coding standards, architecture patterns, and developme
 ### Requirements
 
 - **Swift 6** with:
-  - `SWIFT_APPROACHABLE_CONCURRENCY = YES` (inferencia mejorada)
-  - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` (aislamiento por defecto)
+  - `SWIFT_APPROACHABLE_CONCURRENCY = YES` (improved inference)
+  - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` (default isolation)
 - **iOS 17.0+** minimum deployment target
 - **SwiftUI** as the primary UI framework
+- **@Observable** for state management (not ObservableObject)
 
-### Approachable Concurrency
+### Default MainActor Isolation
 
-This project uses Swift 6's Approachable Concurrency mode, which provides:
+With `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, **all types are MainActor-isolated by default**. This means:
 
-- **Default MainActor isolation** - Types are MainActor-isolated by default
-- **Improved Sendable inference** - Less explicit `Sendable` annotations needed
-- **Flexible closures** - Fewer restrictions on closures crossing isolation boundaries
+- No need for explicit `@MainActor` on ViewModels, Views, or UI-related types
+- Less explicit `Sendable` annotations needed (improved inference)
+- Types that need to run off the main thread must opt out using `nonisolated`
 
 ### Concurrency Rules
 
@@ -67,7 +68,7 @@ Task {
   await performAsyncWork()
 }
 
-// REQUIRED - Use actors for shared mutable state
+// REQUIRED - Use actors for shared mutable state (opt out of MainActor)
 actor DataStore {
   private var cache: [String: Data] = [:]
 
@@ -77,98 +78,50 @@ actor DataStore {
 }
 ```
 
-### Actor Isolation
+### Opting Out of MainActor Isolation
 
-Respect isolation domains when crossing boundaries:
+Types that need to run off the main thread must explicitly opt out:
+
+#### Actors (custom isolation)
 
 ```swift
-// MainActor for UI updates
-@MainActor
-final class ViewModel: ObservableObject {
-  @Published var items: [Item] = []
+// Actors have their own isolation domain (not MainActor)
+actor CharacterMemoryDataSource {
+  private var storage: [Int: CharacterDTO] = [:]
 
-  func loadItems() async {
-    let fetchedItems = await repository.fetchItems()
-    items = fetchedItems // Safe: already on MainActor
-  }
-}
-
-// Custom actors for specific domains
-actor NetworkManager {
-  func request(_ endpoint: Endpoint) async throws -> Data {
-    // Network operations isolated to this actor
+  func save(_ character: CharacterDTO) {
+    storage[character.id] = character
   }
 }
 ```
 
-### Opting Out of MainActor Isolation
-
-With `MainActor` as the default isolation, types that need to run off the main thread must explicitly opt out using `nonisolated`. Common cases:
-
 #### DTOs used with actors
 
-DTOs that will be stored or processed by actors must be marked as `nonisolated`:
+DTOs stored or processed by actors must be `nonisolated`:
 
 ```swift
-// DTOs need nonisolated to be used inside actors (e.g., MemoryDataSource)
+// DTOs need nonisolated to be used inside actors
 nonisolated struct CharacterDTO: Decodable, Equatable {
-	let id: Int
-	let name: String
-}
-
-// Then they can be safely used inside actors
-actor CharacterMemoryDataSource {
-	private var storage: [Int: CharacterDTO] = [:]
-
-	func save(_ character: CharacterDTO) {
-		storage[character.id] = character  // No isolation error
-	}
+  let id: Int
+  let name: String
 }
 ```
 
 #### Framework subclasses called from background threads
 
 ```swift
-// URLProtocol subclasses are called from background threads by the URL loading system
+// URLProtocol subclasses are called from background threads
 final class URLProtocolMock: URLProtocol, @unchecked Sendable {
-	nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
+  nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
 
-	// Must override init with nonisolated
-	nonisolated override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
-		super.init(request: request, cachedResponse: cachedResponse, client: client)
-	}
+  nonisolated override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: (any URLProtocolClient)?) {
+    super.init(request: request, cachedResponse: cachedResponse, client: client)
+  }
 
-	nonisolated override class func canInit(with request: URLRequest) -> Bool {
-		true
-	}
-
-	nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest {
-		request
-	}
-
-	nonisolated override func startLoading() {
-		// Implementation
-	}
-
-	nonisolated override func stopLoading() {}
-}
-```
-
-### Sendable Conformance
-
-Ensure types crossing isolation boundaries conform to `Sendable`:
-
-```swift
-// Value types are implicitly Sendable if all properties are Sendable
-struct User: Sendable {
-  let id: UUID
-  let name: String
-}
-
-// Use @MainActor for mutable classes that need to be Sendable
-@MainActor
-final class AppState: ObservableObject, Sendable {
-  @Published var isLoggedIn = false
+  nonisolated override class func canInit(with request: URLRequest) -> Bool { true }
+  nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+  nonisolated override func startLoading() { /* ... */ }
+  nonisolated override func stopLoading() {}
 }
 ```
 
@@ -450,58 +403,12 @@ let users: [User] = try await client.request(endpoint)
 
 ### Unit Tests with Swift Testing
 
-For DataSource, Repository, and UseCase tests, see the respective skills (`/datasource`, `/repository`, `/usecase`).
-
-### ViewModel Tests
-
-```swift
-import Testing
-
-@testable import UserFeature
-
-@MainActor
-struct UserListViewModelTests {
-  @Test
-  func loadSetsLoadedStateOnSuccess() async {
-    // Given
-    let expected = [User.stub()]
-    let useCase = GetUsersUseCaseMock()
-    useCase.result = .success(expected)
-    let sut = UserListViewModel(getUsersUseCase: useCase)
-
-    // When
-    await sut.load()
-
-    // Then
-    guard case .loaded(let users) = sut.state else {
-      Issue.record("Expected loaded state")
-      return
-    }
-    #expect(users == expected)
-  }
-
-  @Test
-  func loadSetsErrorStateOnFailure() async {
-    // Given
-    let useCase = GetUsersUseCaseMock()
-    useCase.result = .failure(TestError.network)
-    let sut = UserListViewModel(getUsersUseCase: useCase)
-
-    // When
-    await sut.load()
-
-    // Then
-    guard case .error = sut.state else {
-      Issue.record("Expected error state")
-      return
-    }
-  }
-}
-
-private enum TestError: Error {
-  case network
-}
-```
+For unit tests, see the respective skills:
+- `/datasource` - DataSource tests
+- `/repository` - Repository tests
+- `/usecase` - UseCase tests
+- `/viewmodel` - ViewModel tests
+- `/router` - Router tests
 
 ### Snapshot Tests
 
@@ -667,7 +574,6 @@ All generated code **must** follow these rules. Based on the [Airbnb Swift Style
 
 | Rule | Value |
 |------|-------|
-| Indentation | 1 tab |
 | Maximum line width | 140 characters |
 | Trailing commas | Required in multi-line collections |
 | Blank lines | Single blank line between declarations |
@@ -1306,6 +1212,8 @@ DispatchQueue.global().async { }
 completion: @escaping (Result<T, Error>) -> Void
 NotificationCenter for async events
 Combine for new code (use async/await)
+ObservableObject (use @Observable instead)
+@Published (use @Observable instead)
 ```
 
 ### Required Patterns
@@ -1313,9 +1221,9 @@ Combine for new code (use async/await)
 ```swift
 // Always use
 async/await for asynchronous code
-@MainActor for UI-related code
-actors for shared mutable state
-Sendable conformance for types crossing isolation boundaries
+@Observable for state management (iOS 17+)
+actors for background work (opt out of MainActor)
+nonisolated for types used inside actors
 protocols (contracts) for dependency injection
 Contract suffix for protocols (e.g., UserRepositoryContract)
 Mock suffix for mocks (e.g., UserRepositoryMock)
