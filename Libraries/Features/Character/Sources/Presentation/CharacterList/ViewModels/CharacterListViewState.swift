@@ -7,16 +7,16 @@ enum CharacterListViewState: Equatable {
 	case empty
 	case error(String)
 
-	static func == (lhs: CharacterListViewState, rhs: CharacterListViewState) -> Bool {
+	static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
 		case (.idle, .idle), (.loading, .loading), (.empty, .empty):
-			return true
-		case (.loaded(let lhsPage), .loaded(let rhsPage)):
-			return lhsPage == rhsPage
-		case (.error(let lhsMessage), .error(let rhsMessage)):
-			return lhsMessage == rhsMessage
+			true
+		case let (.loaded(lhsPage), .loaded(rhsPage)):
+			lhsPage == rhsPage
+		case let (.error(lhsMessage), .error(rhsMessage)):
+			lhsMessage == rhsMessage
 		default:
-			return false
+			false
 		}
 	}
 }

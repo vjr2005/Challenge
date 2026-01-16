@@ -726,6 +726,22 @@ let count = 0
 ```
 
 ```swift
+// WRONG - Using type name in static references
+static func == (lhs: MyType, rhs: MyType) -> Bool
+
+// RIGHT - Use Self
+static func == (lhs: Self, rhs: Self) -> Bool
+```
+
+```swift
+// WRONG - let/var inside each tuple element
+case (.loaded(let lhsData), .loaded(let rhsData)):
+
+// RIGHT - let/var outside the tuple
+case let (.loaded(lhsData), .loaded(rhsData)):
+```
+
+```swift
 // WRONG - Unnecessary self
 self.name = "John"
 self.save()
