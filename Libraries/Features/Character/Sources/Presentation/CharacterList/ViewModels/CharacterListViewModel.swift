@@ -39,6 +39,8 @@ final class CharacterListViewModel {
 	}
 }
 
+// MARK: - Private
+
 private extension CharacterListViewModel {
 	func fetchCharacters(page: Int) async {
 		do {
