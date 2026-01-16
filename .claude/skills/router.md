@@ -37,19 +37,21 @@ import SwiftUI
 @MainActor
 @Observable
 final class {Feature}Router {
-    var path = NavigationPath()
-
     enum Destination: Hashable {
-        case detail({Name})
+        case detail(id: Int)
         case settings
     }
+
+    var path = NavigationPath()
 
     func navigate(to destination: Destination) {
         path.append(destination)
     }
 
     func pop() {
-        guard !path.isEmpty else { return }
+        guard !path.isEmpty else { 
+            return 
+        }
         path.removeLast()
     }
 
@@ -67,7 +69,7 @@ final class {Feature}Router {
 - One Router per feature
 - `Destination` enum with all possible destinations
 - `path` is public for binding to `NavigationStack`
-- Models used in `Destination` must conform to `Hashable`
+- **Use primitive IDs, not domain objects** - Destinations should only contain minimal data needed to render the screen (e.g., `detail(id: Int)` instead of `detail(Character)`)
 
 ---
 
@@ -86,7 +88,7 @@ final class {Name}ListViewModel {
     }
 
     func didSelectItem(_ item: {Name}) {
-        router.navigate(to: .detail(item))
+        router.navigate(to: .detail(id: item.id))
     }
 }
 ```
@@ -120,7 +122,7 @@ struct {Feature}RouterTests {
     func navigateAddsDestinationToPath() {
         // Given
         let sut = {Feature}Router()
-        let destination = {Feature}Router.Destination.detail(.stub())
+        let destination = {Feature}Router.Destination.detail(id: 1)
 
         // When
         sut.navigate(to: destination)
@@ -133,7 +135,7 @@ struct {Feature}RouterTests {
     func popRemovesLastDestination() {
         // Given
         let sut = {Feature}Router()
-        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(id: 1))
         sut.navigate(to: .settings)
 
         // When
@@ -159,7 +161,7 @@ struct {Feature}RouterTests {
     func popToRootRemovesAllDestinations() {
         // Given
         let sut = {Feature}Router()
-        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(id: 1))
         sut.navigate(to: .settings)
 
         // When
@@ -174,7 +176,7 @@ struct {Feature}RouterTests {
 **Testing Rules:**
 - `@MainActor` on test struct to access Router
 - Test initial state, navigation, pop, and popToRoot
-- Use `.stub()` for model instances
+- Use primitive IDs in test destinations (e.g., `detail(id: 1)`)
 
 ---
 
@@ -192,7 +194,7 @@ final class CharacterRouter {
     var path = NavigationPath()
 
     enum Destination: Hashable {
-        case detail(Character)
+        case detail(id: Int)
     }
 
     func navigate(to destination: Destination) {
@@ -232,7 +234,7 @@ struct CharacterRouterTests {
     func navigateAddsDestinationToPath() {
         let sut = CharacterRouter()
 
-        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(id: 1))
 
         #expect(sut.path.count == 1)
     }
@@ -240,7 +242,7 @@ struct CharacterRouterTests {
     @Test
     func popRemovesLastDestination() {
         let sut = CharacterRouter()
-        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(id: 1))
 
         sut.pop()
 
@@ -259,8 +261,8 @@ struct CharacterRouterTests {
     @Test
     func popToRootRemovesAllDestinations() {
         let sut = CharacterRouter()
-        sut.navigate(to: .detail(.stub()))
-        sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(id: 1))
+        sut.navigate(to: .detail(id: 2))
 
         sut.popToRoot()
 
@@ -282,7 +284,7 @@ struct CharacterRouterTests {
 ## Checklist
 
 - [ ] Create Router class with @MainActor and @Observable
-- [ ] Define Destination enum with all navigation targets (models must be Hashable)
+- [ ] Define Destination enum with primitive IDs (not domain objects)
 - [ ] Implement navigate, pop, popToRoot methods
 - [ ] Create tests for initial state, navigate, pop, popToRoot
 - [ ] Run tests

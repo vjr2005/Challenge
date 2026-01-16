@@ -69,7 +69,6 @@ enum {Name}ListViewState {
 ```swift
 import SwiftUI
 
-@MainActor
 @Observable
 final class {Name}DetailViewModel {
     private(set) var state: {Name}ViewState = .idle
@@ -101,7 +100,6 @@ List ViewModels receive Router and handle navigation:
 ```swift
 import SwiftUI
 
-@MainActor
 @Observable
 final class {Name}ListViewModel {
     private(set) var state: {Name}ListViewState = .idle
@@ -134,7 +132,6 @@ final class {Name}ListViewModel {
 ```
 
 **Rules:**
-- `@MainActor` for UI thread safety
 - `@Observable` for SwiftUI integration (iOS 17+)
 - `final class` to prevent subclassing
 - **Internal visibility** (not public)
@@ -155,7 +152,6 @@ import Testing
 
 @testable import Challenge{FeatureName}
 
-@MainActor
 struct {Name}ViewModelTests {
     @Test
     func initialStateIsIdle() {
@@ -230,7 +226,6 @@ private enum TestError: Error {
 ### List ViewModel Tests (with navigation)
 
 ```swift
-@MainActor
 struct {Name}ListViewModelTests {
     @Test
     func didSelectNavigatesToDetail() {
@@ -253,7 +248,6 @@ struct {Name}ListViewModelTests {
 ```
 
 **Testing Rules:**
-- `@MainActor` on test struct to access ViewModel
 - Use `guard case` for enum state matching
 - Use `Issue.record()` for test failures
 - Test initial state, success, error, call verification, and **navigation**
@@ -282,7 +276,6 @@ enum CharacterListViewState {
 // Sources/Presentation/ViewModels/CharacterListViewModel.swift
 import SwiftUI
 
-@MainActor
 @Observable
 final class CharacterListViewModel {
     private(set) var state: CharacterListViewState = .idle
@@ -328,7 +321,7 @@ final class CharacterListViewModel {
 ## Checklist
 
 - [ ] Create ViewState enum with idle, loading, loaded, error cases
-- [ ] Create ViewModel class with @MainActor and @Observable
+- [ ] Create ViewModel class with @Observable
 - [ ] Inject UseCase via protocol (contract)
 - [ ] Inject Router if ViewModel handles navigation
 - [ ] Implement load/fetch method with state transitions
