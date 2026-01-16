@@ -499,10 +499,13 @@ struct UserRowViewSnapshotTests {
 
 ### UI Tests (End-to-End) with XCTest
 
+**Important:** With `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, UI test classes must be marked as `nonisolated` to avoid conflicts with XCTest's API which is not MainActor-isolated.
+
 ```swift
 import XCTest
 
-final class UserFlowUITests: XCTestCase {
+// REQUIRED: nonisolated to opt out of default MainActor isolation
+nonisolated final class UserFlowUITests: XCTestCase {
   private var app: XCUIApplication!
 
   override func setUpWithError() throws {
@@ -512,6 +515,7 @@ final class UserFlowUITests: XCTestCase {
     app.launch()
   }
 
+  @MainActor
   func testUserListDisplaysUsers() throws {
     let userList = app.collectionViews["userList"]
     XCTAssertTrue(userList.waitForExistence(timeout: 5))
@@ -520,6 +524,7 @@ final class UserFlowUITests: XCTestCase {
     XCTAssertTrue(firstUser.exists)
   }
 
+  @MainActor
   func testNavigationToUserDetail() throws {
     let userList = app.collectionViews["userList"]
     _ = userList.waitForExistence(timeout: 5)
@@ -531,6 +536,10 @@ final class UserFlowUITests: XCTestCase {
   }
 }
 ```
+
+**Rules:**
+- **`nonisolated` on class** - Required to avoid actor isolation conflicts with XCTestCase
+- **`@MainActor` on test methods** - Add when tests interact with UI (XCUIApplication)
 
 ### Mocks
 

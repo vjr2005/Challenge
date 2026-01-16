@@ -15,7 +15,9 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(chmod:*)",
       "Bash(tree:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:docs.tuist.io)",
+      "WebFetch(domain:docs.tuist.dev)"
     ]
   }
 }
