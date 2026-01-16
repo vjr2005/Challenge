@@ -25,12 +25,18 @@ Libraries/Features/{FeatureName}/
 │   ├── Domain/
 │   ├── Data/
 │   └── Presentation/
-│       ├── Views/
-│       │   ├── {Name}ListView.swift        # List view (receives ViewModel only)
-│       │   └── {Name}DetailView.swift      # Detail view (receives ViewModel only)
-│       └── ViewModels/
-│           ├── {Name}ListViewModel.swift
-│           └── {Name}DetailViewModel.swift
+│       ├── {Name}List/                     # Group by screen
+│       │   ├── Views/
+│       │   │   └── {Name}ListView.swift
+│       │   └── ViewModels/
+│       │       ├── {Name}ListViewModel.swift
+│       │       └── {Name}ListViewState.swift
+│       └── {Name}Detail/                   # Group by screen
+│           ├── Views/
+│           │   └── {Name}DetailView.swift
+│           └── ViewModels/
+│               ├── {Name}DetailViewModel.swift
+│               └── {Name}DetailViewState.swift
 ```
 
 **Notes:**
@@ -451,29 +457,26 @@ import Testing
 
 struct CharacterContainerTests {
     @Test
-    func makeCharacterViewModelReturnsConfiguredInstance() {
+    func makeCharacterDetailViewModelReturnsConfiguredInstance() {
         // Given
         let httpClient = HTTPClientMock()
         let router = RouterMock()
         let sut = CharacterContainer(httpClient: httpClient)
 
         // When
-        let viewModel = sut.makeCharacterViewModel(identifier: 1, router: router)
+        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
 
         // Then
-        guard case .idle = viewModel.state else {
-            Issue.record("Expected idle state")
-            return
-        }
+        #expect(viewModel.state == .idle)
     }
 
     @Test
-    func makeCharacterViewModelUsesInjectedHTTPClient() async {
+    func makeCharacterDetailViewModelUsesInjectedHTTPClient() async {
         // Given
         let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
         let router = RouterMock()
         let sut = CharacterContainer(httpClient: httpClient)
-        let viewModel = sut.makeCharacterViewModel(identifier: 1, router: router)
+        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
 
         // When
         await viewModel.load()
@@ -483,15 +486,15 @@ struct CharacterContainerTests {
     }
 
     @Test
-    func multipleViewModelsShareSameRepository() async {
+    func multipleDetailViewModelsShareSameRepository() async {
         // Given
         let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
         let router = RouterMock()
         let sut = CharacterContainer(httpClient: httpClient)
 
         // When
-        let viewModel1 = sut.makeCharacterViewModel(identifier: 1, router: router)
-        let viewModel2 = sut.makeCharacterViewModel(identifier: 1, router: router)
+        let viewModel1 = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
+        let viewModel2 = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
 
         await viewModel1.load()
         await viewModel2.load()

@@ -166,15 +166,8 @@ struct CharacterListViewModelTests {
 
 		// Then
 		#expect(router.navigatedDestinations.count == 1)
-		guard let destination = router.navigatedDestinations.first as? CharacterNavigation else {
-			Issue.record("Expected CharacterNavigation destination")
-			return
-		}
-		guard case .detail(let identifier) = destination else {
-			Issue.record("Expected detail case")
-			return
-		}
-		#expect(identifier == 42)
+		let destination = router.navigatedDestinations.first as? CharacterNavigation
+		#expect(destination == .detail(identifier: 42))
 	}
 }
 
