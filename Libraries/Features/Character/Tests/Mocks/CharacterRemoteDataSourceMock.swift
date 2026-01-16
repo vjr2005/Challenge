@@ -5,13 +5,22 @@ import Foundation
 /// Mock implementation of CharacterRemoteDataSourceContract for testing.
 final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @unchecked Sendable {
 	var result: Result<CharacterDTO, Error> = .failure(NotConfiguredError.notConfigured)
+	var charactersResult: Result<CharactersResponseDTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetchCharacterCallCount = 0
+	private(set) var fetchCharactersCallCount = 0
 	private(set) var lastFetchedIdentifier: Int?
+	private(set) var lastFetchedPage: Int?
 
 	func fetchCharacter(identifier: Int) async throws -> CharacterDTO {
 		fetchCharacterCallCount += 1
 		lastFetchedIdentifier = identifier
 		return try result.get()
+	}
+
+	func fetchCharacters(page: Int) async throws -> CharactersResponseDTO {
+		fetchCharactersCallCount += 1
+		lastFetchedPage = page
+		return try charactersResult.get()
 	}
 }
 

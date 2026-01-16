@@ -11,6 +11,8 @@ This document defines the coding standards, architecture patterns, and developme
 > - **Never use force unwrap (`!`)** - use `guard let`, `if let`, or `try?` instead
 >
 > **All code must pass SwiftLint validation.** This includes generated code and documentation examples (README files, skills, etc.). All code snippets must be valid, compilable Swift that adheres to this style guide and SwiftLint rules.
+>
+> **Maximum test coverage is required.** When creating or modifying any component (UseCase, Repository, DataSource, ViewModel, etc.), all related changes must be fully tested. For example, when creating a UseCase that requires modifying a Repository and DataSource, tests must be created/updated for all three layers.
 
 ## Table of Contents
 

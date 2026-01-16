@@ -59,6 +59,64 @@ struct CharacterRemoteDataSourceTests {
 		let endpoint = try #require(httpClient.requestedEndpoints.first)
 		#expect(endpoint.path == "/character/\(identifier)")
 	}
+
+	// MARK: - Fetch Characters (Paginated)
+
+	@Test
+	func fetchCharactersUsesCorrectEndpoint() async throws {
+		// Given
+		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+
+		// When
+		_ = try await sut.fetchCharacters(page: 1)
+
+		// Then
+		let endpoint = try #require(httpClient.requestedEndpoints.first)
+		#expect(endpoint.path == "/character")
+		#expect(endpoint.method == .get)
+	}
+
+	@Test
+	func fetchCharactersIncludesPageQueryParameter() async throws {
+		// Given
+		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+
+		// When
+		_ = try await sut.fetchCharacters(page: 5)
+
+		// Then
+		let endpoint = try #require(httpClient.requestedEndpoints.first)
+		let pageItem = try #require(endpoint.queryItems?.first { $0.name == "page" })
+		#expect(pageItem.value == "5")
+	}
+
+	@Test
+	func fetchCharactersDecodesResponseCorrectly() async throws {
+		// Given
+		let expected = CharactersResponseDTO.stub()
+		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+
+		// When
+		let value = try await sut.fetchCharacters(page: 1)
+
+		// Then
+		#expect(value == expected)
+	}
+
+	@Test
+	func fetchCharactersThrowsOnHTTPError() async throws {
+		// Given
+		let httpClient = HTTPClientMock(result: .failure(TestError.network))
+		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+
+		// When / Then
+		await #expect(throws: TestError.network) {
+			_ = try await sut.fetchCharacters(page: 1)
+		}
+	}
 }
 
 private enum TestError: Error {

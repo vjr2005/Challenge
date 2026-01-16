@@ -3,43 +3,75 @@ import Foundation
 @testable import ChallengeCharacter
 
 actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
-	private var storage: [Int: CharacterDTO] = [:]
-	private(set) var saveCallCount = 0
+	private var characterStorage: [Int: CharacterDTO] = [:]
+	private var pageStorage: [Int: CharactersResponseDTO] = [:]
+	private(set) var saveCharacterCallCount = 0
+	private(set) var savePageCallCount = 0
 	private(set) var deleteCallCount = 0
 
+	// MARK: - Individual Characters
+
 	func getCharacter(identifier: Int) -> CharacterDTO? {
-		storage[identifier]
+		characterStorage[identifier]
 	}
 
 	func getAllCharacters() -> [CharacterDTO] {
-		Array(storage.values)
+		Array(characterStorage.values)
 	}
 
 	func saveCharacter(_ character: CharacterDTO) {
-		saveCallCount += 1
-		storage[character.id] = character
+		saveCharacterCallCount += 1
+		characterStorage[character.id] = character
 	}
 
 	func saveCharacters(_ characters: [CharacterDTO]) {
-		saveCallCount += 1
+		saveCharacterCallCount += 1
 		for character in characters {
-			storage[character.id] = character
+			characterStorage[character.id] = character
 		}
 	}
 
 	func deleteCharacter(identifier: Int) {
 		deleteCallCount += 1
-		storage.removeValue(forKey: identifier)
+		characterStorage.removeValue(forKey: identifier)
 	}
 
 	func deleteAllCharacters() {
 		deleteCallCount += 1
-		storage.removeAll()
+		characterStorage.removeAll()
+	}
+
+	// MARK: - Paginated Results
+
+	func getPage(_ page: Int) -> CharactersResponseDTO? {
+		pageStorage[page]
+	}
+
+	func savePage(_ response: CharactersResponseDTO, page: Int) {
+		savePageCallCount += 1
+		pageStorage[page] = response
+		for character in response.results {
+			characterStorage[character.id] = character
+		}
+	}
+
+	func deletePage(_ page: Int) {
+		deleteCallCount += 1
+		pageStorage.removeValue(forKey: page)
+	}
+
+	func deleteAllPages() {
+		deleteCallCount += 1
+		pageStorage.removeAll()
 	}
 
 	// MARK: - Test Helpers
 
-	func setStorage(_ characters: [CharacterDTO]) {
-		storage = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+	func setCharacterStorage(_ characters: [CharacterDTO]) {
+		characterStorage = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+	}
+
+	func setPageStorage(_ pages: [Int: CharactersResponseDTO]) {
+		pageStorage = pages
 	}
 }

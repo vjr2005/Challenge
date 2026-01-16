@@ -82,7 +82,7 @@ struct CharacterRepositoryTests {
 
 		// Then
 		#expect(cachedValue == .stub())
-		#expect(await memoryDataSource.saveCallCount == 1)
+		#expect(await memoryDataSource.saveCharacterCallCount == 1)
 	}
 
 	@Test
@@ -178,7 +178,188 @@ struct CharacterRepositoryTests {
 		_ = try? await sut.getCharacter(identifier: 1)
 
 		// Then
-		#expect(await memoryDataSource.saveCallCount == 0)
+		#expect(await memoryDataSource.saveCharacterCallCount == 0)
+	}
+
+	// MARK: - Get Characters (Paginated) - Cache Hit
+
+	@Test
+	func getCharactersReturnsCachedPageWhenAvailable() async throws {
+		// Given
+		let expected = CharactersPage.stub()
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		await memoryDataSource.setPageStorage([1: .stub()])
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		let value = try await sut.getCharacters(page: 1)
+
+		// Then
+		#expect(value == expected)
+	}
+
+	@Test
+	func getCharactersDoesNotCallRemoteWhenCacheHit() async throws {
+		// Given
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		await memoryDataSource.setPageStorage([1: .stub()])
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		_ = try await sut.getCharacters(page: 1)
+
+		// Then
+		#expect(remoteDataSource.fetchCharactersCallCount == 0)
+	}
+
+	// MARK: - Get Characters (Paginated) - Cache Miss
+
+	@Test
+	func getCharactersFetchesFromRemoteWhenCacheMiss() async throws {
+		// Given
+		let expected = CharactersPage.stub()
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .success(.stub())
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		let value = try await sut.getCharacters(page: 1)
+
+		// Then
+		#expect(value == expected)
+		#expect(remoteDataSource.fetchCharactersCallCount == 1)
+	}
+
+	@Test
+	func getCharactersCallsRemoteWithCorrectPage() async throws {
+		// Given
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .success(.stub())
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		_ = try await sut.getCharacters(page: 5)
+
+		// Then
+		#expect(remoteDataSource.fetchCharactersCallCount == 1)
+		#expect(remoteDataSource.lastFetchedPage == 5)
+	}
+
+	@Test
+	func getCharactersSavesPageToCache() async throws {
+		// Given
+		let characters = [CharacterDTO.stub(id: 1), CharacterDTO.stub(id: 2)]
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .success(.stub(results: characters))
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		_ = try await sut.getCharacters(page: 1)
+
+		// Then
+		#expect(await memoryDataSource.savePageCallCount == 1)
+		let cachedPage = await memoryDataSource.getPage(1)
+		#expect(cachedPage != nil)
+	}
+
+	@Test
+	func getCharactersSavesIndividualCharactersToCache() async throws {
+		// Given
+		let characters = [CharacterDTO.stub(id: 1), CharacterDTO.stub(id: 2)]
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .success(.stub(results: characters))
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		_ = try await sut.getCharacters(page: 1)
+
+		// Then
+		let cached = await memoryDataSource.getAllCharacters()
+		#expect(cached.count == 2)
+	}
+
+	@Test
+	func getCharactersTransformsPaginationInfo() async throws {
+		// Given
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .success(.stub(
+			info: .stub(count: 100, pages: 5, next: "url", prev: nil)
+		))
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		let value = try await sut.getCharacters(page: 1)
+
+		// Then
+		#expect(value.totalCount == 100)
+		#expect(value.totalPages == 5)
+		#expect(value.hasNextPage == true)
+		#expect(value.hasPreviousPage == false)
+	}
+
+	// MARK: - Get Characters (Paginated) - Errors
+
+	@Test
+	func getCharactersPropagatesRemoteErrorOnCacheMiss() async throws {
+		// Given
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .failure(TestError.network)
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When / Then
+		await #expect(throws: TestError.network) {
+			_ = try await sut.getCharacters(page: 1)
+		}
+	}
+
+	@Test
+	func getCharactersDoesNotSaveToCacheOnError() async throws {
+		// Given
+		let remoteDataSource = CharacterRemoteDataSourceMock()
+		remoteDataSource.charactersResult = .failure(TestError.network)
+		let memoryDataSource = CharacterMemoryDataSourceMock()
+		let sut = CharacterRepository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+
+		// When
+		_ = try? await sut.getCharacters(page: 1)
+
+		// Then
+		#expect(await memoryDataSource.savePageCallCount == 0)
 	}
 }
 

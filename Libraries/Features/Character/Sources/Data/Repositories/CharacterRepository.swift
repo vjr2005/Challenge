@@ -28,6 +28,21 @@ struct CharacterRepository: CharacterRepositoryContract {
 
 		return dto.toDomain()
 	}
+
+	func getCharacters(page: Int) async throws -> CharactersPage {
+		// Check cache first
+		if let cachedResponse = await memoryDataSource.getPage(page) {
+			return cachedResponse.toDomain(currentPage: page)
+		}
+
+		// Fetch from remote
+		let response = try await remoteDataSource.fetchCharacters(page: page)
+
+		// Save page to cache (also saves individual characters)
+		await memoryDataSource.savePage(response, page: page)
+
+		return response.toDomain(currentPage: page)
+	}
 }
 
 // MARK: - DTO to Domain Mapping
@@ -52,6 +67,19 @@ extension LocationDTO {
 		Location(
 			name: name,
 			url: URL(string: url)
+		)
+	}
+}
+
+extension CharactersResponseDTO {
+	func toDomain(currentPage: Int) -> CharactersPage {
+		CharactersPage(
+			characters: results.map { $0.toDomain() },
+			currentPage: currentPage,
+			totalPages: info.pages,
+			totalCount: info.count,
+			hasNextPage: info.next != nil,
+			hasPreviousPage: info.prev != nil
 		)
 	}
 }
