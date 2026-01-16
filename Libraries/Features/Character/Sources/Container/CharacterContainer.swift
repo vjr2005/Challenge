@@ -8,7 +8,7 @@ final class CharacterContainer {
     private let httpClient: any HTTPClientContract
 
     init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? Networking.makeHTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
+        self.httpClient = httpClient ?? HTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
     }
 
     // MARK: - Shared (lazy) - Source of Truth

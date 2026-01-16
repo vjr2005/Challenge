@@ -10,14 +10,11 @@ This library provides a type-safe HTTP client for making network requests. It us
 
 | File | Visibility | Description |
 |------|------------|-------------|
-| `Networking.swift` | **public** | Module entry point with factory methods |
 | `HTTPClientContract.swift` | **public** | Protocol defining the HTTP client interface |
-| `HTTPClient.swift` | internal | Implementation using URLSession |
+| `HTTPClient.swift` | **public (open)** | Implementation using URLSession |
 | `Endpoint.swift` | **public** | Request configuration |
 | `HTTPMethod.swift` | **public** | Supported HTTP methods |
 | `HTTPError.swift` | **public** | Error types |
-
-> **Note:** `HTTPClient` is internal. Use `Networking.makeHTTPClient(baseURL:)` to create instances.
 
 ## Usage
 
@@ -30,13 +27,13 @@ guard let baseURL = URL(string: "https://api.example.com") else {
     fatalError("Invalid API base URL")
 }
 
-let client = Networking.makeHTTPClient(baseURL: baseURL)
+let client = HTTPClient(baseURL: baseURL)
 ```
 
 ### Custom Configuration
 
 ```swift
-let client = Networking.makeHTTPClient(
+let client = HTTPClient(
     baseURL: baseURL,
     session: .shared,
     decoder: JSONDecoder()

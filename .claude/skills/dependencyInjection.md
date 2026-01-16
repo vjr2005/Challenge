@@ -136,17 +136,13 @@ import Foundation
 final class {Feature}Container {
     // MARK: - Infrastructure
 
-    private static let defaultHTTPClient: any HTTPClientContract = {
+    private let httpClient: any HTTPClientContract
+
+    init(httpClient: (any HTTPClientContract)? = nil) {
         guard let url = URL(string: "https://api.example.com") else {
             fatalError("Invalid API base URL")
         }
-        return Networking.makeHTTPClient(baseURL: url)
-    }()
-
-    private let httpClient: any HTTPClientContract
-
-    init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
-        self.httpClient = httpClient
+        self.httpClient = httpClient ?? HTTPClient(baseURL: url)
     }
 
     // MARK: - Shared (lazy) - Source of Truth
@@ -187,7 +183,7 @@ final class {Feature}Container {
 
 **Rules:**
 - **final class** - Allows instance properties and lazy initialization
-- **httpClient via init** - Injected with default value for testability
+- **httpClient via init** - Optional injection for testability, default creates HTTPClient
 - **lazy var repository** - Source of truth, initialized on first access
 - **Private UseCase factories** - Only ViewModels are created externally
 - **Internal visibility** - Container is not public
@@ -198,24 +194,16 @@ final class {Feature}Container {
 
 | Type | Pattern | Reason |
 |------|---------|--------|
-| HTTPClient | Static + Init parameter | Shared default, injectable for tests |
+| HTTPClient | Optional init parameter | Injectable for tests, default creates instance |
 | MemoryDataSource | Instance property | Maintains cache state |
 | Repository | `lazy var` | Source of truth, initialized on first access |
 | ViewModel | Factory method | New instance per navigation |
 | UseCase | Factory method | Stateless, can be new |
 
 ```swift
-// STATIC DEFAULT - Shared instance for production
-private static let defaultHTTPClient: any HTTPClientContract = {
-    guard let url = URL(string: "https://api.example.com") else {
-        fatalError("Invalid API base URL")
-    }
-    return Networking.makeHTTPClient(baseURL: url)
-}()
-
-// INIT - Injected dependency with default
-init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
-    self.httpClient = httpClient
+// INIT - Optional injection with default HTTPClient
+init(httpClient: (any HTTPClientContract)? = nil) {
+    self.httpClient = httpClient ?? HTTPClient(baseURL: APIConfiguration.baseURL)
 }
 
 // LAZY - Source of truth, initialized on first access
@@ -231,60 +219,31 @@ func makeListViewModel(router: RouterContract) -> CharacterListViewModel {
 
 ## Visibility Rules
 
-**Never expose implementations, only contracts:**
-
 | Component | Visibility | Reason |
 |-----------|------------|--------|
-| Contract (Protocol) | `public` | API for consumers |
-| Implementation (Class) | `internal` | Hidden from consumers |
-| Module enum | `public` | Entry point with factory methods |
+| Contract (Protocol) | `public` | API for consumers, enables DI |
+| Implementation (Class) | `public` / `open` | Direct instantiation allowed |
 
 ```swift
 // ChallengeNetworking module
 
-// PUBLIC - Contract exposed to consumers
+// PUBLIC - Contract for dependency injection
 public protocol HTTPClientContract: Sendable {
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
     func request(_ endpoint: Endpoint) async throws -> Data
 }
 
-// INTERNAL - Implementation hidden from consumers
-final class HTTPClient: HTTPClientContract {
+// PUBLIC OPEN - Implementation can be used directly or subclassed
+open class HTTPClient: HTTPClientContract {
+    public init(baseURL: URL, session: URLSession = .shared, decoder: JSONDecoder = JSONDecoder())
     // ...
 }
-
-// PUBLIC - Module entry point with factory methods
-public enum Networking {
-    public static func makeHTTPClient(baseURL: URL) -> any HTTPClientContract {
-        HTTPClient(baseURL: baseURL)
-    }
-}
 ```
 
-**Why this matters:**
-- Consumers depend on abstractions (contracts), not implementations
-- Implementations can change without breaking consumers
-- Testing is easier with contract-based injection
-
----
-
-## Shared Dependencies
-
-Infrastructure dependencies are created via **module entry points** that expose factory methods:
-
-```swift
-// In feature Container - uses module entry point
-private static let defaultHTTPClient: any HTTPClientContract = {
-    guard let url = URL(string: "https://api.example.com") else {
-        fatalError("Invalid API base URL")
-    }
-    return Networking.makeHTTPClient(baseURL: url)
-}()
-
-init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
-    self.httpClient = httpClient
-}
-```
+**Why contracts matter:**
+- Consumers can depend on abstractions for testability
+- Mocks can be injected via contract type
+- Direct instantiation is also allowed when convenient
 
 ---
 
@@ -338,7 +297,7 @@ final class CharacterContainer {
     private let httpClient: any HTTPClientContract
 
     init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? Networking.makeHTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
+        self.httpClient = httpClient ?? HTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
     }
 
     // MARK: - Shared (lazy) - Source of Truth
@@ -406,9 +365,8 @@ struct ContentView: View {
 
 | Component | Visibility | Reason |
 |-----------|------------|--------|
-| Contract (Protocol) | **public** | API for consumers |
-| Implementation (Class) | internal | Hidden from consumers |
-| Module entry point enum | **public** | Factory methods for infrastructure modules |
+| Contract (Protocol) | **public** | API for consumers, enables DI |
+| Implementation (Class) | **public** / **open** | Direct instantiation allowed |
 | {Feature}Navigation | **public** | Navigation destinations |
 | {Feature}Feature | **public** | Entry point with `view(for:)` |
 | {Feature}Container | internal | Internal wiring |
@@ -572,11 +530,9 @@ struct HomeContainerTests {
 
 ## Checklist
 
-- [ ] **Contracts are public, implementations are internal**
-- [ ] Infrastructure modules use entry point enum (e.g., `Networking.makeHTTPClient()`)
 - [ ] Create `{Feature}Navigation.swift` conforming to `Navigation` protocol
 - [ ] Create `{Feature}Feature.swift` with static container and `view(for:)` method
-- [ ] Create internal Container as `final class` with `httpClient` in init
+- [ ] Create internal Container as `final class` with optional `httpClient` in init
 - [ ] Use `lazy var` for repository (source of truth)
 - [ ] Views only receive ViewModel
 - [ ] Use factory methods for ViewModels
