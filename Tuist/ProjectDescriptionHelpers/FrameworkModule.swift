@@ -33,6 +33,7 @@ public struct FrameworkModule {
 			destinations: destinations,
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
+			deploymentTargets: developmentTarget,
 			sources: ["Libraries/\(sourcesPath)/Sources/**"],
 			scripts: [SwiftLint.script(path: "Libraries/\(sourcesPath)/Sources")],
 			dependencies: dependencies
@@ -47,8 +48,9 @@ public struct FrameworkModule {
 				destinations: destinations,
 				product: .framework,
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)Mocks",
+				deploymentTargets: developmentTarget,
 				sources: ["Libraries/\(sourcesPath)/Mocks/**"],
-				dependencies: [.target(name: targetName)],
+				dependencies: [.target(name: targetName)]
 			)
 			targets.append(mocks)
 			testsDependencies.append(.target(name: "\(targetName)Mocks"))
@@ -59,8 +61,9 @@ public struct FrameworkModule {
 			destinations: destinations,
 			product: .unitTests,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(testsTargetName)",
+			deploymentTargets: developmentTarget,
 			sources: ["Libraries/\(sourcesPath)/Tests/**"],
-			dependencies: testsDependencies + testDependencies,
+			dependencies: testsDependencies + testDependencies
 		)
 		targets.append(tests)
 

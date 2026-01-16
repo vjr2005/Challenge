@@ -151,7 +151,7 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 
 ## Architecture
 
-This project follows **MVVM + Clean Architecture + Router** pattern without external dependencies.
+This project follows **MVVM + Clean Architecture** pattern without external dependencies.
 
 ### Layer Responsibilities
 
@@ -159,8 +159,8 @@ This project follows **MVVM + Clean Architecture + Router** pattern without exte
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                        │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │    View     │  │  ViewModel  │  │       Router        │  │
-│  │  (SwiftUI)  │◄─┤ @Observable │◄─┤  (Navigation)       │  │
+│  │    View     │  │  ViewModel  │  │    Navigation       │  │
+│  │  (SwiftUI)  │◄─┤ @Observable │  │  (Cross-module)     │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                             │
@@ -199,9 +199,9 @@ Use Cases encapsulate single business operations. See `/usecase` skill for detai
 
 Repositories abstract data access and transform DTOs to Domain models. See `/repository` skill for detailed patterns (remote only, local only, local-first).
 
-### Router
+### Navigation
 
-Routers manage navigation using `NavigationStack`. See `/router` skill for detailed patterns and examples.
+Cross-module navigation using `Navigation` protocol from Core. Features define their own navigation destinations and the App handles routing. See `/dependencyInjection` skill for detailed patterns.
 
 ---
 
@@ -1266,8 +1266,7 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | `/usecase` | Create UseCases that encapsulate business logic |
 | `/viewmodel` | Create ViewModels with ViewState pattern |
 | `/view` | Create SwiftUI Views that use ViewModels |
-| `/router` | Create Routers for navigation using NavigationStack |
-| `/dependency-injection` | Create Containers for dependency injection |
+| `/dependency-injection` | Create Containers, Navigation destinations, and feature entry points |
 
 ---
 

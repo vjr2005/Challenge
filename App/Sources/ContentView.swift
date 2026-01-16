@@ -1,17 +1,21 @@
+import ChallengeCharacter
+import ChallengeCore
+import ChallengeHome
 import SwiftUI
 
 struct ContentView: View {
-	var body: some View {
-		VStack {
-			Image(systemName: "globe")
-				.imageScale(.large)
-				.foregroundStyle(.tint)
-			Text("Hello, world!")
-		}
-		.padding()
-	}
+    @State private var path = NavigationPath()
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            HomeFeature.makeHomeView(router: Router(path: $path))
+                .navigationDestination(for: CharacterNavigation.self) { navigation in
+                    CharacterFeature.view(for: navigation, router: Router(path: $path))
+                }
+        }
+    }
 }
 
 #Preview {
-	ContentView()
+    ContentView()
 }

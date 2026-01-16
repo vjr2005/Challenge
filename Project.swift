@@ -8,9 +8,27 @@ let networkingModule = FrameworkModule.create(name: "Networking")
 let characterModule = FrameworkModule.create(
 	name: "Character",
 	path: "Features/Character",
-	dependencies: [.target(name: "\(appName)Networking")],
-	testDependencies: [.target(name: "\(appName)NetworkingMocks")],
-	hasMocks: false,
+	dependencies: [
+		.target(name: "\(appName)Core"),
+		.target(name: "\(appName)Networking"),
+	],
+	testDependencies: [
+		.target(name: "\(appName)CoreMocks"),
+		.target(name: "\(appName)NetworkingMocks"),
+	],
+	hasMocks: false
+)
+let homeModule = FrameworkModule.create(
+	name: "Home",
+	path: "Features/Home",
+	dependencies: [
+		.target(name: "\(appName)Core"),
+		.target(name: "\(appName)Character"),
+	],
+	testDependencies: [
+		.target(name: "\(appName)CoreMocks"),
+	],
+	hasMocks: false
 )
 
 // MARK: - Project
@@ -50,7 +68,12 @@ let project = Project(
 			]),
 			sources: ["App/Sources/**"],
 			resources: ["App/Sources/Resources/**"],
-			scripts: [SwiftLint.script(path: "App/Sources")]
+			scripts: [SwiftLint.script(path: "App/Sources")],
+			dependencies: [
+				.target(name: "\(appName)Core"),
+				.target(name: "\(appName)Character"),
+				.target(name: "\(appName)Home"),
+			]
 		),
 		.target(
 			name: "\(appName)Tests",
@@ -70,7 +93,7 @@ let project = Project(
 			infoPlist: .default,
 			sources: ["App/UITests/**"]
 		),
-	] + coreModule.targets + networkingModule.targets + characterModule.targets,
+	] + coreModule.targets + networkingModule.targets + characterModule.targets + homeModule.targets,
 	schemes: [
 		.scheme(
 			name: appName,
@@ -81,5 +104,5 @@ let project = Project(
 			),
 			runAction: .runAction(executable: .target(appName))
 		),
-	] + coreModule.schemes + networkingModule.schemes + characterModule.schemes
+	] + coreModule.schemes + networkingModule.schemes + characterModule.schemes + homeModule.schemes
 )

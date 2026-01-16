@@ -18,66 +18,109 @@ Guide for creating dependency injection with Container per Feature pattern.
 ```
 Libraries/Features/{FeatureName}/
 ├── Sources/
-│   ├── {Feature}Feature.swift              # Public entry point
+│   ├── {Feature}Feature.swift              # Public entry point (enum with view builder)
+│   ├── {Feature}Navigation.swift           # Public navigation destinations
 │   ├── Container/
-│   │   └── {Feature}Container.swift        # Internal container
+│   │   └── {Feature}Container.swift        # Internal container (lazy repository)
 │   ├── Domain/
 │   ├── Data/
 │   └── Presentation/
 │       ├── Views/
-│       │   ├── {Feature}RootView.swift     # Root view (owns Router, uses Container)
 │       │   ├── {Name}ListView.swift        # List view (receives ViewModel only)
 │       │   └── {Name}DetailView.swift      # Detail view (receives ViewModel only)
-│       ├── ViewModels/
-│       │   ├── {Name}ListViewModel.swift   # Has Router for navigation
-│       │   └── {Name}DetailViewModel.swift # No Router (leaf view)
-│       └── Router/
+│       └── ViewModels/
+│           ├── {Name}ListViewModel.swift
+│           └── {Name}DetailViewModel.swift
 ```
 
 **Notes:**
-- Container is at the root of Sources/, NOT inside Presentation/. It's a cross-cutting concern that wires all layers.
-- Only RootView accesses Container directly. Other Views receive **only ViewModel** via init.
-- Router is injected into ViewModel, **not into View**.
+- Container is at the root of Sources/, NOT inside Presentation/
+- Container is accessed via static property in `{Feature}Feature` enum
+- Views receive **only ViewModel** via init
+- Navigation is handled by App using `NavigationPath`
+
+---
+
+## Navigation Destinations
+
+Each feature defines its navigation destinations conforming to `Navigation` protocol from Core:
+
+```swift
+// Sources/{Feature}Navigation.swift
+import ChallengeCore
+
+public enum {Feature}Navigation: Navigation {
+    case list
+    case detail(identifier: Int)
+}
+```
+
+**Rules:**
+- Conform to `Navigation` protocol (from Core module)
+- Use primitive types for parameters (Int, String, Bool, UUID)
+- Never pass domain objects - only identifiers
 
 ---
 
 ## Public Entry Point
 
-Each feature exposes a **public entry point** that the App uses to navigate:
+Each feature exposes a **public entry point** with a static container and view builder:
 
 ```swift
 // Sources/{Feature}Feature.swift
+import ChallengeCore
 import SwiftUI
 
 public enum {Feature}Feature {
-    public static func makeRootView() -> some View {
-        {Feature}View()
+    private static let container = {Feature}Container()
+
+    @MainActor @ViewBuilder
+    public static func view(for navigation: {Feature}Navigation) -> some View {
+        switch navigation {
+        case .list:
+            {Name}ListView(viewModel: container.makeListViewModel())
+        case .detail(let identifier):
+            {Name}DetailView(viewModel: container.makeDetailViewModel(identifier: identifier))
+        }
     }
 }
 ```
 
 **Rules:**
 - **public enum** - Prevents instantiation, only static access
-- **makeRootView()** - Returns the root View of the feature
-- **Opaque return type** - Use `some View` to hide internal types
-- App only knows about this public interface
+- **private static let container** - Shared container (lazy repository is source of truth)
+- **view(for:)** - Builds view for each navigation destination
+- All dependency wiring happens internally
 
 **Usage from App:**
 
 ```swift
 // In App module
-import Challenge{Feature}
+import ChallengeCharacter
+import SwiftUI
 
-NavigationLink("Go to Feature") {
-    {Feature}Feature.makeRootView()
+struct ContentView: View {
+    @State private var path = NavigationPath()
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            HomeView()
+                .navigationDestination(for: CharacterNavigation.self) { navigation in
+                    CharacterFeature.view(for: navigation)
+                }
+        }
+    }
 }
+
+// Navigate from anywhere with access to path
+path.append(CharacterNavigation.detail(identifier: 42))
 ```
 
 ---
 
 ## Internal Container
 
-The Container is **internal** and manages all dependencies:
+The Container is **internal** and manages all dependencies with lazy repository:
 
 ```swift
 // Sources/Container/{Feature}Container.swift
@@ -100,7 +143,7 @@ final class {Feature}Container {
         self.httpClient = httpClient
     }
 
-    // MARK: - Shared (lazy)
+    // MARK: - Shared (lazy) - Source of Truth
 
     private let memoryDataSource = {Name}MemoryDataSource()
 
@@ -111,20 +154,15 @@ final class {Feature}Container {
 
     // MARK: - Factories
 
-    func makeRouter() -> {Feature}Router {
-        {Feature}Router()
-    }
-
-    func makeListViewModel(router: {Feature}Router) -> {Name}ListViewModel {
+    func makeListViewModel() -> {Name}ListViewModel {
         {Name}ListViewModel(
-            get{Name}sUseCase: makeGet{Name}sUseCase(),
-            router: router
+            get{Name}sUseCase: makeGet{Name}sUseCase()
         )
     }
 
-    func makeDetailViewModel(itemId: Int) -> {Name}DetailViewModel {
+    func makeDetailViewModel(identifier: Int) -> {Name}DetailViewModel {
         {Name}DetailViewModel(
-            itemId: itemId,
+            identifier: identifier,
             get{Name}UseCase: makeGet{Name}UseCase()
         )
     }
@@ -142,7 +180,7 @@ final class {Feature}Container {
 **Rules:**
 - **final class** - Allows instance properties and lazy initialization
 - **httpClient via init** - Injected with default value for testability
-- **lazy var repository** - Initialized on first access
+- **lazy var repository** - Source of truth, initialized on first access
 - **Private UseCase factories** - Only ViewModels are created externally
 - **Internal visibility** - Container is not public
 
@@ -154,10 +192,9 @@ final class {Feature}Container {
 |------|---------|--------|
 | HTTPClient | Static + Init parameter | Shared default, injectable for tests |
 | MemoryDataSource | Instance property | Maintains cache state |
-| Repository | `lazy var` | Initialized on first access |
-| ViewModel | Factory method | New instance per View |
+| Repository | `lazy var` | Source of truth, initialized on first access |
+| ViewModel | Factory method | New instance per navigation |
 | UseCase | Factory method | Stateless, can be new |
-| Router | Factory method | New instance per navigation stack |
 
 ```swift
 // STATIC DEFAULT - Shared instance for production
@@ -173,12 +210,12 @@ init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
     self.httpClient = httpClient
 }
 
-// LAZY - Initialized on first access
+// LAZY - Source of truth, initialized on first access
 private lazy var repository: any CharacterRepositoryContract = CharacterRepository(...)
 
-// FACTORY - New instance
-func makeListViewModel(router: CharacterRouter) -> CharacterListViewModel {
-    CharacterListViewModel(getCharactersUseCase: makeGetCharactersUseCase(), router: router)
+// FACTORY - New instance per navigation
+func makeListViewModel() -> CharacterListViewModel {
+    CharacterListViewModel(getCharactersUseCase: makeGetCharactersUseCase())
 }
 ```
 
@@ -243,67 +280,38 @@ init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
 
 ---
 
-## Root View Pattern
+## Example: CharacterFeature
 
-The root View of a feature creates Container and Router:
+### Navigation Destinations
 
 ```swift
-// Sources/Presentation/Views/{Feature}RootView.swift
-import SwiftUI
+// Sources/CharacterNavigation.swift
+import ChallengeCore
 
-struct {Feature}RootView: View {
-    private let container = {Feature}Container()
-    @State private var router: {Feature}Router
-
-    init() {
-        let container = {Feature}Container()
-        self.container = container
-        _router = State(initialValue: container.makeRouter())
-    }
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            {Name}ListView(
-                viewModel: container.makeListViewModel(router: router)
-            )
-            .navigationDestination(for: {Feature}Router.Destination.self) { destination in
-                destinationView(for: destination)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func destinationView(for destination: {Feature}Router.Destination) -> some View {
-        switch destination {
-        case .detail(let item):
-            {Name}DetailView(
-                viewModel: container.makeDetailViewModel(itemId: item.id)
-            )
-        }
-    }
+public enum CharacterNavigation: Navigation {
+    case list
+    case detail(identifier: Int)
 }
 ```
-
-**Rules:**
-- **RootView owns Container** as instance (not static)
-- **RootView owns Router** via `@State`
-- **Router injected to ViewModel** via Container factory method
-- **Views only receive ViewModel** - no Router in Views (see `/view` skill)
-- Container is only accessed from RootView, not child Views
-
----
-
-## Example: CharacterFeature
 
 ### Public Entry Point
 
 ```swift
 // Sources/CharacterFeature.swift
+import ChallengeCore
 import SwiftUI
 
 public enum CharacterFeature {
-    public static func makeRootView() -> some View {
-        CharacterRootView()
+    private static let container = CharacterContainer()
+
+    @MainActor @ViewBuilder
+    public static func view(for navigation: CharacterNavigation) -> some View {
+        switch navigation {
+        case .list:
+            CharacterListView(viewModel: container.makeListViewModel())
+        case .detail(let identifier):
+            CharacterDetailView(viewModel: container.makeDetailViewModel(identifier: identifier))
+        }
     }
 }
 ```
@@ -331,7 +339,7 @@ final class CharacterContainer {
         self.httpClient = httpClient
     }
 
-    // MARK: - Shared (lazy)
+    // MARK: - Shared (lazy) - Source of Truth
 
     private let memoryDataSource = CharacterMemoryDataSource()
 
@@ -342,20 +350,15 @@ final class CharacterContainer {
 
     // MARK: - Factories
 
-    func makeRouter() -> CharacterRouter {
-        CharacterRouter()
-    }
-
-    func makeListViewModel(router: CharacterRouter) -> CharacterListViewModel {
+    func makeListViewModel() -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: makeGetCharactersUseCase(),
-            router: router
+            getCharactersUseCase: makeGetCharactersUseCase()
         )
     }
 
-    func makeDetailViewModel(characterId: Int) -> CharacterDetailViewModel {
+    func makeDetailViewModel(identifier: Int) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
-            characterId: characterId,
+            identifier: identifier,
             getCharacterUseCase: makeGetCharacterUseCase()
         )
     }
@@ -370,63 +373,30 @@ final class CharacterContainer {
 }
 ```
 
-### Root View
-
-```swift
-// Sources/Presentation/Views/CharacterRootView.swift
-import SwiftUI
-
-struct CharacterRootView: View {
-    private let container: CharacterContainer
-    @State private var router: CharacterRouter
-
-    init() {
-        let container = CharacterContainer()
-        self.container = container
-        _router = State(initialValue: container.makeRouter())
-    }
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            CharacterListView(
-                viewModel: container.makeListViewModel(router: router)
-            )
-            .navigationDestination(for: CharacterRouter.Destination.self) { destination in
-                destinationView(for: destination)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func destinationView(for destination: CharacterRouter.Destination) -> some View {
-        switch destination {
-        case .detail(let character):
-            CharacterDetailView(
-                viewModel: container.makeDetailViewModel(characterId: character.id)
-            )
-        }
-    }
-}
-```
-
 ### Usage from App
 
 ```swift
 // In App/Sources/ContentView.swift
 import ChallengeCharacter
+import ChallengeCore
 import SwiftUI
 
 struct ContentView: View {
+    @State private var path = NavigationPath()
+
     var body: some View {
-        NavigationStack {
-            List {
-                NavigationLink("Characters") {
-                    CharacterFeature.makeRootView()
+        NavigationStack(path: $path) {
+            HomeView(path: $path)
+                .navigationDestination(for: CharacterNavigation.self) { navigation in
+                    CharacterFeature.view(for: navigation)
                 }
-            }
         }
     }
 }
+
+// Navigate from anywhere
+path.append(CharacterNavigation.list)
+path.append(CharacterNavigation.detail(identifier: 42))
 ```
 
 ---
@@ -438,9 +408,10 @@ struct ContentView: View {
 | Contract (Protocol) | **public** | API for consumers |
 | Implementation (Class) | internal | Hidden from consumers |
 | Module entry point enum | **public** | Factory methods for infrastructure modules |
-| {Feature}Feature | **public** | Entry point for feature modules |
+| {Feature}Navigation | **public** | Navigation destinations |
+| {Feature}Feature | **public** | Entry point with `view(for:)` |
 | {Feature}Container | internal | Internal wiring |
-| {Feature}RootView | internal | Internal UI |
+| Views | internal | Internal UI |
 
 ---
 
@@ -448,11 +419,10 @@ struct ContentView: View {
 
 - [ ] **Contracts are public, implementations are internal**
 - [ ] Infrastructure modules use entry point enum (e.g., `Networking.makeHTTPClient()`)
-- [ ] Create public entry point `{Feature}Feature.swift` with `makeRootView()`
+- [ ] Create `{Feature}Navigation.swift` conforming to `Navigation` protocol
+- [ ] Create `{Feature}Feature.swift` with static container and `view(for:)` method
 - [ ] Create internal Container as `final class` with `httpClient` in init
-- [ ] Use `lazy var` for repository
-- [ ] Create root view `{Feature}RootView.swift` that owns Container and Router
-- [ ] Container's `makeListViewModel(router:)` receives Router parameter
-- [ ] Views only receive ViewModel (no Router)
+- [ ] Use `lazy var` for repository (source of truth)
+- [ ] Views only receive ViewModel
 - [ ] Use factory methods for ViewModels
-- [ ] Verify App can navigate using only the public entry point
+- [ ] App registers `.navigationDestination(for: {Feature}Navigation.self)`

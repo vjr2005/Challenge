@@ -93,9 +93,7 @@ final class {Name}DetailViewModel {
 
 ---
 
-## ViewModel Pattern (List - with navigation)
-
-List ViewModels receive Router and handle navigation:
+## ViewModel Pattern (List)
 
 ```swift
 import SwiftUI
@@ -105,14 +103,9 @@ final class {Name}ListViewModel {
     private(set) var state: {Name}ListViewState = .idle
 
     private let get{Name}sUseCase: Get{Name}sUseCaseContract
-    private let router: {Feature}Router
 
-    init(
-        get{Name}sUseCase: Get{Name}sUseCaseContract,
-        router: {Feature}Router
-    ) {
+    init(get{Name}sUseCase: Get{Name}sUseCaseContract) {
         self.get{Name}sUseCase = get{Name}sUseCase
-        self.router = router
     }
 
     func load() async {
@@ -124,10 +117,6 @@ final class {Name}ListViewModel {
             state = .error(error)
         }
     }
-
-    func didSelect(_ item: {Name}) {
-        router.navigate(to: .detail(item))
-    }
 }
 ```
 
@@ -136,9 +125,8 @@ final class {Name}ListViewModel {
 - `final class` to prevent subclassing
 - **Internal visibility** (not public)
 - Inject UseCases via **protocol (contract)**
-- **Router is required** for ViewModels that handle navigation
 - State is `private(set)` - only ViewModel mutates it
-- **`didSelect` methods** - Handle user actions and navigation
+- **Navigation is handled by the View** using `NavigationPath` (see `/view` skill)
 
 ---
 
@@ -223,35 +211,10 @@ private enum TestError: Error {
 }
 ```
 
-### List ViewModel Tests (with navigation)
-
-```swift
-struct {Name}ListViewModelTests {
-    @Test
-    func didSelectNavigatesToDetail() {
-        // Given
-        let router = {Feature}Router()
-        let useCase = Get{Name}sUseCaseMock()
-        let sut = {Name}ListViewModel(
-            get{Name}sUseCase: useCase,
-            router: router
-        )
-        let item = {Name}.stub()
-
-        // When
-        sut.didSelect(item)
-
-        // Then
-        #expect(router.path.count == 1)
-    }
-}
-```
-
 **Testing Rules:**
 - Use `guard case` for enum state matching
 - Use `Issue.record()` for test failures
-- Test initial state, success, error, call verification, and **navigation**
-- Use real Router in tests (verify path changes)
+- Test initial state, success, error, and call verification
 
 ---
 
@@ -270,7 +233,7 @@ enum CharacterListViewState {
 }
 ```
 
-### ViewModel (with navigation)
+### ViewModel
 
 ```swift
 // Sources/Presentation/ViewModels/CharacterListViewModel.swift
@@ -281,14 +244,9 @@ final class CharacterListViewModel {
     private(set) var state: CharacterListViewState = .idle
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
-    private let router: CharacterRouter
 
-    init(
-        getCharactersUseCase: GetCharactersUseCaseContract,
-        router: CharacterRouter
-    ) {
+    init(getCharactersUseCase: GetCharactersUseCaseContract) {
         self.getCharactersUseCase = getCharactersUseCase
-        self.router = router
     }
 
     func load() async {
@@ -300,12 +258,10 @@ final class CharacterListViewModel {
             state = .error(error)
         }
     }
-
-    func didSelect(_ character: Character) {
-        router.navigate(to: .detail(character))
-    }
 }
 ```
+
+> **Note:** Navigation is handled by the View using `NavigationPath`. See `/view` skill.
 
 ---
 
@@ -323,8 +279,6 @@ final class CharacterListViewModel {
 - [ ] Create ViewState enum with idle, loading, loaded, error cases
 - [ ] Create ViewModel class with @Observable
 - [ ] Inject UseCase via protocol (contract)
-- [ ] Inject Router if ViewModel handles navigation
 - [ ] Implement load/fetch method with state transitions
-- [ ] Implement `didSelect` methods for user actions (if navigating)
-- [ ] Create tests for initial state, success, error, call verification, and navigation
+- [ ] Create tests for initial state, success, error, and call verification
 - [ ] Run tests
