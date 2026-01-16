@@ -11,6 +11,6 @@ final class HomeViewModel {
     }
 
     func didTapOnCharacterButton() {
-        router.navigate(to: CharacterNavigation.detail(identifier: 1))
+        router.navigate(to: CharacterNavigation.list)
     }
 }

@@ -1,5 +1,6 @@
 import ChallengeCore
 
 public enum CharacterNavigation: Navigation {
-    case detail(identifier: Int)
+	case list
+	case detail(identifier: Int)
 }
