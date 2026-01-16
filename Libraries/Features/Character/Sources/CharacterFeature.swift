@@ -6,7 +6,7 @@ public enum CharacterFeature {
 
     /// Builds the view for a navigation destination.
     /// Only used by App layer for `navigationDestination(for:)` registration.
-    @MainActor @ViewBuilder
+    @ViewBuilder
     public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
         switch navigation {
         case .detail(let identifier):

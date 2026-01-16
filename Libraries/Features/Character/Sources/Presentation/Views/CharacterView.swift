@@ -22,7 +22,7 @@ struct CharacterView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Atrás") {
+                Button("Back") {
                     viewModel.didTapOnBack()
                 }
             }

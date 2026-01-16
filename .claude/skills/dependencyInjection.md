@@ -75,12 +75,12 @@ public enum {Feature}Feature {
     private static let container = {Feature}Container()
 
     @MainActor @ViewBuilder
-    public static func view(for navigation: {Feature}Navigation) -> some View {
+    public static func view(for navigation: {Feature}Navigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
-            {Name}ListView(viewModel: container.makeListViewModel())
+            {Name}ListView(viewModel: container.makeListViewModel(router: router))
         case .detail(let identifier):
-            {Name}DetailView(viewModel: container.makeDetailViewModel(identifier: identifier))
+            {Name}DetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: router))
         }
     }
 }
@@ -89,32 +89,38 @@ public enum {Feature}Feature {
 **Rules:**
 - **public enum** - Prevents instantiation, only static access
 - **private static let container** - Shared container (lazy repository is source of truth)
-- **view(for:)** - Builds view for each navigation destination
+- **view(for:router:)** - Builds view for each navigation destination, receives router from App
+- **router parameter** - Passed to Container factories for ViewModel injection
 - All dependency wiring happens internally
 
 **Usage from App:**
 
 ```swift
-// In App module
+// In App/Sources/ContentView.swift
 import ChallengeCharacter
+import ChallengeCore
+import ChallengeHome
 import SwiftUI
 
 struct ContentView: View {
-    @State private var path = NavigationPath()
+    @State private var router = Router()
 
     var body: some View {
-        NavigationStack(path: $path) {
-            HomeView()
+        NavigationStack(path: $router.path) {
+            HomeFeature.makeHomeView(router: router)
                 .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation)
+                    CharacterFeature.view(for: navigation, router: router)
                 }
         }
     }
 }
-
-// Navigate from anywhere with access to path
-path.append(CharacterNavigation.detail(identifier: 42))
 ```
+
+**Notes:**
+- Router is `@Observable` and owns the `NavigationPath` internally
+- App creates a single Router instance per NavigationStack
+- Router is passed to Features, which pass it to ViewModels
+- For multiple NavigationStacks (tabs, modals), create separate Router instances
 
 ---
 
@@ -154,16 +160,18 @@ final class {Feature}Container {
 
     // MARK: - Factories
 
-    func makeListViewModel() -> {Name}ListViewModel {
+    func makeListViewModel(router: RouterContract) -> {Name}ListViewModel {
         {Name}ListViewModel(
-            get{Name}sUseCase: makeGet{Name}sUseCase()
+            get{Name}sUseCase: makeGet{Name}sUseCase(),
+            router: router
         )
     }
 
-    func makeDetailViewModel(identifier: Int) -> {Name}DetailViewModel {
+    func makeDetailViewModel(identifier: Int, router: RouterContract) -> {Name}DetailViewModel {
         {Name}DetailViewModel(
             identifier: identifier,
-            get{Name}UseCase: makeGet{Name}UseCase()
+            get{Name}UseCase: makeGet{Name}UseCase(),
+            router: router
         )
     }
 
@@ -213,9 +221,9 @@ init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
 // LAZY - Source of truth, initialized on first access
 private lazy var repository: any CharacterRepositoryContract = CharacterRepository(...)
 
-// FACTORY - New instance per navigation
-func makeListViewModel() -> CharacterListViewModel {
-    CharacterListViewModel(getCharactersUseCase: makeGetCharactersUseCase())
+// FACTORY - New instance per navigation (receives router)
+func makeListViewModel(router: RouterContract) -> CharacterListViewModel {
+    CharacterListViewModel(getCharactersUseCase: makeGetCharactersUseCase(), router: router)
 }
 ```
 
@@ -305,12 +313,12 @@ public enum CharacterFeature {
     private static let container = CharacterContainer()
 
     @MainActor @ViewBuilder
-    public static func view(for navigation: CharacterNavigation) -> some View {
+    public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
-            CharacterListView(viewModel: container.makeListViewModel())
+            CharacterListView(viewModel: container.makeListViewModel(router: router))
         case .detail(let identifier):
-            CharacterDetailView(viewModel: container.makeDetailViewModel(identifier: identifier))
+            CharacterDetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: router))
         }
     }
 }
@@ -320,23 +328,17 @@ public enum CharacterFeature {
 
 ```swift
 // Sources/Container/CharacterContainer.swift
+import ChallengeCore
 import ChallengeNetworking
 import Foundation
 
 final class CharacterContainer {
     // MARK: - Infrastructure
 
-    private static let defaultHTTPClient: any HTTPClientContract = {
-        guard let url = URL(string: "https://rickandmortyapi.com/api") else {
-            fatalError("Invalid API base URL")
-        }
-        return Networking.makeHTTPClient(baseURL: url)
-    }()
-
     private let httpClient: any HTTPClientContract
 
-    init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
-        self.httpClient = httpClient
+    init(httpClient: (any HTTPClientContract)? = nil) {
+        self.httpClient = httpClient ?? Networking.makeHTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
     }
 
     // MARK: - Shared (lazy) - Source of Truth
@@ -350,16 +352,18 @@ final class CharacterContainer {
 
     // MARK: - Factories
 
-    func makeListViewModel() -> CharacterListViewModel {
+    func makeListViewModel(router: RouterContract) -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: makeGetCharactersUseCase()
+            getCharactersUseCase: makeGetCharactersUseCase(),
+            router: router
         )
     }
 
-    func makeDetailViewModel(identifier: Int) -> CharacterDetailViewModel {
+    func makeDetailViewModel(identifier: Int, router: RouterContract) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterUseCase: makeGetCharacterUseCase()
+            getCharacterUseCase: makeGetCharacterUseCase(),
+            router: router
         )
     }
 
@@ -379,24 +383,21 @@ final class CharacterContainer {
 // In App/Sources/ContentView.swift
 import ChallengeCharacter
 import ChallengeCore
+import ChallengeHome
 import SwiftUI
 
 struct ContentView: View {
-    @State private var path = NavigationPath()
+    @State private var router = Router()
 
     var body: some View {
-        NavigationStack(path: $path) {
-            HomeView(path: $path)
+        NavigationStack(path: $router.path) {
+            HomeFeature.makeHomeView(router: router)
                 .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation)
+                    CharacterFeature.view(for: navigation, router: router)
                 }
         }
     }
 }
-
-// Navigate from anywhere
-path.append(CharacterNavigation.list)
-path.append(CharacterNavigation.detail(identifier: 42))
 ```
 
 ---
@@ -415,6 +416,160 @@ path.append(CharacterNavigation.detail(identifier: 42))
 
 ---
 
+## Testing Containers
+
+Containers must be tested to verify correct dependency wiring. Tests should verify that factory methods return properly configured instances.
+
+### File Structure
+
+```
+Libraries/Features/{FeatureName}/
+└── Tests/
+    └── Container/
+        └── {Feature}ContainerTests.swift
+```
+
+### Container Tests Pattern
+
+```swift
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {Feature}ContainerTests {
+    @Test
+    func makeViewModelReturnsConfiguredInstance() {
+        // Given
+        let httpClient = HTTPClientMock()
+        let router = RouterMock()
+        let sut = {Feature}Container(httpClient: httpClient)
+
+        // When
+        let viewModel = sut.makeDetailViewModel(identifier: 42, router: router)
+
+        // Then
+        #expect(viewModel != nil)
+    }
+
+    @Test
+    func makeViewModelUsesSharedRepository() async {
+        // Given
+        let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let router = RouterMock()
+        let sut = {Feature}Container(httpClient: httpClient)
+
+        // When
+        let viewModel1 = sut.makeDetailViewModel(identifier: 1, router: router)
+        let viewModel2 = sut.makeDetailViewModel(identifier: 1, router: router)
+
+        // Load data through both ViewModels
+        await viewModel1.load()
+        await viewModel2.load()
+
+        // Then - Both should use the same repository (second call uses cache)
+        #expect(httpClient.requestedEndpoints.count == 1)
+    }
+}
+```
+
+### What to Test
+
+| Test | Purpose |
+|------|---------|
+| Factory returns instance | Verify wiring doesn't crash |
+| Shared repository | Verify lazy var is reused across ViewModels |
+| Injected dependencies | Verify mock is used when injected |
+
+### Example: CharacterContainerTests
+
+```swift
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
+import Testing
+
+@testable import ChallengeCharacter
+
+struct CharacterContainerTests {
+    @Test
+    func makeCharacterViewModelReturnsConfiguredInstance() {
+        // Given
+        let httpClient = HTTPClientMock()
+        let router = RouterMock()
+        let sut = CharacterContainer(httpClient: httpClient)
+
+        // When
+        let viewModel = sut.makeCharacterViewModel(identifier: 1, router: router)
+
+        // Then
+        guard case .idle = viewModel.state else {
+            Issue.record("Expected idle state")
+            return
+        }
+    }
+
+    @Test
+    func makeCharacterViewModelUsesInjectedHTTPClient() async {
+        // Given
+        let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let router = RouterMock()
+        let sut = CharacterContainer(httpClient: httpClient)
+        let viewModel = sut.makeCharacterViewModel(identifier: 1, router: router)
+
+        // When
+        await viewModel.load()
+
+        // Then
+        #expect(httpClient.requestedEndpoints.count == 1)
+    }
+
+    @Test
+    func multipleViewModelsShareSameRepository() async {
+        // Given
+        let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let router = RouterMock()
+        let sut = CharacterContainer(httpClient: httpClient)
+
+        // When
+        let viewModel1 = sut.makeCharacterViewModel(identifier: 1, router: router)
+        let viewModel2 = sut.makeCharacterViewModel(identifier: 1, router: router)
+
+        await viewModel1.load()
+        await viewModel2.load()
+
+        // Then - Second load uses cached data from shared repository
+        #expect(httpClient.requestedEndpoints.count == 1)
+    }
+}
+```
+
+### Example: HomeContainerTests (Simple Container)
+
+```swift
+import ChallengeCoreMocks
+import Testing
+
+@testable import ChallengeHome
+
+struct HomeContainerTests {
+    @Test
+    func makeHomeViewModelReturnsConfiguredInstance() {
+        // Given
+        let router = RouterMock()
+        let sut = HomeContainer()
+
+        // When
+        let viewModel = sut.makeHomeViewModel(router: router)
+
+        // Then
+        #expect(viewModel != nil)
+    }
+}
+```
+
+---
+
 ## Checklist
 
 - [ ] **Contracts are public, implementations are internal**
@@ -426,3 +581,4 @@ path.append(CharacterNavigation.detail(identifier: 42))
 - [ ] Views only receive ViewModel
 - [ ] Use factory methods for ViewModels
 - [ ] App registers `.navigationDestination(for: {Feature}Navigation.self)`
+- [ ] **Create container tests verifying factory methods and shared repository**

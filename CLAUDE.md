@@ -199,9 +199,9 @@ Use Cases encapsulate single business operations. See `/usecase` skill for detai
 
 Repositories abstract data access and transform DTOs to Domain models. See `/repository` skill for detailed patterns (remote only, local only, local-first).
 
-### Navigation
+### Router
 
-Cross-module navigation using `Navigation` protocol from Core. Features define their own navigation destinations and the App handles routing. See `/dependencyInjection` skill for detailed patterns.
+Cross-module navigation using `Router` from Core. Router is `@Observable` and owns the `NavigationPath`. Features receive `RouterContract` and pass it to ViewModels. See `/router` skill for detailed patterns.
 
 ---
 
@@ -256,8 +256,7 @@ Challenge/
 │       │   │   │   └── Repositories/
 │       │   │   └── Presentation/
 │       │   │       ├── Views/
-│       │   │       ├── ViewModels/
-│       │   │       └── Router/
+│       │   │       └── ViewModels/
 │       │   ├── Tests/
 │       │   └── Mocks/
 │       └── Home/
@@ -288,8 +287,7 @@ FeatureName/
 │   │   └── Repositories/       # Repository implementations
 │   └── Presentation/
 │       ├── Views/              # SwiftUI views
-│       ├── ViewModels/         # ViewModels
-│       └── Router/             # Navigation router
+│       └── ViewModels/         # ViewModels
 ├── Tests/
 │   ├── Domain/
 │   │   └── UseCases/           # Use case tests
@@ -471,7 +469,7 @@ For unit tests, see the respective skills:
 - `/repository` - Repository tests
 - `/usecase` - UseCase tests
 - `/viewmodel` - ViewModel tests
-- `/router` - Router tests
+- `/router` - Navigation tests
 
 ### Snapshot Tests
 
@@ -1266,7 +1264,8 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | `/usecase` | Create UseCases that encapsulate business logic |
 | `/viewmodel` | Create ViewModels with ViewState pattern |
 | `/view` | Create SwiftUI Views that use ViewModels |
-| `/dependency-injection` | Create Containers, Navigation destinations, and feature entry points |
+| `/router` | Create Router for navigation with RouterContract injection |
+| `/dependencyInjection` | Create Containers and feature entry points |
 
 ---
 

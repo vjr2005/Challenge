@@ -15,7 +15,7 @@ extension CharacterDTO {
 		image: String = "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
 		episode: [String] = ["https://rickandmortyapi.com/api/episode/1"],
 		url: String = "https://rickandmortyapi.com/api/character/1",
-		created: String = "2017-11-04T18:48:46.250Z",
+		created: String = "2017-11-04T18:48:46.250Z"
 	) -> CharacterDTO {
 		CharacterDTO(
 			id: id,
@@ -31,5 +31,24 @@ extension CharacterDTO {
 			url: url,
 			created: created
 		)
+	}
+
+	static func stubJSONData() -> Data {
+		Data("""
+		{
+			"id": 1,
+			"name": "Rick Sanchez",
+			"status": "Alive",
+			"species": "Human",
+			"type": "",
+			"gender": "Male",
+			"origin": {"name": "Earth (C-137)", "url": "https://rickandmortyapi.com/api/location/1"},
+			"location": {"name": "Citadel of Ricks", "url": "https://rickandmortyapi.com/api/location/3"},
+			"image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+			"episode": ["https://rickandmortyapi.com/api/episode/1"],
+			"url": "https://rickandmortyapi.com/api/character/1",
+			"created": "2017-11-04T18:48:46.250Z"
+		}
+		""".utf8)
 	}
 }

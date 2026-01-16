@@ -1,21 +1,20 @@
 import SwiftUI
 
 /// Default router implementation using NavigationPath.
+@Observable
 public final class Router: RouterContract {
-    private let path: Binding<NavigationPath>
+    public var path = NavigationPath()
 
-    public init(path: Binding<NavigationPath>) {
-        self.path = path
-    }
+    public init() {}
 
     public func navigate(to destination: any Navigation) {
-        path.wrappedValue.append(destination)
+        path.append(destination)
     }
 
     public func goBack() {
-        guard !path.wrappedValue.isEmpty else {
+        guard !path.isEmpty else {
             return
         }
-        path.wrappedValue.removeLast()
+        path.removeLast()
     }
 }

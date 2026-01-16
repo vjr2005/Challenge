@@ -19,22 +19,25 @@ Guide for creating SwiftUI Views that use ViewModels with dependency injection.
 Libraries/Features/{FeatureName}/
 ├── Sources/
 │   ├── {Feature}Feature.swift              # Public entry point (see /dependencyInjection)
+│   ├── {Feature}Navigation.swift           # Navigation destinations (see /router)
 │   ├── Container/
 │   │   └── {Feature}Container.swift        # See /dependencyInjection skill
 │   └── Presentation/
 │       ├── Views/
-│       │   ├── {Feature}RootView.swift     # Root view (owns Container and Router)
 │       │   ├── {Name}ListView.swift        # List view (receives ViewModel only)
 │       │   └── {Name}DetailView.swift      # Detail view (receives ViewModel only)
-│       ├── ViewModels/
-│       │   └── {Name}ViewModel.swift       # See /viewmodel skill
-│       └── Router/
-│           └── {Feature}Router.swift       # See /router skill
+│       └── ViewModels/
+│           └── {Name}ViewModel.swift       # See /viewmodel skill
 └── Tests/
     └── Presentation/
         └── Snapshots/
             └── {Name}ViewSnapshotTests.swift  # Optional
 ```
+
+**Notes:**
+- Views receive **only ViewModel** via init
+- Navigation is handled by App using Router (see `/router` skill)
+- No Router folder needed - Router lives in Core module
 
 ---
 
@@ -80,58 +83,10 @@ struct {Name}View: View {
 
 **Rules:**
 - **Init for ViewModel** - Use `_viewModel = State(initialValue:)` pattern
-- **RootView creates Views** - RootView creates child Views with injected ViewModels
 - **Switch on state** - Use `switch` on `viewModel.state` to render content
 - **@ViewBuilder** - Use for computed properties returning Views
 - **Internal visibility** (not public)
-
----
-
-## Root View Pattern
-
-RootView owns Container and Router, creates ViewModels for child Views:
-
-```swift
-import SwiftUI
-
-struct {Feature}RootView: View {
-    private let container: {Feature}Container
-    @State private var router: {Feature}Router
-
-    init() {
-        let container = {Feature}Container()
-        self.container = container
-        _router = State(initialValue: container.makeRouter())
-    }
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            {Name}ListView(
-                viewModel: container.makeListViewModel(router: router)
-            )
-            .navigationDestination(for: {Feature}Router.Destination.self) { destination in
-                destinationView(for: destination)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func destinationView(for destination: {Feature}Router.Destination) -> some View {
-        switch destination {
-        case .detail(let item):
-            {Name}DetailView(
-                viewModel: container.makeDetailViewModel(itemId: item.id)
-            )
-        }
-    }
-}
-```
-
-**Rules:**
-- **RootView owns Container** - Creates instance in init
-- **RootView owns Router** - Uses `_router = State(initialValue:)`
-- **Container creates ViewModels** - With Router injected where needed
-- **Child Views only receive ViewModel** - No Container or Router access
+- **No Router in View** - Views delegate actions to ViewModel (see `/viewmodel` and `/router` skills)
 
 ---
 
@@ -267,47 +222,6 @@ Previews create ViewModels with mocks:
 
 ---
 
-## Example: CharacterRootView
-
-```swift
-// Sources/Presentation/Views/CharacterRootView.swift
-import SwiftUI
-
-struct CharacterRootView: View {
-    private let container: CharacterContainer
-    @State private var router: CharacterRouter
-
-    init() {
-        let container = CharacterContainer()
-        self.container = container
-        _router = State(initialValue: container.makeRouter())
-    }
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            CharacterListView(
-                viewModel: container.makeListViewModel(router: router)
-            )
-            .navigationDestination(for: CharacterRouter.Destination.self) { destination in
-                destinationView(for: destination)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func destinationView(for destination: CharacterRouter.Destination) -> some View {
-        switch destination {
-        case .detail(let character):
-            CharacterDetailView(
-                viewModel: container.makeDetailViewModel(characterId: character.id)
-            )
-        }
-    }
-}
-```
-
----
-
 ## Example: CharacterListView
 
 ```swift
@@ -360,7 +274,7 @@ struct CharacterListView: View {
     CharacterListView(
         viewModel: CharacterListViewModel(
             getCharactersUseCase: GetCharactersUseCaseMock(),
-            router: CharacterRouter()
+            router: RouterMock()
         )
     )
 }
@@ -441,24 +355,16 @@ struct CharacterDetailView: View {
 
 | Component | Visibility | Location |
 |-----------|------------|----------|
-| RootView | internal | `Sources/Presentation/Views/` |
 | ListView / DetailView | internal | `Sources/Presentation/Views/` |
 
 ---
 
 ## Checklist
 
-### RootView
-- [ ] Create RootView that owns Container and Router
-- [ ] Use `_router = State(initialValue:)` for Router
-- [ ] Create NavigationStack with `path: $router.path`
-- [ ] Create child Views with ViewModels from Container
-
-### Child Views (ListView, DetailView)
 - [ ] Create View struct with init receiving ViewModel only
 - [ ] Use `_viewModel = State(initialValue:)` in init
 - [ ] Delegate user actions to ViewModel methods (e.g., `didSelect`)
 - [ ] Implement `body` with `.task` modifier for loading
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases (idle, loading, loaded, error)
-- [ ] Add Previews with mock UseCases
+- [ ] Add Previews with mock UseCases and RouterMock

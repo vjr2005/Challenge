@@ -126,7 +126,56 @@ final class {Name}ListViewModel {
 - **Internal visibility** (not public)
 - Inject UseCases via **protocol (contract)**
 - State is `private(set)` - only ViewModel mutates it
-- **Navigation is handled by the View** using `NavigationPath` (see `/view` skill)
+- Inject `RouterContract` for navigation (see `/router` skill)
+
+---
+
+## ViewModel Pattern (with Navigation)
+
+ViewModels that trigger navigation receive `RouterContract`:
+
+```swift
+import ChallengeCore
+import SwiftUI
+
+@Observable
+final class {Name}ListViewModel {
+    private(set) var state: {Name}ListViewState = .idle
+
+    private let get{Name}sUseCase: Get{Name}sUseCaseContract
+    private let router: RouterContract
+
+    init(get{Name}sUseCase: Get{Name}sUseCaseContract, router: RouterContract) {
+        self.get{Name}sUseCase = get{Name}sUseCase
+        self.router = router
+    }
+
+    func load() async {
+        state = .loading
+        do {
+            let items = try await get{Name}sUseCase.execute()
+            state = items.isEmpty ? .empty : .loaded(items)
+        } catch {
+            state = .error(error)
+        }
+    }
+
+    // Semantic navigation methods
+    func didSelectItem(_ item: {Name}) {
+        router.navigate(to: {Feature}Navigation.detail(identifier: item.id))
+    }
+
+    func didTapOnBack() {
+        router.goBack()
+    }
+}
+```
+
+**Rules:**
+- Inject `RouterContract` (not concrete Router)
+- Use **semantic method names**: `didTapOn...`, `didSelect...`
+- Never expose router to View
+- See `/router` skill for full navigation documentation
 
 ---
 
@@ -260,8 +309,6 @@ final class CharacterListViewModel {
     }
 }
 ```
-
-> **Note:** Navigation is handled by the View using `NavigationPath`. See `/view` skill.
 
 ---
 

@@ -4,13 +4,13 @@ import ChallengeHome
 import SwiftUI
 
 struct ContentView: View {
-    @State private var path = NavigationPath()
+    @State private var router = Router()
 
     var body: some View {
-        NavigationStack(path: $path) {
-            HomeFeature.makeHomeView(router: Router(path: $path))
+        NavigationStack(path: $router.path) {
+            HomeFeature.makeHomeView(router: router)
                 .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation, router: Router(path: $path))
+                    CharacterFeature.view(for: navigation, router: router)
                 }
         }
     }
