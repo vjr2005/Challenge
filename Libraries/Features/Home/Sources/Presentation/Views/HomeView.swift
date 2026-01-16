@@ -1,3 +1,4 @@
+import ChallengeCore
 import SwiftUI
 
 struct HomeView: View {
@@ -15,4 +16,17 @@ struct HomeView: View {
             .buttonStyle(.borderedProminent)
         }
     }
+}
+
+// MARK: - Previews
+
+#Preview {
+	HomeView(viewModel: HomeViewModel(router: RouterPreviewMock()))
+}
+
+// MARK: - Preview Mocks
+
+private final class RouterPreviewMock: RouterContract {
+	func navigate(to destination: any Navigation) {}
+	func goBack() {}
 }

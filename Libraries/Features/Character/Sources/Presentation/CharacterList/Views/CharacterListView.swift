@@ -241,18 +241,57 @@ private struct CharacterRowView: View {
 	}
 }
 
+#Preview("Empty") {
+	NavigationStack {
+		CharacterListView(
+			viewModel: CharacterListViewModel(
+				getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
+				router: RouterPreviewMock()
+			)
+		)
+	}
+}
+
+#Preview("Error") {
+	NavigationStack {
+		CharacterListView(
+			viewModel: CharacterListViewModel(
+				getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
+				router: RouterPreviewMock()
+			)
+		)
+	}
+}
+
 // MARK: - Preview Mocks
 
 private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContract {
 	private let delay: Bool
+	private let isEmpty: Bool
+	private let shouldFail: Bool
 
-	init(delay: Bool = false) {
+	init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
 		self.delay = delay
+		self.isEmpty = isEmpty
+		self.shouldFail = shouldFail
 	}
 
 	func execute(page: Int) async throws -> CharactersPage {
 		if delay {
 			try? await Task.sleep(for: .seconds(100))
+		}
+		if shouldFail {
+			throw PreviewError.failed
+		}
+		if isEmpty {
+			return CharactersPage(
+				characters: [],
+				currentPage: 1,
+				totalPages: 0,
+				totalCount: 0,
+				hasNextPage: false,
+				hasPreviousPage: false
+			)
 		}
 		return CharactersPage(
 			characters: [
@@ -294,6 +333,10 @@ private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContrac
 			hasPreviousPage: false
 		)
 	}
+}
+
+private enum PreviewError: Error {
+	case failed
 }
 
 private final class RouterPreviewMock: RouterContract {

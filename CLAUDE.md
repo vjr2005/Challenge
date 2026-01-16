@@ -974,6 +974,113 @@ var body: some View {
 }
 ```
 
+#### SwiftUI Previews
+
+All Views must include previews. For Views with state-driven content, create a preview for **each state except `idle`**:
+
+```swift
+// View with ViewState - create preview for each non-idle state
+#Preview("Loading") {
+  NavigationStack {
+    CharacterListView(
+      viewModel: CharacterListViewModel(
+        getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
+        router: RouterPreviewMock()
+      )
+    )
+  }
+}
+
+#Preview("Loaded") {
+  NavigationStack {
+    CharacterListView(
+      viewModel: CharacterListViewModel(
+        getCharactersUseCase: GetCharactersUseCasePreviewMock(),
+        router: RouterPreviewMock()
+      )
+    )
+  }
+}
+
+#Preview("Empty") {
+  NavigationStack {
+    CharacterListView(
+      viewModel: CharacterListViewModel(
+        getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
+        router: RouterPreviewMock()
+      )
+    )
+  }
+}
+
+#Preview("Error") {
+  NavigationStack {
+    CharacterListView(
+      viewModel: CharacterListViewModel(
+        getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
+        router: RouterPreviewMock()
+      )
+    )
+  }
+}
+```
+
+**Preview rules:**
+- **Skip `idle` state** - it's a transient state with no visual content
+- **One preview per visual state** - Loading, Loaded, Empty, Error, etc.
+- **Use descriptive names** - `#Preview("Loading")`, `#Preview("Error")`
+- **Wrap in NavigationStack** - when the view uses navigation features
+- **Create preview mocks** - private mocks with configurable behavior (delay, isEmpty, shouldFail)
+
+**Preview mocks pattern:**
+
+```swift
+// MARK: - Preview Mocks
+
+private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContract {
+  private let delay: Bool
+  private let isEmpty: Bool
+  private let shouldFail: Bool
+
+  init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
+    self.delay = delay
+    self.isEmpty = isEmpty
+    self.shouldFail = shouldFail
+  }
+
+  func execute(page: Int) async throws -> CharactersPage {
+    if delay {
+      try? await Task.sleep(for: .seconds(100))
+    }
+    if shouldFail {
+      throw PreviewError.failed
+    }
+    if isEmpty {
+      return CharactersPage(characters: [], ...)
+    }
+    return CharactersPage(characters: [...], ...)
+  }
+}
+
+private enum PreviewError: Error {
+  case failed
+}
+
+private final class RouterPreviewMock: RouterContract {
+  func navigate(to destination: any Navigation) {}
+  func goBack() {}
+}
+```
+
+**Stateless views** (no ViewState) need only one preview:
+
+```swift
+// Simple view without states
+#Preview {
+  HomeView(viewModel: HomeViewModel(router: RouterPreviewMock()))
+}
+```
+
 ### Testing (Swift Testing)
 
 #### Naming: System Under Test (SUT)
