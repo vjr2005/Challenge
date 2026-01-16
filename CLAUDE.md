@@ -660,6 +660,22 @@ let mockUser = UserMock()
 var mockData: DataMock
 ```
 
+**Identifier naming rule:** Prefer `identifier` over `id` for variable and parameter names:
+
+```swift
+// RIGHT - Use 'identifier'
+func getCharacter(identifier: Int) -> Character
+case detail(identifier: Int)
+let characterIdentifier = character.id
+
+// WRONG - Avoid 'id' as variable/parameter name
+func getCharacter(id: Int) -> Character
+case detail(id: Int)
+let characterId = character.id
+```
+
+> **Note:** Model properties from APIs may use `id` (e.g., `character.id`), but local variables and parameters should use `identifier`.
+
 ### Code Style
 
 ```swift

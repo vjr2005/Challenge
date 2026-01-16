@@ -3,13 +3,12 @@ import Testing
 
 @testable import ChallengeCharacter
 
-@MainActor
 struct CharacterViewModelTests {
 	@Test
 	func initialStateIsIdle() {
 		// Given
 		let useCase = GetCharacterUseCaseMock()
-		let sut = CharacterViewModel(getCharacterUseCase: useCase)
+		let sut = CharacterViewModel(identifier: 1, getCharacterUseCase: useCase)
 
 		// Then
 		guard case .idle = sut.state else {
@@ -22,12 +21,13 @@ struct CharacterViewModelTests {
 	func loadSetsLoadedStateOnSuccess() async {
 		// Given
 		let expected = Character.stub()
+        let identifier = 1
 		let useCase = GetCharacterUseCaseMock()
 		useCase.result = .success(expected)
-		let sut = CharacterViewModel(getCharacterUseCase: useCase)
+		let sut = CharacterViewModel(identifier: identifier, getCharacterUseCase: useCase)
 
 		// When
-		await sut.load(id: 1)
+		await sut.load(identifier: identifier)
 
 		// Then
 		guard case .loaded(let value) = sut.state else {
@@ -40,12 +40,13 @@ struct CharacterViewModelTests {
 	@Test
 	func loadSetsErrorStateOnFailure() async {
 		// Given
+        let identifier = 1
 		let useCase = GetCharacterUseCaseMock()
 		useCase.result = .failure(TestError.network)
-		let sut = CharacterViewModel(getCharacterUseCase: useCase)
+		let sut = CharacterViewModel(identifier: identifier, getCharacterUseCase: useCase)
 
 		// When
-		await sut.load(id: 1)
+		await sut.load(identifier: 1)
 
 		// Then
 		guard case .error = sut.state else {
@@ -57,16 +58,17 @@ struct CharacterViewModelTests {
 	@Test
 	func loadCallsUseCaseWithCorrectId() async {
 		// Given
+        let identifier = 1
 		let useCase = GetCharacterUseCaseMock()
 		useCase.result = .success(.stub())
-		let sut = CharacterViewModel(getCharacterUseCase: useCase)
+		let sut = CharacterViewModel(identifier: identifier, getCharacterUseCase: useCase)
 
 		// When
-		await sut.load(id: 42)
+		await sut.load(identifier: 42)
 
 		// Then
 		#expect(useCase.executeCallCount == 1)
-		#expect(useCase.lastRequestedId == 42)
+		#expect(useCase.lastRequestedIdentifier == 42)
 	}
 }
 

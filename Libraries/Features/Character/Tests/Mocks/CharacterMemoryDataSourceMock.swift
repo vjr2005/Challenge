@@ -7,8 +7,8 @@ actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
 	private(set) var saveCallCount = 0
 	private(set) var deleteCallCount = 0
 
-	func getCharacter(id: Int) -> CharacterDTO? {
-		storage[id]
+	func getCharacter(identifier: Int) -> CharacterDTO? {
+		storage[identifier]
 	}
 
 	func getAllCharacters() -> [CharacterDTO] {
@@ -27,9 +27,9 @@ actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
 		}
 	}
 
-	func deleteCharacter(id: Int) {
+	func deleteCharacter(identifier: Int) {
 		deleteCallCount += 1
-		storage.removeValue(forKey: id)
+		storage.removeValue(forKey: identifier)
 	}
 
 	func deleteAllCharacters() {

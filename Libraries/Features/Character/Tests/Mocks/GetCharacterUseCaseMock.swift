@@ -6,11 +6,11 @@ import Foundation
 final class GetCharacterUseCaseMock: GetCharacterUseCaseContract, @unchecked Sendable {
 	var result: Result<Character, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var executeCallCount = 0
-	private(set) var lastRequestedId: Int?
+	private(set) var lastRequestedIdentifier: Int?
 
-	func execute(id: Int) async throws -> Character {
+	func execute(identifier: Int) async throws -> Character {
 		executeCallCount += 1
-		lastRequestedId = id
+		lastRequestedIdentifier = identifier
 		return try result.get()
 	}
 }

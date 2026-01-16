@@ -19,7 +19,7 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		let value = try await sut.getCharacter(id: 1)
+		let value = try await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(value == expected)
@@ -37,7 +37,7 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		_ = try await sut.getCharacter(id: 1)
+		_ = try await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(remoteDataSource.fetchCharacterCallCount == 0)
@@ -58,7 +58,7 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		let value = try await sut.getCharacter(id: 1)
+		let value = try await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(value == expected)
@@ -77,8 +77,8 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		_ = try await sut.getCharacter(id: 1)
-		let cachedValue = await memoryDataSource.getCharacter(id: 1)
+		_ = try await sut.getCharacter(identifier: 1)
+		let cachedValue = await memoryDataSource.getCharacter(identifier: 1)
 
 		// Then
 		#expect(cachedValue == .stub())
@@ -97,11 +97,11 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		_ = try await sut.getCharacter(id: 42)
+		_ = try await sut.getCharacter(identifier: 42)
 
 		// Then
 		#expect(remoteDataSource.fetchCharacterCallCount == 1)
-		#expect(remoteDataSource.lastFetchedId == 42)
+		#expect(remoteDataSource.lastFetchedIdentifier == 42)
 	}
 
 	// MARK: - Transformation Tests
@@ -119,7 +119,7 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		let value = try await sut.getCharacter(id: 1)
+		let value = try await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(value == expected)
@@ -138,7 +138,7 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		let value = try await sut.getCharacter(id: 1)
+		let value = try await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(value == expected)
@@ -159,7 +159,7 @@ struct CharacterRepositoryTests {
 
 		// When / Then
 		await #expect(throws: TestError.network) {
-			_ = try await sut.getCharacter(id: 1)
+			_ = try await sut.getCharacter(identifier: 1)
 		}
 	}
 
@@ -175,7 +175,7 @@ struct CharacterRepositoryTests {
 		)
 
 		// When
-		_ = try? await sut.getCharacter(id: 1)
+		_ = try? await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(await memoryDataSource.saveCallCount == 0)

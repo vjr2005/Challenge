@@ -38,7 +38,7 @@ import SwiftUI
 @Observable
 final class {Feature}Router {
     enum Destination: Hashable {
-        case detail(id: Int)
+        case detail(identifier: Int)
         case settings
     }
 
@@ -69,7 +69,7 @@ final class {Feature}Router {
 - One Router per feature
 - `Destination` enum with all possible destinations
 - `path` is public for binding to `NavigationStack`
-- **Use primitive IDs, not domain objects** - Destinations should only contain minimal data needed to render the screen (e.g., `detail(id: Int)` instead of `detail(Character)`)
+- **Use primitive IDs, not domain objects** - Destinations should only contain minimal data needed to render the screen (e.g., `detail(identifier: Int)` instead of `detail(Character)`)
 
 ---
 
@@ -88,7 +88,7 @@ final class {Name}ListViewModel {
     }
 
     func didSelectItem(_ item: {Name}) {
-        router.navigate(to: .detail(id: item.id))
+        router.navigate(to: .detail(identifier: item.id))
     }
 }
 ```
@@ -122,7 +122,7 @@ struct {Feature}RouterTests {
     func navigateAddsDestinationToPath() {
         // Given
         let sut = {Feature}Router()
-        let destination = {Feature}Router.Destination.detail(id: 1)
+        let destination = {Feature}Router.Destination.detail(identifier: 1)
 
         // When
         sut.navigate(to: destination)
@@ -135,7 +135,7 @@ struct {Feature}RouterTests {
     func popRemovesLastDestination() {
         // Given
         let sut = {Feature}Router()
-        sut.navigate(to: .detail(id: 1))
+        sut.navigate(to: .detail(identifier: 1))
         sut.navigate(to: .settings)
 
         // When
@@ -161,7 +161,7 @@ struct {Feature}RouterTests {
     func popToRootRemovesAllDestinations() {
         // Given
         let sut = {Feature}Router()
-        sut.navigate(to: .detail(id: 1))
+        sut.navigate(to: .detail(identifier: 1))
         sut.navigate(to: .settings)
 
         // When
@@ -176,7 +176,7 @@ struct {Feature}RouterTests {
 **Testing Rules:**
 - `@MainActor` on test struct to access Router
 - Test initial state, navigation, pop, and popToRoot
-- Use primitive IDs in test destinations (e.g., `detail(id: 1)`)
+- Use primitive IDs in test destinations (e.g., `detail(identifier: 1)`)
 
 ---
 
@@ -194,7 +194,7 @@ final class CharacterRouter {
     var path = NavigationPath()
 
     enum Destination: Hashable {
-        case detail(id: Int)
+        case detail(identifier: Int)
     }
 
     func navigate(to destination: Destination) {
@@ -234,7 +234,7 @@ struct CharacterRouterTests {
     func navigateAddsDestinationToPath() {
         let sut = CharacterRouter()
 
-        sut.navigate(to: .detail(id: 1))
+        sut.navigate(to: .detail(identifier: 1))
 
         #expect(sut.path.count == 1)
     }
@@ -242,7 +242,7 @@ struct CharacterRouterTests {
     @Test
     func popRemovesLastDestination() {
         let sut = CharacterRouter()
-        sut.navigate(to: .detail(id: 1))
+        sut.navigate(to: .detail(identifier: 1))
 
         sut.pop()
 
@@ -261,8 +261,8 @@ struct CharacterRouterTests {
     @Test
     func popToRootRemovesAllDestinations() {
         let sut = CharacterRouter()
-        sut.navigate(to: .detail(id: 1))
-        sut.navigate(to: .detail(id: 2))
+        sut.navigate(to: .detail(identifier: 1))
+        sut.navigate(to: .detail(identifier: 2))
 
         sut.popToRoot()
 

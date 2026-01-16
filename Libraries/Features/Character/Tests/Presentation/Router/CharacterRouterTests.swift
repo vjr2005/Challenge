@@ -3,7 +3,6 @@ import Testing
 
 @testable import ChallengeCharacter
 
-@MainActor
 struct CharacterRouterTests {
 	@Test
 	func initialPathIsEmpty() {
@@ -20,7 +19,7 @@ struct CharacterRouterTests {
 		let sut = CharacterRouter()
 
 		// When
-		sut.navigate(to: .detail(.stub()))
+        sut.navigate(to: .detail(identifier: 1))
 
 		// Then
 		#expect(sut.path.count == 1)
@@ -30,7 +29,7 @@ struct CharacterRouterTests {
 	func popRemovesLastDestination() {
 		// Given
 		let sut = CharacterRouter()
-		sut.navigate(to: .detail(.stub()))
+		sut.navigate(to: .detail(identifier: 1))
 
 		// When
 		sut.pop()
@@ -55,8 +54,8 @@ struct CharacterRouterTests {
 	func popToRootRemovesAllDestinations() {
 		// Given
 		let sut = CharacterRouter()
-		sut.navigate(to: .detail(.stub()))
-		sut.navigate(to: .detail(.stub()))
+		sut.navigate(to: .detail(identifier: 1))
+		sut.navigate(to: .detail(identifier: 2))
 
 		// When
 		sut.popToRoot()

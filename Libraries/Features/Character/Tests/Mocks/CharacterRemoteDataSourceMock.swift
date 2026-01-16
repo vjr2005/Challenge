@@ -6,11 +6,11 @@ import Foundation
 final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @unchecked Sendable {
 	var result: Result<CharacterDTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetchCharacterCallCount = 0
-	private(set) var lastFetchedId: Int?
+	private(set) var lastFetchedIdentifier: Int?
 
-	func fetchCharacter(id: Int) async throws -> CharacterDTO {
+	func fetchCharacter(identifier: Int) async throws -> CharacterDTO {
 		fetchCharacterCallCount += 1
-		lastFetchedId = id
+		lastFetchedIdentifier = identifier
 		return try result.get()
 	}
 }

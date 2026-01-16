@@ -6,11 +6,11 @@ import Foundation
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
 	var result: Result<Character, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var getCharacterCallCount = 0
-	private(set) var lastRequestedId: Int?
+	private(set) var lastRequestedIdentifier: Int?
 
-	func getCharacter(id: Int) async throws -> Character {
+	func getCharacter(identifier: Int) async throws -> Character {
 		getCharacterCallCount += 1
-		lastRequestedId = id
+		lastRequestedIdentifier = identifier
 		return try result.get()
 	}
 }

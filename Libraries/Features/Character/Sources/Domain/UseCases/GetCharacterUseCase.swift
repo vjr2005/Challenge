@@ -2,7 +2,7 @@ import Foundation
 
 /// Contract for getting a character by ID.
 protocol GetCharacterUseCaseContract: Sendable {
-	func execute(id: Int) async throws -> Character
+	func execute(identifier: Int) async throws -> Character
 }
 
 /// UseCase that retrieves a character from the repository.
@@ -13,7 +13,7 @@ struct GetCharacterUseCase: GetCharacterUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(id: Int) async throws -> Character {
-		try await repository.getCharacter(id: id)
+	func execute(identifier: Int) async throws -> Character {
+		try await repository.getCharacter(identifier: identifier)
 	}
 }

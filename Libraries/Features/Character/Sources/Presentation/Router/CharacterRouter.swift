@@ -1,11 +1,10 @@
 import SwiftUI
 
 /// Router that manages navigation for the Character feature.
-@MainActor
 @Observable
 final class CharacterRouter {
 	enum Destination: Hashable {
-		case detail(Character)
+        case detail(identifier: Int)
 	}
 
     var path = NavigationPath()

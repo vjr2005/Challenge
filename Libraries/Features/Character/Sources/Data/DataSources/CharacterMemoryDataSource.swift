@@ -2,11 +2,11 @@ import Foundation
 
 /// Contract for in-memory character data storage.
 protocol CharacterMemoryDataSourceContract: Sendable {
-	func getCharacter(id: Int) async -> CharacterDTO?
+	func getCharacter(identifier: Int) async -> CharacterDTO?
 	func getAllCharacters() async -> [CharacterDTO]
 	func saveCharacter(_ character: CharacterDTO) async
 	func saveCharacters(_ characters: [CharacterDTO]) async
-	func deleteCharacter(id: Int) async
+	func deleteCharacter(identifier: Int) async
 	func deleteAllCharacters() async
 }
 
@@ -15,8 +15,8 @@ protocol CharacterMemoryDataSourceContract: Sendable {
 actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract {
 	private var storage: [Int: CharacterDTO] = [:]
 
-	func getCharacter(id: Int) -> CharacterDTO? {
-		storage[id]
+	func getCharacter(identifier: Int) -> CharacterDTO? {
+		storage[identifier]
 	}
 
 	func getAllCharacters() -> [CharacterDTO] {
@@ -33,8 +33,8 @@ actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract {
 		}
 	}
 
-	func deleteCharacter(id: Int) {
-		storage.removeValue(forKey: id)
+	func deleteCharacter(identifier: Int) {
+		storage.removeValue(forKey: identifier)
 	}
 
 	func deleteAllCharacters() {

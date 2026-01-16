@@ -12,7 +12,7 @@ struct CharacterRemoteDataSourceTests {
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
-		_ = try await sut.fetchCharacter(id: 1)
+		_ = try await sut.fetchCharacter(identifier: 1)
 
 		// Then
 		let endpoint = try #require(httpClient.requestedEndpoints.first)
@@ -28,7 +28,7 @@ struct CharacterRemoteDataSourceTests {
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
-		let value = try await sut.fetchCharacter(id: 1)
+		let value = try await sut.fetchCharacter(identifier: 1)
 
 		// Then
 		#expect(value == expected)
@@ -42,22 +42,22 @@ struct CharacterRemoteDataSourceTests {
 
 		// When / Then
 		await #expect(throws: TestError.network) {
-			_ = try await sut.fetchCharacter(id: 1)
+			_ = try await sut.fetchCharacter(identifier: 1)
 		}
 	}
 
 	@Test(arguments: [1, 2, 42, 826])
-	func fetchCharacterUsesProvidedId(_ id: Int) async throws {
+	func fetchCharacterUsesProvidedId(_ identifier: Int) async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(makeCharacterData(id: id)))
+		let httpClient = HTTPClientMock(result: .success(makeCharacterData(identifier: identifier)))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
-		_ = try await sut.fetchCharacter(id: id)
+		_ = try await sut.fetchCharacter(identifier: identifier)
 
 		// Then
 		let endpoint = try #require(httpClient.requestedEndpoints.first)
-		#expect(endpoint.path == "/character/\(id)")
+		#expect(endpoint.path == "/character/\(identifier)")
 	}
 }
 
@@ -66,10 +66,10 @@ private enum TestError: Error {
 }
 
 private extension CharacterRemoteDataSourceTests {
-	func makeCharacterData(id: Int = 1) -> Data {
+	func makeCharacterData(identifier: Int = 1) -> Data {
 		let json = """
 		{
-			"id": \(id),
+			"id": \(identifier),
 			"name": "Rick Sanchez",
 			"status": "Alive",
 			"species": "Human",

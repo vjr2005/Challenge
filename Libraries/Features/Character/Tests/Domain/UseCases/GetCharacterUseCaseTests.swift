@@ -13,7 +13,7 @@ struct GetCharacterUseCaseTests {
 		let sut = GetCharacterUseCase(repository: repository)
 
 		// When
-		let value = try await sut.execute(id: 1)
+		let value = try await sut.execute(identifier: 1)
 
 		// Then
 		#expect(value == expected)
@@ -27,11 +27,11 @@ struct GetCharacterUseCaseTests {
 		let sut = GetCharacterUseCase(repository: repository)
 
 		// When
-		_ = try await sut.execute(id: 42)
+		_ = try await sut.execute(identifier: 42)
 
 		// Then
 		#expect(repository.getCharacterCallCount == 1)
-		#expect(repository.lastRequestedId == 42)
+		#expect(repository.lastRequestedIdentifier == 42)
 	}
 
 	@Test
@@ -43,7 +43,7 @@ struct GetCharacterUseCaseTests {
 
 		// When / Then
 		await #expect(throws: TestError.network) {
-			_ = try await sut.execute(id: 1)
+			_ = try await sut.execute(identifier: 1)
 		}
 	}
 }

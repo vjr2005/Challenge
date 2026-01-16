@@ -12,7 +12,7 @@ struct CharacterMemoryDataSourceTests {
 
 		// When
 		await sut.saveCharacter(expected)
-		let value = await sut.getCharacter(id: expected.id)
+		let value = await sut.getCharacter(identifier: expected.id)
 
 		// Then
 		#expect(value == expected)
@@ -24,7 +24,7 @@ struct CharacterMemoryDataSourceTests {
 		let sut = CharacterMemoryDataSource()
 
 		// When
-		let value = await sut.getCharacter(id: 999)
+		let value = await sut.getCharacter(identifier: 999)
 
 		// Then
 		#expect(value == nil)
@@ -52,8 +52,8 @@ struct CharacterMemoryDataSourceTests {
 		await sut.saveCharacter(character)
 
 		// When
-		await sut.deleteCharacter(id: character.id)
-		let value = await sut.getCharacter(id: character.id)
+		await sut.deleteCharacter(identifier: character.id)
+		let value = await sut.getCharacter(identifier: character.id)
 
 		// Then
 		#expect(value == nil)
@@ -84,7 +84,7 @@ struct CharacterMemoryDataSourceTests {
 
 		// When
 		await sut.saveCharacter(updated)
-		let value = await sut.getCharacter(id: 1)
+		let value = await sut.getCharacter(identifier: 1)
 
 		// Then
 		#expect(value == updated)
