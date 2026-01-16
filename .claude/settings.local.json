@@ -12,7 +12,8 @@
       "Bash(swiftlint rules:*)",
       "WebSearch",
       "WebFetch(domain:www.hackingwithswift.com)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(chmod:*)"
     ]
   }
 }

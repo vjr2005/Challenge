@@ -22,7 +22,7 @@ struct EndpointTests {
 		// Given
 		let queryItems = [
 			URLQueryItem(name: "page", value: "1"),
-			URLQueryItem(name: "limit", value: "20"),
+			URLQueryItem(name: "limit", value: "20")
 		]
 
 		// When
@@ -39,7 +39,7 @@ struct EndpointTests {
 		HTTPMethod.post,
 		HTTPMethod.put,
 		HTTPMethod.patch,
-		HTTPMethod.delete,
+		HTTPMethod.delete
 	])
 	func supportsHTTPMethod(_ method: HTTPMethod) {
 		// Given
@@ -56,7 +56,7 @@ struct EndpointTests {
 	@Test(arguments: [
 		"/users",
 		"/posts/123",
-		"/api/v1/items",
+		"/api/v1/items"
 	])
 	func preservesPath(_ path: String) {
 		// When

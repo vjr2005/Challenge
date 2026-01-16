@@ -7,12 +7,7 @@ public enum SwiftLint {
 		let lintPath = path ?? "."
 		return .post(
 			script: """
-			export PATH="/opt/homebrew/bin:$PATH"
-			if command -v swiftlint >/dev/null 2>&1; then
-				swiftlint lint --config "${SRCROOT}/.swiftlint.yml" "\(lintPath)"
-			else
-				echo "warning: SwiftLint not installed. Run ./setup.sh to install."
-			fi
+			"${SRCROOT}/Scripts/run_swiftlint.sh" "\(lintPath)"
 			""",
 			name: "SwiftLint",
 			basedOnDependencyAnalysis: false

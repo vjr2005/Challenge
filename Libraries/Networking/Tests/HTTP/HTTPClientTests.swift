@@ -33,7 +33,7 @@ struct HTTPClientTests {
 			path: "/users",
 			queryItems: [
 				URLQueryItem(name: "page", value: "1"),
-				URLQueryItem(name: "limit", value: "20"),
+				URLQueryItem(name: "limit", value: "20")
 			],
 		)
 
@@ -59,7 +59,7 @@ struct HTTPClientTests {
 			path: "/users",
 			headers: [
 				"Authorization": "Bearer token123",
-				"Content-Type": "application/json",
+				"Content-Type": "application/json"
 			],
 		)
 

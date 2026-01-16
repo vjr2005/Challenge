@@ -7,7 +7,7 @@ struct HTTPErrorTests {
 	@Test(arguments: [
 		(HTTPError.invalidURL, HTTPError.invalidURL, true),
 		(HTTPError.invalidResponse, HTTPError.invalidResponse, true),
-		(HTTPError.invalidURL, HTTPError.invalidResponse, false),
+		(HTTPError.invalidURL, HTTPError.invalidResponse, false)
 	])
 	func equality(
 		lhs: HTTPError,
@@ -24,7 +24,7 @@ struct HTTPErrorTests {
 	@Test(arguments: [
 		(404, 404, true),
 		(404, 500, false),
-		(200, 200, true),
+		(200, 200, true)
 	])
 	func statusCodeEquality(
 		lhsCode: Int,

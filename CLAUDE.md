@@ -10,7 +10,7 @@ This document defines the coding standards, architecture patterns, and developme
 > - Implicit returns where explicit are needed
 > - **Never use force unwrap (`!`)** - use `guard let`, `if let`, or `try?` instead
 >
-> **Documentation examples must follow the same rules as generated code.** All code snippets in README files, skills, and other documentation must be valid, compilable Swift that adheres to this style guide.
+> **All code must pass SwiftLint validation.** This includes generated code and documentation examples (README files, skills, etc.). All code snippets must be valid, compilable Swift that adheres to this style guide and SwiftLint rules.
 
 ## Table of Contents
 

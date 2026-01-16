@@ -4,18 +4,20 @@ import SwiftUI
 @MainActor
 @Observable
 final class CharacterRouter {
-	var path = NavigationPath()
-
 	enum Destination: Hashable {
 		case detail(Character)
 	}
+
+    var path = NavigationPath()
 
 	func navigate(to destination: Destination) {
 		path.append(destination)
 	}
 
 	func pop() {
-		guard !path.isEmpty else { return }
+        guard !path.isEmpty else {
+            return
+        }
 		path.removeLast()
 	}
 
