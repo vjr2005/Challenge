@@ -28,8 +28,8 @@ struct CharacterListView: View {
 			characterList(page: page)
 		case .empty:
 			emptyView
-		case .error(let message):
-			errorView(message: message)
+		case .error(let error):
+			errorView(error: error)
 		}
 	}
 }
@@ -121,11 +121,11 @@ private extension CharacterListView {
 		)
 	}
 
-	func errorView(message: String) -> some View {
+	func errorView(error: Error) -> some View {
 		ContentUnavailableView(
 			"Error",
 			systemImage: "exclamationmark.triangle",
-			description: Text(message)
+			description: Text(error.localizedDescription)
 		)
 	}
 }

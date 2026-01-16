@@ -51,7 +51,7 @@ private extension CharacterListViewModel {
 				state = .loaded(result)
 			}
 		} catch {
-			state = .error(error.localizedDescription)
+			state = .error(error)
 		}
 	}
 

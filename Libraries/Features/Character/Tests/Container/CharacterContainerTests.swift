@@ -49,10 +49,7 @@ struct CharacterContainerTests {
 		let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
 
 		// Then
-		guard case .idle = viewModel.state else {
-			Issue.record("Expected idle state")
-			return
-		}
+		#expect(viewModel.state == .idle)
 	}
 
 	@Test

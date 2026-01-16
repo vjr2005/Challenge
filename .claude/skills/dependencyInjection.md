@@ -74,7 +74,7 @@ import SwiftUI
 public enum {Feature}Feature {
     private static let container = {Feature}Container()
 
-    @MainActor @ViewBuilder
+    @ViewBuilder
     public static func view(for navigation: {Feature}Navigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
@@ -271,7 +271,7 @@ import SwiftUI
 public enum CharacterFeature {
     private static let container = CharacterContainer()
 
-    @MainActor @ViewBuilder
+    @ViewBuilder
     public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:

@@ -197,39 +197,120 @@ case .loaded(let items):
 
 ## Previews
 
-Previews create ViewModels with mocks:
+All Views must include previews. For Views with state-driven content, create a preview for **each state except `idle`**.
+
+### Preview Rules
+
+- **Skip `idle` state** - it's a transient state with no visual content
+- **One preview per visual state** - Loading, Loaded, Empty, Error, etc.
+- **Use descriptive names** - `#Preview("Loading")`, `#Preview("Error")`
+- **Wrap in NavigationStack** - when the view uses navigation features
+- **Create private preview mocks** - with configurable behavior (delay, isEmpty, shouldFail)
+
+### Preview Mocks Pattern
+
+Previews use **private mocks** defined at the bottom of the View file:
 
 ```swift
-#Preview {
-    let mock = GetCharacterUseCaseMock()
-    mock.result = .success(.stub())
-    return CharacterDetailView(
-        viewModel: CharacterDetailViewModel(
-            getCharacterUseCase: mock
-        )
-    )
+// MARK: - Preview Mocks
+
+private final class Get{Name}UseCasePreviewMock: Get{Name}UseCaseContract {
+    private let delay: Bool
+    private let isEmpty: Bool
+    private let shouldFail: Bool
+
+    init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
+        self.delay = delay
+        self.isEmpty = isEmpty
+        self.shouldFail = shouldFail
+    }
+
+    func execute() async throws -> {Name} {
+        if delay {
+            try? await Task.sleep(for: .seconds(100))
+        }
+        if shouldFail {
+            throw PreviewError.failed
+        }
+        if isEmpty {
+            return {Name}(items: [])
+        }
+        return {Name}.stubForPreview()
+    }
+}
+
+private enum PreviewError: Error {
+    case failed
+}
+
+private final class RouterPreviewMock: RouterContract {
+    func navigate(to destination: any Navigation) {}
+    func goBack() {}
 }
 ```
 
-**Multiple states:**
+### Previews for Views with State
 
 ```swift
 #Preview("Loading") {
-    CharacterDetailView(
-        viewModel: CharacterDetailViewModel(
-            getCharacterUseCase: GetCharacterUseCaseMock()
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
+                router: RouterPreviewMock()
+            )
         )
-    )
+    }
 }
 
 #Preview("Loaded") {
-    let mock = GetCharacterUseCaseMock()
-    mock.result = .success(.stub())
-    return CharacterDetailView(
-        viewModel: CharacterDetailViewModel(
-            getCharacterUseCase: mock
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(),
+                router: RouterPreviewMock()
+            )
         )
-    )
+    }
+}
+
+#Preview("Empty") {
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
+                router: RouterPreviewMock()
+            )
+        )
+    }
+}
+
+#Preview("Error") {
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
+                router: RouterPreviewMock()
+            )
+        )
+    }
+}
+```
+
+### Previews for Stateless Views
+
+Stateless views (no ViewState) need only one preview:
+
+```swift
+#Preview {
+    HomeView(viewModel: HomeViewModel(router: RouterPreviewMock()))
+}
+
+// MARK: - Preview Mocks
+
+private final class RouterPreviewMock: RouterContract {
+    func navigate(to destination: any Navigation) {}
+    func goBack() {}
 }
 ```
 
@@ -283,13 +364,50 @@ struct CharacterListView: View {
     }
 }
 
-#Preview {
-    CharacterListView(
-        viewModel: CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCaseMock(),
-            router: RouterMock()
+// MARK: - Previews
+
+#Preview("Loading") {
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
+                router: RouterPreviewMock()
+            )
         )
-    )
+    }
+}
+
+#Preview("Loaded") {
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(),
+                router: RouterPreviewMock()
+            )
+        )
+    }
+}
+
+// MARK: - Preview Mocks
+
+private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContract {
+    private let delay: Bool
+
+    init(delay: Bool = false) {
+        self.delay = delay
+    }
+
+    func execute() async throws -> [Character] {
+        if delay {
+            try? await Task.sleep(for: .seconds(100))
+        }
+        return [Character.stub()]
+    }
+}
+
+private final class RouterPreviewMock: RouterContract {
+    func navigate(to destination: any Navigation) {}
+    func goBack() {}
 }
 ```
 
@@ -349,16 +467,73 @@ struct CharacterDetailView: View {
     }
 }
 
-#Preview {
-    let mock = GetCharacterUseCaseMock()
-    mock.result = .success(.stub())
-    return NavigationStack {
+// MARK: - Previews
+
+#Preview("Loading") {
+    NavigationStack {
         CharacterDetailView(
             viewModel: CharacterDetailViewModel(
-                getCharacterUseCase: mock
+                identifier: 1,
+                getCharacterUseCase: GetCharacterUseCasePreviewMock(delay: true),
+                router: RouterPreviewMock()
             )
         )
     }
+}
+
+#Preview("Loaded") {
+    NavigationStack {
+        CharacterDetailView(
+            viewModel: CharacterDetailViewModel(
+                identifier: 1,
+                getCharacterUseCase: GetCharacterUseCasePreviewMock(),
+                router: RouterPreviewMock()
+            )
+        )
+    }
+}
+
+#Preview("Error") {
+    NavigationStack {
+        CharacterDetailView(
+            viewModel: CharacterDetailViewModel(
+                identifier: 1,
+                getCharacterUseCase: GetCharacterUseCasePreviewMock(shouldFail: true),
+                router: RouterPreviewMock()
+            )
+        )
+    }
+}
+
+// MARK: - Preview Mocks
+
+private final class GetCharacterUseCasePreviewMock: GetCharacterUseCaseContract {
+    private let delay: Bool
+    private let shouldFail: Bool
+
+    init(delay: Bool = false, shouldFail: Bool = false) {
+        self.delay = delay
+        self.shouldFail = shouldFail
+    }
+
+    func execute(identifier: Int) async throws -> Character {
+        if delay {
+            try? await Task.sleep(for: .seconds(100))
+        }
+        if shouldFail {
+            throw PreviewError.failed
+        }
+        return Character.stub()
+    }
+}
+
+private enum PreviewError: Error {
+    case failed
+}
+
+private final class RouterPreviewMock: RouterContract {
+    func navigate(to destination: any Navigation) {}
+    func goBack() {}
 }
 ```
 
@@ -380,4 +555,4 @@ struct CharacterDetailView: View {
 - [ ] Implement `body` with `.task` modifier for loading
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases (idle, loading, loaded, error)
-- [ ] Add Previews with mock UseCases and RouterMock
+- [ ] Add Previews for each state (except idle) with private preview mocks

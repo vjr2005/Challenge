@@ -1,5 +1,5 @@
 import ChallengeCore
-import SwiftUI
+import Foundation
 
 /// ViewModel that manages Character state and coordinates with UseCases.
 @Observable

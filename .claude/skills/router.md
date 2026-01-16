@@ -300,15 +300,14 @@ struct {Name}ViewModelTests {
 
 ---
 
-## Example: HomeViewModel
+## Example: HomeViewModel (Stateless)
 
 ```swift
 // Libraries/Features/Home/Sources/Presentation/ViewModels/HomeViewModel.swift
 import ChallengeCharacter
 import ChallengeCore
-import SwiftUI
 
-@Observable
+/// Not @Observable: no state for the view to observe, only exposes actions.
 final class HomeViewModel {
     private let router: RouterContract
 
@@ -321,6 +320,8 @@ final class HomeViewModel {
     }
 }
 ```
+
+> **Note:** HomeViewModel doesn't use `@Observable` because it has no state - see `/viewmodel` skill for stateless ViewModel pattern.
 
 ### HomeViewModelTests
 

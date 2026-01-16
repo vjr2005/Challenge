@@ -13,10 +13,7 @@ struct CharacterDetailViewModelTests {
 		let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCase, router: router)
 
 		// Then
-		guard case .idle = sut.state else {
-			Issue.record("Expected idle state")
-			return
-		}
+		#expect(sut.state == .idle)
 	}
 
 	@Test
@@ -32,11 +29,7 @@ struct CharacterDetailViewModelTests {
 		await sut.load()
 
 		// Then
-		guard case .loaded(let value) = sut.state else {
-			Issue.record("Expected loaded state")
-			return
-		}
-		#expect(value == expected)
+		#expect(sut.state == .loaded(expected))
 	}
 
 	@Test
@@ -51,10 +44,7 @@ struct CharacterDetailViewModelTests {
 		await sut.load()
 
 		// Then
-		guard case .error = sut.state else {
-			Issue.record("Expected error state")
-			return
-		}
+		#expect(sut.state == .error(TestError.network))
 	}
 
 	@Test

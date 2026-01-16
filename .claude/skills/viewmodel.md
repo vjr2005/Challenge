@@ -47,6 +47,19 @@ enum {Name}ViewState {
     case loading
     case loaded({Name})
     case error(Error)
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle), (.loading, .loading):
+            true
+        case let (.loaded(lhsData), .loaded(rhsData)):
+            lhsData == rhsData
+        case let (.error(lhsError), .error(rhsError)):
+            lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            false
+        }
+    }
 }
 ```
 
@@ -56,6 +69,7 @@ enum {Name}ViewState {
 - `idle` is the initial state
 - `loaded` contains the data
 - `error` contains the Error
+- Implement `==` operator for testability (enables direct comparison in tests)
 
 ### For lists:
 
@@ -66,6 +80,19 @@ enum {Name}ListViewState {
     case loaded([{Name}])
     case empty
     case error(Error)
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle), (.loading, .loading), (.empty, .empty):
+            true
+        case let (.loaded(lhsData), .loaded(rhsData)):
+            lhsData == rhsData
+        case let (.error(lhsError), .error(rhsError)):
+            lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            false
+        }
+    }
 }
 ```
 
@@ -74,7 +101,7 @@ enum {Name}ListViewState {
 ## ViewModel Pattern (Detail - no navigation)
 
 ```swift
-import SwiftUI
+import Foundation
 
 @Observable
 final class {Name}DetailViewModel {
@@ -103,7 +130,7 @@ final class {Name}DetailViewModel {
 ## ViewModel Pattern (List)
 
 ```swift
-import SwiftUI
+import Foundation
 
 @Observable
 final class {Name}ListViewModel {
@@ -143,7 +170,7 @@ ViewModels that trigger navigation receive `RouterContract`:
 
 ```swift
 import ChallengeCore
-import SwiftUI
+import Foundation
 
 @Observable
 final class {Name}ListViewModel {
@@ -186,6 +213,68 @@ final class {Name}ListViewModel {
 
 ---
 
+## ViewModel Pattern (Stateless - navigation only)
+
+ViewModels that **only trigger navigation** (no observable state) don't need `@Observable`:
+
+```swift
+import ChallengeCore
+
+/// Not @Observable: no state for the view to observe, only exposes actions.
+final class {Name}ViewModel {
+    private let router: RouterContract
+
+    init(router: RouterContract) {
+        self.router = router
+    }
+
+    func didTapOn{Action}() {
+        router.navigate(to: {Feature}Navigation.{destination})
+    }
+}
+```
+
+**When to use:**
+- ViewModel has **no state** for the View to observe
+- ViewModel only exposes **action methods** (navigation, triggers)
+- View uses `let viewModel` instead of `@State private var viewModel`
+
+**Example: HomeViewModel**
+
+```swift
+import ChallengeCore
+
+/// Not @Observable: no state for the view to observe, only exposes actions.
+final class HomeViewModel {
+    private let router: RouterContract
+
+    init(router: RouterContract) {
+        self.router = router
+    }
+
+    func didTapOnCharacterButton() {
+        router.navigate(to: CharacterNavigation.list)
+    }
+}
+```
+
+**Corresponding View:**
+
+```swift
+struct HomeView: View {
+    /// Not @State: ViewModel has no observable state, just actions.
+    let viewModel: HomeViewModel
+
+    var body: some View {
+        Button("Go to Characters") {
+            viewModel.didTapOnCharacterButton()
+        }
+    }
+}
+```
+
+---
+
 ## Testing
 
 ### ViewModel Tests
@@ -204,10 +293,7 @@ struct {Name}ViewModelTests {
         let sut = {Name}ViewModel(get{Name}UseCase: useCase)
 
         // Then
-        guard case .idle = sut.state else {
-            Issue.record("Expected idle state")
-            return
-        }
+        #expect(sut.state == .idle)
     }
 
     @Test
@@ -222,11 +308,7 @@ struct {Name}ViewModelTests {
         await sut.load(id: 1)
 
         // Then
-        guard case .loaded(let value) = sut.state else {
-            Issue.record("Expected loaded state")
-            return
-        }
-        #expect(value == expected)
+        #expect(sut.state == .loaded(expected))
     }
 
     @Test
@@ -240,10 +322,7 @@ struct {Name}ViewModelTests {
         await sut.load(id: 1)
 
         // Then
-        guard case .error = sut.state else {
-            Issue.record("Expected error state")
-            return
-        }
+        #expect(sut.state == .error(TestError.network))
     }
 
     @Test
@@ -268,8 +347,8 @@ private enum TestError: Error {
 ```
 
 **Testing Rules:**
-- Use `guard case` for enum state matching
-- Use `Issue.record()` for test failures
+- Use **direct comparison** for state assertions when possible: `#expect(sut.state == .idle)`
+- ViewState must implement `==` operator for direct comparison
 - Test initial state, success, error, and call verification
 
 ---
@@ -286,6 +365,19 @@ enum CharacterListViewState {
     case loaded([Character])
     case empty
     case error(Error)
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle), (.loading, .loading), (.empty, .empty):
+            true
+        case let (.loaded(lhsData), .loaded(rhsData)):
+            lhsData == rhsData
+        case let (.error(lhsError), .error(rhsError)):
+            lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            false
+        }
+    }
 }
 ```
 
@@ -293,7 +385,7 @@ enum CharacterListViewState {
 
 ```swift
 // Sources/Presentation/CharacterList/ViewModels/CharacterListViewModel.swift
-import SwiftUI
+import Foundation
 
 @Observable
 final class CharacterListViewModel {
