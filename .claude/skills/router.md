@@ -316,7 +316,7 @@ final class HomeViewModel {
     }
 
     func didTapOnCharacterButton() {
-        router.navigate(to: CharacterNavigation.detail(identifier: 1))
+        router.navigate(to: CharacterNavigation.list)
     }
 }
 ```
@@ -334,7 +334,7 @@ import Testing
 
 struct HomeViewModelTests {
     @Test
-    func didTapOnCharacterButtonNavigatesToCharacterDetail() {
+    func didTapOnCharacterButtonNavigatesToCharacterList() {
         // Given
         let router = RouterMock()
         let sut = HomeViewModel(router: router)
@@ -344,7 +344,7 @@ struct HomeViewModelTests {
 
         // Then
         let destination = router.navigatedDestinations.first as? CharacterNavigation
-        #expect(destination == .detail(identifier: 1))
+        #expect(destination == .list)
     }
 
     @Test

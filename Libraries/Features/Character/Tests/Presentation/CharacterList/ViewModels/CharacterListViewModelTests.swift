@@ -64,10 +64,7 @@ struct CharacterListViewModelTests {
 		await sut.load()
 
 		// Then
-		guard case .error = sut.state else {
-			Issue.record("Expected error state")
-			return
-		}
+		#expect(sut.state == .error(TestError.network))
 	}
 
 	@Test
@@ -108,13 +105,13 @@ struct CharacterListViewModelTests {
 		await sut.loadMore()
 
 		// Then
-		guard case .loaded(let page) = sut.state else {
-			Issue.record("Expected loaded state")
-			return
-		}
-		#expect(page.characters.count == 2)
-		#expect(page.characters[0].id == 1)
-		#expect(page.characters[1].id == 2)
+		let expected = CharactersPage.stub(
+			characters: [Character.stub(id: 1), Character.stub(id: 2)],
+			currentPage: 2,
+			hasNextPage: false,
+			hasPreviousPage: false
+		)
+		#expect(sut.state == .loaded(expected))
 	}
 
 	@Test
