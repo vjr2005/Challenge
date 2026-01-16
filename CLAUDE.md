@@ -9,6 +9,8 @@ This document defines the coding standards, architecture patterns, and developme
 > - Concurrency issues (Sendable, actor isolation)
 > - Implicit returns where explicit are needed
 > - **Never use force unwrap (`!`)** - use `guard let`, `if let`, or `try?` instead
+>
+> **Documentation examples must follow the same rules as generated code.** All code snippets in README files, skills, and other documentation must be valid, compilable Swift that adheres to this style guide.
 
 ## Table of Contents
 
@@ -40,8 +42,26 @@ This document defines the coding standards, architecture patterns, and developme
 With `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, **all types are MainActor-isolated by default**. This means:
 
 - No need for explicit `@MainActor` on ViewModels, Views, or UI-related types
-- Less explicit `Sendable` annotations needed (improved inference)
 - Types that need to run off the main thread must opt out using `nonisolated`
+
+### Approachable Concurrency
+
+With `SWIFT_APPROACHABLE_CONCURRENCY = YES`, the compiler **automatically infers `Sendable`** conformance:
+
+- Structs with all Sendable properties are implicitly Sendable
+- No need to explicitly mark types as `Sendable`
+- Enums with Sendable associated values are implicitly Sendable
+
+```swift
+// This struct is automatically Sendable (all properties are Sendable)
+struct User: Equatable {
+  let id: Int
+  let name: String
+}
+
+// No need to write:
+// struct User: Equatable, Sendable { ... }
+```
 
 ### Concurrency Rules
 
@@ -95,17 +115,19 @@ actor CharacterMemoryDataSource {
 }
 ```
 
-#### DTOs used with actors
+#### Types stored inside actors
 
-DTOs stored or processed by actors must be `nonisolated`:
+Types stored or processed by actors must be `nonisolated`:
 
 ```swift
-// DTOs need nonisolated to be used inside actors
-nonisolated struct CharacterDTO: Decodable, Equatable {
+// Types used inside actors need nonisolated
+nonisolated struct MyData: Equatable {
   let id: Int
-  let name: String
+  let value: String
 }
 ```
+
+> **Note:** For DTOs specifically, see the `/datasource` skill.
 
 #### Framework subclasses called from background threads
 
@@ -163,7 +185,7 @@ This project follows **MVVM + Clean Architecture + Router** pattern without exte
 
 ### View (SwiftUI)
 
-Views are pure UI components with no business logic. See `/viewmodel` skill for detailed patterns.
+Views are pure UI components with no business logic. See `/view` skill for detailed patterns.
 
 ### ViewModel
 
@@ -575,7 +597,7 @@ All generated code **must** follow these rules. Based on the [Airbnb Swift Style
 | Rule | Value |
 |------|-------|
 | Maximum line width | 140 characters |
-| Trailing commas | Required in multi-line collections |
+| Trailing commas | Not used |
 | Blank lines | Single blank line between declarations |
 | End of file | Single newline at end |
 
@@ -767,25 +789,6 @@ let doubled = array.map { $0 * 2 }
 
 // RIGHT - Explicitly discard if intentional
 _ = array.map { $0 * 2 }
-```
-
-### Trailing Commas
-
-```swift
-// RIGHT - Trailing comma in multi-line
-let planets = [
-  "Mercury",
-  "Venus",
-  "Earth",
-]
-
-func configure(
-  name: String,
-  age: Int,
-) { }
-
-// RIGHT - No trailing comma in single-line
-let planets = ["Mercury", "Venus", "Earth"]
 ```
 
 ### Protocol Conformance
@@ -1197,7 +1200,9 @@ https://docs.anthropic.com/en/docs/claude-code/skills
 | `/repository` | Create Repositories with optional local-first caching policy |
 | `/usecase` | Create UseCases that encapsulate business logic |
 | `/viewmodel` | Create ViewModels with ViewState pattern |
+| `/view` | Create SwiftUI Views that use ViewModels |
 | `/router` | Create Routers for navigation using NavigationStack |
+| `/dependency-injection` | Create Containers for dependency injection |
 
 ---
 

@@ -1,3 +1,8 @@
+---
+name: viewmodel
+description: Creates ViewModels with state management. Use when creating ViewModels, implementing ViewState pattern, or adding state management for features.
+---
+
 # Skill: ViewModel
 
 Guide for creating ViewModels that manage state and coordinate between Views and UseCases.
@@ -59,25 +64,20 @@ enum {Name}ListViewState {
 
 ---
 
-## ViewModel Pattern
+## ViewModel Pattern (Detail - no navigation)
 
 ```swift
 import SwiftUI
 
 @MainActor
 @Observable
-final class {Name}ViewModel {
+final class {Name}DetailViewModel {
     private(set) var state: {Name}ViewState = .idle
 
     private let get{Name}UseCase: Get{Name}UseCaseContract
-    private let router: {Feature}Router?
 
-    init(
-        get{Name}UseCase: Get{Name}UseCaseContract,
-        router: {Feature}Router? = nil
-    ) {
+    init(get{Name}UseCase: Get{Name}UseCaseContract) {
         self.get{Name}UseCase = get{Name}UseCase
-        self.router = router
     }
 
     func load(id: Int) async {
@@ -92,14 +92,56 @@ final class {Name}ViewModel {
 }
 ```
 
+---
+
+## ViewModel Pattern (List - with navigation)
+
+List ViewModels receive Router and handle navigation:
+
+```swift
+import SwiftUI
+
+@MainActor
+@Observable
+final class {Name}ListViewModel {
+    private(set) var state: {Name}ListViewState = .idle
+
+    private let get{Name}sUseCase: Get{Name}sUseCaseContract
+    private let router: {Feature}Router
+
+    init(
+        get{Name}sUseCase: Get{Name}sUseCaseContract,
+        router: {Feature}Router
+    ) {
+        self.get{Name}sUseCase = get{Name}sUseCase
+        self.router = router
+    }
+
+    func load() async {
+        state = .loading
+        do {
+            let items = try await get{Name}sUseCase.execute()
+            state = items.isEmpty ? .empty : .loaded(items)
+        } catch {
+            state = .error(error)
+        }
+    }
+
+    func didSelect(_ item: {Name}) {
+        router.navigate(to: .detail(item))
+    }
+}
+```
+
 **Rules:**
 - `@MainActor` for UI thread safety
 - `@Observable` for SwiftUI integration (iOS 17+)
 - `final class` to prevent subclassing
 - **Internal visibility** (not public)
 - Inject UseCases via **protocol (contract)**
-- Router is **optional** (nil when not navigating) - see `/router` skill
+- **Router is required** for ViewModels that handle navigation
 - State is `private(set)` - only ViewModel mutates it
+- **`didSelect` methods** - Handle user actions and navigation
 
 ---
 
@@ -169,7 +211,7 @@ struct {Name}ViewModelTests {
         // Given
         let useCase = Get{Name}UseCaseMock()
         useCase.result = .success(.stub())
-        let sut = {Name}ViewModel(get{Name}UseCase: useCase)
+        let sut = {Name}DetailViewModel(get{Name}UseCase: useCase)
 
         // When
         await sut.load(id: 42)
@@ -185,59 +227,89 @@ private enum TestError: Error {
 }
 ```
 
+### List ViewModel Tests (with navigation)
+
+```swift
+@MainActor
+struct {Name}ListViewModelTests {
+    @Test
+    func didSelectNavigatesToDetail() {
+        // Given
+        let router = {Feature}Router()
+        let useCase = Get{Name}sUseCaseMock()
+        let sut = {Name}ListViewModel(
+            get{Name}sUseCase: useCase,
+            router: router
+        )
+        let item = {Name}.stub()
+
+        // When
+        sut.didSelect(item)
+
+        // Then
+        #expect(router.path.count == 1)
+    }
+}
+```
+
 **Testing Rules:**
 - `@MainActor` on test struct to access ViewModel
 - Use `guard case` for enum state matching
 - Use `Issue.record()` for test failures
-- Test initial state, success, error, and call verification
-- Router can be nil in tests (not testing navigation)
+- Test initial state, success, error, call verification, and **navigation**
+- Use real Router in tests (verify path changes)
 
 ---
 
-## Example: CharacterViewModel
+## Example: CharacterListViewModel
 
 ### ViewState
 
 ```swift
-// Sources/Presentation/ViewModels/CharacterViewState.swift
-enum CharacterViewState {
+// Sources/Presentation/ViewModels/CharacterListViewState.swift
+enum CharacterListViewState {
     case idle
     case loading
-    case loaded(Character)
+    case loaded([Character])
+    case empty
     case error(Error)
 }
 ```
 
-### ViewModel
+### ViewModel (with navigation)
 
 ```swift
-// Sources/Presentation/ViewModels/CharacterViewModel.swift
+// Sources/Presentation/ViewModels/CharacterListViewModel.swift
 import SwiftUI
 
 @MainActor
 @Observable
-final class CharacterViewModel {
-    private(set) var state: CharacterViewState = .idle
+final class CharacterListViewModel {
+    private(set) var state: CharacterListViewState = .idle
 
-    private let getCharacterUseCase: GetCharacterUseCaseContract
-    private let router: CharacterRouter?
+    private let getCharactersUseCase: GetCharactersUseCaseContract
+    private let router: CharacterRouter
 
     init(
-        getCharacterUseCase: GetCharacterUseCaseContract,
-        router: CharacterRouter? = nil
+        getCharactersUseCase: GetCharactersUseCaseContract,
+        router: CharacterRouter
     ) {
-        self.getCharacterUseCase = getCharacterUseCase
+        self.getCharactersUseCase = getCharactersUseCase
         self.router = router
     }
 
-    func load(id: Int) async {
+    func load() async {
         state = .loading
         do {
-            let character = try await getCharacterUseCase.execute(id: id)
-            state = .loaded(character)
+            let characters = try await getCharactersUseCase.execute()
+            state = characters.isEmpty ? .empty : .loaded(characters)
         } catch {
             state = .error(error)
         }
+    }
+
+    func didSelect(_ character: Character) {
+        router.navigate(to: .detail(character))
     }
 }
 ```
@@ -258,7 +330,8 @@ final class CharacterViewModel {
 - [ ] Create ViewState enum with idle, loading, loaded, error cases
 - [ ] Create ViewModel class with @MainActor and @Observable
 - [ ] Inject UseCase via protocol (contract)
-- [ ] Inject Router as optional dependency (see `/router` skill)
+- [ ] Inject Router if ViewModel handles navigation
 - [ ] Implement load/fetch method with state transitions
-- [ ] Create tests for initial state, success, error, and call verification
+- [ ] Implement `didSelect` methods for user actions (if navigating)
+- [ ] Create tests for initial state, success, error, call verification, and navigation
 - [ ] Run tests

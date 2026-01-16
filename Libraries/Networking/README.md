@@ -11,10 +11,10 @@ This library provides a type-safe HTTP client for making network requests. It us
 | File | Description |
 |------|-------------|
 | `HTTPClientContract.swift` | Protocol defining the HTTP client interface |
-| `HTTPClient.swift` | Actor-based implementation using URLSession |
-| `Endpoint.swift` | Request configuration (path, method, headers, body) |
-| `HTTPMethod.swift` | Supported HTTP methods enum |
-| `HTTPError.swift` | Error types for network failures |
+| `HTTPClient.swift` | Implementation using URLSession |
+| `Endpoint.swift` | Request configuration (path, method, headers, queryItems, body) |
+| `HTTPMethod.swift` | Supported HTTP methods (GET, POST, PUT, PATCH, DELETE) |
+| `HTTPError.swift` | Error types (invalidURL, invalidResponse, statusCode) |
 
 ## Usage
 
@@ -23,8 +23,20 @@ This library provides a type-safe HTTP client for making network requests. It us
 ```swift
 import ChallengeNetworking
 
+guard let baseURL = URL(string: "https://api.example.com") else {
+    fatalError("Invalid API base URL")
+}
+
+let client = HTTPClient(baseURL: baseURL)
+```
+
+### Custom Configuration
+
+```swift
 let client = HTTPClient(
-	baseURL: URL(string: "https://api.example.com")!,
+    baseURL: baseURL,
+    session: .shared,
+    decoder: JSONDecoder()
 )
 ```
 
@@ -33,16 +45,16 @@ let client = HTTPClient(
 ```swift
 // Define an endpoint
 let endpoint = Endpoint(
-	path: "/users",
-	method: .get,
-	headers: ["Authorization": "Bearer token"],
+    path: "/users",
+    method: .get,
+    headers: ["Authorization": "Bearer token"]
 )
 
 // Request with automatic decoding
 let users: [User] = try await client.request(endpoint)
 
 // Request raw data
-let data = try await client.request(endpoint)
+let data: Data = try await client.request(endpoint)
 ```
 
 ### POST Request with Body
@@ -52,10 +64,10 @@ let user = CreateUserRequest(name: "John", email: "john@example.com")
 let body = try JSONEncoder().encode(user)
 
 let endpoint = Endpoint(
-	path: "/users",
-	method: .post,
-	headers: ["Content-Type": "application/json"],
-	body: body,
+    path: "/users",
+    method: .post,
+    headers: ["Content-Type": "application/json"],
+    body: body
 )
 
 let createdUser: User = try await client.request(endpoint)
@@ -65,12 +77,12 @@ let createdUser: User = try await client.request(endpoint)
 
 ```swift
 let endpoint = Endpoint(
-	path: "/users",
-	method: .get,
-	queryItems: [
-		URLQueryItem(name: "page", value: "1"),
-		URLQueryItem(name: "limit", value: "20"),
-	],
+    path: "/users",
+    method: .get,
+    queryItems: [
+        URLQueryItem(name: "page", value: "1"),
+        URLQueryItem(name: "limit", value: "20")
+    ]
 )
 ```
 
@@ -78,16 +90,16 @@ let endpoint = Endpoint(
 
 ```swift
 do {
-	let users: [User] = try await client.request(endpoint)
+    let users: [User] = try await client.request(endpoint)
 } catch HTTPError.invalidURL {
-	// Handle invalid URL
+    // Handle invalid URL construction
 } catch HTTPError.invalidResponse {
-	// Handle non-HTTP response
+    // Handle non-HTTP response
 } catch HTTPError.statusCode(let code, let data) {
-	// Handle HTTP error status (4xx, 5xx)
-	print("HTTP \(code)")
+    // Handle HTTP error status (4xx, 5xx)
+    print("HTTP \(code)")
 } catch {
-	// Handle other errors (network, decoding, etc.)
+    // Handle other errors (network, decoding, etc.)
 }
 ```
 
@@ -95,26 +107,36 @@ do {
 
 Use `HTTPClientMock` from `ChallengeNetworkingMocks` for unit testing.
 
-### Basic Test with Given/When/Then
+### HTTPClientMock
+
+```swift
+public final class HTTPClientMock: HTTPClientContract {
+    // Tracks all requested endpoints for verification
+    public private(set) var requestedEndpoints: [Endpoint] = []
+
+    // Configure with success or failure result
+    public init(result: Result<Data, Error> = .success(Data()))
+}
+```
+
+### Basic Test
 
 ```swift
 import ChallengeNetworkingMocks
 import Testing
 
-@testable import ChallengeNetworking
-
 @Test
 func fetchesUsers() async throws {
-	// Given
-	let mockData = try JSONEncoder().encode([User(id: 1, name: "Test")])
-	let client = HTTPClientMock(result: .success(mockData))
+    // Given
+    let mockData = try JSONEncoder().encode([User(id: 1, name: "Test")])
+    let sut = HTTPClientMock(result: .success(mockData))
 
-	// When
-	let users: [User] = try await client.request(Endpoint(path: "/users"))
+    // When
+    let users: [User] = try await sut.request(Endpoint(path: "/users"))
 
-	// Then
-	#expect(users.count == 1)
-	#expect(client.requestedEndpoints.count == 1)
+    // Then
+    #expect(users.count == 1)
+    #expect(sut.requestedEndpoints.count == 1)
 }
 ```
 
@@ -123,33 +145,36 @@ func fetchesUsers() async throws {
 ```swift
 @Test
 func handlesError() async {
-	// Given
-	let client = HTTPClientMock(result: .failure(HTTPError.invalidURL))
+    // Given
+    let sut = HTTPClientMock(result: .failure(HTTPError.invalidURL))
 
-	// When / Then
-	await #expect(throws: HTTPError.invalidURL) {
-		let _: [User] = try await client.request(Endpoint(path: "/users"))
-	}
+    // When / Then
+    await #expect(throws: HTTPError.invalidURL) {
+        let _: [User] = try await sut.request(Endpoint(path: "/users"))
+    }
 }
 ```
 
-### Parameterized Tests
+### Verifying Endpoint Configuration
 
 ```swift
-@Test(arguments: [
-	HTTPMethod.get,
-	HTTPMethod.post,
-	HTTPMethod.put,
-])
-func supportsHTTPMethod(_ method: HTTPMethod) {
-	// Given
-	let path = "/test"
+@Test
+func sendsCorrectEndpoint() async throws {
+    // Given
+    let sut = HTTPClientMock(result: .success(Data()))
 
-	// When
-	let endpoint = Endpoint(path: path, method: method)
+    // When
+    let _: Data = try await sut.request(Endpoint(
+        path: "/users",
+        method: .post,
+        headers: ["Authorization": "Bearer token"]
+    ))
 
-	// Then
-	#expect(endpoint.method == method)
+    // Then
+    let endpoint = try #require(sut.requestedEndpoints.first)
+    #expect(endpoint.path == "/users")
+    #expect(endpoint.method == .post)
+    #expect(endpoint.headers["Authorization"] == "Bearer token")
 }
 ```
 
@@ -175,6 +200,55 @@ func supportsHTTPMethod(_ method: HTTPMethod) {
 └──────────────────┘     └──────────────────┘
 ```
 
-## Thread Safety
+## API Reference
 
-`HTTPClient` is implemented as an `actor`, ensuring thread-safe access to its internal state. All public methods are `async` and can be called from any context.
+### HTTPClientContract
+
+```swift
+public protocol HTTPClientContract: Sendable {
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
+    func request(_ endpoint: Endpoint) async throws -> Data
+}
+```
+
+### Endpoint
+
+```swift
+public struct Endpoint {
+    public let path: String
+    public let method: HTTPMethod
+    public let headers: [String: String]
+    public let queryItems: [URLQueryItem]?
+    public let body: Data?
+
+    public init(
+        path: String,
+        method: HTTPMethod = .get,
+        headers: [String: String] = [:],
+        queryItems: [URLQueryItem]? = nil,
+        body: Data? = nil
+    )
+}
+```
+
+### HTTPMethod
+
+```swift
+public enum HTTPMethod: String, Sendable {
+    case get = "GET"
+    case post = "POST"
+    case put = "PUT"
+    case patch = "PATCH"
+    case delete = "DELETE"
+}
+```
+
+### HTTPError
+
+```swift
+public enum HTTPError: Error, Equatable {
+    case invalidURL
+    case invalidResponse
+    case statusCode(Int, Data)
+}
+```

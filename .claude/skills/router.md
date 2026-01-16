@@ -1,3 +1,8 @@
+---
+name: router
+description: Creates Routers for navigation management. Use when creating navigation for a feature, adding type-safe destinations, or implementing NavigationStack.
+---
+
 # Skill: Router
 
 Guide for creating Routers that manage navigation using `NavigationStack`.
@@ -68,23 +73,25 @@ final class {Feature}Router {
 
 ## Using Router in ViewModel
 
-Inject Router as optional dependency:
+Inject Router as a **required** dependency for ViewModels that handle navigation:
 
 ```swift
 @MainActor
 @Observable
-final class {Name}ViewModel {
-    private let router: {Feature}Router?
+final class {Name}ListViewModel {
+    private let router: {Feature}Router
 
-    init(router: {Feature}Router? = nil) {
+    init(router: {Feature}Router) {
         self.router = router
     }
 
     func didSelectItem(_ item: {Name}) {
-        router?.navigate(to: .detail(item))
+        router.navigate(to: .detail(item))
     }
 }
 ```
+
+> **Note:** ViewModels that don't navigate (e.g., DetailViewModel) don't need a Router. See `/viewmodel` skill for details.
 
 ---
 

@@ -1,3 +1,8 @@
+---
+name: tuist
+description: Manages Tuist configuration. Use when adding xcframeworks, configuring dependencies, or modifying Project.swift.
+---
+
 # Tuist
 
 Skill for managing Tuist configuration in the project.

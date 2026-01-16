@@ -1,3 +1,8 @@
+---
+name: usecase
+description: Creates UseCases that encapsulate business logic. Use when creating use cases, implementing domain rules, validations, or coordinating multiple repositories.
+---
+
 # Skill: UseCase
 
 Guide for creating UseCases that encapsulate business logic following Clean Architecture.

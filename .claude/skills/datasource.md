@@ -1,3 +1,8 @@
+---
+name: datasource
+description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage, or DTOs for API responses.
+---
+
 # Skill: DataSource
 
 Guide for creating DataSources following the Repository pattern. Supports two types:
@@ -46,7 +51,11 @@ public enum APIConfiguration {
     public var baseURL: URL {
         switch self {
         case .example:
-            URL(string: "https://api.example.com")!
+            // Safe: compile-time constant, will crash at app launch if invalid
+            guard let url = URL(string: "https://api.example.com") else {
+                fatalError("Invalid API base URL")
+            }
+            return url
         }
     }
 }
@@ -112,7 +121,7 @@ nonisolated struct {Name}DTO: Decodable, Equatable {
 - Conform to `Decodable` and `Equatable`
 - Use `let` properties (immutable)
 - Property names must match JSON keys (or use CodingKeys)
-- **Never mark as `Sendable`** - structs are implicitly Sendable when all properties are Sendable
+- Do not mark as `Sendable` explicitly (inferred by compiler)
 
 ### 4. Mock (in Tests/Mocks/)
 

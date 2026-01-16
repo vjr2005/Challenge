@@ -1,3 +1,8 @@
+---
+name: repository
+description: Creates Repositories that abstract data access. Use when creating repositories, transforming DTOs to domain models, or implementing local-first caching.
+---
+
 # Skill: Repository
 
 Guide for creating Repositories that abstract data access following Clean Architecture.
@@ -61,7 +66,7 @@ struct {Name}: Equatable {
 **Rules:**
 - Located in `Domain/Models/`
 - **Internal visibility** (not public)
-- Conform to `Equatable` and `Sendable`
+- Conform to `Equatable`
 - Use `let` properties (immutable)
 - Contains only domain-relevant data (no API-specific fields)
 
@@ -534,7 +539,7 @@ private enum TestError: Error {
 
 ```swift
 // Sources/Domain/Models/Character.swift
-struct Character: Equatable, Sendable {
+struct Character: Equatable {
     let id: Int
     let name: String
     let status: CharacterStatus

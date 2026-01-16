@@ -9,7 +9,10 @@
       "Bash(tuist clean:*)",
       "Bash(swiftlint version:*)",
       "Bash(swiftlint lint:*)",
-      "Bash(swiftlint rules:*)"
+      "Bash(swiftlint rules:*)",
+      "WebSearch",
+      "WebFetch(domain:www.hackingwithswift.com)",
+      "WebFetch(domain:docs.anthropic.com)"
     ]
   }
 }
