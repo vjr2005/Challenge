@@ -304,6 +304,47 @@ FeatureName/
     └── DataSourcesMock.swift
 ```
 
+### Infrastructure Module Structure
+
+Non-feature modules (Networking, Core, etc.) expose their public API through a **module entry point enum**:
+
+```
+{ModuleName}/
+├── Sources/
+│   ├── {ModuleName}.swift            # Public entry point (enum with factory methods)
+│   ├── {Name}Contract.swift          # Public protocol
+│   ├── {Name}.swift                  # Internal implementation
+│   └── ...                           # Other types (public or internal)
+├── Tests/
+└── Mocks/
+```
+
+**Module entry point pattern:**
+
+```swift
+// Sources/Networking.swift
+public enum Networking {
+    /// Creates an HTTP client instance.
+    public static func makeHTTPClient(baseURL: URL) -> any HTTPClientContract {
+        HTTPClient(baseURL: baseURL)
+    }
+}
+```
+
+**Rules:**
+- `public enum` prevents instantiation
+- All factory methods are `static`
+- Return types are contracts (protocols), not implementations
+- Implementations remain `internal`
+
+**Usage from other modules:**
+
+```swift
+import ChallengeNetworking
+
+let client = Networking.makeHTTPClient(baseURL: url)
+```
+
 ### Extensions
 
 Extensions of external framework types (Foundation, UIKit, SwiftUI, etc.) must be placed in an `Extensions/` folder. Create one file per extended type using the naming convention `TypeName+Purpose.swift`.
@@ -375,30 +416,30 @@ Native networking layer using **URLSession with async/await**. No external depen
 
 ### Components
 
-| Component | Description |
-|-----------|-------------|
-| `HTTPClientContract` | Protocol for HTTP client (enables DI) |
-| `HTTPClient` | Sendable final class implementation |
-| `Endpoint` | Request configuration |
-| `HTTPMethod` | GET, POST, PUT, PATCH, DELETE |
-| `HTTPError` | Error types |
-| `HTTPClientMock` | Mock for testing |
+| Component | Visibility | Description |
+|-----------|------------|-------------|
+| `Networking` | **public** | Module entry point with factory methods |
+| `HTTPClientContract` | **public** | Protocol for HTTP client (enables DI) |
+| `HTTPClient` | internal | Implementation (hidden) |
+| `Endpoint` | **public** | Request configuration |
+| `HTTPMethod` | **public** | GET, POST, PUT, PATCH, DELETE |
+| `HTTPError` | **public** | Error types |
+| `HTTPClientMock` | **public** | Mock for testing (in Mocks target) |
 
 ### Quick Example
 
 ```swift
 import ChallengeNetworking
 
-// Production code: handle URL creation safely
 guard let baseURL = URL(string: "https://api.example.com") else {
-	throw ConfigurationError.invalidURL
+    fatalError("Invalid API base URL")
 }
 
-let client = HTTPClient(baseURL: baseURL)
+let client = Networking.makeHTTPClient(baseURL: baseURL)
 
 let endpoint = Endpoint(
-	path: "/users",
-	method: .get,
+    path: "/users",
+    method: .get
 )
 
 let users: [User] = try await client.request(endpoint)
@@ -824,8 +865,16 @@ extension MyViewController: UITableViewDelegate {
 
 ### Dependency Injection
 
+**Visibility rule:** Never expose implementations, only contracts.
+
+| Component | Visibility | Example |
+|-----------|------------|---------|
+| Contract (Protocol) | `public` | `public protocol HTTPClientContract` |
+| Implementation | `internal` | `final class HTTPClient` |
+| Module entry point | `public` | `public enum Networking { static func makeHTTPClient(...) }` |
+
 ```swift
-// RIGHT - Protocol injection
+// RIGHT - Protocol injection with contract type
 final class UserListViewModel {
   private let useCase: GetUsersUseCaseContract
 
@@ -834,7 +883,7 @@ final class UserListViewModel {
   }
 }
 
-// WRONG - Concrete type
+// WRONG - Concrete type (implementation exposed)
 final class UserListViewModel {
   private let useCase: GetUsersUseCase
 }

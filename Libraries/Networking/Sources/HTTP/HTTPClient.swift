@@ -1,12 +1,12 @@
 import Foundation
 
 /// HTTP client implementation using URLSession with async/await.
-public final class HTTPClient: HTTPClientContract {
+final class HTTPClient: HTTPClientContract {
 	private let session: URLSession
 	private let baseURL: URL
 	private let decoder: JSONDecoder
 
-	public init(
+	init(
 		baseURL: URL,
 		session: URLSession = .shared,
 		decoder: JSONDecoder = JSONDecoder(),
@@ -16,12 +16,12 @@ public final class HTTPClient: HTTPClientContract {
 		self.decoder = decoder
 	}
 
-	public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+	func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		let data = try await request(endpoint)
 		return try decoder.decode(T.self, from: data)
 	}
 
-	public func request(_ endpoint: Endpoint) async throws -> Data {
+	func request(_ endpoint: Endpoint) async throws -> Data {
 		let request = try buildRequest(for: endpoint)
 		let (data, response) = try await session.data(for: request)
 
@@ -36,6 +36,8 @@ public final class HTTPClient: HTTPClientContract {
 		return data
 	}
 }
+
+// MARK: - Private
 
 private extension HTTPClient {
 	func buildRequest(for endpoint: Endpoint) throws -> URLRequest {

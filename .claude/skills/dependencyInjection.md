@@ -87,9 +87,16 @@ import Foundation
 final class {Feature}Container {
     // MARK: - Infrastructure
 
+    private static let defaultHTTPClient: any HTTPClientContract = {
+        guard let url = URL(string: "https://api.example.com") else {
+            fatalError("Invalid API base URL")
+        }
+        return Networking.makeHTTPClient(baseURL: url)
+    }()
+
     private let httpClient: any HTTPClientContract
 
-    init(httpClient: any HTTPClientContract = ChallengeNetworking.sharedHTTPClient) {
+    init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
         self.httpClient = httpClient
     }
 
@@ -145,7 +152,7 @@ final class {Feature}Container {
 
 | Type | Pattern | Reason |
 |------|---------|--------|
-| HTTPClient | Init parameter | Injected for testability |
+| HTTPClient | Static + Init parameter | Shared default, injectable for tests |
 | MemoryDataSource | Instance property | Maintains cache state |
 | Repository | `lazy var` | Initialized on first access |
 | ViewModel | Factory method | New instance per View |
@@ -153,8 +160,16 @@ final class {Feature}Container {
 | Router | Factory method | New instance per navigation stack |
 
 ```swift
-// INIT - Injected dependency
-init(httpClient: any HTTPClientContract = ChallengeNetworking.sharedHTTPClient) {
+// STATIC DEFAULT - Shared instance for production
+private static let defaultHTTPClient: any HTTPClientContract = {
+    guard let url = URL(string: "https://api.example.com") else {
+        fatalError("Invalid API base URL")
+    }
+    return Networking.makeHTTPClient(baseURL: url)
+}()
+
+// INIT - Injected dependency with default
+init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
     self.httpClient = httpClient
 }
 
@@ -169,21 +184,61 @@ func makeListViewModel(router: CharacterRouter) -> CharacterListViewModel {
 
 ---
 
-## Shared Dependencies
+## Visibility Rules
 
-Infrastructure dependencies (HTTPClient) are exposed by their modules:
+**Never expose implementations, only contracts:**
+
+| Component | Visibility | Reason |
+|-----------|------------|--------|
+| Contract (Protocol) | `public` | API for consumers |
+| Implementation (Class) | `internal` | Hidden from consumers |
+| Module enum | `public` | Entry point with factory methods |
 
 ```swift
-// In ChallengeNetworking module
-public let sharedHTTPClient: any HTTPClientContract = {
+// ChallengeNetworking module
+
+// PUBLIC - Contract exposed to consumers
+public protocol HTTPClientContract: Sendable {
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
+    func request(_ endpoint: Endpoint) async throws -> Data
+}
+
+// INTERNAL - Implementation hidden from consumers
+final class HTTPClient: HTTPClientContract {
+    // ...
+}
+
+// PUBLIC - Module entry point with factory methods
+public enum Networking {
+    public static func makeHTTPClient(baseURL: URL) -> any HTTPClientContract {
+        HTTPClient(baseURL: baseURL)
+    }
+}
+```
+
+**Why this matters:**
+- Consumers depend on abstractions (contracts), not implementations
+- Implementations can change without breaking consumers
+- Testing is easier with contract-based injection
+
+---
+
+## Shared Dependencies
+
+Infrastructure dependencies are created via **module entry points** that expose factory methods:
+
+```swift
+// In feature Container - uses module entry point
+private static let defaultHTTPClient: any HTTPClientContract = {
     guard let url = URL(string: "https://api.example.com") else {
         fatalError("Invalid API base URL")
     }
-    return HTTPClient(baseURL: url)
+    return Networking.makeHTTPClient(baseURL: url)
 }()
 
-// In feature Container
-static var httpClient: any HTTPClientContract { ChallengeNetworking.sharedHTTPClient }
+init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
+    self.httpClient = httpClient
+}
 ```
 
 ---
@@ -263,9 +318,16 @@ import Foundation
 final class CharacterContainer {
     // MARK: - Infrastructure
 
+    private static let defaultHTTPClient: any HTTPClientContract = {
+        guard let url = URL(string: "https://rickandmortyapi.com/api") else {
+            fatalError("Invalid API base URL")
+        }
+        return Networking.makeHTTPClient(baseURL: url)
+    }()
+
     private let httpClient: any HTTPClientContract
 
-    init(httpClient: any HTTPClientContract = ChallengeNetworking.sharedHTTPClient) {
+    init(httpClient: any HTTPClientContract = Self.defaultHTTPClient) {
         self.httpClient = httpClient
     }
 
@@ -371,16 +433,21 @@ struct ContentView: View {
 
 ## Visibility Summary
 
-| Component | Visibility | Location |
-|-----------|------------|----------|
-| {Feature}Feature | **public** | `Sources/{Feature}Feature.swift` |
-| {Feature}Container | internal | `Sources/Container/` |
-| {Feature}RootView | internal | `Sources/Presentation/Views/` |
+| Component | Visibility | Reason |
+|-----------|------------|--------|
+| Contract (Protocol) | **public** | API for consumers |
+| Implementation (Class) | internal | Hidden from consumers |
+| Module entry point enum | **public** | Factory methods for infrastructure modules |
+| {Feature}Feature | **public** | Entry point for feature modules |
+| {Feature}Container | internal | Internal wiring |
+| {Feature}RootView | internal | Internal UI |
 
 ---
 
 ## Checklist
 
+- [ ] **Contracts are public, implementations are internal**
+- [ ] Infrastructure modules use entry point enum (e.g., `Networking.makeHTTPClient()`)
 - [ ] Create public entry point `{Feature}Feature.swift` with `makeRootView()`
 - [ ] Create internal Container as `final class` with `httpClient` in init
 - [ ] Use `lazy var` for repository
