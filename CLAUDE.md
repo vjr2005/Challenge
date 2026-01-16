@@ -288,21 +288,50 @@ FeatureName/
 │   │   ├── DTOs/               # Data Transfer Objects
 │   │   └── Repositories/       # Repository implementations
 │   └── Presentation/
-│       ├── Views/              # SwiftUI views
-│       └── ViewModels/         # ViewModels
+│       └── {FeatureName}/      # Group by feature (e.g., CharacterDetail)
+│           ├── Views/          # SwiftUI views for this feature
+│           └── ViewModels/     # ViewModels for this feature
 ├── Tests/
 │   ├── Domain/
 │   │   └── UseCases/           # Use case tests
 │   ├── Data/
 │   │   └── Repositories/       # Repository tests
 │   └── Presentation/
-│       ├── ViewModels/         # ViewModel tests
-│       └── Snapshots/          # Snapshot tests
+│       └── {FeatureName}/      # Same structure as Sources
+│           ├── ViewModels/     # ViewModel tests
+│           └── Snapshots/      # Snapshot tests
 └── Mocks/
     ├── UseCasesMock.swift
     ├── RepositoriesMock.swift
     └── DataSourcesMock.swift
 ```
+
+### Presentation Layer Organization
+
+The Presentation layer groups related Views and ViewModels by feature name:
+
+```
+Presentation/
+├── CharacterDetail/            # Feature: Character detail screen
+│   ├── Views/
+│   │   └── CharacterDetailView.swift
+│   └── ViewModels/
+│       ├── CharacterDetailViewModel.swift
+│       └── CharacterDetailViewState.swift
+├── CharacterList/              # Feature: Character list screen
+│   ├── Views/
+│   │   └── CharacterListView.swift
+│   └── ViewModels/
+│       ├── CharacterListViewModel.swift
+│       └── CharacterListViewState.swift
+└── ...
+```
+
+**Naming conventions:**
+- Folder name matches the feature (e.g., `CharacterDetail`)
+- View: `{FeatureName}View.swift` (e.g., `CharacterDetailView.swift`)
+- ViewModel: `{FeatureName}ViewModel.swift` (e.g., `CharacterDetailViewModel.swift`)
+- ViewState: `{FeatureName}ViewState.swift` (e.g., `CharacterDetailViewState.swift`)
 
 ### Extensions
 

@@ -23,15 +23,28 @@ Libraries/Features/{FeatureName}/
 │   ├── Container/
 │   │   └── {Feature}Container.swift        # See /dependencyInjection skill
 │   └── Presentation/
-│       ├── Views/
-│       │   ├── {Name}ListView.swift        # List view (receives ViewModel only)
-│       │   └── {Name}DetailView.swift      # Detail view (receives ViewModel only)
-│       └── ViewModels/
-│           └── {Name}ViewModel.swift       # See /viewmodel skill
+│       ├── {Name}List/                     # Group by screen/feature
+│       │   ├── Views/
+│       │   │   └── {Name}ListView.swift
+│       │   └── ViewModels/
+│       │       └── {Name}ListViewModel.swift
+│       └── {Name}Detail/                   # Group by screen/feature
+│           ├── Views/
+│           │   └── {Name}DetailView.swift
+│           └── ViewModels/
+│               └── {Name}DetailViewModel.swift
 └── Tests/
     └── Presentation/
-        └── Snapshots/
-            └── {Name}ViewSnapshotTests.swift  # Optional
+        ├── {Name}List/
+        │   ├── ViewModels/
+        │   │   └── {Name}ListViewModelTests.swift
+        │   └── Snapshots/
+        │       └── {Name}ListViewSnapshotTests.swift
+        └── {Name}Detail/
+            ├── ViewModels/
+            │   └── {Name}DetailViewModelTests.swift
+            └── Snapshots/
+                └── {Name}DetailViewSnapshotTests.swift
 ```
 
 **Notes:**
@@ -225,7 +238,7 @@ Previews create ViewModels with mocks:
 ## Example: CharacterListView
 
 ```swift
-// Sources/Presentation/Views/CharacterListView.swift
+// Sources/Presentation/CharacterList/Views/CharacterListView.swift
 import SwiftUI
 
 struct CharacterListView: View {
@@ -285,7 +298,7 @@ struct CharacterListView: View {
 ## Example: CharacterDetailView
 
 ```swift
-// Sources/Presentation/Views/CharacterDetailView.swift
+// Sources/Presentation/CharacterDetail/Views/CharacterDetailView.swift
 import SwiftUI
 
 struct CharacterDetailView: View {
@@ -355,7 +368,7 @@ struct CharacterDetailView: View {
 
 | Component | Visibility | Location |
 |-----------|------------|----------|
-| ListView / DetailView | internal | `Sources/Presentation/Views/` |
+| ListView / DetailView | internal | `Sources/Presentation/{FeatureName}/Views/` |
 
 ---
 

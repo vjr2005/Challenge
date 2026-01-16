@@ -10,7 +10,7 @@ public enum CharacterFeature {
     public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
         switch navigation {
         case .detail(let identifier):
-            CharacterView(viewModel: container.makeCharacterViewModel(identifier: identifier, router: router))
+            CharacterDetailView(viewModel: container.makeCharacterDetailViewModel(identifier: identifier, router: router))
         }
     }
 }

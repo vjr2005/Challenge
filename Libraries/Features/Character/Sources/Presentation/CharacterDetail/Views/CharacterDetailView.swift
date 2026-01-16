@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct CharacterView: View {
-    let viewModel: CharacterViewModel
+struct CharacterDetailView: View {
+    let viewModel: CharacterDetailViewModel
 
     var body: some View {
         Group {

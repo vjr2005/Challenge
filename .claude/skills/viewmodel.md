@@ -19,14 +19,21 @@ Guide for creating ViewModels that manage state and coordinate between Views and
 Libraries/Features/{FeatureName}/
 ├── Sources/
 │   └── Presentation/
-│       └── ViewModels/
-│           ├── {Name}ViewState.swift             # ViewState enum
-│           └── {Name}ViewModel.swift             # ViewModel
+│       └── {ScreenName}/                           # Group by screen (e.g., CharacterDetail)
+│           └── ViewModels/
+│               ├── {ScreenName}ViewState.swift     # ViewState enum
+│               └── {ScreenName}ViewModel.swift     # ViewModel
 └── Tests/
     └── Presentation/
-        └── ViewModels/
-            └── {Name}ViewModelTests.swift        # Tests
+        └── {ScreenName}/                           # Same structure as Sources
+            └── ViewModels/
+                └── {ScreenName}ViewModelTests.swift
 ```
+
+**Examples:**
+- `Presentation/CharacterDetail/ViewModels/CharacterDetailViewModel.swift`
+- `Presentation/CharacterList/ViewModels/CharacterListViewModel.swift`
+- `Tests/Presentation/CharacterDetail/ViewModels/CharacterDetailViewModelTests.swift`
 
 ---
 
@@ -272,7 +279,7 @@ private enum TestError: Error {
 ### ViewState
 
 ```swift
-// Sources/Presentation/ViewModels/CharacterListViewState.swift
+// Sources/Presentation/CharacterList/ViewModels/CharacterListViewState.swift
 enum CharacterListViewState {
     case idle
     case loading
@@ -285,7 +292,7 @@ enum CharacterListViewState {
 ### ViewModel
 
 ```swift
-// Sources/Presentation/ViewModels/CharacterListViewModel.swift
+// Sources/Presentation/CharacterList/ViewModels/CharacterListViewModel.swift
 import SwiftUI
 
 @Observable
@@ -316,8 +323,8 @@ final class CharacterListViewModel {
 
 | Component | Visibility | Location |
 |-----------|------------|----------|
-| ViewState | internal | `Sources/Presentation/ViewModels/` |
-| ViewModel | internal | `Sources/Presentation/ViewModels/` |
+| ViewState | internal | `Sources/Presentation/{ScreenName}/ViewModels/` |
+| ViewModel | internal | `Sources/Presentation/{ScreenName}/ViewModels/` |
 
 ---
 

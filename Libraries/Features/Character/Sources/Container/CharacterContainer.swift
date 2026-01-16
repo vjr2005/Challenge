@@ -22,8 +22,8 @@ final class CharacterContainer {
 
     // MARK: - Factories
 
-    func makeCharacterViewModel(identifier: Int, router: RouterContract) -> CharacterViewModel {
-        CharacterViewModel(
+    func makeCharacterDetailViewModel(identifier: Int, router: RouterContract) -> CharacterDetailViewModel {
+        CharacterDetailViewModel(
             identifier: identifier,
             getCharacterUseCase: makeGetCharacterUseCase(),
             router: router

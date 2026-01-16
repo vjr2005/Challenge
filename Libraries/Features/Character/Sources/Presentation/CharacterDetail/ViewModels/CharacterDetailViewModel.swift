@@ -3,8 +3,8 @@ import SwiftUI
 
 /// ViewModel that manages Character state and coordinates with UseCases.
 @Observable
-final class CharacterViewModel {
-    private(set) var state: CharacterViewState = .idle
+final class CharacterDetailViewModel {
+    private(set) var state: CharacterDetailViewState = .idle
 
     private let identifier: Int
     private let getCharacterUseCase: GetCharacterUseCaseContract
