@@ -362,7 +362,7 @@ private enum TestError: Error {
 enum CharacterListViewState {
     case idle
     case loading
-    case loaded([Character])
+    case loaded(CharactersPage)  // Use custom type for pagination support
     case empty
     case error(Error)
 
@@ -370,8 +370,8 @@ enum CharacterListViewState {
         switch (lhs, rhs) {
         case (.idle, .idle), (.loading, .loading), (.empty, .empty):
             true
-        case let (.loaded(lhsData), .loaded(rhsData)):
-            lhsData == rhsData
+        case let (.loaded(lhsPage), .loaded(rhsPage)):
+            lhsPage == rhsPage
         case let (.error(lhsError), .error(rhsError)):
             lhsError.localizedDescription == rhsError.localizedDescription
         default:
@@ -380,6 +380,8 @@ enum CharacterListViewState {
     }
 }
 ```
+
+> **Note:** For lists with pagination, use a custom type like `CharactersPage` that includes pagination metadata (currentPage, totalPages, hasNextPage, etc.). For simple lists without pagination, use `[{Name}]` directly.
 
 ### ViewModel
 
