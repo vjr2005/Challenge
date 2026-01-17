@@ -21,6 +21,7 @@ struct CharacterDetailView: View {
 					backButton
 				}
 			}
+			.accessibilityIdentifier(AccessibilityIdentifier.view)
 	}
 
 	@ViewBuilder
@@ -52,6 +53,7 @@ private extension CharacterDetailView {
 					.font(.system(.body, design: .rounded))
 			}
 		}
+		.accessibilityIdentifier(AccessibilityIdentifier.backButton)
 	}
 
 	var loadingView: some View {
@@ -268,6 +270,13 @@ private extension CharacterDetailView {
 			.gray
 		}
 	}
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+    static let view = "characterDetail.view"
+    static let backButton = "characterDetail.backButton"
 }
 
 // MARK: - Previews

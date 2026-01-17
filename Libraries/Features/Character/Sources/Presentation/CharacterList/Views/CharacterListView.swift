@@ -55,6 +55,7 @@ private extension CharacterListView {
 
 				ForEach(page.characters, id: \.id) { character in
 					CharacterRowView(character: character)
+						.accessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
 						.onTapGesture {
 							viewModel.didSelect(character)
 						}
@@ -68,6 +69,7 @@ private extension CharacterListView {
 			}
 			.padding(.horizontal)
 		}
+		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
 		.background(Color(.systemGroupedBackground))
 	}
 
@@ -103,6 +105,7 @@ private extension CharacterListView {
 			.foregroundStyle(Color.accentColor)
 			.clipShape(RoundedRectangle(cornerRadius: 12))
 		}
+		.accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
 		.padding(.vertical, 8)
 	}
 
@@ -214,6 +217,17 @@ private struct CharacterRowView: View {
 		case .unknown:
 			.gray
 		}
+	}
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+	static let scrollView = "characterList.scrollView"
+	static let loadMoreButton = "characterList.loadMoreButton"
+
+	static func row(id: Int) -> String {
+		"characterList.row.\(id)"
 	}
 }
 

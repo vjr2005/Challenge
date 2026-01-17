@@ -539,6 +539,83 @@ private final class RouterPreviewMock: RouterContract {
 
 ---
 
+## Accessibility Identifiers
+
+Views must define **private accessibility identifiers** for E2E testing. These identifiers are used by the Robot pattern in E2E tests (see CLAUDE.md Testing section).
+
+### Rules
+
+- **Private to each View** - Identifiers are defined as a private enum at the bottom of the View file
+- **Naming convention** - Use format `{screenName}.{elementType}` (e.g., `home.characterButton`)
+- **Dynamic identifiers** - Use static functions for elements with IDs (e.g., `row(id:)`)
+- **Place before Previews** - The AccessibilityIdentifier enum goes after the View implementation
+
+### Pattern
+
+```swift
+struct {Name}View: View {
+    @State private var viewModel: {Name}ViewModel
+
+    var body: some View {
+        Button("Action") {
+            viewModel.didTapAction()
+        }
+        .accessibilityIdentifier(AccessibilityIdentifier.actionButton)
+    }
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+    static let view = "{name}.view"
+    static let actionButton = "{name}.actionButton"
+    static let scrollView = "{name}.scrollView"
+
+    static func row(id: Int) -> String {
+        "{name}.row.\(id)"
+    }
+}
+
+// MARK: - Previews
+// ...
+```
+
+### Example: CharacterListView
+
+```swift
+struct CharacterListView: View {
+    @State private var viewModel: CharacterListViewModel
+
+    var body: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(viewModel.characters) { character in
+                    CharacterRowView(character: character)
+                        .accessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
+                        .onTapGesture {
+                            viewModel.didSelect(character)
+                        }
+                }
+            }
+        }
+        .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
+    }
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+    static let scrollView = "characterList.scrollView"
+    static let loadMoreButton = "characterList.loadMoreButton"
+
+    static func row(id: Int) -> String {
+        "characterList.row.\(id)"
+    }
+}
+```
+
+---
+
 ## Visibility Summary
 
 | Component | Visibility | Location |
@@ -555,4 +632,5 @@ private final class RouterPreviewMock: RouterContract {
 - [ ] Implement `body` with `.task` modifier for loading
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases (idle, loading, loaded, error)
+- [ ] Add private `AccessibilityIdentifier` enum for E2E testing
 - [ ] Add Previews for each state (except idle) with private preview mocks

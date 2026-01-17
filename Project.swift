@@ -34,7 +34,7 @@ let homeModule = FrameworkModule.create(
 // MARK: - Project
 
 let appTestsTarget: TestableTarget = "\(appName)Tests"
-let appUITestsTarget: TestableTarget = "\(appName)UITests"
+let appE2ETestsTarget: TestableTarget = "\(appName)E2ETests"
 
 let project = Project(
 	name: appName,
@@ -86,14 +86,16 @@ let project = Project(
 			sources: ["App/Tests/**"]
 		),
 		.target(
-			name: "\(appName)UITests",
+			name: "\(appName)E2ETests",
 			destinations: [.iPhone, .iPad],
 			product: .uiTests,
-			bundleId: "com.app.\(appName)UITests",
+			bundleId: "com.app.\(appName)E2ETests",
 			deploymentTargets: developmentTarget,
 			infoPlist: .default,
-			sources: ["App/UITests/**"],
-			dependencies: [.target(name: appName)]
+			sources: ["App/E2ETests/**"],
+			dependencies: [
+				.target(name: appName),
+			]
 		),
 	] + coreModule.targets + networkingModule.targets + characterModule.targets + homeModule.targets,
 	schemes: [
@@ -101,7 +103,7 @@ let project = Project(
 			name: appName,
 			buildAction: .buildAction(targets: [.target(appName)]),
 			testAction: .targets(
-				[appTestsTarget, appUITestsTarget],
+				[appTestsTarget, appE2ETestsTarget],
 				options: .options(coverage: true)
 			),
 			runAction: .runAction(executable: .target(appName))

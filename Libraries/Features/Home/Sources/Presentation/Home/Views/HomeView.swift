@@ -5,17 +5,24 @@ struct HomeView: View {
 	/// Not @State: ViewModel has no observable state, just actions.
 	let viewModel: HomeViewModel
 
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Home")
-                .font(.largeTitle)
+	var body: some View {
+		VStack(spacing: 20) {
+			Text("Home")
+				.font(.largeTitle)
 
-            Button("Go to Characters") {
-                viewModel.didTapOnCharacterButton()
-            }
-            .buttonStyle(.borderedProminent)
-        }
-    }
+			Button("Go to Characters") {
+				viewModel.didTapOnCharacterButton()
+			}
+			.buttonStyle(.borderedProminent)
+			.accessibilityIdentifier(AccessibilityIdentifier.characterButton)
+		}
+	}
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+	static let characterButton = "home.characterButton"
 }
 
 // MARK: - Previews

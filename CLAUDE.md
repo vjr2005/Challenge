@@ -488,47 +488,155 @@ struct UserRowViewSnapshotTests {
 
 ### UI Tests (End-to-End) with XCTest
 
+E2E tests use the **Robot Pattern** for better readability and maintainability. Each screen has a Robot that encapsulates UI interactions.
+
 **Important:** With `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, UI test classes must be marked as `nonisolated` to avoid conflicts with XCTest's API which is not MainActor-isolated.
+
+#### File Structure
+
+```
+App/E2ETests/
+├── Robots/
+│   ├── Robot.swift              # Base protocol and DSL
+│   ├── HomeRobot.swift
+│   ├── CharacterListRobot.swift
+│   └── CharacterDetailRobot.swift
+└── Tests/
+    └── CharacterFlowE2ETests.swift
+```
+
+#### Robot Protocol
 
 ```swift
 import XCTest
 
-// REQUIRED: nonisolated to opt out of default MainActor isolation
-nonisolated final class UserFlowUITests: XCTestCase {
-  private var app: XCUIApplication!
+/// Base protocol for all screen robots.
+protocol RobotContract {
+    var app: XCUIApplication { get }
+}
 
-  override func setUpWithError() throws {
-    continueAfterFailure = false
-    app = XCUIApplication()
-    app.launchArguments = ["--uitesting"]
-    app.launch()
-  }
+/// Provides DSL for robot-based testing.
+extension XCTestCase {
+    func launch() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launch()
+        return app
+    }
 
-  @MainActor
-  func testUserListDisplaysUsers() throws {
-    let userList = app.collectionViews["userList"]
-    XCTAssertTrue(userList.waitForExistence(timeout: 5))
+    func home(app: XCUIApplication, actions: (HomeRobot) -> Void) {
+        actions(HomeRobot(app: app))
+    }
 
-    let firstUser = userList.cells.firstMatch
-    XCTAssertTrue(firstUser.exists)
-  }
-
-  @MainActor
-  func testNavigationToUserDetail() throws {
-    let userList = app.collectionViews["userList"]
-    _ = userList.waitForExistence(timeout: 5)
-
-    userList.cells.firstMatch.tap()
-
-    let detailView = app.otherElements["userDetailView"]
-    XCTAssertTrue(detailView.waitForExistence(timeout: 2))
-  }
+    func characterList(app: XCUIApplication, actions: (CharacterListRobot) -> Void) {
+        actions(CharacterListRobot(app: app))
+    }
 }
 ```
 
-**Rules:**
-- **`nonisolated` on class** - Required to avoid actor isolation conflicts with XCTestCase
+#### Robot Implementation
+
+Each Robot has its own copy of accessibility identifiers (black-box testing principle):
+
+```swift
+import XCTest
+
+struct CharacterListRobot: RobotContract {
+    let app: XCUIApplication
+}
+
+// MARK: - Actions
+
+extension CharacterListRobot {
+    @discardableResult
+    func tapCharacter(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let identifier = AccessibilityIdentifier.row(id: id)
+        let row = app.descendants(matching: .any)[identifier].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
+        row.tap()
+        return self
+    }
+
+    @discardableResult
+    func tapBack(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let backButton = app.navigationBars.buttons.element(boundBy: 0)
+        XCTAssertTrue(backButton.waitForExistence(timeout: 5), file: file, line: line)
+        backButton.tap()
+        return self
+    }
+}
+
+// MARK: - Verifications
+
+extension CharacterListRobot {
+    @discardableResult
+    func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
+        XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
+        return self
+    }
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+    static let scrollView = "characterList.scrollView"
+
+    static func row(id: Int) -> String {
+        "characterList.row.\(id)"
+    }
+}
+```
+
+#### E2E Test Example
+
+```swift
+import XCTest
+
+nonisolated final class CharacterFlowE2ETests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    func testCharacterBrowsingFlow() throws {
+        let app = launch()
+
+        home(app: app) { robot in
+            robot.tapCharacterButton()
+        }
+
+        characterList(app: app) { robot in
+            robot.tapCharacter(id: 1)
+        }
+
+        characterDetail(app: app) { robot in
+            robot.verifyIsVisible()
+            robot.tapBack()
+        }
+
+        characterList(app: app) { robot in
+            robot.verifyIsVisible()
+            robot.tapBack()
+        }
+
+        home(app: app) { robot in
+            robot.verifyIsVisible()
+        }
+    }
+}
+```
+
+#### Robot Pattern Rules
+
+- **`nonisolated` on test class** - Required to avoid actor isolation conflicts with XCTestCase
 - **`@MainActor` on test methods** - Add when tests interact with UI (XCUIApplication)
+- **`RobotContract` protocol** - Base protocol with `app: XCUIApplication`
+- **Actions section** - Methods that perform UI interactions (tap, swipe, type)
+- **Verifications section** - Methods that assert UI state (verifyIsVisible, verifyText)
+- **`@discardableResult`** - All robot methods return `Self` for chaining
+- **`#filePath` and `line`** - Pass through for accurate test failure locations
+- **Private AccessibilityIdentifier** - Each Robot has its own copy of identifiers
+- **`.firstMatch`** - Use when multiple elements may match an identifier
 
 ### Mocks
 
