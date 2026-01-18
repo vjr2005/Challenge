@@ -25,7 +25,10 @@
       "Bash(tuist install:*)",
       "Bash(tuist build:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:forums.swift.org)"
+      "WebFetch(domain:forums.swift.org)",
+      "Bash(xcrun simctl:*)",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
