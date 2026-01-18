@@ -17,7 +17,15 @@
       "Bash(tree:*)",
       "Bash(ls:*)",
       "WebFetch(domain:docs.tuist.io)",
-      "WebFetch(domain:docs.tuist.dev)"
+      "WebFetch(domain:docs.tuist.dev)",
+      "Bash(xargs:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(tuist install:*)",
+      "Bash(tuist build:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:forums.swift.org)"
     ]
   }
 }

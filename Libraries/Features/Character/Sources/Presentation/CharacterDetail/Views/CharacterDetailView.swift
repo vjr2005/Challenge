@@ -1,10 +1,10 @@
 import ChallengeCore
 import SwiftUI
 
-struct CharacterDetailView: View {
-	@State private var viewModel: CharacterDetailViewModel
+struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
+	@State private var viewModel: ViewModel
 
-	init(viewModel: CharacterDetailViewModel) {
+	init(viewModel: ViewModel) {
 		_viewModel = State(initialValue: viewModel)
 	}
 
@@ -93,23 +93,12 @@ private extension CharacterDetailView {
 	}
 
 	func characterImage(_ character: Character) -> some View {
-		AsyncImage(url: character.imageURL) { phase in
-			switch phase {
-			case .empty:
-				ProgressView()
-					.frame(width: 150, height: 150)
-			case .success(let image):
-				image
-					.resizable()
-					.scaledToFill()
-			case .failure:
-				Image(systemName: "person.fill")
-					.font(.system(size: 60))
-					.foregroundStyle(.secondary)
-					.frame(width: 150, height: 150)
-			@unknown default:
-				EmptyView()
-			}
+		CachedAsyncImage(url: character.imageURL) { image in
+			image
+				.resizable()
+				.scaledToFill()
+		} placeholder: {
+			ProgressView()
 		}
 		.frame(width: 150, height: 150)
 		.clipShape(RoundedRectangle(cornerRadius: 20))

@@ -15,6 +15,7 @@ let characterModule = FrameworkModule.create(
 	testDependencies: [
 		.target(name: "\(appName)CoreMocks"),
 		.target(name: "\(appName)NetworkingMocks"),
+		.external(name: "SnapshotTesting"),
 	],
 	hasMocks: false
 )
@@ -27,6 +28,7 @@ let homeModule = FrameworkModule.create(
 	],
 	testDependencies: [
 		.target(name: "\(appName)CoreMocks"),
+		.external(name: "SnapshotTesting"),
 	],
 	hasMocks: false
 )

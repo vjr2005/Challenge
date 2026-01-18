@@ -63,6 +63,7 @@ public struct FrameworkModule {
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(testsTargetName)",
 			deploymentTargets: developmentTarget,
 			sources: ["Libraries/\(sourcesPath)/Tests/**"],
+			resources: [.glob(pattern: "Libraries/\(sourcesPath)/Tests/Resources/**", excluding: [])],
 			dependencies: testsDependencies + testDependencies
 		)
 		targets.append(tests)

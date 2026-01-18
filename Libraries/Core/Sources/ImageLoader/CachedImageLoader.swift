@@ -1,0 +1,78 @@
+import UIKit
+
+/// Image loader with in-memory caching and deduplication of in-flight requests.
+public final class CachedImageLoader: ImageLoaderContract, Sendable {
+	/// Shared instance for app-wide image caching.
+	public static let shared = CachedImageLoader()
+
+	private let cache: ImageCache
+	private let requestCoordinator: ImageRequestCoordinator
+	private let session: URLSession
+
+	/// Creates a new cached image loader.
+	/// - Parameter session: The URL session to use for network requests.
+	public init(session: URLSession = .shared) {
+		self.session = session
+		self.cache = ImageCache()
+		self.requestCoordinator = ImageRequestCoordinator()
+	}
+
+	public func cachedImage(for url: URL) -> UIImage? {
+		cache.image(for: url)
+	}
+
+	public func image(for url: URL) async -> UIImage? {
+		if let cached = cache.image(for: url) {
+			return cached
+		}
+
+		let image = await requestCoordinator.loadImage(for: url, session: session)
+
+		if let image {
+			cache.setImage(image, for: url)
+		}
+
+		return image
+	}
+}
+
+/// Thread-safe image cache using NSCache.
+private final class ImageCache: Sendable {
+	private let storage = NSCache<NSURL, UIImage>()
+
+	func image(for url: URL) -> UIImage? {
+		storage.object(forKey: url as NSURL)
+	}
+
+	func setImage(_ image: UIImage, for url: URL) {
+		storage.setObject(image, forKey: url as NSURL)
+	}
+}
+
+/// Actor that coordinates image loading requests to prevent duplicate downloads.
+private actor ImageRequestCoordinator {
+	private var inFlightRequests: [URL: Task<UIImage?, Never>] = [:]
+
+	func loadImage(for url: URL, session: URLSession) async -> UIImage? {
+		if let existingTask = inFlightRequests[url] {
+			return await existingTask.value
+		}
+
+		let task = Task<UIImage?, Never> {
+			await Self.downloadImage(from: url, session: session)
+		}
+
+		inFlightRequests[url] = task
+		let image = await task.value
+		inFlightRequests[url] = nil
+
+		return image
+	}
+
+	private static func downloadImage(from url: URL, session: URLSession) async -> UIImage? {
+		guard let (data, _) = try? await session.data(from: url) else {
+			return nil
+		}
+		return UIImage(data: data)
+	}
+}

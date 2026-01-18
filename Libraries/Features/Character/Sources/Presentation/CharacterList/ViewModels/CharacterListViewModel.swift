@@ -2,7 +2,7 @@ import ChallengeCore
 import Foundation
 
 @Observable
-final class CharacterListViewModel {
+final class CharacterListViewModel: CharacterListViewModelContract {
 	private(set) var state: CharacterListViewState = .idle
 
 	private let getCharactersUseCase: GetCharactersUseCaseContract

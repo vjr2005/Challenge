@@ -6,5 +6,8 @@ tuist clean plugins generatedAutomationProjects projectDescriptionHelpers manife
 # 2. Remove generated project
 rm -rf *.xcodeproj *.xcworkspace
 
-# 3. Generate the project
+# 3. Install dependencies
+tuist install
+
+# 4. Generate the project
 tuist generate
