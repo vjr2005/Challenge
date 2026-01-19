@@ -90,24 +90,6 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 ---
 
-## Networking
-
-Native networking layer using **URLSession with async/await**. No external dependencies.
-
-**Location:** `Libraries/Networking/`
-
-| Component | Description |
-|-----------|-------------|
-| `HTTPClientContract` | Protocol for HTTP client (enables DI) |
-| `HTTPClient` | URLSession implementation |
-| `Endpoint` | Request configuration |
-| `HTTPError` | Error types |
-| `HTTPClientMock` | Mock for testing |
-
-For usage, see [Libraries/Networking/README.md](Libraries/Networking/README.md) and `/datasource` skill.
-
----
-
 ## Testing Quick Reference
 
 | Rule | Description |
