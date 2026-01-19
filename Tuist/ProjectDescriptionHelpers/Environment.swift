@@ -1,0 +1,107 @@
+import ProjectDescription
+
+/// Represents the different build environments for the app.
+public enum Environment: String, CaseIterable {
+	case dev
+	case staging
+	case prod
+
+	/// Display name for the scheme.
+	public var schemeName: String {
+		switch self {
+		case .dev: "\(appName) (Dev)"
+		case .staging: "\(appName) (Staging)"
+		case .prod: "\(appName) (Prod)"
+		}
+	}
+
+	/// Bundle identifier suffix for each environment.
+	public var bundleIdSuffix: String {
+		switch self {
+		case .dev: ".dev"
+		case .staging: ".staging"
+		case .prod: ""
+		}
+	}
+
+	/// Full bundle identifier for each environment.
+	public var bundleId: String {
+		"com.app.\(appName)\(bundleIdSuffix)"
+	}
+
+	/// App icon asset name for each environment.
+	public var appIconName: String {
+		switch self {
+		case .dev: "AppIconDev"
+		case .staging: "AppIconStaging"
+		case .prod: "AppIcon"
+		}
+	}
+
+	/// Debug configuration name for running the app.
+	public var debugConfigurationName: ConfigurationName {
+		switch self {
+		case .dev: "Debug"
+		case .staging: "Debug-Staging"
+		case .prod: "Debug-Prod"
+		}
+	}
+
+	/// Release configuration name for archiving.
+	public var releaseConfigurationName: ConfigurationName {
+		switch self {
+		case .dev: "Release"
+		case .staging: "Staging"
+		case .prod: "Release"
+		}
+	}
+
+	/// Target settings for this environment.
+	public var targetSettings: Configuration {
+		let settings: SettingsDictionary = [
+			"PRODUCT_BUNDLE_IDENTIFIER": .string(bundleId),
+			"ASSETCATALOG_COMPILER_APPICON_NAME": .string(appIconName),
+		]
+
+		switch self {
+		case .dev:
+			return .debug(name: "Debug", settings: settings)
+		case .staging:
+			return .debug(name: "Debug-Staging", settings: settings)
+		case .prod:
+			return .debug(name: "Debug-Prod", settings: settings)
+		}
+	}
+
+	/// Release target settings for this environment.
+	public var releaseTargetSettings: Configuration {
+		let settings: SettingsDictionary = [
+			"PRODUCT_BUNDLE_IDENTIFIER": .string(bundleId),
+			"ASSETCATALOG_COMPILER_APPICON_NAME": .string(appIconName),
+		]
+
+		switch self {
+		case .dev:
+			return .release(name: "Release", settings: settings)
+		case .staging:
+			return .release(name: "Staging", settings: settings)
+		case .prod:
+			return .release(name: "Release", settings: settings)
+		}
+	}
+}
+
+// MARK: - App Target Settings
+
+public extension Environment {
+	/// All configurations for the app target.
+	static var appTargetConfigurations: [Configuration] {
+		[
+			Environment.dev.targetSettings,
+			Environment.staging.targetSettings,
+			Environment.prod.targetSettings,
+			Environment.staging.releaseTargetSettings,
+			Environment.prod.releaseTargetSettings,
+		]
+	}
+}
