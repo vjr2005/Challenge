@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import ChallengeNetworkingMocks
 import Foundation
 import Testing
@@ -5,10 +6,13 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterRemoteDataSourceTests {
+	private let testBundle = Bundle(for: BundleToken.self)
+
 	@Test
 	func fetchCharacterUsesCorrectEndpoint() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(makeCharacterData()))
+		let jsonData = try testBundle.loadJSONData("character")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
@@ -23,15 +27,18 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharacterDecodesResponseCorrectly() async throws {
 		// Given
-		let expected = CharacterDTO.stub()
-		let httpClient = HTTPClientMock(result: .success(makeCharacterData()))
+		let jsonData = try testBundle.loadJSONData("character")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
 		let value = try await sut.fetchCharacter(identifier: 1)
 
 		// Then
-		#expect(value == expected)
+		#expect(value.id == 1)
+		#expect(value.name == "Rick Sanchez")
+		#expect(value.status == "Alive")
+		#expect(value.species == "Human")
 	}
 
 	@Test
@@ -49,7 +56,8 @@ struct CharacterRemoteDataSourceTests {
 	@Test(arguments: [1, 2, 42, 826])
 	func fetchCharacterUsesProvidedId(_ identifier: Int) async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(makeCharacterData(identifier: identifier)))
+		let jsonData = try testBundle.loadJSONData("character")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
@@ -65,7 +73,8 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharactersUsesCorrectEndpoint() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("characters_response")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
@@ -80,7 +89,8 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharactersIncludesPageQueryParameter() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("characters_response")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
@@ -95,15 +105,18 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharactersDecodesResponseCorrectly() async throws {
 		// Given
-		let expected = CharactersResponseDTO.stub()
-		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("characters_response")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClient)
 
 		// When
 		let value = try await sut.fetchCharacters(page: 1)
 
 		// Then
-		#expect(value == expected)
+		#expect(value.info.count == 826)
+		#expect(value.info.pages == 42)
+		#expect(value.results.count == 1)
+		#expect(value.results.first?.name == "Rick Sanchez")
 	}
 
 	@Test
@@ -119,36 +132,8 @@ struct CharacterRemoteDataSourceTests {
 	}
 }
 
+private final class BundleToken {}
+
 private enum TestError: Error {
 	case network
-}
-
-private extension CharacterRemoteDataSourceTests {
-	func makeCharacterData(identifier: Int = 1) -> Data {
-		let json = """
-		{
-			"id": \(identifier),
-			"name": "Rick Sanchez",
-			"status": "Alive",
-			"species": "Human",
-			"type": "",
-			"gender": "Male",
-			"origin": {
-				"name": "Earth (C-137)",
-				"url": "https://rickandmortyapi.com/api/location/1"
-			},
-			"location": {
-				"name": "Citadel of Ricks",
-				"url": "https://rickandmortyapi.com/api/location/3"
-			},
-			"image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
-			"episode": [
-				"https://rickandmortyapi.com/api/episode/1"
-			],
-			"url": "https://rickandmortyapi.com/api/character/1",
-			"created": "2017-11-04T18:48:46.250Z"
-		}
-		"""
-		return Data(json.utf8)
-	}
 }

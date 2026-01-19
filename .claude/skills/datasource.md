@@ -32,6 +32,9 @@ Libraries/Features/{FeatureName}/
     ├── Data/
     │   ├── {Name}RemoteDataSourceTests.swift    # Tests
     │   └── {Name}MemoryDataSourceTests.swift    # Tests
+    ├── Fixtures/
+    │   ├── {name}.json                          # JSON fixture replicating API response
+    │   └── {name}_list.json                     # JSON fixture for list responses
     └── Mocks/
         ├── {Name}RemoteDataSourceMock.swift     # Mock (internal to tests)
         └── {Name}MemoryDataSourceMock.swift     # Mock (internal to tests)
@@ -284,9 +287,97 @@ actor {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract {
 
 ## Testing
 
+### JSON Fixtures for DTOs
+
+**DTOs use JSON files** that replicate real server responses. This ensures tests validate the actual API contract and catch deserialization issues.
+
+**Location:** `Tests/Fixtures/`
+
+```
+FeatureName/
+└── Tests/
+    ├── Fixtures/                 # JSON files replicating server responses
+    │   ├── character.json
+    │   ├── character_list.json
+    │   └── error_response.json
+    ├── Extensions/
+    │   └── Bundle+JSON.swift     # Helper to load JSON files
+    ├── Data/
+    │   └── {Name}RemoteDataSourceTests.swift
+    └── Mocks/
+```
+
+**JSON file naming:**
+- Use snake_case for file names: `character.json`, `character_list.json`
+- Name should describe the content: `user.json`, `users_page_1.json`, `error_404.json`
+
+**Example JSON fixture:**
+
+```json
+// Tests/Fixtures/character.json
+{
+    "id": 1,
+    "name": "Rick Sanchez",
+    "status": "Alive",
+    "species": "Human",
+    "gender": "Male",
+    "origin": {
+        "name": "Earth (C-137)",
+        "url": "https://rickandmortyapi.com/api/location/1"
+    },
+    "location": {
+        "name": "Citadel of Ricks",
+        "url": "https://rickandmortyapi.com/api/location/3"
+    },
+    "image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+    "url": "https://rickandmortyapi.com/api/character/1",
+    "created": "2017-11-04T18:48:46.250Z"
+}
+```
+
+**Loading JSON in tests:**
+
+The `Bundle+JSON` helper is located in `ChallengeCoreMocks` for reuse across all feature tests:
+
+```swift
+// Libraries/Core/Mocks/Bundle+JSON.swift
+import Foundation
+
+public extension Bundle {
+    func loadJSON<T: Decodable>(_ filename: String, as type: T.Type) throws -> T {
+        guard let url = url(forResource: filename, withExtension: "json") else {
+            throw JSONLoadError.fileNotFound(filename)
+        }
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    func loadJSONData(_ filename: String) throws -> Data {
+        guard let url = url(forResource: filename, withExtension: "json") else {
+            throw JSONLoadError.fileNotFound(filename)
+        }
+        return try Data(contentsOf: url)
+    }
+}
+
+public enum JSONLoadError: Error {
+    case fileNotFound(String)
+}
+```
+
+> **Note:** Import `ChallengeCoreMocks` in your test files to use the `loadJSON` and `loadJSONData` methods.
+
+**Rules for JSON Fixtures:**
+- Copy real API responses when possible
+- Keep fixtures minimal but complete (include all required fields)
+- Create separate files for different scenarios (success, error, empty list, etc.)
+- Store in `Tests/Fixtures/` folder
+- Add JSON files to the test target's resources in Tuist configuration
+
 ### RemoteDataSource Test
 
 ```swift
+import ChallengeCoreMocks
 import ChallengeNetworkingMocks
 import Foundation
 import Testing
@@ -294,10 +385,13 @@ import Testing
 @testable import Challenge{FeatureName}
 
 struct {Name}RemoteDataSourceTests {
+    private let testBundle = Bundle(for: BundleToken.self)
+
     @Test
     func fetchesFromCorrectEndpoint() async throws {
         // Given
-        let httpClient = HTTPClientMock(result: .success(makeStubData()))
+        let jsonData = try testBundle.loadJSONData("{name}")
+        let httpClient = HTTPClientMock(result: .success(jsonData))
         let sut = {Name}RemoteDataSource(httpClient: httpClient)
 
         // When
@@ -312,15 +406,16 @@ struct {Name}RemoteDataSourceTests {
     @Test
     func decodesResponseCorrectly() async throws {
         // Given
-        let httpClient = HTTPClientMock(result: .success(makeStubData()))
+        let jsonData = try testBundle.loadJSONData("{name}")
+        let httpClient = HTTPClientMock(result: .success(jsonData))
         let sut = {Name}RemoteDataSource(httpClient: httpClient)
 
         // When
-        let result = try await sut.fetch{Name}(id: 1)
+        let value = try await sut.fetch{Name}(id: 1)
 
         // Then
-        #expect(result.id == 1)
-        #expect(result.name == "Expected Name")
+        #expect(value.id == 1)
+        #expect(value.name == "Rick Sanchez")
     }
 
     @Test
@@ -336,36 +431,31 @@ struct {Name}RemoteDataSourceTests {
     }
 }
 
+private final class BundleToken {}
+
 private enum TestError: Error {
     case network
-}
-
-private extension {Name}RemoteDataSourceTests {
-    func makeStubData() -> Data {
-        let json = """
-        {
-            "id": 1,
-            "name": "Expected Name"
-        }
-        """
-        return Data(json.utf8)
-    }
 }
 ```
 
 ### MemoryDataSource Test
 
+MemoryDataSource tests load DTOs from JSON fixtures to ensure consistency with the real API format:
+
 ```swift
+import ChallengeCoreMocks
 import Foundation
 import Testing
 
 @testable import Challenge{FeatureName}
 
 struct {Name}MemoryDataSourceTests {
+    private let testBundle = Bundle(for: BundleToken.self)
+
     @Test
-    func savesAndRetrievesItem() async {
+    func savesAndRetrievesItem() async throws {
         // Given
-        let expected = {Name}DTO.stub()
+        let expected: {Name}DTO = try testBundle.loadJSON("{name}", as: {Name}DTO.self)
         let sut = {Name}MemoryDataSource()
 
         // When
@@ -389,9 +479,9 @@ struct {Name}MemoryDataSourceTests {
     }
 
     @Test
-    func savesMultipleItems() async {
+    func savesMultipleItems() async throws {
         // Given
-        let items = [{Name}DTO.stub(id: 1), {Name}DTO.stub(id: 2)]
+        let items: [{Name}DTO] = try testBundle.loadJSON("{name}_list", as: [{Name}DTO].self)
         let sut = {Name}MemoryDataSource()
 
         // When
@@ -399,13 +489,13 @@ struct {Name}MemoryDataSourceTests {
         let value = await sut.getAll{Name}s()
 
         // Then
-        #expect(value.count == 2)
+        #expect(value.count == items.count)
     }
 
     @Test
-    func deletesItem() async {
+    func deletesItem() async throws {
         // Given
-        let item = {Name}DTO.stub()
+        let item: {Name}DTO = try testBundle.loadJSON("{name}", as: {Name}DTO.self)
         let sut = {Name}MemoryDataSource()
         await sut.save{Name}(item)
 
@@ -418,9 +508,9 @@ struct {Name}MemoryDataSourceTests {
     }
 
     @Test
-    func deletesAllItems() async {
+    func deletesAllItems() async throws {
         // Given
-        let items = [{Name}DTO.stub(id: 1), {Name}DTO.stub(id: 2)]
+        let items: [{Name}DTO] = try testBundle.loadJSON("{name}_list", as: [{Name}DTO].self)
         let sut = {Name}MemoryDataSource()
         await sut.save{Name}s(items)
 
@@ -431,23 +521,9 @@ struct {Name}MemoryDataSourceTests {
         // Then
         #expect(value.isEmpty)
     }
-
-    @Test
-    func updatesExistingItem() async {
-        // Given
-        let original = {Name}DTO.stub(id: 1, name: "Original")
-        let updated = {Name}DTO.stub(id: 1, name: "Updated")
-        let sut = {Name}MemoryDataSource()
-        await sut.save{Name}(original)
-
-        // When
-        await sut.save{Name}(updated)
-        let value = await sut.get{Name}(id: 1)
-
-        // Then
-        #expect(value == updated)
-    }
 }
+
+private final class BundleToken {}
 ```
 
 ---
@@ -528,8 +604,9 @@ struct {Name}Repository: {Name}RepositoryContract {
 - [ ] Create Contract with async throws methods (internal)
 - [ ] Create Implementation injecting HTTPClientContract (internal)
 - [ ] Create Mock in `Tests/Mocks/` with call tracking (internal)
-- [ ] Create tests using HTTPClientMock
-- [ ] Add module to Project.swift
+- [ ] Create JSON fixture(s) in `Tests/Fixtures/` replicating real API responses
+- [ ] Create tests importing `ChallengeCoreMocks` and using JSON fixtures
+- [ ] Add module to Project.swift (include JSON files in test resources)
 - [ ] Run `tuist generate`
 - [ ] Run tests
 
@@ -538,6 +615,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 - [ ] Create Contract with async methods (internal)
 - [ ] Create actor Implementation with dictionary storage (internal)
 - [ ] Create actor Mock in `Tests/Mocks/` with call tracking (internal)
-- [ ] Create tests for CRUD operations
+- [ ] Create JSON fixture(s) in `Tests/Fixtures/` for test data
+- [ ] Create tests importing `ChallengeCoreMocks` and using JSON fixtures
 - [ ] Run `tuist generate`
 - [ ] Run tests

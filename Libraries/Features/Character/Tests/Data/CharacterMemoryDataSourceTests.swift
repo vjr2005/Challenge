@@ -1,13 +1,16 @@
+import ChallengeCoreMocks
 import Foundation
 import Testing
 
 @testable import ChallengeCharacter
 
 struct CharacterMemoryDataSourceTests {
+	private let testBundle = Bundle(for: BundleToken.self)
+
 	@Test
-	func savesAndRetrievesCharacter() async {
+	func savesAndRetrievesCharacter() async throws {
 		// Given
-		let expected = CharacterDTO.stub()
+		let expected: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -31,9 +34,11 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func savesMultipleCharacters() async {
+	func savesMultipleCharacters() async throws {
 		// Given
-		let characters = [CharacterDTO.stub(id: 1), CharacterDTO.stub(id: 2)]
+		let character1: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
+		let character2: CharacterDTO = try testBundle.loadJSON("character_2", as: CharacterDTO.self)
+		let characters = [character1, character2]
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -45,9 +50,9 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func deletesCharacter() async {
+	func deletesCharacter() async throws {
 		// Given
-		let character = CharacterDTO.stub()
+		let character: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
 		let sut = CharacterMemoryDataSource()
 		await sut.saveCharacter(character)
 
@@ -60,9 +65,11 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func deletesAllCharacters() async {
+	func deletesAllCharacters() async throws {
 		// Given
-		let characters = [CharacterDTO.stub(id: 1), CharacterDTO.stub(id: 2)]
+		let character1: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
+		let character2: CharacterDTO = try testBundle.loadJSON("character_2", as: CharacterDTO.self)
+		let characters = [character1, character2]
 		let sut = CharacterMemoryDataSource()
 		await sut.saveCharacters(characters)
 
@@ -75,10 +82,10 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func updatesExistingCharacter() async {
+	func updatesExistingCharacter() async throws {
 		// Given
-		let original = CharacterDTO.stub(id: 1, name: "Rick Sanchez")
-		let updated = CharacterDTO.stub(id: 1, name: "Evil Rick")
+		let original: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
+		let updated: CharacterDTO = try testBundle.loadJSON("character_dead", as: CharacterDTO.self)
 		let sut = CharacterMemoryDataSource()
 		await sut.saveCharacter(original)
 
@@ -93,9 +100,9 @@ struct CharacterMemoryDataSourceTests {
 	// MARK: - Page Caching Tests
 
 	@Test
-	func savesAndRetrievesPage() async {
+	func savesAndRetrievesPage() async throws {
 		// Given
-		let expected = CharactersResponseDTO.stub()
+		let expected: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -119,10 +126,9 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func savePageAlsoSavesIndividualCharacters() async {
+	func savePageAlsoSavesIndividualCharacters() async throws {
 		// Given
-		let characters = [CharacterDTO.stub(id: 1), CharacterDTO.stub(id: 2)]
-		let response = CharactersResponseDTO.stub(results: characters)
+		let response: CharactersResponseDTO = try testBundle.loadJSON("characters_response_two_results", as: CharactersResponseDTO.self)
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -131,14 +137,14 @@ struct CharacterMemoryDataSourceTests {
 		let character2 = await sut.getCharacter(identifier: 2)
 
 		// Then
-		#expect(character1 == characters[0])
-		#expect(character2 == characters[1])
+		#expect(character1 == response.results[0])
+		#expect(character2 == response.results[1])
 	}
 
 	@Test
-	func deletesPage() async {
+	func deletesPage() async throws {
 		// Given
-		let response = CharactersResponseDTO.stub()
+		let response: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
 		let sut = CharacterMemoryDataSource()
 		await sut.savePage(response, page: 1)
 
@@ -151,9 +157,9 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func deletesAllPages() async {
+	func deletesAllPages() async throws {
 		// Given
-		let response = CharactersResponseDTO.stub()
+		let response: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
 		let sut = CharacterMemoryDataSource()
 		await sut.savePage(response, page: 1)
 		await sut.savePage(response, page: 2)
@@ -169,16 +175,10 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func differentPagesAreCachedSeparately() async {
+	func differentPagesAreCachedSeparately() async throws {
 		// Given
-		let page1Response = CharactersResponseDTO.stub(
-			info: .stub(next: "page2"),
-			results: [.stub(id: 1)]
-		)
-		let page2Response = CharactersResponseDTO.stub(
-			info: .stub(prev: "page1"),
-			results: [.stub(id: 2)]
-		)
+		let page1Response: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
+		let page2Response: CharactersResponseDTO = try testBundle.loadJSON("characters_response_page_2", as: CharactersResponseDTO.self)
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -192,3 +192,5 @@ struct CharacterMemoryDataSourceTests {
 		#expect(cachedPage2 == page2Response)
 	}
 }
+
+private final class BundleToken {}

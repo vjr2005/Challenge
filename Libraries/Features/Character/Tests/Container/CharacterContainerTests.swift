@@ -1,10 +1,13 @@
 import ChallengeCoreMocks
 import ChallengeNetworkingMocks
+import Foundation
 import Testing
 
 @testable import ChallengeCharacter
 
 struct CharacterContainerTests {
+	private let testBundle = Bundle(for: BundleToken.self)
+
 	// MARK: - CharacterListViewModel
 
 	@Test
@@ -22,9 +25,10 @@ struct CharacterContainerTests {
 	}
 
 	@Test
-	func makeCharacterListViewModelUsesInjectedHTTPClient() async {
+	func makeCharacterListViewModelUsesInjectedHTTPClient() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("characters_response")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let router = RouterMock()
 		let sut = CharacterContainer(httpClient: httpClient)
 		let viewModel = sut.makeCharacterListViewModel(router: router)
@@ -53,9 +57,10 @@ struct CharacterContainerTests {
 	}
 
 	@Test
-	func makeCharacterDetailViewModelUsesInjectedHTTPClient() async {
+	func makeCharacterDetailViewModelUsesInjectedHTTPClient() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("character")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let router = RouterMock()
 		let sut = CharacterContainer(httpClient: httpClient)
 		let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
@@ -70,9 +75,10 @@ struct CharacterContainerTests {
 	// MARK: - Shared Repository
 
 	@Test
-	func multipleDetailViewModelsShareSameRepository() async {
+	func multipleDetailViewModelsShareSameRepository() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("character")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let router = RouterMock()
 		let sut = CharacterContainer(httpClient: httpClient)
 
@@ -88,9 +94,10 @@ struct CharacterContainerTests {
 	}
 
 	@Test
-	func listAndDetailViewModelsShareSameRepository() async {
+	func listAndDetailViewModelsShareSameRepository() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .success(CharactersResponseDTO.stubJSONData()))
+		let jsonData = try testBundle.loadJSONData("characters_response")
+		let httpClient = HTTPClientMock(result: .success(jsonData))
 		let router = RouterMock()
 		let sut = CharacterContainer(httpClient: httpClient)
 
@@ -105,3 +112,5 @@ struct CharacterContainerTests {
 		#expect(httpClient.requestedEndpoints.count == 1)
 	}
 }
+
+private final class BundleToken {}

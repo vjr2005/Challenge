@@ -661,16 +661,16 @@ FeatureName/
 
 For mock implementation patterns, see the skills: `/datasource`, `/repository`, `/usecase`.
 
-### Stubs (Test Data)
+### Stubs (Test Data for Domain Models)
 
-Use the **stub pattern** to create test data. Stubs are extensions on domain models that provide factory methods with sensible defaults.
+Use the **stub pattern** to create test data for **Domain Models only**. Stubs are extensions on domain models that provide factory methods with sensible defaults.
 
 **Location:** `Tests/Stubs/`
 
 ```
 FeatureName/
 └── Tests/
-    ├── Stubs/                    # Test data factories
+    ├── Stubs/                    # Test data factories for Domain Models
     │   ├── Character+Stub.swift
     │   └── Location+Stub.swift
     ├── Mocks/
@@ -685,7 +685,7 @@ extension User {
     static func stub(
         id: Int = 1,
         name: String = "John Doe",
-        email: String = "john@example.com",
+        email: String = "john@example.com"
     ) -> User {
         User(
             id: id,
@@ -702,6 +702,7 @@ extension User {
 - All parameters must have default values
 - Defaults should be valid, realistic values
 - Located in `Tests/Stubs/` (internal to test target)
+- **Only for Domain Models** (not DTOs)
 
 **Usage in tests:**
 
@@ -719,19 +720,14 @@ func processesUserCorrectly() {
 }
 ```
 
-**DTOs also use stubs** when needed for repository/datasource tests:
+### JSON Fixtures (Test Data for DTOs)
 
-```swift
-// Tests/Stubs/UserDTO+Stub.swift
-extension UserDTO {
-    static func stub(
-        id: Int = 1,
-        name: String = "John Doe",
-    ) -> UserDTO {
-        UserDTO(id: id, name: name)
-    }
-}
-```
+**DTOs use JSON files** that replicate real server responses instead of stub extensions. This ensures tests validate the actual API contract and catch deserialization issues.
+
+- **JSON files location:** `Tests/Fixtures/`
+- **Helper location:** `ChallengeCoreMocks` (`Bundle+JSON.swift`)
+
+For detailed documentation on JSON fixtures and usage examples, see the `/datasource` skill.
 
 ---
 
