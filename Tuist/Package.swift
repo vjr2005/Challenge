@@ -3,11 +3,15 @@ import PackageDescription
 
 #if TUIST
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let packageSettings = PackageSettings(
 	productTypes: [
 		"SnapshotTesting": .framework,
-	]
+	],
+	baseSettings: .settings(
+		configurations: BuildConfiguration.all
+	)
 )
 #endif
 

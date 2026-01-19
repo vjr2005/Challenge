@@ -1,42 +1,6 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// MARK: - Framework Modules
-
-let coreModule = FrameworkModule.create(name: "Core")
-let networkingModule = FrameworkModule.create(name: "Networking")
-let appConfigurationModule = FrameworkModule.create(name: "AppConfiguration", hasMocks: false)
-
-let characterModule = FrameworkModule.create(
-	name: "Character",
-	path: "Features/Character",
-	dependencies: [
-		.target(name: "\(appName)Core"),
-		.target(name: "\(appName)Networking"),
-		.target(name: "\(appName)AppConfiguration"),
-	],
-	testDependencies: [
-		.target(name: "\(appName)CoreMocks"),
-		.target(name: "\(appName)NetworkingMocks"),
-		.external(name: "SnapshotTesting"),
-	],
-	hasMocks: false
-)
-
-let homeModule = FrameworkModule.create(
-	name: "Home",
-	path: "Features/Home",
-	dependencies: [
-		.target(name: "\(appName)Core"),
-		.target(name: "\(appName)Character"),
-	],
-	testDependencies: [
-		.target(name: "\(appName)CoreMocks"),
-		.external(name: "SnapshotTesting"),
-	],
-	hasMocks: false
-)
-
 // MARK: - App Target
 
 let appInfoPlist: [String: Plist.Value] = [
@@ -65,11 +29,7 @@ let appTarget = Target.target(
 	sources: ["App/Sources/**"],
 	resources: ["App/Sources/Resources/**"],
 	scripts: [SwiftLint.script(path: "App/Sources")],
-	dependencies: [
-		.target(name: "\(appName)Core"),
-		.target(name: "\(appName)Character"),
-		.target(name: "\(appName)Home"),
-	],
+	dependencies: Modules.appDependencies,
 	settings: .settings(
 		configurations: Environment.appTargetConfigurations,
 		defaultSettings: .recommended
@@ -99,18 +59,6 @@ let appE2ETestsTarget = Target.target(
 
 // MARK: - Project
 
-let allModuleTargets = coreModule.targets
-	+ networkingModule.targets
-	+ appConfigurationModule.targets
-	+ characterModule.targets
-	+ homeModule.targets
-
-let allModuleSchemes = coreModule.schemes
-	+ networkingModule.schemes
-	+ appConfigurationModule.schemes
-	+ characterModule.schemes
-	+ homeModule.schemes
-
 let project = Project(
 	name: appName,
 	options: .options(automaticSchemesOptions: .disabled),
@@ -122,6 +70,6 @@ let project = Project(
 		],
 		configurations: BuildConfiguration.all
 	),
-	targets: [appTarget, appTestsTarget, appE2ETestsTarget] + allModuleTargets,
-	schemes: AppScheme.allSchemes(testTargets: ["\(appName)Tests", "\(appName)E2ETests"]) + allModuleSchemes
+	targets: [appTarget, appTestsTarget, appE2ETestsTarget] + Modules.targets,
+	schemes: AppScheme.allSchemes(testTargets: ["\(appName)Tests", "\(appName)E2ETests"]) + Modules.schemes
 )
