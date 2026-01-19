@@ -9,7 +9,7 @@ This document defines the coding standards, architecture patterns, and developme
 > - Concurrency issues (Sendable, actor isolation)
 > - **Never use force unwrap (`!`)** - use `guard let`, `if let`, or `try?` instead
 >
-> **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards.
+> **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards. **After generating code**, use the `/testing` skill to create corresponding tests.
 >
 > **After writing code, always verify compilation** by running `tuist test`.
 >
