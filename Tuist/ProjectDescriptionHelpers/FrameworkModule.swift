@@ -16,6 +16,8 @@ public struct FrameworkModule {
 	///   - testDependencies: Additional test-only dependencies
 	///   - hasMocks: Whether to create a public Mocks framework (default: true).
 	///               Set to false for modules with only internal mocks in Tests/Mocks/.
+	///   - hasTests: Whether to create a Tests target (default: true).
+	///               Set to false for simple configuration modules without tests.
 	public static func create(
 		name: String,
 		path: String? = nil,
@@ -23,6 +25,7 @@ public struct FrameworkModule {
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
 		hasMocks: Bool = true,
+		hasTests: Bool = true,
 	) -> FrameworkModule {
 		let targetName = "\(appName)\(name)"
 		let testsTargetName = "\(targetName)Tests"
@@ -56,31 +59,40 @@ public struct FrameworkModule {
 			testsDependencies.append(.target(name: "\(targetName)Mocks"))
 		}
 
-		let tests = Target.target(
-			name: testsTargetName,
-			destinations: destinations,
-			product: .unitTests,
-			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(testsTargetName)",
-			deploymentTargets: developmentTarget,
-			sources: ["Libraries/\(sourcesPath)/Tests/**"],
-			resources: [
-				.glob(pattern: "Libraries/\(sourcesPath)/Tests/Resources/**", excluding: []),
-				.glob(pattern: "Libraries/\(sourcesPath)/Tests/Fixtures/**", excluding: []),
-			],
-			dependencies: testsDependencies + testDependencies
-		)
-		targets.append(tests)
+		var scheme: Scheme
 
-		let testableTarget: TestableTarget = "\(testsTargetName)"
-
-		let scheme = Scheme.scheme(
-			name: targetName,
-			buildAction: .buildAction(targets: [.target(targetName), .target(testsTargetName)]),
-			testAction: .targets(
-				[testableTarget],
-				options: .options(coverage: true)
+		if hasTests {
+			let tests = Target.target(
+				name: testsTargetName,
+				destinations: destinations,
+				product: .unitTests,
+				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(testsTargetName)",
+				deploymentTargets: developmentTarget,
+				sources: ["Libraries/\(sourcesPath)/Tests/**"],
+				resources: [
+					.glob(pattern: "Libraries/\(sourcesPath)/Tests/Resources/**", excluding: []),
+					.glob(pattern: "Libraries/\(sourcesPath)/Tests/Fixtures/**", excluding: []),
+				],
+				dependencies: testsDependencies + testDependencies
 			)
-		)
+			targets.append(tests)
+
+			let testableTarget: TestableTarget = "\(testsTargetName)"
+
+			scheme = Scheme.scheme(
+				name: targetName,
+				buildAction: .buildAction(targets: [.target(targetName), .target(testsTargetName)]),
+				testAction: .targets(
+					[testableTarget],
+					options: .options(coverage: true)
+				)
+			)
+		} else {
+			scheme = Scheme.scheme(
+				name: targetName,
+				buildAction: .buildAction(targets: [.target(targetName)])
+			)
+		}
 
 		return FrameworkModule(
 			targets: targets,

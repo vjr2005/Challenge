@@ -28,7 +28,12 @@
       "WebFetch(domain:forums.swift.org)",
       "Bash(xcrun simctl:*)",
       "Bash(git stash:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(python3:*)",
+      "Bash(brew install:*)",
+      "Bash(convert:*)",
+      "Bash(magick:*)",
+      "Bash(pip3 install:*)"
     ]
   }
 }

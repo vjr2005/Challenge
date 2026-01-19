@@ -23,6 +23,7 @@ This document defines the coding standards, architecture patterns, and developme
 - [Project Structure](#project-structure)
 - [Dependencies](#dependencies)
 - [Networking](#networking)
+- [App Configuration](#app-configuration)
 - [Testing](#testing)
 - [Style Guide](#style-guide)
 - [Tuist Configuration](#tuist-configuration)
@@ -236,8 +237,12 @@ Challenge/
 │   ├── Sources/
 │   │   ├── ChallengeApp.swift
 │   │   └── Resources/
+│   │       └── Assets.xcassets/
+│   │           ├── AppIcon.appiconset/        # Production icon
+│   │           ├── AppIconDev.appiconset/     # Development icon (orange banner)
+│   │           └── AppIconStaging.appiconset/ # Staging icon (purple banner)
 │   ├── Tests/
-│   └── UITests/
+│   └── E2ETests/
 ├── Libraries/
 │   ├── Core/
 │   │   ├── Sources/
@@ -247,6 +252,10 @@ Challenge/
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
+│   ├── AppConfiguration/
+│   │   ├── Sources/
+│   │   │   └── Environment.swift
+│   │   └── Tests/
 │   └── Features/
 │       ├── User/
 │       │   ├── Sources/
@@ -432,6 +441,132 @@ let endpoint = Endpoint(
 )
 
 let users: [User] = try await client.request(endpoint)
+```
+
+---
+
+## App Configuration
+
+Environment and API configuration module.
+
+**Location:** `Libraries/AppConfiguration/`
+
+### Environment
+
+The `Environment` enum defines the application environments and provides API configuration.
+
+```swift
+import ChallengeAppConfiguration
+
+// Get current environment (determined at compile time)
+let environment = Environment.current
+
+// Check environment type
+if environment.isDebug {
+    // Development-only code
+}
+
+// Get API configuration
+let apiURL = Environment.current.rickAndMorty.baseURL
+```
+
+### Environment Cases
+
+| Case | Description |
+|------|-------------|
+| `development` | Local development with debug tools |
+| `staging` | Pre-production testing environment |
+| `production` | Live production environment |
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `current` | `Environment` | Current environment based on build configuration |
+| `isDebug` | `Bool` | `true` only for `development` |
+| `isRelease` | `Bool` | `true` only for `production` |
+| `rickAndMorty` | `API` | API configuration with `baseURL` |
+
+### Build Configurations
+
+The project uses multiple build configurations to support different environments:
+
+| Configuration | Type | Bundle ID | App Icon | Environment |
+|---------------|------|-----------|----------|-------------|
+| Debug | debug | `.dev` | AppIconDev | development |
+| Debug-Staging | debug | `.staging` | AppIconStaging | staging |
+| Debug-Prod | debug | (none) | AppIcon | production |
+| Staging | release | `.staging` | AppIconStaging | staging |
+| Release | release | (none) | AppIcon | production |
+
+**Debug configurations** enable debugging and development tools.
+**Release configurations** are optimized builds for distribution.
+
+### Schemes
+
+| Scheme | Run Config | Archive Config | Use Case |
+|--------|------------|----------------|----------|
+| `Challenge (Dev)` | Debug | Release | Daily development |
+| `Challenge (Staging)` | Debug-Staging | Staging | Testing with staging API |
+| `Challenge (Prod)` | Debug-Prod | Release | Debugging production issues |
+
+**Run Config**: Configuration used when running in simulator/device (debuggable).
+**Archive Config**: Configuration used when creating archives for distribution.
+
+### App Icons
+
+Each environment has a distinct app icon with a colored banner:
+
+| Environment | Icon | Banner |
+|-------------|------|--------|
+| Development | AppIconDev | 🟠 Orange "DEV" |
+| Staging | AppIconStaging | 🟣 Purple "STAGING" |
+| Production | AppIcon | No banner |
+
+Icons are located in `App/Sources/Resources/Assets.xcassets/`.
+
+### Adding a New API
+
+To add a new API endpoint configuration:
+
+```swift
+// In Environment.swift
+public extension Environment {
+    var newAPI: API {
+        let urlString: String
+        switch self {
+        case .development:
+            urlString = "https://dev.api.example.com"
+        case .staging:
+            urlString = "https://staging.api.example.com"
+        case .production:
+            urlString = "https://api.example.com"
+        }
+        guard let url = URL(string: urlString) else {
+            preconditionFailure("Invalid URL: \(urlString)")
+        }
+        return API(baseURL: url)
+    }
+}
+```
+
+### Usage in Features
+
+Features access API configuration through their Container:
+
+```swift
+import ChallengeAppConfiguration
+import ChallengeNetworking
+
+final class MyFeatureContainer {
+    private let httpClient: any HTTPClientContract
+
+    init(httpClient: (any HTTPClientContract)? = nil) {
+        self.httpClient = httpClient ?? HTTPClient(
+            baseURL: Environment.current.rickAndMorty.baseURL
+        )
+    }
+}
 ```
 
 ---

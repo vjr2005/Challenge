@@ -1,3 +1,4 @@
+import ChallengeAppConfiguration
 import ChallengeCore
 import ChallengeNetworking
 import Foundation
@@ -8,7 +9,7 @@ final class CharacterContainer {
     private let httpClient: any HTTPClientContract
 
     init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? HTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
+        self.httpClient = httpClient ?? HTTPClient(baseURL: Environment.current.rickAndMorty.baseURL)
     }
 
     // MARK: - Shared (lazy) - Source of Truth
