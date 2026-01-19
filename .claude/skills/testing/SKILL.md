@@ -1,6 +1,5 @@
 ---
 name: testing
-autoContext: true
 description: Testing patterns and conventions. Use when writing unit tests, using Swift Testing framework, or following Given/When/Then structure.
 ---
 

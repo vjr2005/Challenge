@@ -1,155 +1,10 @@
----
-name: repository
-autoContext: true
-description: Creates Repositories that abstract data access. Use when creating repositories, transforming DTOs to domain models, or implementing local-first caching.
----
+# Repository Examples
 
-# Skill: Repository
-
-Guide for creating Repositories that abstract data access following Clean Architecture.
-
-## When to use this skill
-
-- Create a new Repository to abstract data sources
-- Transform DTOs to Domain models
-- Provide a clean API for Use Cases
-- Implement caching with local-first policy
-
-## File structure
-
-```
-Libraries/Features/{FeatureName}/
-├── Sources/
-│   ├── Domain/
-│   │   ├── Models/
-│   │   │   └── {Name}.swift                      # Domain model
-│   │   └── Repositories/
-│   │       └── {Name}RepositoryContract.swift    # Contract (protocol)
-│   └── Data/
-│       ├── DataSources/
-│       │   ├── {Name}RemoteDataSource.swift      # Remote DataSource (see /datasource skill)
-│       │   └── {Name}MemoryDataSource.swift      # Memory DataSource (see /datasource skill)
-│       ├── DTOs/
-│       │   └── {Name}DTO.swift                   # DTO (see /datasource skill)
-│       └── Repositories/
-│           └── {Name}Repository.swift            # Implementation
-└── Tests/
-    ├── Data/
-    │   └── {Name}RepositoryTests.swift           # Repository tests
-    └── Mocks/
-        └── {Name}RepositoryMock.swift            # Mock for testing Use Cases
-```
-
-## Repository Scenarios
-
-A Repository can be configured with:
-
-| Scenario | DataSources | Use case |
-|----------|-------------|----------|
-| Remote only | `RemoteDataSource` | Simple API consumption |
-| Local only | `MemoryDataSource` | Offline-first, local state |
-| Both (local-first) | `RemoteDataSource` + `MemoryDataSource` | Caching with remote fallback |
-
----
-
-## Common Components
-
-### 1. Domain Model
-
-```swift
-struct {Name}: Equatable {
-    let id: Int
-    let name: String
-    // Domain-specific properties
-}
-```
-
-**Rules:**
-- Located in `Domain/Models/`
-- **Internal visibility** (not public)
-- Conform to `Equatable`
-- Use `let` properties (immutable)
-- Contains only domain-relevant data (no API-specific fields)
-
-### 2. Contract (Protocol) - Domain Layer
-
-```swift
-protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(id: Int) async throws -> {Name}
-    func getAll{Name}s() async throws -> [{Name}]
-}
-```
-
-**Rules:**
-- Located in `Domain/Repositories/`
-- `Contract` suffix in the name
-- **Internal visibility** (not public)
-- Conform to `Sendable`
-- Methods are `async throws`
-- **Return Domain models, NOT DTOs**
-
-### 3. DTO to Domain Mapping
-
-```swift
-extension {Name}DTO {
-    func toDomain() -> {Name} {
-        {Name}(
-            id: id,
-            name: name
-        )
-    }
-}
-```
-
-**Rules:**
-- Extension on DTO, returns Domain model
-- Located in the same file as the Repository implementation or in a separate `{Name}DTO+Domain.swift` file
-- Keep mapping logic simple and pure
-
-### 4. Mock (in Tests/Mocks/)
-
-```swift
-import Foundation
-
-@testable import Challenge{FeatureName}
-
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
-    var result: Result<{Name}, Error> = .failure(NotConfiguredError.notConfigured)
-    var allResult: Result<[{Name}], Error> = .failure(NotConfiguredError.notConfigured)
-    private(set) var getCallCount = 0
-    private(set) var getAllCallCount = 0
-    private(set) var lastRequestedId: Int?
-
-    func get{Name}(id: Int) async throws -> {Name} {
-        getCallCount += 1
-        lastRequestedId = id
-        return try result.get()
-    }
-
-    func getAll{Name}s() async throws -> [{Name}] {
-        getAllCallCount += 1
-        return try allResult.get()
-    }
-}
-
-private enum NotConfiguredError: Error {
-    case notConfigured
-}
-```
-
-**Rules:**
-- `Mock` suffix in the name
-- Located in `Tests/Mocks/`
-- **Requires `@testable import`** to access internal types
-- `@unchecked Sendable` if it has mutable state
-- Separate result properties for each method
-- Call tracking properties
+Complete implementation examples for different repository scenarios.
 
 ---
 
 ## Scenario 1: Remote Only
-
-Use when the repository only needs to fetch data from a remote API.
 
 ### Implementation
 
@@ -235,8 +90,6 @@ private enum TestError: Error {
 
 ## Scenario 2: Local Only
 
-Use when the repository only needs to manage local (in-memory) state.
-
 ### Implementation
 
 ```swift
@@ -270,15 +123,12 @@ enum {Name}RepositoryError: Error {
 }
 ```
 
-### Domain to DTO Mapping (for saving)
+### Domain to DTO Mapping
 
 ```swift
 extension {Name} {
     func toDTO() -> {Name}DTO {
-        {Name}DTO(
-            id: id,
-            name: name
-        )
+        {Name}DTO(id: id, name: name)
     }
 }
 ```
@@ -339,14 +189,6 @@ struct {Name}RepositoryTests {
 ---
 
 ## Scenario 3: Local-First (Both DataSources)
-
-Use when the repository needs caching with remote fallback. The **local-first policy** means:
-
-1. Check local cache first
-2. If found in cache, return cached data
-3. If not found, fetch from remote
-4. Save to local cache
-5. Return the data
 
 ### Implementation
 
@@ -563,7 +405,7 @@ protocol CharacterRepositoryContract: Sendable {
 }
 ```
 
-### Implementation (Local-First)
+### Implementation
 
 ```swift
 // Sources/Data/Repositories/CharacterRepository.swift
@@ -580,17 +422,12 @@ struct CharacterRepository: CharacterRepositoryContract {
     }
 
     func getCharacter(id: Int) async throws -> Character {
-        // Check cache first
         if let cachedDTO = await memoryDataSource.getCharacter(id: id) {
             return cachedDTO.toDomain()
         }
 
-        // Fetch from remote
         let dto = try await remoteDataSource.fetchCharacter(id: id)
-
-        // Save to cache
         await memoryDataSource.saveCharacter(dto)
-
         return dto.toDomain()
     }
 }
@@ -607,53 +444,27 @@ extension CharacterDTO {
 }
 ```
 
----
+### Mock
 
-## Visibility Summary
+```swift
+// Tests/Mocks/CharacterRepositoryMock.swift
+import Foundation
 
-| Component | Visibility | Location |
-|-----------|------------|----------|
-| Domain Model | internal | `Sources/Domain/Models/` |
-| Contract | internal | `Sources/Domain/Repositories/` |
-| Implementation | internal | `Sources/Data/Repositories/` |
-| DTO Mapping | internal | `Sources/Data/Repositories/` |
-| Mock | internal | `Tests/Mocks/` |
+@testable import ChallengeCharacter
 
----
+final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
+    var result: Result<Character, Error> = .failure(NotConfiguredError.notConfigured)
+    private(set) var getCallCount = 0
+    private(set) var lastRequestedId: Int?
 
-## Checklist
+    func getCharacter(id: Int) async throws -> Character {
+        getCallCount += 1
+        lastRequestedId = id
+        return try result.get()
+    }
+}
 
-### Remote Only Repository
-
-- [ ] Create Domain model with Equatable and Sendable conformance
-- [ ] Create Contract in Domain/Repositories/ with async throws methods
-- [ ] Create Implementation injecting RemoteDataSource
-- [ ] Add DTO to Domain mapping extension
-- [ ] Create Mock in Tests/Mocks/ with call tracking
-- [ ] Create tests verifying transformation and error propagation
-- [ ] Run tests
-
-### Local Only Repository
-
-- [ ] Create Domain model with Equatable and Sendable conformance
-- [ ] Create Contract in Domain/Repositories/ with async throws methods
-- [ ] Create Implementation injecting MemoryDataSource
-- [ ] Add DTO to Domain mapping extension
-- [ ] Add Domain to DTO mapping extension (for saving)
-- [ ] Create error enum for not found cases
-- [ ] Create Mock in Tests/Mocks/ with call tracking
-- [ ] Create tests verifying CRUD operations and error handling
-- [ ] Run tests
-
-### Local-First Repository (Both DataSources)
-
-- [ ] Create Domain model with Equatable and Sendable conformance
-- [ ] Create Contract in Domain/Repositories/ with async throws methods
-- [ ] Create Implementation injecting both RemoteDataSource and MemoryDataSource
-- [ ] Add DTO to Domain mapping extension
-- [ ] Implement local-first policy (cache check → remote fetch → cache save)
-- [ ] Create Mock in Tests/Mocks/ with call tracking
-- [ ] Create tests for cache hit scenarios (no remote call)
-- [ ] Create tests for cache miss scenarios (remote call + cache save)
-- [ ] Create tests for error propagation
-- [ ] Run tests
+private enum NotConfiguredError: Error {
+    case notConfigured
+}
+```

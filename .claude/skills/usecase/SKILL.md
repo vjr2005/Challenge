@@ -1,6 +1,5 @@
 ---
 name: usecase
-autoContext: true
 description: Creates UseCases that encapsulate business logic. Use when creating use cases, implementing domain rules, validations, or coordinating multiple repositories.
 ---
 

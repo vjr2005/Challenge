@@ -1,6 +1,5 @@
 ---
 name: concurrency
-autoContext: true
 description: Swift 6 concurrency patterns. Use when working with async/await, actors, MainActor isolation, or Sendable conformance.
 ---
 
@@ -145,6 +144,31 @@ nonisolated final class CharacterFlowE2ETests: XCTestCase {
 
 ---
 
+## State Management
+
+Use `@Observable` (iOS 17+), **not** `ObservableObject`:
+
+```swift
+// REQUIRED - Use @Observable
+@Observable
+final class CharacterListViewModel {
+    var state: CharacterListViewState = .idle
+}
+
+// PROHIBITED - Never use ObservableObject/@Published
+final class CharacterListViewModel: ObservableObject {
+    @Published var state: CharacterListViewState = .idle
+}
+```
+
+**Rules:**
+- All ViewModels use `@Observable` macro
+- No `ObservableObject` protocol conformance
+- No `@Published` property wrappers
+- Views use `@State` to hold `@Observable` instances
+
+---
+
 ## Prohibited Patterns
 
 The following patterns are **prohibited** in this project:
@@ -154,6 +178,7 @@ The following patterns are **prohibited** in this project:
 DispatchQueue.main.async { ... }
 DispatchQueue.global().async { ... }
 completionHandler: @escaping (Result<T, Error>) -> Void
+ObservableObject / @Published  // Use @Observable instead
 NotificationCenter for async events
 Combine for new code
 ```

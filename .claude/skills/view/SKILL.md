@@ -1,0 +1,199 @@
+---
+name: view
+description: Creates SwiftUI Views with ViewModel integration. Use when creating views, integrating with ViewModels, or adding SwiftUI previews.
+---
+
+# Skill: View
+
+Guide for creating SwiftUI Views that use ViewModels with dependency injection.
+
+## When to use this skill
+
+- Create a new View for a feature
+- Integrate View with ViewModel via init
+- Add SwiftUI Previews with mocks
+
+## Additional resources
+
+- For complete implementation examples, see [examples.md](examples.md)
+
+## File structure
+
+```
+Libraries/Features/{FeatureName}/
+├── Sources/
+│   └── Presentation/
+│       ├── {Name}List/
+│       │   ├── Views/
+│       │   │   └── {Name}ListView.swift
+│       │   └── ViewModels/
+│       └── {Name}Detail/
+│           ├── Views/
+│           │   └── {Name}DetailView.swift
+│           └── ViewModels/
+└── Tests/
+    └── Presentation/
+        └── Snapshots/
+```
+
+---
+
+## View Pattern
+
+Views receive ViewModel via init using `_viewModel = State(initialValue:)`:
+
+```swift
+struct {Name}View: View {
+    @State private var viewModel: {Name}ViewModel
+
+    init(viewModel: {Name}ViewModel) {
+        _viewModel = State(initialValue: viewModel)
+    }
+
+    var body: some View {
+        content
+            .task { await viewModel.load() }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch viewModel.state {
+        case .idle: Color.clear
+        case .loading: ProgressView()
+        case .loaded(let data): Text(data.name)
+        case .error: ContentUnavailableView("Error", systemImage: "exclamationmark.triangle")
+        }
+    }
+}
+```
+
+**Rules:**
+- **Init for ViewModel** - Use `_viewModel = State(initialValue:)` pattern
+- **Switch on state** - Use `switch` on `viewModel.state`
+- **@ViewBuilder** - Use for computed properties returning Views
+- **Internal visibility**
+- **No Router in View** - Delegate actions to ViewModel
+
+---
+
+## State Rendering
+
+Always use a `switch` statement to render based on ViewState:
+
+```swift
+@ViewBuilder
+private var content: some View {
+    switch viewModel.state {
+    case .idle: Color.clear
+    case .loading: ProgressView()
+    case .empty: ContentUnavailableView("No items", systemImage: "tray")
+    case .loaded(let data): DataView(data: data)
+    case .error: ContentUnavailableView("Error", systemImage: "exclamationmark.triangle")
+    }
+}
+```
+
+---
+
+## Navigation
+
+List Views delegate navigation to ViewModel:
+
+```swift
+List(items) { item in
+    Button(item.name) {
+        viewModel.didSelect(item)  // Delegate to ViewModel
+    }
+}
+```
+
+**Rules:**
+- View only knows ViewModel
+- User actions call ViewModel methods
+- ViewModel handles navigation via Router
+
+---
+
+## Previews
+
+All Views must include previews. Create one for **each state except `idle`**.
+
+### Preview Rules
+
+- **Skip `idle` state** - transient state with no visual content
+- **One preview per visual state** - Loading, Loaded, Empty, Error
+- **Use descriptive names** - `#Preview("Loading")`
+- **Create private preview mocks** - with configurable behavior
+
+### Preview Mock Pattern
+
+```swift
+private final class Get{Name}UseCasePreviewMock: Get{Name}UseCaseContract {
+    private let delay: Bool
+    private let isEmpty: Bool
+    private let shouldFail: Bool
+
+    init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
+        self.delay = delay
+        self.isEmpty = isEmpty
+        self.shouldFail = shouldFail
+    }
+
+    func execute() async throws -> {Name} {
+        if delay { try? await Task.sleep(for: .seconds(100)) }
+        if shouldFail { throw PreviewError.failed }
+        if isEmpty { return {Name}(items: []) }
+        return {Name}.stubForPreview()
+    }
+}
+
+private final class RouterPreviewMock: RouterContract {
+    func navigate(to destination: any Navigation) {}
+    func goBack() {}
+}
+```
+
+---
+
+## Accessibility Identifiers
+
+Views must define **private accessibility identifiers** for E2E testing.
+
+```swift
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+    static let view = "{name}.view"
+    static let actionButton = "{name}.actionButton"
+
+    static func row(id: Int) -> String {
+        "{name}.row.\(id)"
+    }
+}
+```
+
+**Rules:**
+- Private to each View
+- Format: `{screenName}.{elementType}`
+- Use static functions for dynamic IDs
+
+---
+
+## Visibility Summary
+
+| Component | Visibility | Location |
+|-----------|------------|----------|
+| View | internal | `Sources/Presentation/{FeatureName}/Views/` |
+
+---
+
+## Checklist
+
+- [ ] Create View struct with init receiving ViewModel only
+- [ ] Use `_viewModel = State(initialValue:)` in init
+- [ ] Delegate user actions to ViewModel methods
+- [ ] Implement `body` with `.task` modifier for loading
+- [ ] Implement `content` with switch on `viewModel.state`
+- [ ] Handle all ViewState cases
+- [ ] Add private `AccessibilityIdentifier` enum
+- [ ] Add Previews for each state (except idle)

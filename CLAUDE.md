@@ -9,6 +9,8 @@ This document defines the coding standards, architecture patterns, and developme
 > - Concurrency issues (Sendable, actor isolation)
 > - **Never use force unwrap (`!`)** - use `guard let`, `if let`, or `try?` instead
 >
+> **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards.
+>
 > **After writing code, always verify compilation** by running `tuist test`.
 >
 > **All code must pass SwiftLint validation.**
@@ -77,23 +79,6 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 ---
 
-## Swift 6 Concurrency
-
-| Setting | Effect |
-|---------|--------|
-| `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | All types MainActor-isolated by default |
-| `SWIFT_APPROACHABLE_CONCURRENCY = YES` | Automatic Sendable inference |
-
-**Key rules:**
-- No `@MainActor` needed on ViewModels/Views (it's default)
-- Use `actor` for background work (e.g., MemoryDataSource)
-- Mark DTOs as `nonisolated` if used in actors
-- No explicit `Sendable` conformance (it's inferred)
-
-For details, see `/concurrency` skill.
-
----
-
 ## Dependencies
 
 | Dependency | Purpose |
@@ -120,42 +105,6 @@ Native networking layer using **URLSession with async/await**. No external depen
 | `HTTPClientMock` | Mock for testing |
 
 For usage, see [Libraries/Networking/README.md](Libraries/Networking/README.md) and `/datasource` skill.
-
----
-
-## Quick Reference
-
-### Prohibited Patterns
-
-```swift
-DispatchQueue.main.async { }
-DispatchQueue.global().async { }
-completion: @escaping (Result<T, Error>) -> Void
-ObservableObject / @Published  // Use @Observable
-force unwrap (!)
-```
-
-### Required Patterns
-
-```swift
-async/await                    // For async code
-@Observable                    // For state management (iOS 17+)
-actor                          // For shared mutable state
-protocols (contracts)          // For dependency injection
-Contract suffix                // For protocols
-Mock suffix                    // For mocks (suffix only, never prefix)
-```
-
-### Naming Conventions
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Protocol | `{Name}Contract` | `UserRepositoryContract` |
-| Mock | `{Name}Mock` | `UserRepositoryMock` |
-| Mock variable | `{name}Mock` | `userRepositoryMock` |
-| Parameter | `identifier` not `id` | `func get(identifier: Int)` |
-
-For complete style guide, see `/style-guide` skill.
 
 ---
 

@@ -1,6 +1,5 @@
 ---
 name: tuist
-autoContext: true
 description: Manages Tuist configuration. Use when adding xcframeworks, configuring dependencies, or modifying Project.swift.
 ---
 
