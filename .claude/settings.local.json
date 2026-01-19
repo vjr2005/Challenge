@@ -33,7 +33,12 @@
       "Bash(brew install:*)",
       "Bash(convert:*)",
       "Bash(magick:*)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "Bash(tuist version:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "tuist"
+  ],
+  "enableAllProjectMcpServers": true
 }

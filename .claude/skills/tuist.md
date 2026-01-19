@@ -7,6 +7,45 @@ description: Manages Tuist configuration. Use when adding xcframeworks, configur
 
 Skill for managing Tuist configuration in the project.
 
+## MCP Server (Required)
+
+**IMPORTANT:** This project has a Tuist MCP server installed. Always use the MCP tools for Tuist operations instead of running bash commands directly.
+
+### Available MCP Resources
+
+The Tuist MCP server provides project graph information:
+
+```
+URI: tuist:///Users/vjordan/Projects/ios/Challenge
+Resource: Challenge graph
+Type: application/json
+```
+
+Use `ReadMcpResourceTool` to read the project graph and understand:
+- Project structure and targets
+- Dependencies between modules
+- Build configurations
+
+### Usage
+
+```swift
+// Read project graph
+ReadMcpResourceTool(
+    server: "tuist",
+    uri: "tuist:///Users/vjordan/Projects/ios/Challenge"
+)
+```
+
+### Why use MCP?
+
+- Provides structured JSON output of project configuration
+- Enables understanding of module dependencies
+- Integrates directly with Claude Code workflow
+
+> **Note:** Use `ListMcpResourcesTool` to see all available Tuist resources.
+
+---
+
 ## Adding an XCFramework as a Dependency
 
 ### 1. XCFramework Location
