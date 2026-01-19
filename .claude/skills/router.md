@@ -1,5 +1,6 @@
 ---
 name: router
+autoContext: true
 description: Creates Router for navigation. Use when setting up navigation, adding navigation to ViewModels, or testing navigation behavior.
 ---
 

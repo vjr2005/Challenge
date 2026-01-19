@@ -1,5 +1,6 @@
 ---
 name: style-guide
+autoContext: true
 description: Code style and formatting rules. Use when writing code, naming types, or fixing SwiftLint issues.
 ---
 

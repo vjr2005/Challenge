@@ -1,5 +1,6 @@
 ---
 name: e2e-tests
+autoContext: true
 description: End-to-end UI tests with Robot pattern. Use when creating E2E tests, implementing Robot classes, or adding accessibility identifiers.
 ---
 

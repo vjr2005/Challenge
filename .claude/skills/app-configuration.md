@@ -1,5 +1,6 @@
 ---
 name: app-configuration
+autoContext: true
 description: Environment and build configuration. Use when working with environments, schemes, build configs, or API configuration.
 ---
 

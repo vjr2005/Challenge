@@ -1,5 +1,6 @@
 ---
 name: repository
+autoContext: true
 description: Creates Repositories that abstract data access. Use when creating repositories, transforming DTOs to domain models, or implementing local-first caching.
 ---
 

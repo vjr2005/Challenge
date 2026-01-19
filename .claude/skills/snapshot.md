@@ -1,5 +1,6 @@
 ---
 name: snapshot
+autoContext: true
 description: Creates Snapshot Tests for SwiftUI Views using SnapshotTesting. Use when creating visual regression tests for views with CachedAsyncImage support.
 ---
 

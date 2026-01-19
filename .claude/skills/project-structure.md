@@ -1,5 +1,6 @@
 ---
 name: project-structure
+autoContext: true
 description: Project organization and directory structure. Use when creating features, organizing files, or understanding the codebase layout.
 ---
 

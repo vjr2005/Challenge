@@ -1,5 +1,6 @@
 ---
 name: viewmodel
+autoContext: true
 description: Creates ViewModels with state management. Use when creating ViewModels, implementing ViewState pattern, or adding state management for features.
 ---
 

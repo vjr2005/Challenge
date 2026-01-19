@@ -1,5 +1,6 @@
 ---
 name: view
+autoContext: true
 description: Creates SwiftUI Views with ViewModel integration. Use when creating views, integrating with ViewModels, or adding SwiftUI previews.
 ---
 

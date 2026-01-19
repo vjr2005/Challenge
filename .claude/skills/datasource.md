@@ -1,5 +1,6 @@
 ---
 name: datasource
+autoContext: true
 description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage, or DTOs for API responses.
 ---
 

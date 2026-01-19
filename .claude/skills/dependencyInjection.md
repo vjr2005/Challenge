@@ -1,5 +1,6 @@
 ---
 name: dependency-injection
+autoContext: true
 description: Creates Containers for dependency injection. Use when creating feature containers, exposing public entry points, or wiring up dependencies.
 ---
 

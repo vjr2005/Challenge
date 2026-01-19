@@ -1,5 +1,6 @@
 ---
 name: concurrency
+autoContext: true
 description: Swift 6 concurrency patterns. Use when working with async/await, actors, MainActor isolation, or Sendable conformance.
 ---
 
