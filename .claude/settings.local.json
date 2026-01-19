@@ -44,7 +44,8 @@
       "Bash(mise ls-remote:*)",
       "Bash(mise install:*)",
       "Bash(periphery version:*)",
-      "Bash(mise x:*)"
+      "Bash(mise x:*)",
+      "Bash(mise exec:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

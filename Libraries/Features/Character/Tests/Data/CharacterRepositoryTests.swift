@@ -312,7 +312,7 @@ struct CharacterRepositoryTests {
 		_ = try await sut.getCharacters(page: 1)
 
 		// Then
-		let cached = await memoryDataSourceMock.getAllCharacters()
+		let cached = await memoryDataSourceMock.getAllCharactersForTest()
 		#expect(cached.count == 2)
 	}
 

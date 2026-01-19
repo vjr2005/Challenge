@@ -286,6 +286,61 @@ func processesUserCorrectly() {
 
 ---
 
+## Equatable Extensions for Tests
+
+When a type doesn't conform to `Equatable` in production code (e.g., contains `Error`), but tests need to compare it with `#expect(value == expected)`, create an **Equatable extension in the test target**.
+
+**Location:** `Tests/Extensions/`
+
+```
+FeatureName/
+└── Tests/
+    ├── Extensions/                    # Equatable conformances for testing
+    │   ├── SomeViewState+Equatable.swift
+    │   └── AnotherType+Equatable.swift
+    ├── Stubs/
+    ├── Mocks/
+    └── ...
+```
+
+**Extension pattern:**
+
+```swift
+// Tests/Extensions/CharacterDetailViewState+Equatable.swift
+import Foundation
+
+@testable import ChallengeCharacter
+
+extension CharacterDetailViewState: @retroactive Equatable {
+	public static func == (lhs: Self, rhs: Self) -> Bool {
+		switch (lhs, rhs) {
+		case (.idle, .idle), (.loading, .loading):
+			true
+		case let (.loaded(lhsValue), .loaded(rhsValue)):
+			lhsValue == rhsValue
+		case let (.error(lhsError), .error(rhsError)):
+			lhsError.localizedDescription == rhsError.localizedDescription
+		default:
+			false
+		}
+	}
+}
+```
+
+**Rules:**
+- File naming: `{TypeName}+Equatable.swift`
+- Located in `Tests/Extensions/` (internal to test target)
+- **Use `@retroactive`** to silence the "conformance of imported type" warning
+- Use for types that can't be Equatable in production (contain `Error`, closures, etc.)
+- Compare `Error` cases by `localizedDescription` for simplicity
+- Keep production code clean - no test-only conformances in source
+
+**Common types needing this pattern:**
+- ViewState enums with `.error(Error)` cases
+- Result wrappers with non-Equatable associated values
+
+---
+
 ## Example Test File
 
 ```swift
@@ -356,3 +411,4 @@ private enum TestError: Error {
 - [ ] Parameterized tests for multiple cases
 - [ ] Stubs created for Domain Models in `Tests/Stubs/`
 - [ ] Mocks placed in appropriate location (Tests/Mocks/ or Mocks/)
+- [ ] Equatable extensions in `Tests/Extensions/` for types with `Error`

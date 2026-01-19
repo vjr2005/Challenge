@@ -1,8 +1,11 @@
 project: Challenge.xcworkspace
 schemes:
-  - "Challenge (Dev)"
+  - "Challenge-Workspace"
 retain_public: true
 retain_objc_annotated: true
 retain_codable_properties: true
 retain_swift_ui_previews: true
 exclude_tests: true
+report_exclude:
+  - "**/Domain/Models/**"
+  - "**/DTOs/**"

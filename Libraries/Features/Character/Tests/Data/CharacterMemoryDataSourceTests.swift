@@ -34,54 +34,6 @@ struct CharacterMemoryDataSourceTests {
 	}
 
 	@Test
-	func savesMultipleCharacters() async throws {
-		// Given
-		let character1: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
-		let character2: CharacterDTO = try testBundle.loadJSON("character_2", as: CharacterDTO.self)
-		let characters = [character1, character2]
-		let sut = CharacterMemoryDataSource()
-
-		// When
-		await sut.saveCharacters(characters)
-		let value = await sut.getAllCharacters()
-
-		// Then
-		#expect(value.count == 2)
-	}
-
-	@Test
-	func deletesCharacter() async throws {
-		// Given
-		let character: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
-		let sut = CharacterMemoryDataSource()
-		await sut.saveCharacter(character)
-
-		// When
-		await sut.deleteCharacter(identifier: character.id)
-		let value = await sut.getCharacter(identifier: character.id)
-
-		// Then
-		#expect(value == nil)
-	}
-
-	@Test
-	func deletesAllCharacters() async throws {
-		// Given
-		let character1: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
-		let character2: CharacterDTO = try testBundle.loadJSON("character_2", as: CharacterDTO.self)
-		let characters = [character1, character2]
-		let sut = CharacterMemoryDataSource()
-		await sut.saveCharacters(characters)
-
-		// When
-		await sut.deleteAllCharacters()
-		let value = await sut.getAllCharacters()
-
-		// Then
-		#expect(value.isEmpty)
-	}
-
-	@Test
 	func updatesExistingCharacter() async throws {
 		// Given
 		let original: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
@@ -139,39 +91,6 @@ struct CharacterMemoryDataSourceTests {
 		// Then
 		#expect(character1 == response.results[0])
 		#expect(character2 == response.results[1])
-	}
-
-	@Test
-	func deletesPage() async throws {
-		// Given
-		let response: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
-		let sut = CharacterMemoryDataSource()
-		await sut.savePage(response, page: 1)
-
-		// When
-		await sut.deletePage(1)
-		let value = await sut.getPage(1)
-
-		// Then
-		#expect(value == nil)
-	}
-
-	@Test
-	func deletesAllPages() async throws {
-		// Given
-		let response: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
-		let sut = CharacterMemoryDataSource()
-		await sut.savePage(response, page: 1)
-		await sut.savePage(response, page: 2)
-
-		// When
-		await sut.deleteAllPages()
-		let page1 = await sut.getPage(1)
-		let page2 = await sut.getPage(2)
-
-		// Then
-		#expect(page1 == nil)
-		#expect(page2 == nil)
 	}
 
 	@Test

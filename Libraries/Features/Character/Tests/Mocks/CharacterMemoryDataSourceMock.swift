@@ -7,7 +7,6 @@ actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
 	private var pageStorage: [Int: CharactersResponseDTO] = [:]
 	private(set) var saveCharacterCallCount = 0
 	private(set) var savePageCallCount = 0
-	private(set) var deleteCallCount = 0
 
 	// MARK: - Individual Characters
 
@@ -15,30 +14,9 @@ actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
 		characterStorage[identifier]
 	}
 
-	func getAllCharacters() -> [CharacterDTO] {
-		Array(characterStorage.values)
-	}
-
 	func saveCharacter(_ character: CharacterDTO) {
 		saveCharacterCallCount += 1
 		characterStorage[character.id] = character
-	}
-
-	func saveCharacters(_ characters: [CharacterDTO]) {
-		saveCharacterCallCount += 1
-		for character in characters {
-			characterStorage[character.id] = character
-		}
-	}
-
-	func deleteCharacter(identifier: Int) {
-		deleteCallCount += 1
-		characterStorage.removeValue(forKey: identifier)
-	}
-
-	func deleteAllCharacters() {
-		deleteCallCount += 1
-		characterStorage.removeAll()
 	}
 
 	// MARK: - Paginated Results
@@ -55,20 +33,10 @@ actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
 		}
 	}
 
-	func deletePage(_ page: Int) {
-		deleteCallCount += 1
-		pageStorage.removeValue(forKey: page)
-	}
-
-	func deleteAllPages() {
-		deleteCallCount += 1
-		pageStorage.removeAll()
-	}
-
 	// MARK: - Test Helpers
 
-	func setCharacterStorage(_ characters: [CharacterDTO]) {
-		characterStorage = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+	func getAllCharactersForTest() -> [CharacterDTO] {
+		Array(characterStorage.values)
 	}
 
 	func setPageStorage(_ pages: [Int: CharactersResponseDTO]) {

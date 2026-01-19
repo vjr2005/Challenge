@@ -40,6 +40,7 @@ Use these skills for detailed implementation patterns:
 | `/snapshot` | Snapshot tests with SnapshotTesting library |
 | `/router` | Navigation with Router and RouterContract |
 | `/dependencyInjection` | Containers, feature entry points, dependency wiring |
+| `/clean-code` | Dead code detection and removal using Periphery |
 
 ---
 
