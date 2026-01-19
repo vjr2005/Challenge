@@ -391,14 +391,14 @@ struct {Name}RemoteDataSourceTests {
     func fetchesFromCorrectEndpoint() async throws {
         // Given
         let jsonData = try testBundle.loadJSONData("{name}")
-        let httpClient = HTTPClientMock(result: .success(jsonData))
-        let sut = {Name}RemoteDataSource(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
+        let sut = {Name}RemoteDataSource(httpClient: httpClientMock)
 
         // When
         _ = try await sut.fetch{Name}(id: 1)
 
         // Then
-        let endpoint = try #require(httpClient.requestedEndpoints.first)
+        let endpoint = try #require(httpClientMock.requestedEndpoints.first)
         #expect(endpoint.path == "/{resource}/1")
         #expect(endpoint.method == .get)
     }
@@ -407,8 +407,8 @@ struct {Name}RemoteDataSourceTests {
     func decodesResponseCorrectly() async throws {
         // Given
         let jsonData = try testBundle.loadJSONData("{name}")
-        let httpClient = HTTPClientMock(result: .success(jsonData))
-        let sut = {Name}RemoteDataSource(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
+        let sut = {Name}RemoteDataSource(httpClient: httpClientMock)
 
         // When
         let value = try await sut.fetch{Name}(id: 1)
@@ -421,8 +421,8 @@ struct {Name}RemoteDataSourceTests {
     @Test
     func throwsOnHTTPError() async throws {
         // Given
-        let httpClient = HTTPClientMock(result: .failure(TestError.network))
-        let sut = {Name}RemoteDataSource(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock(result: .failure(TestError.network))
+        let sut = {Name}RemoteDataSource(httpClient: httpClientMock)
 
         // When / Then
         await #expect(throws: TestError.network) {

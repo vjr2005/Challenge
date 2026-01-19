@@ -25,12 +25,12 @@ Guide for implementing navigation using Router pattern with SwiftUI NavigationSt
 │                            │                                 │
 │                            ▼ passes router                   │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  Feature.view(for: navigation, router: router)      │    │
+│  │  Feature.view(for: navigation, router: routerMock)      │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                            │                                 │
 │                            ▼ passes to Container             │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  container.makeViewModel(router: router)            │    │
+│  │  container.makeViewModel(router: routerMock)            │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                            │                                 │
 │                            ▼ injected via RouterContract     │
@@ -151,9 +151,9 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            HomeFeature.makeHomeView(router: router)
+            HomeFeature.makeHomeView(router: routerMock)
                 .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation, router: router)
+                    CharacterFeature.view(for: navigation, router: routerMock)
                 }
         }
     }
@@ -250,50 +250,50 @@ struct {Name}ViewModelTests {
     @Test
     func didSelectItemNavigatesToDetail() {
         // Given
-        let router = RouterMock()
+        let routerMock = RouterMock()
         let sut = {Name}ViewModel(
             get{Name}UseCase: Get{Name}UseCaseMock(),
-            router: router
+            router: routerMock
         )
 
         // When
         sut.didSelectItem(Item(id: 42, name: "Test"))
 
         // Then
-        let destination = router.navigatedDestinations.first as? {Feature}Navigation
+        let destination = routerMock.navigatedDestinations.first as? {Feature}Navigation
         #expect(destination == .detail(identifier: 42))
     }
 
     @Test
     func didTapOnBackCallsGoBack() {
         // Given
-        let router = RouterMock()
+        let routerMock = RouterMock()
         let sut = {Name}ViewModel(
             get{Name}UseCase: Get{Name}UseCaseMock(),
-            router: router
+            router: routerMock
         )
 
         // When
         sut.didTapOnBack()
 
         // Then
-        #expect(router.goBackCallCount == 1)
+        #expect(routerMock.goBackCallCount == 1)
     }
 
     @Test
     func didSelectItemCallsRouterOnce() {
         // Given
-        let router = RouterMock()
+        let routerMock = RouterMock()
         let sut = {Name}ViewModel(
             get{Name}UseCase: Get{Name}UseCaseMock(),
-            router: router
+            router: routerMock
         )
 
         // When
         sut.didSelectItem(Item(id: 1, name: "Test"))
 
         // Then
-        #expect(router.navigatedDestinations.count == 1)
+        #expect(routerMock.navigatedDestinations.count == 1)
     }
 }
 ```
@@ -336,28 +336,28 @@ struct HomeViewModelTests {
     @Test
     func didTapOnCharacterButtonNavigatesToCharacterList() {
         // Given
-        let router = RouterMock()
-        let sut = HomeViewModel(router: router)
+        let routerMock = RouterMock()
+        let sut = HomeViewModel(router: routerMock)
 
         // When
         sut.didTapOnCharacterButton()
 
         // Then
-        let destination = router.navigatedDestinations.first as? CharacterNavigation
+        let destination = routerMock.navigatedDestinations.first as? CharacterNavigation
         #expect(destination == .list)
     }
 
     @Test
     func didTapOnCharacterButtonCallsRouterOnce() {
         // Given
-        let router = RouterMock()
-        let sut = HomeViewModel(router: router)
+        let routerMock = RouterMock()
+        let sut = HomeViewModel(router: routerMock)
 
         // When
         sut.didTapOnCharacterButton()
 
         // Then
-        #expect(router.navigatedDestinations.count == 1)
+        #expect(routerMock.navigatedDestinations.count == 1)
     }
 }
 ```

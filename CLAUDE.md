@@ -789,18 +789,28 @@ import UIKit
 **Mock naming rule:** `Mock` must **only** be used as a suffix, **never as a prefix**:
 
 ```swift
-// RIGHT - Mock as suffix
+// RIGHT - Mock as suffix for types
 class UserRepositoryMock { }
 class HTTPClientMock { }
-let userMock = UserMock()
-var dataMock: DataMock
 
 // WRONG - Mock as prefix (PROHIBITED)
 class MockUserRepository { }
 enum MockError { }
 struct MockData { }
-let mockUser = UserMock()
-var mockData: DataMock
+```
+
+**Mock variable naming rule:** Variables holding mock instances must also use the `Mock` suffix:
+
+```swift
+// RIGHT - Variable with Mock suffix
+let httpClientMock = HTTPClientMock()
+let repositoryMock = UserRepositoryMock()
+var dataSourceMock: CharacterDataSourceMock
+
+// WRONG - Variable without Mock suffix or with mock prefix
+let httpClient = HTTPClientMock()
+let mockRepository = UserRepositoryMock()
+var dataSource: CharacterDataSourceMock
 ```
 
 **Identifier naming rule:** Prefer `identifier` over `id` for variable and parameter names:

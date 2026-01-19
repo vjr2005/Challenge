@@ -185,9 +185,9 @@ struct {Name}RepositoryTests {
     func getsModelFromRemoteDataSource() async throws {
         // Given
         let expected = {Name}.stub()
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .success(.stub())
-        let sut = {Name}Repository(remoteDataSource: remoteDataSource)
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When
         let value = try await sut.get{Name}(id: 1)
@@ -199,24 +199,24 @@ struct {Name}RepositoryTests {
     @Test
     func callsRemoteDataSourceWithCorrectId() async throws {
         // Given
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .success(.stub())
-        let sut = {Name}Repository(remoteDataSource: remoteDataSource)
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When
         _ = try await sut.get{Name}(id: 42)
 
         // Then
-        #expect(remoteDataSource.fetchCallCount == 1)
-        #expect(remoteDataSource.lastFetchedId == 42)
+        #expect(remoteDataSourceMock.fetchCallCount == 1)
+        #expect(remoteDataSourceMock.lastFetchedId == 42)
     }
 
     @Test
     func propagatesRemoteDataSourceError() async throws {
         // Given
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .failure(TestError.network)
-        let sut = {Name}Repository(remoteDataSource: remoteDataSource)
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(TestError.network)
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When / Then
         await #expect(throws: TestError.network) {
@@ -295,9 +295,9 @@ struct {Name}RepositoryTests {
     func getsModelFromMemoryDataSource() async throws {
         // Given
         let expected = {Name}.stub()
-        let memoryDataSource = {Name}MemoryDataSourceMock()
-        await memoryDataSource.save{Name}(.stub())
-        let sut = {Name}Repository(memoryDataSource: memoryDataSource)
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        await memoryDataSourceMock.save{Name}(.stub())
+        let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
 
         // When
         let value = try await sut.get{Name}(id: expected.id)
@@ -309,8 +309,8 @@ struct {Name}RepositoryTests {
     @Test
     func throwsNotFoundWhenItemDoesNotExist() async throws {
         // Given
-        let memoryDataSource = {Name}MemoryDataSourceMock()
-        let sut = {Name}Repository(memoryDataSource: memoryDataSource)
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
 
         // When / Then
         await #expect(throws: {Name}RepositoryError.notFound) {
@@ -322,12 +322,12 @@ struct {Name}RepositoryTests {
     func savesModelToMemoryDataSource() async throws {
         // Given
         let model = {Name}.stub()
-        let memoryDataSource = {Name}MemoryDataSourceMock()
-        let sut = {Name}Repository(memoryDataSource: memoryDataSource)
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
 
         // When
         await sut.save{Name}(model)
-        let value = await memoryDataSource.get{Name}(id: model.id)
+        let value = await memoryDataSourceMock.get{Name}(id: model.id)
 
         // Then
         #expect(value == model.toDTO())
@@ -412,12 +412,12 @@ struct {Name}RepositoryTests {
     func returnsCachedDataWhenAvailable() async throws {
         // Given
         let expected = {Name}.stub()
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        let memoryDataSource = {Name}MemoryDataSourceMock()
-        await memoryDataSource.save{Name}(.stub())
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        await memoryDataSourceMock.save{Name}(.stub())
         let sut = {Name}Repository(
-            remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
         )
 
         // When
@@ -425,25 +425,25 @@ struct {Name}RepositoryTests {
 
         // Then
         #expect(value == expected)
-        #expect(remoteDataSource.fetchCallCount == 0)
+        #expect(remoteDataSourceMock.fetchCallCount == 0)
     }
 
     @Test
     func doesNotCallRemoteWhenCacheHit() async throws {
         // Given
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        let memoryDataSource = {Name}MemoryDataSourceMock()
-        await memoryDataSource.save{Name}(.stub())
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        await memoryDataSourceMock.save{Name}(.stub())
         let sut = {Name}Repository(
-            remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
         )
 
         // When
         _ = try await sut.get{Name}(id: 1)
 
         // Then
-        #expect(remoteDataSource.fetchCallCount == 0)
+        #expect(remoteDataSourceMock.fetchCallCount == 0)
     }
 
     // MARK: - Cache Miss Tests
@@ -452,12 +452,12 @@ struct {Name}RepositoryTests {
     func fetchesFromRemoteWhenCacheMiss() async throws {
         // Given
         let expected = {Name}.stub()
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .success(.stub())
-        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
         let sut = {Name}Repository(
-            remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
         )
 
         // When
@@ -465,27 +465,27 @@ struct {Name}RepositoryTests {
 
         // Then
         #expect(value == expected)
-        #expect(remoteDataSource.fetchCallCount == 1)
+        #expect(remoteDataSourceMock.fetchCallCount == 1)
     }
 
     @Test
     func savesToCacheAfterRemoteFetch() async throws {
         // Given
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .success(.stub())
-        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
         let sut = {Name}Repository(
-            remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
         )
 
         // When
         _ = try await sut.get{Name}(id: 1)
-        let cachedValue = await memoryDataSource.get{Name}(id: 1)
+        let cachedValue = await memoryDataSourceMock.get{Name}(id: 1)
 
         // Then
         #expect(cachedValue == .stub())
-        #expect(await memoryDataSource.saveCallCount == 1)
+        #expect(await memoryDataSourceMock.saveCallCount == 1)
     }
 
     // MARK: - Error Tests
@@ -493,12 +493,12 @@ struct {Name}RepositoryTests {
     @Test
     func propagatesRemoteErrorOnCacheMiss() async throws {
         // Given
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .failure(TestError.network)
-        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(TestError.network)
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
         let sut = {Name}Repository(
-            remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
         )
 
         // When / Then
@@ -510,19 +510,19 @@ struct {Name}RepositoryTests {
     @Test
     func doesNotSaveToCacheOnRemoteError() async throws {
         // Given
-        let remoteDataSource = {Name}RemoteDataSourceMock()
-        remoteDataSource.result = .failure(TestError.network)
-        let memoryDataSource = {Name}MemoryDataSourceMock()
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(TestError.network)
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
         let sut = {Name}Repository(
-            remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
         )
 
         // When
         _ = try? await sut.get{Name}(id: 1)
 
         // Then
-        #expect(await memoryDataSource.saveCallCount == 0)
+        #expect(await memoryDataSourceMock.saveCallCount == 0)
     }
 }
 

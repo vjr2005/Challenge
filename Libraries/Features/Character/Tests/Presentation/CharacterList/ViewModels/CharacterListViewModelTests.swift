@@ -10,9 +10,9 @@ struct CharacterListViewModelTests {
 	@Test
 	func initialStateIsIdle() {
 		// Given
-		let useCase = GetCharactersUseCaseMock()
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		// Then
 		#expect(sut.state == .idle)
@@ -24,10 +24,10 @@ struct CharacterListViewModelTests {
 	func loadSetsLoadedStateOnSuccess() async {
 		// Given
 		let expected = CharactersPage.stub()
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .success(expected)
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .success(expected)
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		// When
 		await sut.load()
@@ -40,10 +40,10 @@ struct CharacterListViewModelTests {
 	func loadSetsEmptyStateWhenNoCharacters() async {
 		// Given
 		let emptyPage = CharactersPage.stub(characters: [])
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .success(emptyPage)
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .success(emptyPage)
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		// When
 		await sut.load()
@@ -55,10 +55,10 @@ struct CharacterListViewModelTests {
 	@Test
 	func loadSetsErrorStateOnFailure() async {
 		// Given
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .failure(TestError.network)
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .failure(TestError.network)
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		// When
 		await sut.load()
@@ -70,17 +70,17 @@ struct CharacterListViewModelTests {
 	@Test
 	func loadCallsUseCaseWithPageOne() async {
 		// Given
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .success(.stub())
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .success(.stub())
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		// When
 		await sut.load()
 
 		// Then
-		#expect(useCase.executeCallCount == 1)
-		#expect(useCase.lastRequestedPage == 1)
+		#expect(useCaseMock.executeCallCount == 1)
+		#expect(useCaseMock.lastRequestedPage == 1)
 	}
 
 	// MARK: - Load More
@@ -93,13 +93,13 @@ struct CharacterListViewModelTests {
 		let firstPage = CharactersPage.stub(characters: firstPageCharacters, currentPage: 1, hasNextPage: true)
 		let secondPage = CharactersPage.stub(characters: secondPageCharacters, currentPage: 2, hasNextPage: false)
 
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .success(firstPage)
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .success(firstPage)
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		await sut.load()
-		useCase.result = .success(secondPage)
+		useCaseMock.result = .success(secondPage)
 
 		// When
 		await sut.loadMore()
@@ -118,10 +118,10 @@ struct CharacterListViewModelTests {
 	func loadMoreIncrementsPage() async {
 		// Given
 		let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .success(firstPage)
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .success(firstPage)
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		await sut.load()
 
@@ -129,26 +129,26 @@ struct CharacterListViewModelTests {
 		await sut.loadMore()
 
 		// Then
-		#expect(useCase.lastRequestedPage == 2)
+		#expect(useCaseMock.lastRequestedPage == 2)
 	}
 
 	@Test
 	func loadMoreDoesNothingWhenNoNextPage() async {
 		// Given
 		let lastPage = CharactersPage.stub(hasNextPage: false)
-		let useCase = GetCharactersUseCaseMock()
-		useCase.result = .success(lastPage)
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		useCaseMock.result = .success(lastPage)
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		await sut.load()
-		let callCountAfterLoad = useCase.executeCallCount
+		let callCountAfterLoad = useCaseMock.executeCallCount
 
 		// When
 		await sut.loadMore()
 
 		// Then
-		#expect(useCase.executeCallCount == callCountAfterLoad)
+		#expect(useCaseMock.executeCallCount == callCountAfterLoad)
 	}
 
 	// MARK: - Navigation
@@ -157,16 +157,16 @@ struct CharacterListViewModelTests {
 	func didSelectNavigatesToCharacterDetail() {
 		// Given
 		let character = Character.stub(id: 42)
-		let useCase = GetCharactersUseCaseMock()
-		let router = RouterMock()
-		let sut = CharacterListViewModel(getCharactersUseCase: useCase, router: router)
+		let useCaseMock = GetCharactersUseCaseMock()
+		let routerMock = RouterMock()
+		let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, router: routerMock)
 
 		// When
 		sut.didSelect(character)
 
 		// Then
-		#expect(router.navigatedDestinations.count == 1)
-		let destination = router.navigatedDestinations.first as? CharacterNavigation
+		#expect(routerMock.navigatedDestinations.count == 1)
+		let destination = routerMock.navigatedDestinations.first as? CharacterNavigation
 		#expect(destination == .detail(identifier: 42))
 	}
 }

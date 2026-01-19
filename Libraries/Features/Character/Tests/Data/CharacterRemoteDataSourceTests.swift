@@ -12,14 +12,14 @@ struct CharacterRemoteDataSourceTests {
 	func fetchCharacterUsesCorrectEndpoint() async throws {
 		// Given
 		let jsonData = try testBundle.loadJSONData("character")
-		let httpClient = HTTPClientMock(result: .success(jsonData))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
 		_ = try await sut.fetchCharacter(identifier: 1)
 
 		// Then
-		let endpoint = try #require(httpClient.requestedEndpoints.first)
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
 		#expect(endpoint.path == "/character/1")
 		#expect(endpoint.method == .get)
 	}
@@ -28,8 +28,8 @@ struct CharacterRemoteDataSourceTests {
 	func fetchCharacterDecodesResponseCorrectly() async throws {
 		// Given
 		let jsonData = try testBundle.loadJSONData("character")
-		let httpClient = HTTPClientMock(result: .success(jsonData))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
 		let value = try await sut.fetchCharacter(identifier: 1)
@@ -44,8 +44,8 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharacterThrowsOnHTTPError() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .failure(TestError.network))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .failure(TestError.network))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When / Then
 		await #expect(throws: TestError.network) {
@@ -57,14 +57,14 @@ struct CharacterRemoteDataSourceTests {
 	func fetchCharacterUsesProvidedId(_ identifier: Int) async throws {
 		// Given
 		let jsonData = try testBundle.loadJSONData("character")
-		let httpClient = HTTPClientMock(result: .success(jsonData))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
 		_ = try await sut.fetchCharacter(identifier: identifier)
 
 		// Then
-		let endpoint = try #require(httpClient.requestedEndpoints.first)
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
 		#expect(endpoint.path == "/character/\(identifier)")
 	}
 
@@ -74,14 +74,14 @@ struct CharacterRemoteDataSourceTests {
 	func fetchCharactersUsesCorrectEndpoint() async throws {
 		// Given
 		let jsonData = try testBundle.loadJSONData("characters_response")
-		let httpClient = HTTPClientMock(result: .success(jsonData))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
 		_ = try await sut.fetchCharacters(page: 1)
 
 		// Then
-		let endpoint = try #require(httpClient.requestedEndpoints.first)
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
 		#expect(endpoint.path == "/character")
 		#expect(endpoint.method == .get)
 	}
@@ -90,14 +90,14 @@ struct CharacterRemoteDataSourceTests {
 	func fetchCharactersIncludesPageQueryParameter() async throws {
 		// Given
 		let jsonData = try testBundle.loadJSONData("characters_response")
-		let httpClient = HTTPClientMock(result: .success(jsonData))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
 		_ = try await sut.fetchCharacters(page: 5)
 
 		// Then
-		let endpoint = try #require(httpClient.requestedEndpoints.first)
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
 		let pageItem = try #require(endpoint.queryItems?.first { $0.name == "page" })
 		#expect(pageItem.value == "5")
 	}
@@ -106,8 +106,8 @@ struct CharacterRemoteDataSourceTests {
 	func fetchCharactersDecodesResponseCorrectly() async throws {
 		// Given
 		let jsonData = try testBundle.loadJSONData("characters_response")
-		let httpClient = HTTPClientMock(result: .success(jsonData))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
 		let value = try await sut.fetchCharacters(page: 1)
@@ -122,8 +122,8 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharactersThrowsOnHTTPError() async throws {
 		// Given
-		let httpClient = HTTPClientMock(result: .failure(TestError.network))
-		let sut = CharacterRemoteDataSource(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock(result: .failure(TestError.network))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When / Then
 		await #expect(throws: TestError.network) {

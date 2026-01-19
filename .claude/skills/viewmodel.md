@@ -289,8 +289,8 @@ struct {Name}ViewModelTests {
     @Test
     func initialStateIsIdle() {
         // Given
-        let useCase = Get{Name}UseCaseMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCase)
+        let useCaseMock = Get{Name}UseCaseMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock)
 
         // Then
         #expect(sut.state == .idle)
@@ -300,9 +300,9 @@ struct {Name}ViewModelTests {
     func loadSetsLoadedStateOnSuccess() async {
         // Given
         let expected = {Name}.stub()
-        let useCase = Get{Name}UseCaseMock()
-        useCase.result = .success(expected)
-        let sut = {Name}ViewModel(get{Name}UseCase: useCase)
+        let useCaseMock = Get{Name}UseCaseMock()
+        useCaseMock.result = .success(expected)
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock)
 
         // When
         await sut.load(id: 1)
@@ -314,9 +314,9 @@ struct {Name}ViewModelTests {
     @Test
     func loadSetsErrorStateOnFailure() async {
         // Given
-        let useCase = Get{Name}UseCaseMock()
-        useCase.result = .failure(TestError.network)
-        let sut = {Name}ViewModel(get{Name}UseCase: useCase)
+        let useCaseMock = Get{Name}UseCaseMock()
+        useCaseMock.result = .failure(TestError.network)
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock)
 
         // When
         await sut.load(id: 1)
@@ -328,16 +328,16 @@ struct {Name}ViewModelTests {
     @Test
     func loadCallsUseCaseWithCorrectId() async {
         // Given
-        let useCase = Get{Name}UseCaseMock()
-        useCase.result = .success(.stub())
-        let sut = {Name}DetailViewModel(get{Name}UseCase: useCase)
+        let useCaseMock = Get{Name}UseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let sut = {Name}DetailViewModel(get{Name}UseCase: useCaseMock)
 
         // When
         await sut.load(id: 42)
 
         // Then
-        #expect(useCase.executeCallCount == 1)
-        #expect(useCase.lastRequestedId == 42)
+        #expect(useCaseMock.executeCallCount == 1)
+        #expect(useCaseMock.lastRequestedId == 42)
     }
 }
 

@@ -267,9 +267,9 @@ struct Get{Name}UseCaseTests {
     func returnsModelFromRepository() async throws {
         // Given
         let expected = {Name}.stub()
-        let repository = {Name}RepositoryMock()
-        repository.result = .success(expected)
-        let sut = Get{Name}UseCase(repository: repository)
+        let repositoryMock = {Name}RepositoryMock()
+        repositoryMock.result = .success(expected)
+        let sut = Get{Name}UseCase(repository: repositoryMock)
 
         // When
         let value = try await sut.execute(id: 1)
@@ -281,24 +281,24 @@ struct Get{Name}UseCaseTests {
     @Test
     func callsRepositoryWithCorrectId() async throws {
         // Given
-        let repository = {Name}RepositoryMock()
-        repository.result = .success(.stub())
-        let sut = Get{Name}UseCase(repository: repository)
+        let repositoryMock = {Name}RepositoryMock()
+        repositoryMock.result = .success(.stub())
+        let sut = Get{Name}UseCase(repository: repositoryMock)
 
         // When
         _ = try await sut.execute(id: 42)
 
         // Then
-        #expect(repository.getCallCount == 1)
-        #expect(repository.lastRequestedId == 42)
+        #expect(repositoryMock.getCallCount == 1)
+        #expect(repositoryMock.lastRequestedId == 42)
     }
 
     @Test
     func propagatesRepositoryError() async throws {
         // Given
-        let repository = {Name}RepositoryMock()
-        repository.result = .failure(TestError.network)
-        let sut = Get{Name}UseCase(repository: repository)
+        let repositoryMock = {Name}RepositoryMock()
+        repositoryMock.result = .failure(TestError.network)
+        let sut = Get{Name}UseCase(repository: repositoryMock)
 
         // When / Then
         await #expect(throws: TestError.network) {
@@ -328,9 +328,9 @@ struct GetFilteredCharactersUseCaseTests {
             Character.stub(status: .alive),
             Character.stub(status: .dead),
         ]
-        let repository = CharacterRepositoryMock()
-        repository.allResult = .success(characters)
-        let sut = GetFilteredCharactersUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        repositoryMock.allResult = .success(characters)
+        let sut = GetFilteredCharactersUseCase(repository: repositoryMock)
 
         // When
         let value = try await sut.execute(status: nil)
@@ -347,9 +347,9 @@ struct GetFilteredCharactersUseCaseTests {
             Character.stub(id: 2, status: .dead),
             Character.stub(id: 3, status: .alive),
         ]
-        let repository = CharacterRepositoryMock()
-        repository.allResult = .success(characters)
-        let sut = GetFilteredCharactersUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        repositoryMock.allResult = .success(characters)
+        let sut = GetFilteredCharactersUseCase(repository: repositoryMock)
 
         // When
         let value = try await sut.execute(status: .alive)
@@ -363,9 +363,9 @@ struct GetFilteredCharactersUseCaseTests {
     func returnsEmptyArrayWhenNoMatches() async throws {
         // Given
         let characters = [Character.stub(status: .alive)]
-        let repository = CharacterRepositoryMock()
-        repository.allResult = .success(characters)
-        let sut = GetFilteredCharactersUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        repositoryMock.allResult = .success(characters)
+        let sut = GetFilteredCharactersUseCase(repository: repositoryMock)
 
         // When
         let value = try await sut.execute(status: .dead)
@@ -388,8 +388,8 @@ struct CreateCharacterUseCaseTests {
     @Test
     func throwsErrorForEmptyName() async throws {
         // Given
-        let repository = CharacterRepositoryMock()
-        let sut = CreateCharacterUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        let sut = CreateCharacterUseCase(repository: repositoryMock)
 
         // When / Then
         await #expect(throws: CreateCharacterError.emptyName) {
@@ -400,8 +400,8 @@ struct CreateCharacterUseCaseTests {
     @Test
     func throwsErrorForInvalidStatus() async throws {
         // Given
-        let repository = CharacterRepositoryMock()
-        let sut = CreateCharacterUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        let sut = CreateCharacterUseCase(repository: repositoryMock)
 
         // When / Then
         await #expect(throws: CreateCharacterError.invalidStatus) {
@@ -413,29 +413,29 @@ struct CreateCharacterUseCaseTests {
     func createsCharacterWithValidInput() async throws {
         // Given
         let expected = Character.stub()
-        let repository = CharacterRepositoryMock()
-        repository.createResult = .success(expected)
-        let sut = CreateCharacterUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        repositoryMock.createResult = .success(expected)
+        let sut = CreateCharacterUseCase(repository: repositoryMock)
 
         // When
         let value = try await sut.execute(name: "Rick", status: "Alive")
 
         // Then
         #expect(value == expected)
-        #expect(repository.createCallCount == 1)
+        #expect(repositoryMock.createCallCount == 1)
     }
 
     @Test
     func doesNotCallRepositoryOnValidationError() async throws {
         // Given
-        let repository = CharacterRepositoryMock()
-        let sut = CreateCharacterUseCase(repository: repository)
+        let repositoryMock = CharacterRepositoryMock()
+        let sut = CreateCharacterUseCase(repository: repositoryMock)
 
         // When
         _ = try? await sut.execute(name: "", status: "Alive")
 
         // Then
-        #expect(repository.createCallCount == 0)
+        #expect(repositoryMock.createCallCount == 0)
     }
 }
 ```

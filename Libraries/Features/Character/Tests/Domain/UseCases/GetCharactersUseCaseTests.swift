@@ -8,9 +8,9 @@ struct GetCharactersUseCaseTests {
 	func returnsCharactersPageFromRepository() async throws {
 		// Given
 		let expected = CharactersPage.stub()
-		let repository = CharacterRepositoryMock()
-		repository.charactersResult = .success(expected)
-		let sut = GetCharactersUseCase(repository: repository)
+		let repositoryMock = CharacterRepositoryMock()
+		repositoryMock.charactersResult = .success(expected)
+		let sut = GetCharactersUseCase(repository: repositoryMock)
 
 		// When
 		let value = try await sut.execute(page: 1)
@@ -22,24 +22,24 @@ struct GetCharactersUseCaseTests {
 	@Test
 	func callsRepositoryWithCorrectPage() async throws {
 		// Given
-		let repository = CharacterRepositoryMock()
-		repository.charactersResult = .success(.stub())
-		let sut = GetCharactersUseCase(repository: repository)
+		let repositoryMock = CharacterRepositoryMock()
+		repositoryMock.charactersResult = .success(.stub())
+		let sut = GetCharactersUseCase(repository: repositoryMock)
 
 		// When
 		_ = try await sut.execute(page: 5)
 
 		// Then
-		#expect(repository.getCharactersCallCount == 1)
-		#expect(repository.lastRequestedPage == 5)
+		#expect(repositoryMock.getCharactersCallCount == 1)
+		#expect(repositoryMock.lastRequestedPage == 5)
 	}
 
 	@Test
 	func propagatesRepositoryError() async throws {
 		// Given
-		let repository = CharacterRepositoryMock()
-		repository.charactersResult = .failure(TestError.network)
-		let sut = GetCharactersUseCase(repository: repository)
+		let repositoryMock = CharacterRepositoryMock()
+		repositoryMock.charactersResult = .failure(TestError.network)
+		let sut = GetCharactersUseCase(repository: repositoryMock)
 
 		// When / Then
 		await #expect(throws: TestError.network) {

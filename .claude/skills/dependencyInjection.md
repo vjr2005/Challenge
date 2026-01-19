@@ -84,9 +84,9 @@ public enum {Feature}Feature {
     public static func view(for navigation: {Feature}Navigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
-            {Name}ListView(viewModel: container.makeListViewModel(router: router))
+            {Name}ListView(viewModel: container.makeListViewModel(router: routerMock))
         case .detail(let identifier):
-            {Name}DetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: router))
+            {Name}DetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: routerMock))
         }
     }
 }
@@ -113,9 +113,9 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            HomeFeature.makeHomeView(router: router)
+            HomeFeature.makeHomeView(router: routerMock)
                 .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation, router: router)
+                    CharacterFeature.view(for: navigation, router: routerMock)
                 }
         }
     }
@@ -217,7 +217,7 @@ private lazy var repository: any CharacterRepositoryContract = CharacterReposito
 
 // FACTORY - New instance per navigation (receives router)
 func makeListViewModel(router: RouterContract) -> CharacterListViewModel {
-    CharacterListViewModel(getCharactersUseCase: makeGetCharactersUseCase(), router: router)
+    CharacterListViewModel(getCharactersUseCase: makeGetCharactersUseCase(), router: routerMock)
 }
 ```
 
@@ -281,9 +281,9 @@ public enum CharacterFeature {
     public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
-            CharacterListView(viewModel: container.makeListViewModel(router: router))
+            CharacterListView(viewModel: container.makeListViewModel(router: routerMock))
         case .detail(let identifier):
-            CharacterDetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: router))
+            CharacterDetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: routerMock))
         }
     }
 }
@@ -356,9 +356,9 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            HomeFeature.makeHomeView(router: router)
+            HomeFeature.makeHomeView(router: routerMock)
                 .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation, router: router)
+                    CharacterFeature.view(for: navigation, router: routerMock)
                 }
         }
     }
@@ -406,12 +406,12 @@ struct {Feature}ContainerTests {
     @Test
     func makeViewModelReturnsConfiguredInstance() {
         // Given
-        let httpClient = HTTPClientMock()
-        let router = RouterMock()
-        let sut = {Feature}Container(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock()
+        let routerMock = RouterMock()
+        let sut = {Feature}Container(httpClient: httpClientMock)
 
         // When
-        let viewModel = sut.makeDetailViewModel(identifier: 42, router: router)
+        let viewModel = sut.makeDetailViewModel(identifier: 42, router: routerMock)
 
         // Then
         #expect(viewModel != nil)
@@ -420,20 +420,20 @@ struct {Feature}ContainerTests {
     @Test
     func makeViewModelUsesSharedRepository() async {
         // Given
-        let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
-        let router = RouterMock()
-        let sut = {Feature}Container(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let routerMock = RouterMock()
+        let sut = {Feature}Container(httpClient: httpClientMock)
 
         // When
-        let viewModel1 = sut.makeDetailViewModel(identifier: 1, router: router)
-        let viewModel2 = sut.makeDetailViewModel(identifier: 1, router: router)
+        let viewModel1 = sut.makeDetailViewModel(identifier: 1, router: routerMock)
+        let viewModel2 = sut.makeDetailViewModel(identifier: 1, router: routerMock)
 
         // Load data through both ViewModels
         await viewModel1.load()
         await viewModel2.load()
 
         // Then - Both should use the same repository (second call uses cache)
-        #expect(httpClient.requestedEndpoints.count == 1)
+        #expect(httpClientMock.requestedEndpoints.count == 1)
     }
 }
 ```
@@ -459,12 +459,12 @@ struct CharacterContainerTests {
     @Test
     func makeCharacterDetailViewModelReturnsConfiguredInstance() {
         // Given
-        let httpClient = HTTPClientMock()
-        let router = RouterMock()
-        let sut = CharacterContainer(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock()
+        let routerMock = RouterMock()
+        let sut = CharacterContainer(httpClient: httpClientMock)
 
         // When
-        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
+        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
 
         // Then
         #expect(viewModel.state == .idle)
@@ -473,34 +473,34 @@ struct CharacterContainerTests {
     @Test
     func makeCharacterDetailViewModelUsesInjectedHTTPClient() async {
         // Given
-        let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
-        let router = RouterMock()
-        let sut = CharacterContainer(httpClient: httpClient)
-        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
+        let httpClientMock = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let routerMock = RouterMock()
+        let sut = CharacterContainer(httpClient: httpClientMock)
+        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
 
         // When
         await viewModel.load()
 
         // Then
-        #expect(httpClient.requestedEndpoints.count == 1)
+        #expect(httpClientMock.requestedEndpoints.count == 1)
     }
 
     @Test
     func multipleDetailViewModelsShareSameRepository() async {
         // Given
-        let httpClient = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
-        let router = RouterMock()
-        let sut = CharacterContainer(httpClient: httpClient)
+        let httpClientMock = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let routerMock = RouterMock()
+        let sut = CharacterContainer(httpClient: httpClientMock)
 
         // When
-        let viewModel1 = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
-        let viewModel2 = sut.makeCharacterDetailViewModel(identifier: 1, router: router)
+        let viewModel1 = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
+        let viewModel2 = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
 
         await viewModel1.load()
         await viewModel2.load()
 
         // Then - Second load uses cached data from shared repository
-        #expect(httpClient.requestedEndpoints.count == 1)
+        #expect(httpClientMock.requestedEndpoints.count == 1)
     }
 }
 ```
@@ -517,11 +517,11 @@ struct HomeContainerTests {
     @Test
     func makeHomeViewModelReturnsConfiguredInstance() {
         // Given
-        let router = RouterMock()
+        let routerMock = RouterMock()
         let sut = HomeContainer()
 
         // When
-        let viewModel = sut.makeHomeViewModel(router: router)
+        let viewModel = sut.makeHomeViewModel(router: routerMock)
 
         // Then - Verify factory returns a properly configured instance
         // HomeViewModel is stateless, so we just verify it was created

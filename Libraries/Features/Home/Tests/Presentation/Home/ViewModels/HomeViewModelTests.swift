@@ -8,27 +8,27 @@ struct HomeViewModelTests {
     @Test
     func didTapOnCharacterButtonNavigatesToCharacterList() {
         // Given
-        let router = RouterMock()
-        let sut = HomeViewModel(router: router)
+        let routerMock = RouterMock()
+        let sut = HomeViewModel(router: routerMock)
 
         // When
         sut.didTapOnCharacterButton()
 
         // Then
-        let destination = router.navigatedDestinations.first as? CharacterNavigation
+        let destination = routerMock.navigatedDestinations.first as? CharacterNavigation
         #expect(destination == .list)
     }
 
     @Test
     func didTapOnCharacterButtonCallsRouterOnce() {
         // Given
-        let router = RouterMock()
-        let sut = HomeViewModel(router: router)
+        let routerMock = RouterMock()
+        let sut = HomeViewModel(router: routerMock)
 
         // When
         sut.didTapOnCharacterButton()
 
         // Then
-        #expect(router.navigatedDestinations.count == 1)
+        #expect(routerMock.navigatedDestinations.count == 1)
     }
 }
