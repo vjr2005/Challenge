@@ -1,0 +1,8 @@
+project: Challenge.xcworkspace
+schemes:
+  - "Challenge (Dev)"
+retain_public: true
+retain_objc_annotated: true
+retain_codable_properties: true
+retain_swift_ui_previews: true
+exclude_tests: true

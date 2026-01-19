@@ -49,7 +49,7 @@ This project follows **MVVM + Clean Architecture** with feature-based modulariza
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                        │
+│                    Presentation Layer                       │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
 │  │    View     │  │  ViewModel  │  │    Navigation       │  │
 │  │  (SwiftUI)  │◄─┤ @Observable │  │  (RouterContract)   │  │
@@ -58,7 +58,7 @@ This project follows **MVVM + Clean Architecture** with feature-based modulariza
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      Domain Layer                            │
+│                      Domain Layer                           │
 │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
 │  │      Use Case       │  │         Models              │   │
 │  │  (Business Logic)   │  │    (Domain Models)          │   │
@@ -67,7 +67,7 @@ This project follows **MVVM + Clean Architecture** with feature-based modulariza
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                       Data Layer                             │
+│                       Data Layer                            │
 │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
 │  │     Repository      │  │       Data Source           │   │
 │  │  (Implementation)   │  │   (Remote/Memory)           │   │
@@ -81,10 +81,18 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 ## Dependencies
 
-| Dependency | Purpose |
-|------------|---------|
+### SPM Packages
+
+| Package | Purpose |
+|---------|---------|
 | SnapshotTesting | Snapshot tests (Point-Free) |
-| SwiftLint | Code linting (via mise) |
+
+### Tools (via mise)
+
+| Tool | Purpose | Command |
+|------|---------|---------|
+| SwiftLint | Code linting | `mise x -- swiftlint` |
+| Periphery | Dead code detection | `mise x -- periphery scan` |
 
 **Policy:** Prefer native implementations. No external dependencies unless strictly necessary.
 

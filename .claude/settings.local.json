@@ -40,7 +40,11 @@
       "Bash(git push:*)",
       "Bash(claude --version)",
       "Skill(tuist)",
-      "Skill(dependency-injection)"
+      "Skill(dependency-injection)",
+      "Bash(mise ls-remote:*)",
+      "Bash(mise install:*)",
+      "Bash(periphery version:*)",
+      "Bash(mise x:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
