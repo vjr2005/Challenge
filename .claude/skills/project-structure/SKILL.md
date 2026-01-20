@@ -30,7 +30,7 @@ Challenge/
 ├── Libraries/
 │   ├── Core/
 │   ├── Networking/
-│   ├── AppConfiguration/
+│   ├── Common/
 │   └── Features/
 │       ├── User/
 │       ├── Character/
@@ -289,14 +289,21 @@ Libraries/Networking/
 
 ---
 
-## AppConfiguration Module
+## Common Module
 
 ```
-Libraries/AppConfiguration/
+Libraries/Common/
 ├── Sources/
-│   └── Environment.swift
+│   ├── Environment.swift
+│   ├── String+Localized.swift
+│   └── Resources/
+│       └── Localizable.xcstrings
 └── Tests/
 ```
+
+The Common module provides:
+- **Environment**: Build configuration and API endpoints
+- **Localization**: Centralized `Localizable.xcstrings` and `String.localized()` extension
 
 ---
 

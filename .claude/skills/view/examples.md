@@ -8,6 +8,7 @@ Complete implementation examples for SwiftUI Views.
 
 ```swift
 // Sources/Presentation/CharacterList/Views/CharacterListView.swift
+import ChallengeCommon
 import SwiftUI
 
 struct CharacterListView: View {
@@ -22,7 +23,7 @@ struct CharacterListView: View {
             .task {
                 await viewModel.load()
             }
-            .navigationTitle("Characters")
+            .navigationTitle(LocalizedStrings.title)
     }
 
     @ViewBuilder
@@ -34,7 +35,7 @@ struct CharacterListView: View {
             ProgressView()
         case .empty:
             ContentUnavailableView(
-                "No characters",
+                LocalizedStrings.Empty.title,
                 systemImage: "person.slash"
             )
         case .loaded(let characters):
@@ -45,10 +46,24 @@ struct CharacterListView: View {
             }
         case .error:
             ContentUnavailableView(
-                "Error loading characters",
+                LocalizedStrings.Error.title,
                 systemImage: "exclamationmark.triangle"
             )
         }
+    }
+}
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+    static var title: String { "characterList.title".localized() }
+
+    enum Empty {
+        static var title: String { "characterList.empty.title".localized() }
+    }
+
+    enum Error {
+        static var title: String { "characterList.error.title".localized() }
     }
 }
 
@@ -152,6 +167,7 @@ private final class RouterPreviewMock: RouterContract {
 
 ```swift
 // Sources/Presentation/CharacterDetail/Views/CharacterDetailView.swift
+import ChallengeCommon
 import SwiftUI
 
 struct CharacterDetailView: View {
@@ -166,7 +182,6 @@ struct CharacterDetailView: View {
             .task {
                 await viewModel.load()
             }
-            .navigationTitle("Character")
     }
 
     @ViewBuilder
@@ -195,10 +210,20 @@ struct CharacterDetailView: View {
             }
         case .error:
             ContentUnavailableView(
-                "Error loading character",
+                LocalizedStrings.Error.title,
                 systemImage: "exclamationmark.triangle"
             )
         }
+    }
+}
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+    static var loading: String { "characterDetail.loading".localized() }
+
+    enum Error {
+        static var title: String { "characterDetail.error.title".localized() }
     }
 }
 
@@ -289,27 +314,31 @@ Stateless views (no ViewState) need only one preview:
 
 ```swift
 // Sources/Presentation/Home/Views/HomeView.swift
+import ChallengeCommon
 import SwiftUI
 
 struct HomeView: View {
-    @State private var viewModel: HomeViewModel
-
-    init(viewModel: HomeViewModel) {
-        _viewModel = State(initialValue: viewModel)
-    }
+    let viewModel: HomeViewModel
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("Welcome")
+            Text(LocalizedStrings.title)
                 .font(.largeTitle)
 
-            Button("View Characters") {
-                viewModel.didTapCharacters()
+            Button(LocalizedStrings.goToCharacters) {
+                viewModel.didTapOnCharacterButton()
             }
             .buttonStyle(.borderedProminent)
         }
         .accessibilityIdentifier(AccessibilityIdentifier.view)
     }
+}
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+    static var title: String { "home.title".localized() }
+    static var goToCharacters: String { "home.goToCharacters".localized() }
 }
 
 // MARK: - AccessibilityIdentifiers

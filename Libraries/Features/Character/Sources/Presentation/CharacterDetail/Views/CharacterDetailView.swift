@@ -1,3 +1,4 @@
+import ChallengeCommon
 import ChallengeCore
 import SwiftUI
 
@@ -49,7 +50,7 @@ private extension CharacterDetailView {
 			HStack(spacing: 4) {
 				Image(systemName: "chevron.left")
 					.font(.system(.body, weight: .semibold))
-				Text("Back")
+				Text(LocalizedStrings.back)
 					.font(.system(.body, design: .rounded))
 			}
 		}
@@ -60,7 +61,7 @@ private extension CharacterDetailView {
 		VStack(spacing: 16) {
 			ProgressView()
 				.scaleEffect(1.5)
-			Text("Loading character...")
+			Text(LocalizedStrings.loading)
 				.font(.subheadline)
 				.foregroundStyle(.secondary)
 		}
@@ -134,7 +135,7 @@ private extension CharacterDetailView {
 
 	func infoCard(_ character: Character) -> some View {
 		VStack(alignment: .leading, spacing: 16) {
-			Text("Information")
+			Text(LocalizedStrings.information)
 				.font(.system(.headline, design: .rounded, weight: .semibold))
 				.foregroundStyle(.primary)
 
@@ -153,7 +154,7 @@ private extension CharacterDetailView {
 
 	func locationCard(_ character: Character) -> some View {
 		VStack(alignment: .leading, spacing: 16) {
-			Text("Locations")
+			Text(LocalizedStrings.locations)
 				.font(.system(.headline, design: .rounded, weight: .semibold))
 				.foregroundStyle(.primary)
 
@@ -218,11 +219,11 @@ private extension CharacterDetailView {
 				.foregroundStyle(.orange)
 
 			VStack(spacing: 8) {
-				Text("Something went wrong")
+				Text(LocalizedStrings.Error.title)
 					.font(.system(.title3, design: .rounded, weight: .semibold))
 					.foregroundStyle(.primary)
 
-				Text("Unable to load character details")
+				Text(LocalizedStrings.Error.description)
 					.font(.system(.subheadline, design: .serif))
 					.foregroundStyle(.secondary)
 					.italic()
@@ -235,7 +236,7 @@ private extension CharacterDetailView {
 			} label: {
 				HStack(spacing: 8) {
 					Image(systemName: "arrow.clockwise")
-					Text("Try Again")
+					Text(LocalizedStrings.Common.tryAgain)
 				}
 				.font(.system(.body, design: .rounded, weight: .semibold))
 				.frame(maxWidth: .infinity)
@@ -261,11 +262,29 @@ private extension CharacterDetailView {
 	}
 }
 
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+	static var back: String { "characterDetail.back".localized() }
+	static var loading: String { "characterDetail.loading".localized() }
+	static var information: String { "characterDetail.information".localized() }
+	static var locations: String { "characterDetail.locations".localized() }
+
+	enum Error {
+		static var title: String { "characterDetail.error.title".localized() }
+		static var description: String { "characterDetail.error.description".localized() }
+	}
+
+	enum Common {
+		static var tryAgain: String { "common.tryAgain".localized() }
+	}
+}
+
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-    static let view = "characterDetail.view"
-    static let backButton = "characterDetail.backButton"
+	static let view = "characterDetail.view"
+	static let backButton = "characterDetail.backButton"
 }
 
 // MARK: - Previews

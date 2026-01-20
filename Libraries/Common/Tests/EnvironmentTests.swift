@@ -1,6 +1,6 @@
 import Testing
 
-@testable import ChallengeAppConfiguration
+@testable import ChallengeCommon
 
 struct EnvironmentTests {
 	// MARK: - current

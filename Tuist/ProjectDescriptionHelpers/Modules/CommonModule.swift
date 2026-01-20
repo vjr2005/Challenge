@@ -1,12 +1,13 @@
 import ProjectDescription
 
-public enum AppConfigurationModule {
+public enum CommonModule {
 	public static let module = FrameworkModule.create(
-		name: "AppConfiguration",
-		hasMocks: false
+		name: "Common",
+		hasMocks: false,
+		hasResources: true
 	)
 
 	public static let targetReferences: [TargetReference] = [
-		.target("\(appName)AppConfiguration"),
+		.target("\(appName)Common"),
 	]
 }

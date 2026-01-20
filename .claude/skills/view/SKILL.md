@@ -155,6 +155,37 @@ private final class RouterPreviewMock: RouterContract {
 
 ---
 
+## Localized Strings
+
+Views must define **private LocalizedStrings** for type-safe localization.
+
+```swift
+import ChallengeCommon
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+    static var title: String { "screenName.title".localized() }
+    static var subtitle: String { "screenName.subtitle".localized() }
+    static func itemCount(_ count: Int) -> String {
+        "screenName.itemCount %lld".localized(count)
+    }
+
+    enum Empty {
+        static var title: String { "screenName.empty.title".localized() }
+        static var description: String { "screenName.empty.description".localized() }
+    }
+}
+```
+
+**Rules:**
+- Private to each View
+- Use `localized()` from `ChallengeCommon`
+- Group related strings in nested enums
+- Use functions for strings with interpolation
+
+---
+
 ## Accessibility Identifiers
 
 Views must define **private accessibility identifiers** for E2E testing.
@@ -191,6 +222,8 @@ private enum AccessibilityIdentifier {
 
 - [ ] Create View struct with init receiving ViewModel only
 - [ ] Use `_viewModel = State(initialValue:)` in init
+- [ ] Import `ChallengeCommon` for localization
+- [ ] Add private `LocalizedStrings` enum with all strings
 - [ ] Delegate user actions to ViewModel methods
 - [ ] Implement `body` with `.task` modifier for loading
 - [ ] Implement `content` with switch on `viewModel.state`

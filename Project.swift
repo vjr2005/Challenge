@@ -61,7 +61,10 @@ let appE2ETestsTarget = Target.target(
 
 let project = Project(
 	name: appName,
-	options: .options(automaticSchemesOptions: .disabled),
+	options: .options(
+		automaticSchemesOptions: .disabled,
+		developmentRegion: "en"
+	),
 	settings: .settings(
 		base: [
 			"SWIFT_VERSION": .string(swiftVersion),

@@ -26,10 +26,15 @@ public struct FrameworkModule {
 		testDependencies: [TargetDependency] = [],
 		hasMocks: Bool = true,
 		hasTests: Bool = true,
+		hasResources: Bool = false
 	) -> FrameworkModule {
 		let targetName = "\(appName)\(name)"
 		let testsTargetName = "\(targetName)Tests"
 		let sourcesPath = path ?? name
+
+		let resources: ResourceFileElements? = hasResources ? [
+			.glob(pattern: "Libraries/\(sourcesPath)/Sources/Resources/**", excluding: [])
+		] : nil
 
 		let framework = Target.target(
 			name: targetName,
@@ -38,6 +43,7 @@ public struct FrameworkModule {
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			deploymentTargets: developmentTarget,
 			sources: ["Libraries/\(sourcesPath)/Sources/**"],
+			resources: resources,
 			scripts: [SwiftLint.script(path: "Libraries/\(sourcesPath)/Sources")],
 			dependencies: dependencies
 		)

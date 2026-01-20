@@ -1,11 +1,11 @@
 ---
-name: app-configuration
-description: Environment and build configuration. Use when working with environments, schemes, build configs, or API configuration.
+name: common
+description: Common module: Environment, localization, String extensions. Use when working with environments, schemes, build configs, API configuration, or localized strings.
 ---
 
-# Skill: App Configuration
+# Skill: Common
 
-Guide for environment and build configuration management.
+Guide for the Common module: environment configuration and localization.
 
 ## When to use this skill
 
@@ -13,6 +13,18 @@ Guide for environment and build configuration management.
 - Add new API configurations
 - Understand build configurations and schemes
 - Work with app icons per environment
+- Work with localized strings
+
+---
+
+## Module Overview
+
+The `Common` module provides shared utilities used across features:
+
+- **Environment**: Build configuration and API endpoints
+- **Localization**: Centralized strings with `String.localized()` extension
+
+**Location:** `Libraries/Common/`
 
 ---
 
@@ -20,12 +32,12 @@ Guide for environment and build configuration management.
 
 The `Environment` enum defines application environments and provides API configuration.
 
-**Location:** `Libraries/AppConfiguration/Sources/Environment.swift`
+**Location:** `Libraries/Common/Sources/Environment.swift`
 
 ### Usage
 
 ```swift
-import ChallengeAppConfiguration
+import ChallengeCommon
 
 // Get current environment (determined at compile time)
 let environment = Environment.current
@@ -55,6 +67,70 @@ let apiURL = Environment.current.rickAndMorty.baseURL
 | `isDebug` | `Bool` | `true` only for `development` |
 | `isRelease` | `Bool` | `true` only for `production` |
 | `rickAndMorty` | `API` | API configuration with `baseURL` |
+
+---
+
+## Localization
+
+All localized strings are centralized in the Common module.
+
+**Location:** `Libraries/Common/Sources/Resources/Localizable.xcstrings`
+
+### String Extension
+
+The `localized()` extension converts string keys to localized values:
+
+```swift
+// Libraries/Common/Sources/String+Localized.swift
+public extension String {
+    func localized() -> String {
+        String(localized: LocalizationValue(self), bundle: .module)
+    }
+
+    func localized(_ arguments: CVarArg...) -> String {
+        let localizedFormat = String(localized: LocalizationValue(self), bundle: .module)
+        return String(format: localizedFormat, arguments: arguments)
+    }
+}
+```
+
+### Usage in Views
+
+Each View defines a private `LocalizedStrings` enum that uses `localized()`:
+
+```swift
+import ChallengeCommon
+
+struct MyView: View {
+    var body: some View {
+        Text(LocalizedStrings.title)
+    }
+}
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+    static var title: String { "myView.title".localized() }
+    static var subtitle: String { "myView.subtitle".localized() }
+    static func itemCount(_ count: Int) -> String {
+        "myView.itemCount %lld".localized(count)
+    }
+}
+```
+
+### Adding New Strings
+
+1. Add the key to `Libraries/Common/Sources/Resources/Localizable.xcstrings`
+2. Provide translations for all supported languages (en, es)
+3. Add the string to the View's private `LocalizedStrings` enum
+
+### String Key Naming Convention
+
+| Pattern | Example |
+|---------|---------|
+| `{screen}.{element}` | `home.title` |
+| `{screen}.{section}.{element}` | `characterList.empty.title` |
+| `common.{element}` | `common.tryAgain` |
 
 ---
 
@@ -92,8 +168,8 @@ Each environment has a distinct app icon with a colored banner:
 
 | Environment | Icon | Banner |
 |-------------|------|--------|
-| Development | AppIconDev | 🟠 Orange "DEV" |
-| Staging | AppIconStaging | 🟣 Purple "STAGING" |
+| Development | AppIconDev | Orange "DEV" |
+| Staging | AppIconStaging | Purple "STAGING" |
 | Production | AppIcon | No banner |
 
 **Location:** `App/Sources/Resources/Assets.xcassets/`
@@ -132,7 +208,7 @@ public extension Environment {
 Features access API configuration through their Container:
 
 ```swift
-import ChallengeAppConfiguration
+import ChallengeCommon
 import ChallengeNetworking
 
 final class MyFeatureContainer {
@@ -209,7 +285,7 @@ public struct API {
 ## Environment-Specific Behavior
 
 ```swift
-import ChallengeAppConfiguration
+import ChallengeCommon
 
 // Logging only in debug
 if Environment.current.isDebug {
@@ -252,3 +328,9 @@ func track(event: String) {
 - [ ] Define URL for each environment case
 - [ ] Use `preconditionFailure` for invalid URLs (compile-time constants)
 - [ ] Update feature Containers to use new API
+
+### Adding Localized Strings
+
+- [ ] Add key to `Localizable.xcstrings` with all translations
+- [ ] Add to View's private `LocalizedStrings` enum
+- [ ] Use `localized()` or `localized(_:)` for interpolation

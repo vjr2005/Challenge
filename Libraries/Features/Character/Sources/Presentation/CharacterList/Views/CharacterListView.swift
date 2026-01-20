@@ -1,3 +1,4 @@
+import ChallengeCommon
 import ChallengeCore
 import SwiftUI
 
@@ -13,7 +14,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 			.task {
 				await viewModel.load()
 			}
-			.navigationTitle("Characters")
+			.navigationTitle(LocalizedStrings.title)
 			.navigationBarTitleDisplayMode(.large)
 	}
 
@@ -41,7 +42,7 @@ private extension CharacterListView {
 		VStack(spacing: 16) {
 			ProgressView()
 				.scaleEffect(1.5)
-			Text("Loading characters...")
+			Text(LocalizedStrings.loading)
 				.font(.subheadline)
 				.foregroundStyle(.secondary)
 		}
@@ -75,11 +76,11 @@ private extension CharacterListView {
 
 	func headerView(totalCount: Int) -> some View {
 		VStack(alignment: .leading, spacing: 4) {
-			Text("Rick & Morty")
+			Text(LocalizedStrings.headerTitle)
 				.font(.system(.largeTitle, design: .rounded, weight: .bold))
 				.foregroundStyle(.primary)
 
-			Text("\(totalCount) characters in the multiverse")
+			Text(LocalizedStrings.headerSubtitle(totalCount))
 				.font(.system(.subheadline, design: .serif))
 				.foregroundStyle(.secondary)
 				.italic()
@@ -95,7 +96,7 @@ private extension CharacterListView {
 			}
 		} label: {
 			HStack(spacing: 8) {
-				Text("Load More")
+				Text(LocalizedStrings.loadMore)
 					.font(.system(.body, design: .rounded, weight: .semibold))
 				Image(systemName: "arrow.down.circle.fill")
 			}
@@ -110,26 +111,34 @@ private extension CharacterListView {
 	}
 
 	func footerView(page: CharactersPage) -> some View {
-		Text("Page \(page.currentPage) of \(page.totalPages)")
+		Text(LocalizedStrings.pageIndicator(page.currentPage, page.totalPages))
 			.font(.system(.caption, design: .monospaced))
 			.foregroundStyle(.tertiary)
 			.padding(.bottom, 16)
 	}
 
 	var emptyView: some View {
-		ContentUnavailableView(
-			"No Characters",
-			systemImage: "person.slash",
-			description: Text("The multiverse seems empty")
-		)
+		ContentUnavailableView {
+			Label {
+				Text(LocalizedStrings.Empty.title)
+			} icon: {
+				Image(systemName: "person.slash")
+			}
+		} description: {
+			Text(LocalizedStrings.Empty.description)
+		}
 	}
 
 	func errorView(error: Error) -> some View {
-		ContentUnavailableView(
-			"Error",
-			systemImage: "exclamationmark.triangle",
-			description: Text(error.localizedDescription)
-		)
+		ContentUnavailableView {
+			Label {
+				Text(LocalizedStrings.Error.title)
+			} icon: {
+				Image(systemName: "exclamationmark.triangle")
+			}
+		} description: {
+			Text(error.localizedDescription)
+		}
 	}
 }
 
@@ -206,6 +215,28 @@ private struct CharacterRowView: View {
 		case .unknown:
 			.gray
 		}
+	}
+}
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+	static var title: String { "characterList.title".localized() }
+	static var loading: String { "characterList.loading".localized() }
+	static var headerTitle: String { "characterList.headerTitle".localized() }
+	static func headerSubtitle(_ count: Int) -> String { "characterList.headerSubtitle %lld".localized(count) }
+	static var loadMore: String { "characterList.loadMore".localized() }
+	static var pageIndicator: (Int, Int) -> String = { current, total in
+		"characterList.pageIndicator %lld %lld".localized(current, total)
+	}
+
+	enum Empty {
+		static var title: String { "characterList.empty.title".localized() }
+		static var description: String { "characterList.empty.description".localized() }
+	}
+
+	enum Error {
+		static var title: String { "characterList.error.title".localized() }
 	}
 }
 

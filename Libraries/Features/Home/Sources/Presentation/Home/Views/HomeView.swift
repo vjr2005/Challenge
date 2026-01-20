@@ -1,3 +1,4 @@
+import ChallengeCommon
 import ChallengeCore
 import SwiftUI
 
@@ -7,16 +8,25 @@ struct HomeView: View {
 
 	var body: some View {
 		VStack(spacing: 20) {
-			Text("Home")
+			Text(LocalizedStrings.title)
 				.font(.largeTitle)
 
-			Button("Go to Characters") {
+			Button {
 				viewModel.didTapOnCharacterButton()
+			} label: {
+				Text(LocalizedStrings.goToCharacters)
 			}
 			.buttonStyle(.borderedProminent)
 			.accessibilityIdentifier(AccessibilityIdentifier.characterButton)
 		}
 	}
+}
+
+// MARK: - LocalizedStrings
+
+private enum LocalizedStrings {
+	static var title: String { "home.title".localized() }
+	static var goToCharacters: String { "home.goToCharacters".localized() }
 }
 
 // MARK: - AccessibilityIdentifiers

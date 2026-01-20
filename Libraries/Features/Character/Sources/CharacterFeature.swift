@@ -15,10 +15,4 @@ public enum CharacterFeature {
 			CharacterDetailView(viewModel: container.makeCharacterDetailViewModel(identifier: identifier, router: router))
 		}
 	}
-
-	/// Returns the CharacterListView as the entry point for the Character feature.
-	/// Used by App layer to display the initial view.
-	public static func listView(router: RouterContract) -> some View {
-		CharacterListView(viewModel: container.makeCharacterListViewModel(router: router))
-	}
 }

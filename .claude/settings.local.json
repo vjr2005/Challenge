@@ -45,7 +45,8 @@
       "Bash(mise install:*)",
       "Bash(periphery version:*)",
       "Bash(mise x:*)",
-      "Bash(mise exec:*)"
+      "Bash(mise exec:*)",
+      "Bash(tuist:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
