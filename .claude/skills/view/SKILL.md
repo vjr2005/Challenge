@@ -160,7 +160,7 @@ private final class RouterPreviewMock: RouterContract {
 Views must define **private LocalizedStrings** for type-safe localization.
 
 ```swift
-import ChallengeCommon
+import {AppName}Common
 
 // MARK: - LocalizedStrings
 
@@ -180,7 +180,7 @@ private enum LocalizedStrings {
 
 **Rules:**
 - Private to each View
-- Use `localized()` from `ChallengeCommon`
+- Use `localized()` from `{AppName}Common`
 - Group related strings in nested enums
 - Use functions for strings with interpolation
 
@@ -222,7 +222,7 @@ private enum AccessibilityIdentifier {
 
 - [ ] Create View struct with init receiving ViewModel only
 - [ ] Use `_viewModel = State(initialValue:)` in init
-- [ ] Import `ChallengeCommon` for localization
+- [ ] Import `{AppName}Common` for localization
 - [ ] Add private `LocalizedStrings` enum with all strings
 - [ ] Delegate user actions to ViewModel methods
 - [ ] Implement `body` with `.task` modifier for loading

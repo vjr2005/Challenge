@@ -53,7 +53,7 @@ nonisolated struct {Name}DTO: Decodable, Equatable {
 ```swift
 import Foundation
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
     var result: Result<{Name}DTO, Error> = .failure(NotConfiguredError.notConfigured)
@@ -80,12 +80,12 @@ private enum NotConfiguredError: Error {
 ### Tests
 
 ```swift
-import ChallengeCoreMocks
-import ChallengeNetworkingMocks
+import {AppName}CoreMocks
+import {AppName}NetworkingMocks
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct {Name}RemoteDataSourceTests {
     private let testBundle = Bundle(for: BundleToken.self)
@@ -197,7 +197,7 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 ```swift
 import Foundation
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 actor {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract {
     private var storage: [Int: {Name}DTO] = [:]
@@ -244,11 +244,11 @@ actor {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract {
 ### Tests
 
 ```swift
-import ChallengeCoreMocks
+import {AppName}CoreMocks
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct {Name}MemoryDataSourceTests {
     private let testBundle = Bundle(for: BundleToken.self)

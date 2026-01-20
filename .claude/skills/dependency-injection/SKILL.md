@@ -49,7 +49,7 @@ Libraries/Features/{FeatureName}/
 
 ```swift
 // Sources/{Feature}Navigation.swift
-import ChallengeCore
+import {AppName}Core
 
 public enum {Feature}Navigation: Navigation {
     case list
@@ -68,7 +68,7 @@ public enum {Feature}Navigation: Navigation {
 
 ```swift
 // Sources/{Feature}Feature.swift
-import ChallengeCore
+import {AppName}Core
 import SwiftUI
 
 public enum {Feature}Feature {
@@ -98,7 +98,7 @@ public enum {Feature}Feature {
 
 ```swift
 // Sources/Container/{Feature}Container.swift
-import ChallengeNetworking
+import {AppName}Networking
 import Foundation
 
 final class {Feature}Container {

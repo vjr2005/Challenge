@@ -34,7 +34,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct {Name}RepositoryTests {
     @Test
@@ -139,7 +139,7 @@ extension {Name} {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct {Name}RepositoryTests {
     @Test
@@ -246,7 +246,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct {Name}RepositoryTests {
     // MARK: - Cache Hit Tests
@@ -450,7 +450,7 @@ extension CharacterDTO {
 // Tests/Mocks/CharacterRepositoryMock.swift
 import Foundation
 
-@testable import ChallengeCharacter
+@testable import {AppName}Character
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
     var result: Result<Character, Error> = .failure(NotConfiguredError.notConfigured)

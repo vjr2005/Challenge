@@ -10,7 +10,7 @@ Complete implementation examples for dependency injection with Container per Fea
 
 ```swift
 // Sources/CharacterNavigation.swift
-import ChallengeCore
+import {AppName}Core
 
 public enum CharacterNavigation: Navigation {
     case list
@@ -22,7 +22,7 @@ public enum CharacterNavigation: Navigation {
 
 ```swift
 // Sources/CharacterFeature.swift
-import ChallengeCore
+import {AppName}Core
 import SwiftUI
 
 public enum CharacterFeature {
@@ -44,8 +44,8 @@ public enum CharacterFeature {
 
 ```swift
 // Sources/Container/CharacterContainer.swift
-import ChallengeCore
-import ChallengeNetworking
+import {AppName}Core
+import {AppName}Networking
 import Foundation
 
 final class CharacterContainer {
@@ -97,9 +97,9 @@ final class CharacterContainer {
 
 ```swift
 // In App/Sources/ContentView.swift
-import ChallengeCharacter
-import ChallengeCore
-import ChallengeHome
+import {AppName}Character
+import {AppName}Core
+import {AppName}Home
 import SwiftUI
 
 struct ContentView: View {
@@ -124,7 +124,7 @@ struct ContentView: View {
 
 ```swift
 // Sources/HomeNavigation.swift
-import ChallengeCore
+import {AppName}Core
 
 public enum HomeNavigation: Navigation {
     case home
@@ -135,7 +135,7 @@ public enum HomeNavigation: Navigation {
 
 ```swift
 // Sources/HomeFeature.swift
-import ChallengeCore
+import {AppName}Core
 import SwiftUI
 
 public enum HomeFeature {
@@ -152,7 +152,7 @@ public enum HomeFeature {
 
 ```swift
 // Sources/Container/HomeContainer.swift
-import ChallengeCore
+import {AppName}Core
 
 final class HomeContainer {
     func makeHomeViewModel(router: RouterContract) -> HomeViewModel {
@@ -168,11 +168,11 @@ final class HomeContainer {
 ### CharacterContainerTests
 
 ```swift
-import ChallengeCoreMocks
-import ChallengeNetworkingMocks
+import {AppName}CoreMocks
+import {AppName}NetworkingMocks
 import Testing
 
-@testable import ChallengeCharacter
+@testable import {AppName}Character
 
 struct CharacterContainerTests {
     @Test
@@ -227,10 +227,10 @@ struct CharacterContainerTests {
 ### HomeContainerTests (Simple Container)
 
 ```swift
-import ChallengeCoreMocks
+import {AppName}CoreMocks
 import Testing
 
-@testable import ChallengeHome
+@testable import {AppName}Home
 
 struct HomeContainerTests {
     @Test
@@ -254,11 +254,11 @@ struct HomeContainerTests {
 ## Generic Container Tests Pattern
 
 ```swift
-import ChallengeCoreMocks
-import ChallengeNetworkingMocks
+import {AppName}CoreMocks
+import {AppName}NetworkingMocks
 import Testing
 
-@testable import Challenge{Feature}
+@testable import {AppName}{Feature}
 
 struct {Feature}ContainerTests {
     @Test

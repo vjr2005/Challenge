@@ -96,7 +96,7 @@ public final class Router: RouterContract {
 
 ```swift
 // Libraries/Core/Mocks/RouterMock.swift
-import ChallengeCore
+import {AppName}Core
 
 public final class RouterMock: RouterContract {
     public private(set) var navigatedDestinations: [any Navigation] = []
@@ -122,7 +122,7 @@ Each feature defines its navigation destinations:
 
 ```swift
 // Libraries/Features/{Feature}/Sources/{Feature}Navigation.swift
-import ChallengeCore
+import {AppName}Core
 
 public enum {Feature}Navigation: Navigation {
     case list
@@ -141,9 +141,9 @@ public enum {Feature}Navigation: Navigation {
 
 ```swift
 // App/Sources/ContentView.swift
-import ChallengeCharacter
-import ChallengeCore
-import ChallengeHome
+import {AppName}Character
+import {AppName}Core
+import {AppName}Home
 import SwiftUI
 
 struct ContentView: View {
@@ -201,7 +201,7 @@ ViewModels receive `RouterContract` and use semantic method names:
 
 ```swift
 // Libraries/Features/{Feature}/Sources/Presentation/ViewModels/{Name}ViewModel.swift
-import ChallengeCore
+import {AppName}Core
 import SwiftUI
 
 @Observable
@@ -241,10 +241,10 @@ final class {Name}ViewModel {
 ## Testing Navigation
 
 ```swift
-import ChallengeCoreMocks
+import {AppName}CoreMocks
 import Testing
 
-@testable import Challenge{Feature}
+@testable import {AppName}{Feature}
 
 struct {Name}ViewModelTests {
     @Test
@@ -304,8 +304,8 @@ struct {Name}ViewModelTests {
 
 ```swift
 // Libraries/Features/Home/Sources/Presentation/ViewModels/HomeViewModel.swift
-import ChallengeCharacter
-import ChallengeCore
+import {AppName}Character
+import {AppName}Core
 
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class HomeViewModel {
@@ -326,11 +326,11 @@ final class HomeViewModel {
 ### HomeViewModelTests
 
 ```swift
-import ChallengeCharacter
-import ChallengeCoreMocks
+import {AppName}Character
+import {AppName}CoreMocks
 import Testing
 
-@testable import ChallengeHome
+@testable import {AppName}Home
 
 struct HomeViewModelTests {
     @Test

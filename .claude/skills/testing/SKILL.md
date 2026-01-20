@@ -309,7 +309,7 @@ FeatureName/
 // Tests/Extensions/CharacterDetailViewState+Equatable.swift
 import Foundation
 
-@testable import ChallengeCharacter
+@testable import {AppName}Character
 
 extension CharacterDetailViewState: @retroactive Equatable {
 	public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -347,7 +347,7 @@ extension CharacterDetailViewState: @retroactive Equatable {
 import Foundation
 import Testing
 
-@testable import ChallengeCharacter
+@testable import {AppName}Character
 
 struct GetCharacterUseCaseTests {
     @Test

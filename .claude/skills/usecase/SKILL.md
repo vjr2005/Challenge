@@ -91,7 +91,7 @@ struct Get{Name}UseCase: Get{Name}UseCaseContract {
 ```swift
 import Foundation
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable {
     var result: Result<{Name}, Error> = .failure(NotConfiguredError.notConfigured)
@@ -260,7 +260,7 @@ struct CreateCharacterUseCase: CreateCharacterUseCaseContract {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct Get{Name}UseCaseTests {
     @Test
@@ -318,7 +318,7 @@ private enum TestError: Error {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct GetFilteredCharactersUseCaseTests {
     @Test
@@ -382,7 +382,7 @@ struct GetFilteredCharactersUseCaseTests {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct CreateCharacterUseCaseTests {
     @Test

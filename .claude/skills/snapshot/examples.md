@@ -7,12 +7,12 @@ Complete implementation examples for snapshot tests.
 ## CharacterDetailViewSnapshotTests
 
 ```swift
-import ChallengeCoreMocks
+import {AppName}CoreMocks
 import SnapshotTesting
 import SwiftUI
 import Testing
 
-@testable import ChallengeCharacter
+@testable import {AppName}Character
 
 struct CharacterDetailViewSnapshotTests {
     private let imageLoader: ImageLoaderMock
@@ -108,12 +108,12 @@ private enum SnapshotTestError: LocalizedError {
 ## CharacterListViewSnapshotTests
 
 ```swift
-import ChallengeCoreMocks
+import {AppName}CoreMocks
 import SnapshotTesting
 import SwiftUI
 import Testing
 
-@testable import ChallengeCharacter
+@testable import {AppName}Character
 
 struct CharacterListViewSnapshotTests {
     private let imageLoader: ImageLoaderMock
@@ -222,7 +222,7 @@ protocol {Name}ViewModelContract: AnyObject {
 // Tests/Presentation/Helpers/{Name}ViewModelStub.swift
 import Foundation
 
-@testable import Challenge{Feature}
+@testable import {AppName}{Feature}
 
 @Observable
 final class {Name}ViewModelStub: {Name}ViewModelContract {

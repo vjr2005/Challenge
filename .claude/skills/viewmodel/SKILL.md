@@ -169,7 +169,7 @@ final class {Name}ListViewModel {
 ViewModels that trigger navigation receive `RouterContract`:
 
 ```swift
-import ChallengeCore
+import {AppName}Core
 import Foundation
 
 @Observable
@@ -218,7 +218,7 @@ final class {Name}ListViewModel {
 ViewModels that **only trigger navigation** (no observable state) don't need `@Observable`:
 
 ```swift
-import ChallengeCore
+import {AppName}Core
 
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class {Name}ViewModel {
@@ -242,7 +242,7 @@ final class {Name}ViewModel {
 **Example: HomeViewModel**
 
 ```swift
-import ChallengeCore
+import {AppName}Core
 
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class HomeViewModel {
@@ -283,7 +283,7 @@ struct HomeView: View {
 import Foundation
 import Testing
 
-@testable import Challenge{FeatureName}
+@testable import {AppName}{FeatureName}
 
 struct {Name}ViewModelTests {
     @Test

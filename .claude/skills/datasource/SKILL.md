@@ -132,7 +132,7 @@ let dto: {Name}DTO = try testBundle.loadJSON("{name}", as: {Name}DTO.self)
 let data = try testBundle.loadJSONData("{name}")
 ```
 
-Import `ChallengeCoreMocks` for `Bundle+JSON` helper.
+Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
 
 ---
 

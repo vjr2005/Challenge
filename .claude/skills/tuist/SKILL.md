@@ -16,8 +16,8 @@ Skill for managing Tuist configuration in the project.
 The Tuist MCP server provides project graph information:
 
 ```
-URI: tuist:///Users/vjordan/Projects/ios/Challenge
-Resource: Challenge graph
+URI: tuist:///{project-path}
+Resource: {AppName} graph
 Type: application/json
 ```
 
@@ -32,7 +32,7 @@ Use `ReadMcpResourceTool` to read the project graph and understand:
 // Read project graph
 ReadMcpResourceTool(
     server: "tuist",
-    uri: "tuist:///Users/vjordan/Projects/ios/Challenge"
+    uri: "tuist:///{project-path}"
 )
 ```
 
@@ -88,7 +88,7 @@ extension Bundle {
 
 Currently used in:
 - `Libraries/Common/Sources/Bundle+Module.swift`
-- `Libraries/Features/Character/Tests/Extensions/Bundle+Module.swift`
+- `Libraries/Features/{FeatureName}/Tests/Extensions/Bundle+Module.swift`
 
 ---
 
@@ -99,9 +99,9 @@ Tuist generates files in the `Derived/` folder:
 ```
 Derived/
 └── InfoPlists/
-    ├── Challenge-Info.plist
-    ├── ChallengeCore-Info.plist
-    ├── ChallengeCommon-Info.plist
+    ├── {AppName}-Info.plist
+    ├── {AppName}Core-Info.plist
+    ├── {AppName}Common-Info.plist
     └── ...
 ```
 
@@ -118,7 +118,7 @@ Derived/
 Place the `.xcframework` file in the `Tuist/Dependencies/` directory:
 
 ```
-Challenge/
+{AppName}/
 ├── Tuist/
 │   ├── Dependencies/
 │   │   └── FrameworkName.xcframework

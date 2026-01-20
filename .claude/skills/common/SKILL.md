@@ -52,7 +52,7 @@ The `Environment` enum defines application environments and provides API configu
 ### Usage
 
 ```swift
-import ChallengeCommon
+import {AppName}Common
 
 // Get current environment (determined at compile time)
 let environment = Environment.current
@@ -114,7 +114,7 @@ public extension String {
 Each View defines a private `LocalizedStrings` enum that uses `localized()`:
 
 ```swift
-import ChallengeCommon
+import {AppName}Common
 
 struct MyView: View {
     var body: some View {
@@ -191,9 +191,9 @@ extension Bundle {
 
 | Scheme | Run Config | Archive Config | Use Case |
 |--------|------------|----------------|----------|
-| `Challenge (Dev)` | Debug | Release | Daily development |
-| `Challenge (Staging)` | Debug-Staging | Staging | Testing with staging API |
-| `Challenge (Prod)` | Debug-Prod | Release | Debugging production issues |
+| `{AppName} (Dev)` | Debug | Release | Daily development |
+| `{AppName} (Staging)` | Debug-Staging | Staging | Testing with staging API |
+| `{AppName} (Prod)` | Debug-Prod | Release | Debugging production issues |
 
 **Run Config**: Configuration used when running in simulator/device (debuggable).
 **Archive Config**: Configuration used when creating archives for distribution.
@@ -246,8 +246,8 @@ public extension Environment {
 Features access API configuration through their Container:
 
 ```swift
-import ChallengeCommon
-import ChallengeNetworking
+import {AppName}Common
+import {AppName}Networking
 
 final class MyFeatureContainer {
     private let httpClient: any HTTPClientContract
@@ -323,7 +323,7 @@ public struct API {
 ## Environment-Specific Behavior
 
 ```swift
-import ChallengeCommon
+import {AppName}Common
 
 // Logging only in debug
 if Environment.current.isDebug {

@@ -84,10 +84,10 @@ mise x -- swiftlint --fix --quiet
 Ensure the **entire workspace** compiles, including all test targets:
 
 ```bash
-mise x -- tuist build Challenge-Workspace
+mise x -- tuist build {AppName}-Workspace
 ```
 
-**Important:** Use `Challenge-Workspace`, not `Challenge (Dev)`. The workspace includes all test targets that might reference removed code.
+**Important:** Use `{AppName}-Workspace`, not `{AppName} (Dev)`. The workspace includes all test targets that might reference removed code.
 
 If build fails:
 - Review the error messages
@@ -99,10 +99,10 @@ If build fails:
 Execute **all tests** in the workspace:
 
 ```bash
-mise x -- tuist test Challenge-Workspace
+mise x -- tuist test {AppName}-Workspace
 ```
 
-**Important:** Use `Challenge-Workspace` to run all unit tests, not just E2E tests.
+**Important:** Use `{AppName}-Workspace` to run all unit tests, not just E2E tests.
 
 If tests fail:
 - Check if failed tests were testing removed code → delete them
@@ -127,9 +127,9 @@ Expected output: `* No unused code detected.`
 Periphery configuration is in `.periphery.yml`:
 
 ```yaml
-project: Challenge.xcworkspace
+project: {AppName}.xcworkspace
 schemes:
-  - "Challenge (Dev)"
+  - "{AppName} (Dev)"
 retain_public: true
 retain_objc_annotated: true
 retain_codable_properties: true
@@ -169,8 +169,8 @@ When Periphery reports an unused protocol method:
 Cache/storage methods might be unused if caching isn't implemented yet. Options:
 
 1. **Remove**: If not planned for near future
-   - Also remove from `CharacterMemoryDataSourceMock`
-   - Delete tests in `CharacterMemoryDataSourceTests.swift`
+   - Also remove from `{Name}MemoryDataSourceMock`
+   - Delete tests in `{Name}MemoryDataSourceTests.swift`
 2. **Keep**: Add to `report_exclude` if intentionally reserved
 
 ### Unused ViewState Equatable
@@ -230,6 +230,6 @@ If a Domain Model property is unused:
 - [ ] Related tests deleted or updated
 - [ ] Equatable extensions created in Tests/Extensions/ if needed
 - [ ] SwiftLint auto-fix executed
-- [ ] `Challenge-Workspace` build succeeds
-- [ ] `Challenge-Workspace` tests pass
+- [ ] `{AppName}-Workspace` build succeeds
+- [ ] `{AppName}-Workspace` tests pass
 - [ ] Final Periphery scan shows no unused code
