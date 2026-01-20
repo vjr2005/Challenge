@@ -8,6 +8,7 @@ public enum Modules {
 		CoreModule.module,
 		NetworkingModule.module,
 		CommonModule.module,
+		DesignSystemModule.module,
 		CharacterModule.module,
 		HomeModule.module,
 	]
@@ -29,6 +30,7 @@ public enum Modules {
 			+ CoreModule.targetReferences
 			+ NetworkingModule.targetReferences
 			+ CommonModule.targetReferences
+			+ DesignSystemModule.targetReferences
 			+ CharacterModule.targetReferences
 			+ HomeModule.targetReferences
 	}

@@ -8,6 +8,7 @@ public enum CharacterModule {
 			.target(name: "\(appName)Core"),
 			.target(name: "\(appName)Networking"),
 			.target(name: "\(appName)Common"),
+			.target(name: "\(appName)DesignSystem"),
 		],
 		testDependencies: [
 			.target(name: "\(appName)CoreMocks"),

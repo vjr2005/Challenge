@@ -1,5 +1,6 @@
 import ChallengeCommon
 import ChallengeCore
+import ChallengeDesignSystem
 import SwiftUI
 
 struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
@@ -14,7 +15,7 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 			.task {
 				await viewModel.load()
 			}
-			.background(Color(.systemGroupedBackground))
+			.background(ColorToken.backgroundSecondary)
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarBackButtonHidden(true)
 			.toolbar {
@@ -47,50 +48,41 @@ private extension CharacterDetailView {
 		Button {
 			viewModel.didTapOnBack()
 		} label: {
-			HStack(spacing: 4) {
+			HStack(spacing: SpacingToken.xs) {
 				Image(systemName: "chevron.left")
-					.font(.system(.body, weight: .semibold))
+					.font(TextStyle.body.font.weight(.semibold))
 				Text(LocalizedStrings.back)
-					.font(.system(.body, design: .rounded))
+					.font(TextStyle.body.font)
 			}
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.backButton)
 	}
 
 	var loadingView: some View {
-		VStack(spacing: 16) {
-			ProgressView()
-				.scaleEffect(1.5)
-			Text(LocalizedStrings.loading)
-				.font(.subheadline)
-				.foregroundStyle(.secondary)
-		}
-		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		DSLoadingView(message: LocalizedStrings.loading)
 	}
 
 	func characterContent(_ character: Character) -> some View {
 		ScrollView {
-			VStack(spacing: 20) {
+			VStack(spacing: SpacingToken.xl) {
 				headerSection(character)
 				infoCard(character)
 				locationCard(character)
 			}
-			.padding(.horizontal)
-			.padding(.top, 8)
-			.padding(.bottom, 24)
+			.padding(.horizontal, SpacingToken.lg)
+			.padding(.top, SpacingToken.sm)
+			.padding(.bottom, SpacingToken.xxl)
 		}
 	}
 
 	func headerSection(_ character: Character) -> some View {
-		VStack(spacing: 16) {
-			characterImage(character)
-			nameAndStatus(character)
+		DSCard(padding: SpacingToken.xl) {
+			VStack(spacing: SpacingToken.lg) {
+				characterImage(character)
+				nameAndStatus(character)
+			}
+			.frame(maxWidth: .infinity)
 		}
-		.padding(20)
-		.frame(maxWidth: .infinity)
-		.background(Color(.systemBackground))
-		.clipShape(RoundedRectangle(cornerRadius: 16))
-		.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
 	}
 
 	func characterImage(_ character: Character) -> some View {
@@ -102,162 +94,72 @@ private extension CharacterDetailView {
 			ProgressView()
 		}
 		.frame(width: 150, height: 150)
-		.clipShape(RoundedRectangle(cornerRadius: 20))
-		.shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
+		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.xl))
+		.shadow(.medium)
 	}
 
 	func nameAndStatus(_ character: Character) -> some View {
-		VStack(spacing: 8) {
-			Text(character.name)
-				.font(.system(.title, design: .rounded, weight: .bold))
-				.foregroundStyle(.primary)
+		VStack(spacing: SpacingToken.sm) {
+			DSText(character.name, style: .title)
 				.multilineTextAlignment(.center)
 
-			HStack(spacing: 8) {
-				Circle()
-					.fill(statusColor(for: character.status))
-					.frame(width: 10, height: 10)
+			HStack(spacing: SpacingToken.sm) {
+				DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
 				Text(character.status.rawValue)
-					.font(.system(.subheadline, design: .rounded, weight: .medium))
-					.foregroundStyle(.secondary)
+					.font(TextStyle.subheadline.font)
+					.foregroundStyle(ColorToken.textSecondary)
 
 				Text("•")
-					.foregroundStyle(.tertiary)
+					.foregroundStyle(ColorToken.textTertiary)
 
 				Text(character.species)
-					.font(.system(.subheadline, design: .serif))
-					.foregroundStyle(.secondary)
+					.font(TextStyle.subheadline.font)
+					.foregroundStyle(ColorToken.textSecondary)
 					.italic()
 			}
 		}
 	}
 
 	func infoCard(_ character: Character) -> some View {
-		VStack(alignment: .leading, spacing: 16) {
-			Text(LocalizedStrings.information)
-				.font(.system(.headline, design: .rounded, weight: .semibold))
-				.foregroundStyle(.primary)
+		DSCard(padding: SpacingToken.xl) {
+			VStack(alignment: .leading, spacing: SpacingToken.lg) {
+				DSText(LocalizedStrings.information, style: .headline)
 
-			VStack(spacing: 12) {
-				infoRow(icon: "person.fill", label: "Gender", value: character.gender)
-				Divider()
-				infoRow(icon: "leaf.fill", label: "Species", value: character.species)
+				VStack(spacing: SpacingToken.md) {
+					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender)
+					Divider()
+					DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
+				}
 			}
+			.frame(maxWidth: .infinity, alignment: .leading)
 		}
-		.padding(20)
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(Color(.systemBackground))
-		.clipShape(RoundedRectangle(cornerRadius: 16))
-		.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
 	}
 
 	func locationCard(_ character: Character) -> some View {
-		VStack(alignment: .leading, spacing: 16) {
-			Text(LocalizedStrings.locations)
-				.font(.system(.headline, design: .rounded, weight: .semibold))
-				.foregroundStyle(.primary)
+		DSCard(padding: SpacingToken.xl) {
+			VStack(alignment: .leading, spacing: SpacingToken.lg) {
+				DSText(LocalizedStrings.locations, style: .headline)
 
-			VStack(spacing: 12) {
-				locationRow(icon: "star.fill", label: "Origin", value: character.origin.name)
-				Divider()
-				locationRow(icon: "mappin.circle.fill", label: "Last Known", value: character.location.name)
+				VStack(spacing: SpacingToken.md) {
+					DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)
+					Divider()
+					DSInfoRow(icon: "mappin.circle.fill", label: "Last Known", value: character.location.name)
+				}
 			}
-		}
-		.padding(20)
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(Color(.systemBackground))
-		.clipShape(RoundedRectangle(cornerRadius: 16))
-		.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-	}
-
-	func infoRow(icon: String, label: String, value: String) -> some View {
-		HStack(spacing: 12) {
-			Image(systemName: icon)
-				.font(.system(.body))
-				.foregroundStyle(Color.accentColor)
-				.frame(width: 24)
-
-			VStack(alignment: .leading, spacing: 2) {
-				Text(label)
-					.font(.system(.caption, design: .rounded))
-					.foregroundStyle(.tertiary)
-				Text(value)
-					.font(.system(.body, design: .rounded))
-					.foregroundStyle(.primary)
-			}
-
-			Spacer()
-		}
-	}
-
-	func locationRow(icon: String, label: String, value: String) -> some View {
-		HStack(spacing: 12) {
-			Image(systemName: icon)
-				.font(.system(.body))
-				.foregroundStyle(Color.accentColor)
-				.frame(width: 24)
-
-			VStack(alignment: .leading, spacing: 2) {
-				Text(label)
-					.font(.system(.caption, design: .rounded))
-					.foregroundStyle(.tertiary)
-				Text(value)
-					.font(.system(.callout, design: .monospaced))
-					.foregroundStyle(.primary)
-					.lineLimit(2)
-			}
-
-			Spacer()
+			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 	}
 
 	var errorView: some View {
-		VStack(spacing: 20) {
-			Image(systemName: "exclamationmark.triangle.fill")
-				.font(.system(size: 50))
-				.foregroundStyle(.orange)
-
-			VStack(spacing: 8) {
-				Text(LocalizedStrings.Error.title)
-					.font(.system(.title3, design: .rounded, weight: .semibold))
-					.foregroundStyle(.primary)
-
-				Text(LocalizedStrings.Error.description)
-					.font(.system(.subheadline, design: .serif))
-					.foregroundStyle(.secondary)
-					.italic()
+		DSErrorView(
+			title: LocalizedStrings.Error.title,
+			message: LocalizedStrings.Error.description,
+			retryTitle: LocalizedStrings.Common.tryAgain
+		) {
+			Task {
+				await viewModel.load()
 			}
-
-			Button {
-				Task {
-					await viewModel.load()
-				}
-			} label: {
-				HStack(spacing: 8) {
-					Image(systemName: "arrow.clockwise")
-					Text(LocalizedStrings.Common.tryAgain)
-				}
-				.font(.system(.body, design: .rounded, weight: .semibold))
-				.frame(maxWidth: .infinity)
-				.padding(.vertical, 14)
-				.background(Color.accentColor.opacity(0.1))
-				.foregroundStyle(Color.accentColor)
-				.clipShape(RoundedRectangle(cornerRadius: 12))
-			}
-			.padding(.horizontal, 40)
-		}
-		.frame(maxWidth: .infinity, maxHeight: .infinity)
-	}
-
-	func statusColor(for status: CharacterStatus) -> Color {
-		switch status {
-		case .alive:
-			.green
-		case .dead:
-			.red
-		case .unknown:
-			.gray
 		}
 	}
 }

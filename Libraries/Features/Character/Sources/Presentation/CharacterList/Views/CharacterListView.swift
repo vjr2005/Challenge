@@ -1,5 +1,6 @@
 import ChallengeCommon
 import ChallengeCore
+import ChallengeDesignSystem
 import SwiftUI
 
 struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
@@ -39,19 +40,12 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 
 private extension CharacterListView {
 	var loadingView: some View {
-		VStack(spacing: 16) {
-			ProgressView()
-				.scaleEffect(1.5)
-			Text(LocalizedStrings.loading)
-				.font(.subheadline)
-				.foregroundStyle(.secondary)
-		}
-		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		DSLoadingView(message: LocalizedStrings.loading)
 	}
 
 	func characterList(page: CharactersPage) -> some View {
 		ScrollView {
-			LazyVStack(spacing: 16) {
+			LazyVStack(spacing: SpacingToken.lg) {
 				headerView(totalCount: page.totalCount)
 
 				ForEach(page.characters, id: \.id) { character in
@@ -68,77 +62,60 @@ private extension CharacterListView {
 
 				footerView(page: page)
 			}
-			.padding(.horizontal)
+			.padding(.horizontal, SpacingToken.lg)
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
-		.background(Color(.systemGroupedBackground))
+		.background(ColorToken.backgroundSecondary)
 	}
 
 	func headerView(totalCount: Int) -> some View {
-		VStack(alignment: .leading, spacing: 4) {
-			Text(LocalizedStrings.headerTitle)
-				.font(.system(.largeTitle, design: .rounded, weight: .bold))
-				.foregroundStyle(.primary)
+		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+			DSText(LocalizedStrings.headerTitle, style: .largeTitle)
 
 			Text(LocalizedStrings.headerSubtitle(totalCount))
-				.font(.system(.subheadline, design: .serif))
-				.foregroundStyle(.secondary)
+				.font(TextStyle.subheadline.font)
+				.foregroundStyle(ColorToken.textSecondary)
 				.italic()
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
-		.padding(.vertical, 8)
+		.padding(.vertical, SpacingToken.sm)
 	}
 
 	var loadMoreButton: some View {
-		Button {
+		DSButton(
+			LocalizedStrings.loadMore,
+			icon: "arrow.down.circle.fill",
+			variant: .tertiary
+		) {
 			Task {
 				await viewModel.loadMore()
 			}
-		} label: {
-			HStack(spacing: 8) {
-				Text(LocalizedStrings.loadMore)
-					.font(.system(.body, design: .rounded, weight: .semibold))
-				Image(systemName: "arrow.down.circle.fill")
-			}
-			.frame(maxWidth: .infinity)
-			.padding(.vertical, 12)
-			.background(Color.accentColor.opacity(0.1))
-			.foregroundStyle(Color.accentColor)
-			.clipShape(RoundedRectangle(cornerRadius: 12))
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
-		.padding(.vertical, 8)
+		.padding(.vertical, SpacingToken.sm)
 	}
 
 	func footerView(page: CharactersPage) -> some View {
-		Text(LocalizedStrings.pageIndicator(page.currentPage, page.totalPages))
-			.font(.system(.caption, design: .monospaced))
-			.foregroundStyle(.tertiary)
-			.padding(.bottom, 16)
+		DSText(
+			LocalizedStrings.pageIndicator(page.currentPage, page.totalPages),
+			style: .caption2
+		)
+		.padding(.bottom, SpacingToken.lg)
 	}
 
 	var emptyView: some View {
-		ContentUnavailableView {
-			Label {
-				Text(LocalizedStrings.Empty.title)
-			} icon: {
-				Image(systemName: "person.slash")
-			}
-		} description: {
-			Text(LocalizedStrings.Empty.description)
-		}
+		DSEmptyState(
+			icon: "person.slash",
+			title: LocalizedStrings.Empty.title,
+			message: LocalizedStrings.Empty.description
+		)
 	}
 
 	func errorView(error: Error) -> some View {
-		ContentUnavailableView {
-			Label {
-				Text(LocalizedStrings.Error.title)
-			} icon: {
-				Image(systemName: "exclamationmark.triangle")
-			}
-		} description: {
-			Text(error.localizedDescription)
-		}
+		DSErrorView(
+			title: LocalizedStrings.Error.title,
+			message: error.localizedDescription
+		)
 	}
 }
 
@@ -148,16 +125,14 @@ private struct CharacterRowView: View {
 	let character: Character
 
 	var body: some View {
-		HStack(spacing: 16) {
-			characterImage
-			characterInfo
-			Spacer()
-			statusIndicator
+		DSCard(padding: SpacingToken.lg) {
+			HStack(spacing: SpacingToken.lg) {
+				characterImage
+				characterInfo
+				Spacer()
+				statusIndicator
+			}
 		}
-		.padding(16)
-		.background(Color(.systemBackground))
-		.clipShape(RoundedRectangle(cornerRadius: 16))
-		.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
 	}
 
 	private var characterImage: some View {
@@ -169,52 +144,41 @@ private struct CharacterRowView: View {
 			ProgressView()
 		}
 		.frame(width: 70, height: 70)
-		.clipShape(RoundedRectangle(cornerRadius: 12))
+		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 	}
 
 	private var characterInfo: some View {
-		VStack(alignment: .leading, spacing: 4) {
-			Text(character.name)
-				.font(.system(.headline, design: .rounded, weight: .semibold))
-				.foregroundStyle(.primary)
+		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+			DSText(character.name, style: .headline)
 				.lineLimit(1)
 
 			Text(character.species)
-				.font(.system(.subheadline, design: .serif))
-				.foregroundStyle(.secondary)
+				.font(TextStyle.subheadline.font)
+				.foregroundStyle(ColorToken.textSecondary)
 
-			HStack(spacing: 4) {
+			HStack(spacing: SpacingToken.xs) {
 				Image(systemName: "mappin.circle.fill")
 					.font(.caption2)
 				Text(character.location.name)
-					.font(.system(.caption, design: .monospaced))
+					.font(TextStyle.caption2.font)
 			}
-			.foregroundStyle(.tertiary)
+			.foregroundStyle(ColorToken.textTertiary)
 			.lineLimit(1)
 		}
 	}
 
 	private var statusIndicator: some View {
-		VStack(spacing: 4) {
-			Circle()
-				.fill(statusColor)
-				.frame(width: 12, height: 12)
+		VStack(spacing: SpacingToken.xs) {
+			DSStatusIndicator(status: characterStatus)
 
 			Text(character.status.rawValue)
-				.font(.system(.caption2, design: .rounded, weight: .medium))
-				.foregroundStyle(.secondary)
+				.font(TextStyle.caption.font)
+				.foregroundStyle(ColorToken.textSecondary)
 		}
 	}
 
-	private var statusColor: Color {
-		switch character.status {
-		case .alive:
-			.green
-		case .dead:
-			.red
-		case .unknown:
-			.gray
-		}
+	private var characterStatus: DSStatus {
+		DSStatus.from(character.status.rawValue)
 	}
 }
 
