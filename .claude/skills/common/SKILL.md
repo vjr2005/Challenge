@@ -23,8 +23,23 @@ The `Common` module provides shared utilities used across features:
 
 - **Environment**: Build configuration and API endpoints
 - **Localization**: Centralized strings with `String.localized()` extension
+- **Bundle**: Manual `Bundle.module` accessor for resources
 
 **Location:** `Libraries/Common/`
+
+**Structure:**
+```
+Libraries/Common/
+├── Sources/
+│   ├── Environment.swift
+│   ├── Extensions/
+│   │   ├── Bundle+Module.swift      # Bundle.module accessor
+│   │   └── String+Localized.swift   # localized() extension
+│   └── Resources/
+│       └── Localizable.xcstrings
+└── Tests/
+    └── EnvironmentTests.swift
+```
 
 ---
 
@@ -131,6 +146,29 @@ private enum LocalizedStrings {
 | `{screen}.{element}` | `home.title` |
 | `{screen}.{section}.{element}` | `characterList.empty.title` |
 | `common.{element}` | `common.tryAgain` |
+
+---
+
+## Bundle.module
+
+The `Bundle+Module.swift` file provides access to the module's resource bundle.
+
+**Why manual?** Tuist's bundle accessor generation is disabled (`disableBundleAccessors: true`) to avoid generated code.
+
+```swift
+// Libraries/Common/Sources/Bundle+Module.swift
+import Foundation
+
+private final class BundleFinder {}
+
+extension Bundle {
+    static let module = Bundle(for: BundleFinder.self)
+}
+```
+
+**Used by:** `String.localized()` to access `Localizable.xcstrings`.
+
+**Note:** Any module needing `Bundle.module` must include its own `Bundle+Module.swift`.
 
 ---
 

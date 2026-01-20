@@ -46,6 +46,71 @@ ReadMcpResourceTool(
 
 ---
 
+## Project Options
+
+The project disables Tuist's code generation to keep full control over the codebase:
+
+```swift
+// Project.swift
+let project = Project(
+    name: appName,
+    options: .options(
+        automaticSchemesOptions: .disabled,
+        developmentRegion: "en",
+        disableBundleAccessors: true,              // No TuistBundle+*.swift
+        disableSynthesizedResourceAccessors: true  // No TuistAssets+*.swift
+    ),
+    ...
+)
+```
+
+### Why disable synthesizers?
+
+| Option | Effect | Reason |
+|--------|--------|--------|
+| `disableBundleAccessors` | No `TuistBundle+*.swift` | Manual `Bundle+Module.swift` in modules |
+| `disableSynthesizedResourceAccessors` | No `TuistAssets+*.swift` | Not using generated asset accessors |
+
+### Manual Bundle.module
+
+Modules that need `Bundle.module` (for resources like `Localizable.xcstrings`) must include:
+
+```swift
+// Sources/Bundle+Module.swift
+import Foundation
+
+private final class BundleFinder {}
+
+extension Bundle {
+    static let module = Bundle(for: BundleFinder.self)
+}
+```
+
+Currently used in:
+- `Libraries/Common/Sources/Bundle+Module.swift`
+- `Libraries/Features/Character/Tests/Extensions/Bundle+Module.swift`
+
+---
+
+## Derived Folder
+
+Tuist generates files in the `Derived/` folder:
+
+```
+Derived/
+└── InfoPlists/
+    ├── Challenge-Info.plist
+    ├── ChallengeCore-Info.plist
+    ├── ChallengeCommon-Info.plist
+    └── ...
+```
+
+**Contents:** Only `Info.plist` files for each target (no generated Swift code).
+
+**Git:** The `Derived/` folder is in `.gitignore`.
+
+---
+
 ## Adding an XCFramework as a Dependency
 
 ### 1. XCFramework Location

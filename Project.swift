@@ -63,7 +63,9 @@ let project = Project(
 	name: appName,
 	options: .options(
 		automaticSchemesOptions: .disabled,
-		developmentRegion: "en"
+		developmentRegion: "en",
+		disableBundleAccessors: true,
+		disableSynthesizedResourceAccessors: true
 	),
 	settings: .settings(
 		base: [
