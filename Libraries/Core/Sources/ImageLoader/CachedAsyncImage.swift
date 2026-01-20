@@ -41,14 +41,18 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 		if let loadedImage {
 			return loadedImage
 		}
-		guard let url else { return nil }
+		guard let url else {
+			return nil
+		}
 		return imageLoader.cachedImage(for: url)
 	}
 }
 
 private extension CachedAsyncImage {
 	func loadImage() async {
-		guard let url else { return }
+		guard let url else {
+			return
+		}
 		loadedImage = await imageLoader.image(for: url)
 	}
 }

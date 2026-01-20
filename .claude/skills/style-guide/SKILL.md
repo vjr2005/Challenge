@@ -188,6 +188,32 @@ var body: some View {
 
 ---
 
+## Conditional Returns
+
+Return statements in conditionals (`guard`, `if`) must be on a new line:
+
+```swift
+// WRONG - Return on same line
+guard let url else { return nil }
+guard let data else { return }
+if condition { return }
+
+// RIGHT - Return on new line
+guard let url else {
+    return nil
+}
+
+guard let data else {
+    return
+}
+
+if condition {
+    return
+}
+```
+
+---
+
 ## Force Unwrap
 
 **Never use force unwrap (`!`).** Always handle optionals safely:
