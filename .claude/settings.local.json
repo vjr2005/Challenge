@@ -46,44 +46,7 @@
       "Bash(periphery version:*)",
       "Bash(mise x:*)",
       "Bash(mise exec:*)",
-      "Bash(tuist:*)",
-      "WebFetch(domain:www.youtube.com)",
-      "WebFetch(domain:wmedia.es)",
-      "WebFetch(domain:www.anthropic.com)",
-      "WebFetch(domain:code.claude.com)"
-    ]
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [[ \"$TOOL_INPUT\" == *.swift ]]; then mise x -- swiftlint lint --quiet --path \"$TOOL_INPUT\" 2>/dev/null || true; fi"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "test-runner",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '✅ Test runner completed'"
-          }
-        ]
-      },
-      {
-        "matcher": "code-reviewer",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '✅ Code review completed'"
-          }
-        ]
-      }
+      "Bash(tuist:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
