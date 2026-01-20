@@ -23,7 +23,7 @@ Guide for creating DataSources following the Repository pattern.
 ## File structure
 
 ```
-Libraries/Features/{FeatureName}/
+Libraries/Features/{Feature}/
 ├── Sources/
 │   └── Data/
 │       ├── DataSources/

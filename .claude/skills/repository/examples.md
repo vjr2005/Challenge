@@ -34,7 +34,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct {Name}RepositoryTests {
     @Test
@@ -139,7 +139,7 @@ extension {Name} {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct {Name}RepositoryTests {
     @Test
@@ -246,7 +246,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct {Name}RepositoryTests {
     // MARK: - Cache Hit Tests

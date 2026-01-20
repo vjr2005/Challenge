@@ -20,7 +20,7 @@ Guide for creating SwiftUI Views that use ViewModels with dependency injection.
 ## File structure
 
 ```
-Libraries/Features/{FeatureName}/
+Libraries/Features/{Feature}/
 ├── Sources/
 │   └── Presentation/
 │       ├── {Name}List/
@@ -214,7 +214,7 @@ private enum AccessibilityIdentifier {
 
 | Component | Visibility | Location |
 |-----------|------------|----------|
-| View | internal | `Sources/Presentation/{FeatureName}/Views/` |
+| View | internal | `Sources/Presentation/{Feature}/Views/` |
 
 ---
 

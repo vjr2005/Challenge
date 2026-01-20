@@ -16,7 +16,7 @@ Guide for creating UseCases that encapsulate business logic following Clean Arch
 ## File structure
 
 ```
-Libraries/Features/{FeatureName}/
+Libraries/Features/{Feature}/
 ├── Sources/
 │   └── Domain/
 │       ├── Models/
@@ -91,7 +91,7 @@ struct Get{Name}UseCase: Get{Name}UseCaseContract {
 ```swift
 import Foundation
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable {
     var result: Result<{Name}, Error> = .failure(NotConfiguredError.notConfigured)
@@ -260,7 +260,7 @@ struct CreateCharacterUseCase: CreateCharacterUseCaseContract {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct Get{Name}UseCaseTests {
     @Test
@@ -318,7 +318,7 @@ private enum TestError: Error {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct GetFilteredCharactersUseCaseTests {
     @Test
@@ -382,7 +382,7 @@ struct GetFilteredCharactersUseCaseTests {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct CreateCharacterUseCaseTests {
     @Test

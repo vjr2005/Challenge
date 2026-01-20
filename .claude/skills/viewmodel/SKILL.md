@@ -16,7 +16,7 @@ Guide for creating ViewModels that manage state and coordinate between Views and
 ## File structure
 
 ```
-Libraries/Features/{FeatureName}/
+Libraries/Features/{Feature}/
 ├── Sources/
 │   └── Presentation/
 │       └── {ScreenName}/                           # Group by screen (e.g., CharacterDetail)
@@ -283,7 +283,7 @@ struct HomeView: View {
 import Foundation
 import Testing
 
-@testable import {AppName}{FeatureName}
+@testable import {AppName}{Feature}
 
 struct {Name}ViewModelTests {
     @Test

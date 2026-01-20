@@ -20,7 +20,7 @@ Guide for creating dependency injection with Container per Feature pattern.
 ## File structure
 
 ```
-Libraries/Features/{FeatureName}/
+Libraries/Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift              # Public entry point (enum with view builder)
 │   ├── {Feature}Navigation.swift           # Public navigation destinations
@@ -187,7 +187,7 @@ Containers must be tested to verify correct dependency wiring.
 ### File Structure
 
 ```
-Libraries/Features/{FeatureName}/
+Libraries/Features/{Feature}/
 └── Tests/
     └── Container/
         └── {Feature}ContainerTests.swift
