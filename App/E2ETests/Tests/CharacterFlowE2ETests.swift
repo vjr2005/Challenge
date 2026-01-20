@@ -11,10 +11,12 @@ nonisolated final class CharacterFlowE2ETests: XCTestCase {
 		let app = launch()
 
 		home(app: app) { robot in
+            robot.verifyIsVisible()
 			robot.tapCharacterButton()
 		}
 
 		characterList(app: app) { robot in
+            robot.verifyIsVisible()
 			robot.tapCharacter(id: 1)
 		}
 
