@@ -53,8 +53,6 @@ struct DSAvatarSnapshotTests {
 	func placeholderStateSmall() {
 		let view = DSAvatar(size: .small) {
 			placeholderContent(size: .small)
-		} placeholder: {
-			placeholderContent(size: .small)
 		}
 		.padding()
 		.background(ColorToken.backgroundSecondary)
@@ -65,8 +63,6 @@ struct DSAvatarSnapshotTests {
 	@Test
 	func placeholderStateMedium() {
 		let view = DSAvatar(size: .medium) {
-			placeholderContent(size: .medium)
-		} placeholder: {
 			placeholderContent(size: .medium)
 		}
 		.padding()
@@ -79,8 +75,6 @@ struct DSAvatarSnapshotTests {
 	func placeholderStateLarge() {
 		let view = DSAvatar(size: .large) {
 			placeholderContent(size: .large)
-		} placeholder: {
-			placeholderContent(size: .large)
 		}
 		.padding()
 		.background(ColorToken.backgroundSecondary)
@@ -91,8 +85,6 @@ struct DSAvatarSnapshotTests {
 	@Test
 	func placeholderStateExtraLarge() {
 		let view = DSAvatar(size: .extraLarge) {
-			placeholderContent(size: .extraLarge)
-		} placeholder: {
 			placeholderContent(size: .extraLarge)
 		}
 		.padding()
@@ -109,8 +101,6 @@ struct DSAvatarSnapshotTests {
 			Image(systemName: "person.crop.circle.fill")
 				.resizable()
 				.foregroundStyle(ColorToken.accent)
-		} placeholder: {
-			placeholderContent(size: .large)
 		}
 		.padding()
 		.background(ColorToken.backgroundSecondary)
@@ -126,8 +116,6 @@ struct DSAvatarSnapshotTests {
 				startPoint: .topLeading,
 				endPoint: .bottomTrailing
 			)
-		} placeholder: {
-			placeholderContent(size: .large)
 		}
 		.padding()
 		.background(ColorToken.backgroundSecondary)
@@ -155,8 +143,6 @@ struct DSAvatarSnapshotTests {
 				ColorToken.accent
 				DSText("RS", style: .headline, color: ColorToken.textInverted)
 			}
-		} placeholder: {
-			ColorToken.surfaceSecondary
 		}
 		.padding()
 		.background(ColorToken.backgroundSecondary)
@@ -248,16 +234,12 @@ struct DSAvatarSnapshotTests {
 	private func avatarWithPlaceholder(size: DSAvatarSize) -> some View {
 		DSAvatar(size: size) {
 			placeholderContent(size: size)
-		} placeholder: {
-			EmptyView()
 		}
 	}
 
 	private func avatarWithContent(size: DSAvatarSize, color: Color) -> some View {
 		DSAvatar(size: size) {
 			color
-		} placeholder: {
-			EmptyView()
 		}
 	}
 }

@@ -34,25 +34,21 @@ public enum DSAvatarSize {
 	}
 }
 
-/// An avatar component that displays an image with optional placeholder.
-public struct DSAvatar<Content: View, Placeholder: View>: View {
+/// An avatar component that displays an image
+public struct DSAvatar<Content: View>: View {
 	private let size: DSAvatarSize
 	private let content: Content
-	private let placeholder: Placeholder
 
 	/// Creates a DSAvatar with custom content and placeholder.
 	/// - Parameters:
 	///   - size: The avatar size
 	///   - content: The content view builder
-	///   - placeholder: The placeholder view builder
 	public init(
 		size: DSAvatarSize = .medium,
-		@ViewBuilder content: () -> Content,
-		@ViewBuilder placeholder: () -> Placeholder
+		@ViewBuilder content: () -> Content
 	) {
 		self.size = size
 		self.content = content()
-		self.placeholder = placeholder()
 	}
 
 	public var body: some View {
@@ -67,17 +63,14 @@ public struct DSAvatar<Content: View, Placeholder: View>: View {
 }
 
 public extension DSAvatar where Content == EmptyView {
-	/// Creates a DSAvatar with only a placeholder.
+	/// Creates a DSAvatar
 	/// - Parameters:
 	///   - size: The avatar size
-	///   - placeholder: The placeholder view builder
 	init(
-		size: DSAvatarSize = .medium,
-		@ViewBuilder placeholder: () -> Placeholder
+		size: DSAvatarSize = .medium
 	) {
 		self.size = size
 		self.content = EmptyView()
-		self.placeholder = placeholder()
 	}
 }
 
@@ -111,8 +104,6 @@ public struct DSAsyncAvatar: View {
 					placeholderView
 				}
 			}
-		} placeholder: {
-			placeholderView
 		}
 	}
 

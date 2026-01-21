@@ -121,8 +121,9 @@ public extension DSListItemCard where Leading == EmptyView, Trailing == EmptyVie
 			subtitle: "Human",
 			leading: {
 				DSAsyncAvatar(url: nil, size: .medium)
-			}
-		)
+			},
+            trailing: {}
+        )
 
 		DSListItemCard<EmptyView, EmptyView>(
 			title: "Simple Card",

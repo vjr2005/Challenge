@@ -66,8 +66,7 @@ public struct DSEmptyState: View {
 			title: "No Characters",
 			message: "There are no characters to display at this time.",
 			actionTitle: "Refresh",
-			action: {}
-		)
+        ) {}
 	}
 }
 #endif

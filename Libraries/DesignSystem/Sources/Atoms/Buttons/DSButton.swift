@@ -111,13 +111,13 @@ public struct DSButton: View {
 #if DEBUG
 #Preview("DSButton Variants") {
 	VStack(spacing: SpacingToken.lg) {
-		DSButton("Primary Button", action: {})
-		DSButton("With Icon", icon: "arrow.right", action: {})
-		DSButton("Secondary", variant: .secondary, action: {})
-		DSButton("Secondary Icon", icon: "plus", variant: .secondary, action: {})
-		DSButton("Tertiary", variant: .tertiary, action: {})
-		DSButton("Tertiary Icon", icon: "gear", variant: .tertiary, action: {})
-		DSButton("Loading", isLoading: true, action: {})
+		DSButton("Primary Button") {}
+        DSButton("With Icon", icon: "arrow.right") {}
+        DSButton("Secondary", variant: .secondary) {}
+        DSButton("Secondary Icon", icon: "plus", variant: .secondary) {}
+        DSButton("Tertiary", variant: .tertiary) {}
+        DSButton("Tertiary Icon", icon: "gear", variant: .tertiary) {}
+        DSButton("Loading", isLoading: true) {}
 	}
 	.padding()
 }

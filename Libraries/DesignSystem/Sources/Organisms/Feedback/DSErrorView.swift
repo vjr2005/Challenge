@@ -57,9 +57,8 @@ public struct DSErrorView: View {
 		DSErrorView(
 			title: "Connection Error",
 			message: "Please check your internet connection and try again.",
-			retryTitle: "Retry",
-			retryAction: {}
-		)
+			retryTitle: "Retry"
+        ) {}
 	}
 }
 #endif
