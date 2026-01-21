@@ -24,7 +24,6 @@ public struct DSText: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSText Styles") {
 	VStack(alignment: .leading, spacing: SpacingToken.md) {
 		DSText("Large Title", style: .largeTitle)
@@ -50,4 +49,3 @@ public struct DSText: View {
 	}
 	.padding()
 }
-#endif

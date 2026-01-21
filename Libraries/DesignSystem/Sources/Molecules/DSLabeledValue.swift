@@ -55,7 +55,6 @@ public struct DSLabeledValue: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSLabeledValue Vertical") {
 	VStack(alignment: .leading, spacing: SpacingToken.lg) {
 		DSLabeledValue(label: "Species", value: "Human")
@@ -73,4 +72,3 @@ public struct DSLabeledValue: View {
 	}
 	.padding()
 }
-#endif

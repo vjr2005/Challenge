@@ -98,7 +98,6 @@ public struct DSAsyncAvatar: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSAvatar Sizes") {
 	HStack(spacing: SpacingToken.lg) {
 		DSAsyncAvatar(url: nil, size: .small)
@@ -116,4 +115,3 @@ public struct DSAsyncAvatar: View {
 	)
 	.padding()
 }
-#endif

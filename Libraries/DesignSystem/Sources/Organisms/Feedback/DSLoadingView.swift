@@ -23,7 +23,6 @@ public struct DSLoadingView: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSLoadingView") {
 	VStack(spacing: SpacingToken.xxl) {
 		DSLoadingView()
@@ -33,4 +32,3 @@ public struct DSLoadingView: View {
 			.frame(height: 100)
 	}
 }
-#endif

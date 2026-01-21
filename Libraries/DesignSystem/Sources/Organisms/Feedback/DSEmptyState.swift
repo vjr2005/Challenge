@@ -53,7 +53,6 @@ public struct DSEmptyState: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSEmptyState") {
 	VStack(spacing: SpacingToken.xxl) {
 		DSEmptyState(
@@ -65,8 +64,7 @@ public struct DSEmptyState: View {
 			icon: "tray",
 			title: "No Characters",
 			message: "There are no characters to display at this time.",
-			actionTitle: "Refresh",
-        ) {}
+			actionTitle: "Refresh"
+		) {}
 	}
 }
-#endif

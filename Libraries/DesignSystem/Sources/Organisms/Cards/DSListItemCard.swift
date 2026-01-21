@@ -101,7 +101,6 @@ public extension DSListItemCard where Leading == EmptyView, Trailing == EmptyVie
 	}
 }
 
-#if DEBUG
 #Preview("DSListItemCard") {
 	VStack(spacing: SpacingToken.md) {
 		DSListItemCard(
@@ -122,8 +121,8 @@ public extension DSListItemCard where Leading == EmptyView, Trailing == EmptyVie
 			leading: {
 				DSAsyncAvatar(url: nil, size: .medium)
 			},
-            trailing: {}
-        )
+			trailing: {}
+		)
 
 		DSListItemCard<EmptyView, EmptyView>(
 			title: "Simple Card",
@@ -133,4 +132,3 @@ public extension DSListItemCard where Leading == EmptyView, Trailing == EmptyVie
 	.padding()
 	.background(ColorToken.backgroundSecondary)
 }
-#endif

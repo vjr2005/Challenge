@@ -108,17 +108,15 @@ public struct DSButton: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSButton Variants") {
 	VStack(spacing: SpacingToken.lg) {
 		DSButton("Primary Button") {}
-        DSButton("With Icon", icon: "arrow.right") {}
-        DSButton("Secondary", variant: .secondary) {}
-        DSButton("Secondary Icon", icon: "plus", variant: .secondary) {}
-        DSButton("Tertiary", variant: .tertiary) {}
-        DSButton("Tertiary Icon", icon: "gear", variant: .tertiary) {}
-        DSButton("Loading", isLoading: true) {}
+		DSButton("With Icon", icon: "arrow.right") {}
+		DSButton("Secondary", variant: .secondary) {}
+		DSButton("Secondary Icon", icon: "plus", variant: .secondary) {}
+		DSButton("Tertiary", variant: .tertiary) {}
+		DSButton("Tertiary Icon", icon: "gear", variant: .tertiary) {}
+		DSButton("Loading", isLoading: true) {}
 	}
 	.padding()
 }
-#endif

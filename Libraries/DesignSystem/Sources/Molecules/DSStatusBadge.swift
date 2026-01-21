@@ -38,7 +38,6 @@ public struct DSStatusBadge: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSStatusBadge") {
 	VStack(spacing: SpacingToken.md) {
 		DSStatusBadge(status: .alive)
@@ -49,4 +48,3 @@ public struct DSStatusBadge: View {
 	}
 	.padding()
 }
-#endif

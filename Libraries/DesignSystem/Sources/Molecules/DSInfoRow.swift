@@ -42,7 +42,6 @@ public struct DSInfoRow: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSInfoRow") {
 	VStack(spacing: SpacingToken.md) {
 		DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
@@ -57,4 +56,3 @@ public struct DSInfoRow: View {
 	}
 	.padding()
 }
-#endif

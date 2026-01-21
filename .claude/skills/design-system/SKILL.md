@@ -32,8 +32,14 @@ Libraries/DesignSystem/
 │   │   │   └── SpacingToken.swift
 │   │   ├── Shadows/
 │   │   │   └── ShadowToken.swift
-│   │   └── Corners/
-│   │       └── CornerRadiusToken.swift
+│   │   ├── Corners/
+│   │   │   └── CornerRadiusToken.swift
+│   │   ├── Icons/
+│   │   │   └── IconSizeToken.swift
+│   │   ├── Opacity/
+│   │   │   └── OpacityToken.swift
+│   │   └── Borders/
+│   │       └── BorderWidthToken.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
 │   │   ├── Text/
@@ -141,6 +147,43 @@ ShadowToken.zero    // No shadow
 ShadowToken.small   // Subtle card shadow
 ShadowToken.medium  // Elevated elements
 ShadowToken.large   // Floating elements
+```
+
+### IconSizeToken
+
+Consistent icon sizes:
+
+```swift
+IconSizeToken.xs    // 8pt
+IconSizeToken.sm    // 12pt
+IconSizeToken.md    // 16pt
+IconSizeToken.lg    // 24pt
+IconSizeToken.xl    // 32pt
+IconSizeToken.xxl   // 48pt
+IconSizeToken.xxxl  // 56pt
+```
+
+### OpacityToken
+
+Opacity values for consistent transparency:
+
+```swift
+OpacityToken.subtle        // 0.1
+OpacityToken.light         // 0.15
+OpacityToken.medium        // 0.4
+OpacityToken.heavy         // 0.6
+OpacityToken.almostOpaque  // 0.8
+```
+
+### BorderWidthToken
+
+Border and stroke widths:
+
+```swift
+BorderWidthToken.hairline  // 0.5pt
+BorderWidthToken.thin      // 1pt
+BorderWidthToken.medium    // 2pt
+BorderWidthToken.thick     // 4pt
 ```
 
 ---
@@ -361,6 +404,9 @@ import ChallengeDesignSystem
 - [ ] Import `ChallengeDesignSystem`
 - [ ] Replace hardcoded colors with `ColorToken`
 - [ ] Replace spacing values with `SpacingToken`
+- [ ] Replace icon sizes with `IconSizeToken`
+- [ ] Replace opacity values with `OpacityToken`
+- [ ] Replace border widths with `BorderWidthToken`
 - [ ] Replace fonts with `TextStyle` or `DSText`
 - [ ] Replace card styling with `DSCard`
 - [ ] Replace loading views with `DSLoadingView`

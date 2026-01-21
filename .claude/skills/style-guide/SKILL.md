@@ -432,6 +432,24 @@ var body: some View {
 }
 ```
 
+### #Preview Macro
+
+The `#Preview` macro is automatically excluded from release builds. **Do not wrap it with `#if DEBUG`**:
+
+```swift
+// RIGHT - #Preview without wrapper
+#Preview("MyView") {
+    MyView()
+}
+
+// WRONG - Redundant #if DEBUG wrapper
+#if DEBUG
+#Preview("MyView") {
+    MyView()
+}
+#endif
+```
+
 ---
 
 ## SwiftLint

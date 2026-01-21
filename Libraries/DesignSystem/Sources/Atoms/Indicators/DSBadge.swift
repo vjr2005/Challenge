@@ -75,7 +75,6 @@ public struct DSBadge: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSBadge Variants") {
 	VStack(spacing: SpacingToken.md) {
 		DSBadge("Success", variant: .success)
@@ -86,4 +85,3 @@ public struct DSBadge: View {
 	}
 	.padding()
 }
-#endif

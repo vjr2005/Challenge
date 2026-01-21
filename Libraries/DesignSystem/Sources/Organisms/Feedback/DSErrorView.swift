@@ -49,7 +49,6 @@ public struct DSErrorView: View {
 	}
 }
 
-#if DEBUG
 #Preview("DSErrorView") {
 	VStack(spacing: SpacingToken.xxl) {
 		DSErrorView(title: "Something went wrong")
@@ -58,7 +57,6 @@ public struct DSErrorView: View {
 			title: "Connection Error",
 			message: "Please check your internet connection and try again.",
 			retryTitle: "Retry"
-        ) {}
+		) {}
 	}
 }
-#endif
