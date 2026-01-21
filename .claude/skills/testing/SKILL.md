@@ -33,6 +33,16 @@ Guide for writing tests using Swift Testing framework following project conventi
 - All public API of shared modules must be tested
 - UI components should have **snapshot tests**
 
+### Coverage Scope
+
+| Include | Exclude |
+|---------|---------|
+| Source targets (`Sources/`) | Mock targets (`Mocks/`) |
+| Production code | Test targets (`Tests/`) |
+| | External libraries |
+
+**Never measure coverage on mock targets** - they exist solely to support tests and don't require their own coverage metrics.
+
 ---
 
 ## System Under Test (SUT)

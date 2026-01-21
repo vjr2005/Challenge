@@ -5,6 +5,5 @@ public enum CoreModule {
 
 	public static let targetReferences: [TargetReference] = [
 		.target("\(appName)Core"),
-		.target("\(appName)CoreMocks"),
 	]
 }

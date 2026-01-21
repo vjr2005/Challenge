@@ -112,7 +112,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 | Mocks location | `Tests/Mocks/` (internal) or `Mocks/` (public) |
 | Stubs location | `Tests/Stubs/` for Domain models |
 | Fixtures location | `Tests/Fixtures/` for JSON (DTOs) |
-| Coverage scope | Only project targets, never external libraries |
+| Coverage scope | Only source targets (never mocks or external libraries) |
 
 For details, see `/testing` skill.
 

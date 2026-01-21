@@ -24,7 +24,8 @@ public enum Modules {
 	}
 
 	/// All target references for code coverage.
-	/// Includes the app target and all module targets.
+	/// Includes only source targets (app and framework sources).
+	/// Never include mock targets - they exist to support tests, not to be measured.
 	public static var codeCoverageTargets: [TargetReference] {
 		[.target(appName)]
 			+ CoreModule.targetReferences

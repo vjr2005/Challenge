@@ -5,6 +5,5 @@ public enum NetworkingModule {
 
 	public static let targetReferences: [TargetReference] = [
 		.target("\(appName)Networking"),
-		.target("\(appName)NetworkingMocks"),
 	]
 }
