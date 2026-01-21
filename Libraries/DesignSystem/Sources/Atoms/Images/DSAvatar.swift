@@ -62,18 +62,6 @@ public struct DSAvatar<Content: View>: View {
 	}
 }
 
-public extension DSAvatar where Content == EmptyView {
-	/// Creates a DSAvatar
-	/// - Parameters:
-	///   - size: The avatar size
-	init(
-		size: DSAvatarSize = .medium
-	) {
-		self.size = size
-		self.content = EmptyView()
-	}
-}
-
 /// A convenience avatar that displays an async image from a URL.
 public struct DSAsyncAvatar: View {
 	private let url: URL?
@@ -90,19 +78,12 @@ public struct DSAsyncAvatar: View {
 
 	public var body: some View {
 		DSAvatar(size: size) {
-			AsyncImage(url: url) { phase in
-				switch phase {
-				case .success(let image):
-					image
-						.resizable()
-						.aspectRatio(contentMode: .fill)
-				case .failure:
-					placeholderView
-				case .empty:
-					ProgressView()
-				@unknown default:
-					placeholderView
-				}
+			DSAsyncImage(url: url) { image in
+				image
+					.resizable()
+					.aspectRatio(contentMode: .fill)
+			} placeholder: {
+				placeholderView
 			}
 		}
 	}

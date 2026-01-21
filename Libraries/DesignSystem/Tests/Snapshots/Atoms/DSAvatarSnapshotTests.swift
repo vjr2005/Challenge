@@ -1,102 +1,109 @@
+import ChallengeCoreMocks
 import SnapshotTesting
 import SwiftUI
 import Testing
+import UIKit
 
 @testable import ChallengeDesignSystem
 
 struct DSAvatarSnapshotTests {
+	private let emptyImageLoader: ImageLoaderMock
+	private let loadedImageLoader: ImageLoaderMock
+
 	init() {
 		UIView.setAnimationsEnabled(false)
+		emptyImageLoader = ImageLoaderMock(image: nil)
+		loadedImageLoader = ImageLoaderMock(image: Self.testImage)
 	}
 
-	// MARK: - DSAsyncAvatar Empty State (ProgressView - when URL is nil)
-
-	@Test
-	func emptyStateSmall() {
-		let view = DSAsyncAvatar(url: nil, size: .small)
-			.padding()
-			.background(ColorToken.backgroundSecondary)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func emptyStateMedium() {
-		let view = DSAsyncAvatar(url: nil, size: .medium)
-			.padding()
-			.background(ColorToken.backgroundSecondary)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func emptyStateLarge() {
-		let view = DSAsyncAvatar(url: nil, size: .large)
-			.padding()
-			.background(ColorToken.backgroundSecondary)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func emptyStateExtraLarge() {
-		let view = DSAsyncAvatar(url: nil, size: .extraLarge)
-			.padding()
-			.background(ColorToken.backgroundSecondary)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	// MARK: - DSAvatar Placeholder State (simulates failure/unknown phases)
+	// MARK: - DSAsyncAvatar Placeholder State (when URL is nil or image fails to load)
 
 	@Test
 	func placeholderStateSmall() {
-		let view = DSAvatar(size: .small) {
-			placeholderContent(size: .small)
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
+		let view = DSAsyncAvatar(url: nil, size: .small)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(emptyImageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
 
 	@Test
 	func placeholderStateMedium() {
-		let view = DSAvatar(size: .medium) {
-			placeholderContent(size: .medium)
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
+		let view = DSAsyncAvatar(url: nil, size: .medium)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(emptyImageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
 
 	@Test
 	func placeholderStateLarge() {
-		let view = DSAvatar(size: .large) {
-			placeholderContent(size: .large)
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
+		let view = DSAsyncAvatar(url: nil, size: .large)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(emptyImageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
 
 	@Test
 	func placeholderStateExtraLarge() {
-		let view = DSAvatar(size: .extraLarge) {
-			placeholderContent(size: .extraLarge)
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
+		let view = DSAsyncAvatar(url: nil, size: .extraLarge)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(emptyImageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
 
-	// MARK: - DSAvatar Success State (simulates loaded image)
+	// MARK: - DSAsyncAvatar Loaded State (when image loads successfully)
 
 	@Test
-	func successStateWithImage() {
+	func loadedStateSmall() {
+		let view = DSAsyncAvatar(url: Self.testURL, size: .small)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(loadedImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	@Test
+	func loadedStateMedium() {
+		let view = DSAsyncAvatar(url: Self.testURL, size: .medium)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(loadedImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	@Test
+	func loadedStateLarge() {
+		let view = DSAsyncAvatar(url: Self.testURL, size: .large)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(loadedImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	@Test
+	func loadedStateExtraLarge() {
+		let view = DSAsyncAvatar(url: Self.testURL, size: .extraLarge)
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(loadedImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	// MARK: - DSAvatar with Custom Content
+
+	@Test
+	func customContentWithImage() {
 		let view = DSAvatar(size: .large) {
 			Image(systemName: "person.crop.circle.fill")
 				.resizable()
@@ -109,7 +116,7 @@ struct DSAvatarSnapshotTests {
 	}
 
 	@Test
-	func successStateWithColor() {
+	func customContentWithGradient() {
 		let view = DSAvatar(size: .large) {
 			LinearGradient(
 				colors: [.blue, .purple],
@@ -123,21 +130,8 @@ struct DSAvatarSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	// MARK: - Custom Size
-
 	@Test
-	func customSize() {
-		let view = DSAsyncAvatar(url: nil, size: .custom(100))
-			.padding()
-			.background(ColorToken.backgroundSecondary)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	// MARK: - Custom Content (initials avatar)
-
-	@Test
-	func customContentInitials() {
+	func customContentWithInitials() {
 		let view = DSAvatar(size: .large) {
 			ZStack {
 				ColorToken.accent
@@ -150,36 +144,87 @@ struct DSAvatarSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
+	// MARK: - Custom Size
+
+	@Test
+	func customSizePlaceholder() {
+		let view = DSAsyncAvatar(url: nil, size: .custom(100))
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(emptyImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	@Test
+	func customSizeLoaded() {
+		let view = DSAsyncAvatar(url: Self.testURL, size: .custom(100))
+			.padding()
+			.background(ColorToken.backgroundSecondary)
+			.imageLoader(loadedImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	// MARK: - All Sizes Gallery
+
+	@Test
+	func allSizesPlaceholderGallery() {
+		let view = HStack(spacing: SpacingToken.lg) {
+			sizeColumn(url: nil, size: .small, label: "Small")
+			sizeColumn(url: nil, size: .medium, label: "Medium")
+			sizeColumn(url: nil, size: .large, label: "Large")
+			sizeColumn(url: nil, size: .extraLarge, label: "XL")
+		}
+		.padding()
+		.background(ColorToken.backgroundSecondary)
+		.imageLoader(emptyImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
+	@Test
+	func allSizesLoadedGallery() {
+		let view = HStack(spacing: SpacingToken.lg) {
+			sizeColumn(url: Self.testURL, size: .small, label: "Small")
+			sizeColumn(url: Self.testURL, size: .medium, label: "Medium")
+			sizeColumn(url: Self.testURL, size: .large, label: "Large")
+			sizeColumn(url: Self.testURL, size: .extraLarge, label: "XL")
+		}
+		.padding()
+		.background(ColorToken.backgroundSecondary)
+		.imageLoader(loadedImageLoader)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
 	// MARK: - All States Gallery
 
 	@Test
 	func allStatesGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			HStack(spacing: SpacingToken.md) {
-				Text("Empty")
-					.font(TextStyle.caption.font)
-					.foregroundStyle(ColorToken.textSecondary)
-					.frame(width: 70, alignment: .leading)
+				stateLabel("Placeholder")
 				DSAsyncAvatar(url: nil, size: .small)
+					.imageLoader(emptyImageLoader)
 				DSAsyncAvatar(url: nil, size: .medium)
+					.imageLoader(emptyImageLoader)
 				DSAsyncAvatar(url: nil, size: .large)
+					.imageLoader(emptyImageLoader)
 			}
 
 			HStack(spacing: SpacingToken.md) {
-				Text("Placeholder")
-					.font(TextStyle.caption.font)
-					.foregroundStyle(ColorToken.textSecondary)
-					.frame(width: 70, alignment: .leading)
-				avatarWithPlaceholder(size: .small)
-				avatarWithPlaceholder(size: .medium)
-				avatarWithPlaceholder(size: .large)
+				stateLabel("Loaded")
+				DSAsyncAvatar(url: Self.testURL, size: .small)
+					.imageLoader(loadedImageLoader)
+				DSAsyncAvatar(url: Self.testURL, size: .medium)
+					.imageLoader(loadedImageLoader)
+				DSAsyncAvatar(url: Self.testURL, size: .large)
+					.imageLoader(loadedImageLoader)
 			}
 
 			HStack(spacing: SpacingToken.md) {
-				Text("Success")
-					.font(TextStyle.caption.font)
-					.foregroundStyle(ColorToken.textSecondary)
-					.frame(width: 70, alignment: .leading)
+				stateLabel("Custom")
 				avatarWithContent(size: .small, color: .blue)
 				avatarWithContent(size: .medium, color: .green)
 				avatarWithContent(size: .large, color: .orange)
@@ -190,54 +235,51 @@ struct DSAvatarSnapshotTests {
 
 		assertSnapshot(of: view, as: .image)
 	}
+}
 
-	// MARK: - All Sizes Gallery
+// MARK: - Helpers
 
-	@Test
-	func allSizesGallery() {
-		let view = HStack(spacing: SpacingToken.lg) {
-			VStack(spacing: SpacingToken.sm) {
-				DSAsyncAvatar(url: nil, size: .small)
-				DSText("Small", style: .caption)
-			}
-			VStack(spacing: SpacingToken.sm) {
-				DSAsyncAvatar(url: nil, size: .medium)
-				DSText("Medium", style: .caption)
-			}
-			VStack(spacing: SpacingToken.sm) {
-				DSAsyncAvatar(url: nil, size: .large)
-				DSText("Large", style: .caption)
-			}
-			VStack(spacing: SpacingToken.sm) {
-				DSAsyncAvatar(url: nil, size: .extraLarge)
-				DSText("XL", style: .caption)
-			}
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
+private extension DSAvatarSnapshotTests {
+	static let testURL = URL(string: "https://example.com/avatar.jpg")
 
-		assertSnapshot(of: view, as: .image)
-	}
+	static var testImage: UIImage {
+		let size = CGSize(width: 200, height: 200)
+		let renderer = UIGraphicsImageRenderer(size: size)
 
-	// MARK: - Helpers
+		return renderer.image { context in
+			let colors = [UIColor.systemBlue.cgColor, UIColor.systemPurple.cgColor]
+			let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-	/// Replicates the placeholder view from DSAsyncAvatar for testing failure/unknown states
-	private func placeholderContent(size: DSAvatarSize) -> some View {
-		ZStack {
-			ColorToken.surfaceSecondary
-			Image(systemName: "person.fill")
-				.font(.system(size: size.dimension * 0.4))
-				.foregroundStyle(ColorToken.textTertiary)
+			guard let gradient = CGGradient(
+				colorsSpace: colorSpace,
+				colors: colors as CFArray,
+				locations: [0, 1]
+			) else { return }
+
+			context.cgContext.drawLinearGradient(
+				gradient,
+				start: .zero,
+				end: CGPoint(x: size.width, y: size.height),
+				options: []
+			)
 		}
 	}
 
-	private func avatarWithPlaceholder(size: DSAvatarSize) -> some View {
-		DSAvatar(size: size) {
-			placeholderContent(size: size)
+	func sizeColumn(url: URL?, size: DSAvatarSize, label: String) -> some View {
+		VStack(spacing: SpacingToken.sm) {
+			DSAsyncAvatar(url: url, size: size)
+			DSText(label, style: .caption)
 		}
 	}
 
-	private func avatarWithContent(size: DSAvatarSize, color: Color) -> some View {
+	func stateLabel(_ text: String) -> some View {
+		Text(text)
+			.font(TextStyle.caption.font)
+			.foregroundStyle(ColorToken.textSecondary)
+			.frame(width: 70, alignment: .leading)
+	}
+
+	func avatarWithContent(size: DSAvatarSize, color: Color) -> some View {
 		DSAvatar(size: size) {
 			color
 		}

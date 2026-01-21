@@ -6,7 +6,7 @@ private struct ImageLoaderKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
-	/// The image loader used by CachedAsyncImage views.
+	/// The image loader used by DSAsyncImage views.
 	var imageLoader: any ImageLoaderContract {
 		get { self[ImageLoaderKey.self] }
 		set { self[ImageLoaderKey.self] = newValue }

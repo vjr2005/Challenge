@@ -1,6 +1,6 @@
 ---
 name: snapshot
-description: Creates Snapshot Tests for SwiftUI Views using SnapshotTesting. Use when creating visual regression tests for views with CachedAsyncImage support.
+description: Creates Snapshot Tests for SwiftUI Views using SnapshotTesting. Use when creating visual regression tests for views with DSAsyncImage support.
 ---
 
 # Skill: Snapshot Tests
@@ -20,7 +20,7 @@ Guide for creating Snapshot Tests using Point-Free's SnapshotTesting library.
 ## Prerequisites
 
 1. `SnapshotTesting` dependency in test targets
-2. `CachedAsyncImage` component (replaces `AsyncImage`)
+2. `DSAsyncImage` component (replaces `AsyncImage`)
 3. `ImageLoaderMock` in CoreMocks
 4. Test image in `Tests/Resources/`
 
@@ -42,12 +42,12 @@ Tests/
 
 ## Key Components
 
-### CachedAsyncImage
+### DSAsyncImage
 
-Views must use `CachedAsyncImage` instead of `AsyncImage`:
+Views must use `DSAsyncImage` instead of `AsyncImage`:
 
 ```swift
-CachedAsyncImage(url: character.imageURL) { image in
+DSAsyncImage(url: character.imageURL) { image in
     image.resizable().scaledToFill()
 } placeholder: {
     ProgressView()
@@ -186,7 +186,7 @@ tuist test {Module}  # Run twice
 
 ### Per View
 
-- [ ] Use `CachedAsyncImage` in View
+- [ ] Use `DSAsyncImage` in View
 - [ ] Create snapshot tests file
 - [ ] Initialize `ImageLoaderMock`
 - [ ] Test each state

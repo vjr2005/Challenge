@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import SnapshotTesting
 import SwiftUI
 import Testing
@@ -5,8 +6,11 @@ import Testing
 @testable import ChallengeDesignSystem
 
 struct DSListItemCardSnapshotTests {
+	private let imageLoader: ImageLoaderMock
+
 	init() {
 		UIView.setAnimationsEnabled(false)
+		imageLoader = ImageLoaderMock(image: nil)
 	}
 
 	// MARK: - Full Card
@@ -27,6 +31,7 @@ struct DSListItemCardSnapshotTests {
 		.padding()
 		.frame(width: 360)
 		.background(ColorToken.backgroundSecondary)
+		.imageLoader(imageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -44,6 +49,7 @@ struct DSListItemCardSnapshotTests {
 		.padding()
 		.frame(width: 360)
 		.background(ColorToken.backgroundSecondary)
+		.imageLoader(imageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -81,6 +87,7 @@ struct DSListItemCardSnapshotTests {
 		.padding()
 		.frame(width: 360)
 		.background(ColorToken.backgroundSecondary)
+		.imageLoader(imageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -126,6 +133,7 @@ struct DSListItemCardSnapshotTests {
 		.padding()
 		.frame(width: 360)
 		.background(ColorToken.backgroundSecondary)
+		.imageLoader(imageLoader)
 
 		assertSnapshot(of: view, as: .image)
 	}

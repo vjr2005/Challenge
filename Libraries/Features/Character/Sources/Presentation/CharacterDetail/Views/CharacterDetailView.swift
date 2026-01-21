@@ -86,7 +86,7 @@ private extension CharacterDetailView {
 	}
 
 	func characterImage(_ character: Character) -> some View {
-		CachedAsyncImage(url: character.imageURL) { image in
+		DSAsyncImage(url: character.imageURL) { image in
 			image
 				.resizable()
 				.scaledToFill()

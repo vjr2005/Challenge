@@ -260,8 +260,10 @@ Libraries/Core/
 │   │   ├── Router.swift
 │   │   ├── RouterContract.swift
 │   │   └── Navigation.swift
-│   ├── Components/
-│   │   └── CachedAsyncImage.swift
+│   ├── ImageLoader/
+│   │   ├── ImageLoaderContract.swift
+│   │   ├── CachedImageLoader.swift
+│   │   └── ImageLoaderEnvironment.swift
 │   └── Extensions/
 │       └── ...
 ├── Tests/

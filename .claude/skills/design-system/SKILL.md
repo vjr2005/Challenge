@@ -41,7 +41,8 @@ Libraries/DesignSystem/
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
 │   │   ├── Images/
-│   │   │   └── DSAvatar.swift
+│   │   │   ├── DSAvatar.swift
+│   │   │   └── DSAsyncImage.swift
 │   │   └── Indicators/
 │   │       ├── DSStatusIndicator.swift
 │   │       └── DSBadge.swift
@@ -195,6 +196,22 @@ DSBadge("Active", variant: .success)
 DSBadge("Failed", variant: .error)
 DSBadge("Pending", variant: .neutral)
 ```
+
+### DSAsyncImage
+
+Async image with caching support (replaces `AsyncImage` for snapshot testing):
+
+```swift
+DSAsyncImage(url: character.imageURL) { image in
+    image.resizable().scaledToFill()
+} placeholder: {
+    ProgressView()
+}
+.frame(width: 70, height: 70)
+.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+```
+
+> **Note:** Uses `ImageLoaderContract` from Core via environment. For snapshot tests, inject `ImageLoaderMock` with `.imageLoader(mock)`.
 
 ---
 

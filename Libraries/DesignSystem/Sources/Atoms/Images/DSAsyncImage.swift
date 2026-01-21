@@ -1,7 +1,8 @@
+import ChallengeCore
 import SwiftUI
 
 /// A view that asynchronously loads and displays an image with caching support.
-public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
+public struct DSAsyncImage<Content: View, Placeholder: View>: View {
 	private let url: URL?
 	private let content: (Image) -> Content
 	private let placeholder: () -> Placeholder
@@ -48,7 +49,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 	}
 }
 
-private extension CachedAsyncImage {
+private extension DSAsyncImage {
 	func loadImage() async {
 		guard let url else {
 			return

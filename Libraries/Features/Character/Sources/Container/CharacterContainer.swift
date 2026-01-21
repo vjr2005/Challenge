@@ -1,4 +1,4 @@
-import ChallengeAppConfiguration
+import ChallengeCommon
 import ChallengeCore
 import ChallengeNetworking
 import Foundation
