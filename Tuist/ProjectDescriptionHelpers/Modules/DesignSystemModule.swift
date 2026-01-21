@@ -5,8 +5,7 @@ public enum DesignSystemModule {
 		name: "DesignSystem",
 		testDependencies: [
 			.external(name: "SnapshotTesting"),
-		],
-		hasMocks: false
+		]
 	)
 
 	public static let targetReferences: [TargetReference] = [

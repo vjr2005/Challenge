@@ -2,9 +2,7 @@ import ProjectDescription
 
 public enum CommonModule {
 	public static let module = FrameworkModule.create(
-		name: "Common",
-		hasMocks: false,
-		hasResources: true
+		name: "Common"
 	)
 
 	public static let targetReferences: [TargetReference] = [

@@ -12,8 +12,7 @@ public enum HomeModule {
 		testDependencies: [
 			.target(name: "\(appName)CoreMocks"),
 			.external(name: "SnapshotTesting"),
-		],
-		hasMocks: false
+		]
 	)
 
 	public static let targetReferences: [TargetReference] = [

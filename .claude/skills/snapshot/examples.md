@@ -301,16 +301,15 @@ let characterModule = FrameworkModule.create(
     testDependencies: [
         .target(name: "\(appName)CoreMocks"),
         .external(name: "SnapshotTesting"),
-    ],
-    hasMocks: false
+    ]
 )
 ```
+
+Note: Mocks, Tests, and Resources targets are automatically created if the corresponding folders exist:
+- `Libraries/{path}/Mocks/` with Swift files → Creates Mocks target
+- `Libraries/{path}/Tests/` with Swift files → Creates Tests target
+- `Libraries/{path}/Sources/Resources/` with any files → Includes resources in framework
 
 ### Test Resources
 
-```swift
-let tests = Target.target(
-    name: testsTargetName,
-    resources: [.glob(pattern: "Libraries/\(sourcesPath)/Tests/Resources/**", excluding: [])],
-)
-```
+Place test resources in `Libraries/{path}/Tests/Resources/` or `Libraries/{path}/Tests/Fixtures/` - they are automatically included.

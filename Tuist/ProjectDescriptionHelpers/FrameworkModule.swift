@@ -2,9 +2,66 @@ import Foundation
 import ProjectDescription
 
 /// A module containing targets and schemes for a framework.
-public struct FrameworkModule {
+public struct FrameworkModule: @unchecked Sendable {
 	public let targets: [Target]
 	public let schemes: [Scheme]
+
+	/// Returns the project root directory (parent of Tuist/).
+	private static var projectRoot: String {
+		let filePath = #file
+		// #file returns: .../Tuist/ProjectDescriptionHelpers/FrameworkModule.swift
+		// We need to go up 3 levels to get to project root
+		let url = URL(fileURLWithPath: filePath)
+			.deletingLastPathComponent() // Remove FrameworkModule.swift
+			.deletingLastPathComponent() // Remove ProjectDescriptionHelpers
+			.deletingLastPathComponent() // Remove Tuist
+		return url.path
+	}
+
+	/// Checks if a folder contains any files (searches recursively).
+	/// - Parameters:
+	///   - path: The absolute path to the folder
+	///   - extension: Optional file extension to filter by (e.g., ".swift"). If nil, matches any file.
+	/// - Returns: true if the folder contains at least one matching file
+	private static func folderContainsFiles(at path: String, withExtension ext: String? = nil) -> Bool {
+		let fileManager = FileManager.default
+
+		guard let enumerator = fileManager.enumerator(atPath: path) else {
+			return false
+		}
+
+		while let file = enumerator.nextObject() as? String {
+			if let ext {
+				if file.hasSuffix(ext) {
+					return true
+				}
+			} else {
+				// Check it's a file, not a directory
+				var isDirectory: ObjCBool = false
+				let fullPath = "\(path)/\(file)"
+				if fileManager.fileExists(atPath: fullPath, isDirectory: &isDirectory), !isDirectory.boolValue {
+					return true
+				}
+			}
+		}
+
+		return false
+	}
+
+	/// Checks if a Mocks folder exists with Swift files.
+	private static func hasMocksFolder(path: String) -> Bool {
+		folderContainsFiles(at: "\(projectRoot)/Libraries/\(path)/Mocks", withExtension: ".swift")
+	}
+
+	/// Checks if a Tests folder exists with Swift files.
+	private static func hasTestsFolder(path: String) -> Bool {
+		folderContainsFiles(at: "\(projectRoot)/Libraries/\(path)/Tests", withExtension: ".swift")
+	}
+
+	/// Checks if a Sources/Resources folder exists with any files.
+	private static func hasResourcesFolder(path: String) -> Bool {
+		folderContainsFiles(at: "\(projectRoot)/Libraries/\(path)/Sources/Resources")
+	}
 
 	/// Creates a framework module with targets (framework, mocks, tests) and scheme with coverage.
 	/// - Parameters:
@@ -14,25 +71,20 @@ public struct FrameworkModule {
 	///   - destinations: Deployment destinations (default: iPhone, iPad)
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
-	///   - hasMocks: Whether to create a public Mocks framework (default: true).
-	///               Set to false for modules with only internal mocks in Tests/Mocks/.
-	///   - hasTests: Whether to create a Tests target (default: true).
-	///               Set to false for simple configuration modules without tests.
+	/// - Note: Mocks, Tests, and Resources targets are automatically created if the corresponding
+	///         folders exist with appropriate files (Swift files for Mocks/Tests, any files for Resources).
 	public static func create(
 		name: String,
 		path: String? = nil,
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
-		testDependencies: [TargetDependency] = [],
-		hasMocks: Bool = true,
-		hasTests: Bool = true,
-		hasResources: Bool = false
+		testDependencies: [TargetDependency] = []
 	) -> FrameworkModule {
 		let targetName = "\(appName)\(name)"
 		let testsTargetName = "\(targetName)Tests"
 		let sourcesPath = path ?? name
 
-		let resources: ResourceFileElements? = hasResources ? [
+		let resources: ResourceFileElements? = hasResourcesFolder(path: sourcesPath) ? [
 			.glob(pattern: "Libraries/\(sourcesPath)/Sources/Resources/**", excluding: [])
 		] : nil
 
@@ -51,7 +103,7 @@ public struct FrameworkModule {
 		var targets = [framework]
 		var testsDependencies: [TargetDependency] = [.target(name: targetName)]
 
-		if hasMocks {
+		if hasMocksFolder(path: sourcesPath) {
 			let mocks = Target.target(
 				name: "\(targetName)Mocks",
 				destinations: destinations,
@@ -67,7 +119,7 @@ public struct FrameworkModule {
 
 		var scheme: Scheme
 
-		if hasTests {
+		if hasTestsFolder(path: sourcesPath) {
 			let tests = Target.target(
 				name: testsTargetName,
 				destinations: destinations,
@@ -90,7 +142,10 @@ public struct FrameworkModule {
 				buildAction: .buildAction(targets: [.target(targetName), .target(testsTargetName)]),
 				testAction: .targets(
 					[testableTarget],
-					options: .options(coverage: true)
+					options: .options(
+						coverage: true,
+						codeCoverageTargets: [.target(targetName)]
+					)
 				)
 			)
 		} else {

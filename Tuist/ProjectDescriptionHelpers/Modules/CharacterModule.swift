@@ -14,8 +14,7 @@ public enum CharacterModule {
 			.target(name: "\(appName)CoreMocks"),
 			.target(name: "\(appName)NetworkingMocks"),
 			.external(name: "SnapshotTesting"),
-		],
-		hasMocks: false
+		]
 	)
 
 	public static let targetReferences: [TargetReference] = [

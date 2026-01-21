@@ -17,7 +17,10 @@ public enum AppScheme {
 			testAction = .targets(
 				testTargets,
 				configuration: environment.debugConfigurationName,
-				options: .options(coverage: true)
+				options: .options(
+					coverage: true,
+					codeCoverageTargets: Modules.codeCoverageTargets
+				)
 			)
 		}
 

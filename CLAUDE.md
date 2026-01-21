@@ -16,6 +16,8 @@ This document defines the coding standards, architecture patterns, and developme
 > **All code must pass SwiftLint validation.**
 >
 > **Maximum test coverage is required.** When creating or modifying any component, all related changes must be fully tested.
+>
+> **Code coherence is mandatory.** The same logic must be used to solve the same problem throughout the project. When refactoring or adding new code, analyze the entire project to identify similar patterns and ensure consistency. Never implement the same solution in different ways.
 
 ---
 
@@ -110,6 +112,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 | Mocks location | `Tests/Mocks/` (internal) or `Mocks/` (public) |
 | Stubs location | `Tests/Stubs/` for Domain models |
 | Fixtures location | `Tests/Fixtures/` for JSON (DTOs) |
+| Coverage scope | Only project targets, never external libraries |
 
 For details, see `/testing` skill.
 
@@ -118,6 +121,8 @@ For details, see `/testing` skill.
 ## Tuist
 
 The project uses Tuist for project generation.
+
+> **CRITICAL:** Always use the Tuist MCP server to query or modify Tuist configuration. Before making any changes to `Project.swift` or `ProjectDescriptionHelpers/`, first consult the project graph via MCP to understand the current structure and dependencies.
 
 | File | Purpose |
 |------|---------|
