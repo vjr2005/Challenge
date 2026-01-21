@@ -30,7 +30,7 @@ public struct DSInfoRow: View {
 			Image(systemName: icon)
 				.font(TextStyle.body.font)
 				.foregroundStyle(iconColor)
-				.frame(width: 24)
+				.frame(width: SpacingToken.xxl)
 
 			VStack(alignment: .leading, spacing: SpacingToken.xxs) {
 				DSText(label, style: .caption, color: ColorToken.textSecondary)

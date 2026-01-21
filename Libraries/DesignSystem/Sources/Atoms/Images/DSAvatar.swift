@@ -57,7 +57,7 @@ public struct DSAvatar<Content: View>: View {
 			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 			.overlay {
 				RoundedRectangle(cornerRadius: CornerRadiusToken.md)
-					.stroke(ColorToken.separator, lineWidth: 0.5)
+					.stroke(ColorToken.separator, lineWidth: BorderWidthToken.hairline)
 			}
 	}
 }
@@ -92,7 +92,7 @@ public struct DSAsyncAvatar: View {
 		ZStack {
 			ColorToken.surfaceSecondary
 			Image(systemName: "person.fill")
-				.font(.system(size: size.dimension * 0.4))
+				.font(.system(size: size.dimension * OpacityToken.medium))
 				.foregroundStyle(ColorToken.textTertiary)
 		}
 	}

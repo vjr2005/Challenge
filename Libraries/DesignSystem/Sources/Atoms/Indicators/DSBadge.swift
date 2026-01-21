@@ -21,13 +21,13 @@ public enum DSBadgeVariant {
 	var backgroundColor: Color {
 		switch self {
 		case .success:
-			ColorToken.statusSuccess.opacity(0.15)
+			ColorToken.statusSuccess.opacity(OpacityToken.light)
 		case .error:
-			ColorToken.statusError.opacity(0.15)
+			ColorToken.statusError.opacity(OpacityToken.light)
 		case .warning:
-			ColorToken.statusWarning.opacity(0.15)
+			ColorToken.statusWarning.opacity(OpacityToken.light)
 		case .neutral:
-			ColorToken.statusNeutral.opacity(0.15)
+			ColorToken.statusNeutral.opacity(OpacityToken.light)
 		case .accent:
 			ColorToken.accentSubtle
 		}

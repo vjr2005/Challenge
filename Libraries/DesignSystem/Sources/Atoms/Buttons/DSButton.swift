@@ -62,7 +62,7 @@ public struct DSButton: View {
 			.overlay {
 				if variant == .secondary {
 					RoundedRectangle(cornerRadius: CornerRadiusToken.md)
-						.stroke(ColorToken.accent, lineWidth: 1)
+						.stroke(ColorToken.accent, lineWidth: BorderWidthToken.thin)
 				}
 			}
 		}

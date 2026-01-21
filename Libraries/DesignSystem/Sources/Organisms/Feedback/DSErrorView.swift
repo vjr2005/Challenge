@@ -28,7 +28,7 @@ public struct DSErrorView: View {
 	public var body: some View {
 		VStack(spacing: SpacingToken.lg) {
 			Image(systemName: "exclamationmark.triangle.fill")
-				.font(.system(size: 48))
+				.font(.system(size: IconSizeToken.xxl))
 				.foregroundStyle(ColorToken.statusError)
 
 			VStack(spacing: SpacingToken.sm) {

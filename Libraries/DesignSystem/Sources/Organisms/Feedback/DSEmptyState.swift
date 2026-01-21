@@ -32,7 +32,7 @@ public struct DSEmptyState: View {
 	public var body: some View {
 		VStack(spacing: SpacingToken.lg) {
 			Image(systemName: icon)
-				.font(.system(size: 56))
+				.font(.system(size: IconSizeToken.xxxl))
 				.foregroundStyle(ColorToken.textTertiary)
 
 			VStack(spacing: SpacingToken.sm) {

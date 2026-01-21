@@ -39,8 +39,8 @@ public struct DSStatusIndicator: View {
 	/// Creates a DSStatusIndicator.
 	/// - Parameters:
 	///   - status: The status to display
-	///   - size: The size of the indicator (default: 12)
-	public init(status: DSStatus, size: CGFloat = 12) {
+	///   - size: The size of the indicator (default: IconSizeToken.sm)
+	public init(status: DSStatus, size: CGFloat = IconSizeToken.sm) {
 		self.status = status
 		self.size = size
 	}
@@ -58,8 +58,8 @@ public struct DSStatusIndicator: View {
 		ForEach(DSStatus.allCases, id: \.self) { status in
 			VStack(spacing: SpacingToken.sm) {
 				DSStatusIndicator(status: status)
-				DSStatusIndicator(status: status, size: 8)
-				DSStatusIndicator(status: status, size: 16)
+				DSStatusIndicator(status: status, size: IconSizeToken.xs)
+				DSStatusIndicator(status: status, size: IconSizeToken.md)
 				DSText(status.rawValue.capitalized, style: .caption)
 			}
 		}

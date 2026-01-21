@@ -24,7 +24,7 @@ public struct DSStatusBadge: View {
 	public var body: some View {
 		HStack(spacing: SpacingToken.xs) {
 			if showIndicator {
-				DSStatusIndicator(status: status, size: 8)
+				DSStatusIndicator(status: status, size: IconSizeToken.xs)
 			}
 
 			Text(label)
@@ -33,7 +33,7 @@ public struct DSStatusBadge: View {
 		}
 		.padding(.horizontal, SpacingToken.sm)
 		.padding(.vertical, SpacingToken.xs)
-		.background(status.color.opacity(0.15))
+		.background(status.color.opacity(OpacityToken.light))
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.sm))
 	}
 }
