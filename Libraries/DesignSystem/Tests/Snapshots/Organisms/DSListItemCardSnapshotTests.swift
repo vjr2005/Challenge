@@ -54,6 +54,24 @@ struct DSListItemCardSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
+	// MARK: - Without Leading
+
+	@Test
+	func withoutLeading() {
+		let view = DSListItemCard<EmptyView, DSStatusBadge>(
+			title: "Jerry Smith",
+			subtitle: "Human",
+			caption: "Earth (C-137)"
+		) {
+			DSStatusBadge(status: .alive)
+		}
+		.padding()
+		.frame(width: 360)
+		.background(ColorToken.backgroundSecondary)
+
+		assertSnapshot(of: view, as: .image)
+	}
+
 	// MARK: - Text Only
 
 	@Test

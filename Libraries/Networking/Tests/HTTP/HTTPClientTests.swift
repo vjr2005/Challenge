@@ -158,7 +158,8 @@ struct HTTPClientTests {
 	@Test
 	func throwsInvalidResponseWhenResponseIsNotHTTPURLResponse() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		// Use custom URL scheme to prevent URLSession from auto-converting to HTTPURLResponse
+		let baseURL = try #require(URL(string: "custom://api.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 
@@ -167,7 +168,7 @@ struct HTTPClientTests {
 				url: request.url ?? baseURL,
 				mimeType: nil,
 				expectedContentLength: 0,
-				textEncodingName: nil,
+				textEncodingName: nil
 			)
 			return (response, Data())
 		}
