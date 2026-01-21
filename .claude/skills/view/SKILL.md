@@ -76,6 +76,35 @@ struct {Name}View: View {
 
 ---
 
+## Design System Integration
+
+> **CRITICAL:** All views must use the `/design-system` skill for UI construction. Use existing design tokens (colors, typography, spacing) and atomic components from the DesignSystem target.
+
+**Rules:**
+- **Always consult `/design-system`** before building any view
+- **Use design tokens** - colors, typography, spacing from DesignSystem
+- **Use atomic components** - buttons, cards, labels from DesignSystem
+- **No hardcoded values** - never use raw colors, font sizes, or spacing values
+- **Create new components if needed** - if a view requires something more complex that doesn't exist, create a new reusable component in the DesignSystem target first, then use it in the feature view
+
+```swift
+// ✅ Correct - using design system
+import {AppName}DesignSystem
+
+Text(item.name)
+    .font(Typography.bodyLarge)
+    .foregroundStyle(SemanticColor.textPrimary)
+    .padding(Spacing.medium)
+
+// ❌ Wrong - hardcoded values
+Text(item.name)
+    .font(.system(size: 16))
+    .foregroundStyle(.black)
+    .padding(16)
+```
+
+---
+
 ## State Rendering
 
 Always use a `switch` statement to render based on ViewState:
@@ -220,9 +249,13 @@ private enum AccessibilityIdentifier {
 
 ## Checklist
 
+- [ ] Consult `/design-system` skill before building the view
 - [ ] Create View struct with init receiving ViewModel only
 - [ ] Use `_viewModel = State(initialValue:)` in init
 - [ ] Import `{AppName}Common` for localization
+- [ ] Import `{AppName}DesignSystem` for UI components
+- [ ] Use design tokens (colors, typography, spacing) - no hardcoded values
+- [ ] Create new DesignSystem components if needed for complex UI
 - [ ] Add private `LocalizedStrings` enum with all strings
 - [ ] Delegate user actions to ViewModel methods
 - [ ] Implement `body` with `.task` modifier for loading

@@ -46,7 +46,8 @@
       "Bash(periphery version:*)",
       "Bash(mise x:*)",
       "Bash(mise exec:*)",
-      "Bash(tuist:*)"
+      "Bash(tuist:*)",
+      "Bash(git restore:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
