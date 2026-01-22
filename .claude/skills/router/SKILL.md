@@ -214,17 +214,19 @@ public final class RouterMock: RouterContract {
 
 Each feature defines its navigation destinations and deep link handler:
 
-### Navigation Enum
+### Navigation Enum (Internal)
 
 ```swift
 // Libraries/Features/{Feature}/Sources/{Feature}Navigation.swift
 import {AppName}Core
 
-public enum {Feature}Navigation: Navigation {
+enum {Feature}Navigation: Navigation {
     case list
     case detail(identifier: Int)
 }
 ```
+
+**Note:** Navigation enum is `internal` - not exposed to App layer. App uses `View.{feature}NavigationDestination(router:)` extension instead.
 
 ### DeepLinkHandler (Internal)
 
@@ -386,19 +388,18 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $router.path) {
             HomeFeature.makeHomeView(router: router)
-                .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation, router: router)
-                }
+                .characterNavigationDestination(router: router)
+                // Add other features here...
         }
     }
 }
 ```
 
 **Rules:**
-- Register DeepLinkHandlers in `ChallengeApp.init()` (app-level configuration)
+- Register deep links in `ChallengeApp.init()` via `{Feature}Feature.registerDeepLinks()`
 - Create Router with `@State` in ContentView
 - Bind path with `$router.path`
-- Register `.navigationDestination` for each feature's Navigation type
+- Use `.{feature}NavigationDestination(router:)` extensions (not `.navigationDestination(for:)` directly)
 
 ---
 
@@ -665,13 +666,13 @@ Libraries/Features/{Feature}/
 
 - [ ] Core has `RouterContract`, `Navigation`, `Router`, `RouterMock`
 - [ ] Core has `DeepLinkHandler`, `DeepLinkRegistry`, `URL+QueryParameter`
-- [ ] Feature has `{Feature}Navigation` conforming to `Navigation`
+- [ ] Feature has internal `{Feature}Navigation` conforming to `Navigation`
 - [ ] Feature has `{Feature}DeepLinkHandler` in `Sources/Navigation/` with `register()` method
 - [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigation/`
 - [ ] `ChallengeApp` calls `{Feature}Feature.registerDeepLinks()` in init
 - [ ] `ContentView` creates `@State private var router = Router()`
 - [ ] `ContentView` uses `NavigationStack(path: $router.path)`
-- [ ] App registers `.navigationDestination(for:)` for each feature
+- [ ] `ContentView` uses `.{feature}NavigationDestination(router:)` for each feature
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] ViewModel injects `NavigatorContract` (not RouterContract)
 - [ ] Tests use `NavigatorMock` to verify navigation

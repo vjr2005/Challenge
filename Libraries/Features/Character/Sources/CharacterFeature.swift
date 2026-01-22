@@ -15,15 +15,24 @@ public enum CharacterFeature {
 
     // MARK: - Views
 
-    /// Builds the view for a navigation destination.
-    /// Only used by App layer for `navigationDestination(for:)` registration.
     @ViewBuilder
-    public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
+    static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
             CharacterListView(viewModel: container.makeCharacterListViewModel(router: router))
         case .detail(let identifier):
             CharacterDetailView(viewModel: container.makeCharacterDetailViewModel(identifier: identifier, router: router))
+        }
+    }
+}
+
+// MARK: - Navigation Destination
+
+public extension View {
+    /// Registers navigation destinations for Character feature.
+    func characterNavigationDestination(router: RouterContract) -> some View {
+        navigationDestination(for: CharacterNavigation.self) { navigation in
+            CharacterFeature.view(for: navigation, router: router)
         }
     }
 }

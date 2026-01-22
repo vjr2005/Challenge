@@ -132,15 +132,26 @@ public enum {Feature}Feature {
         {Feature}DeepLinkHandler.register()
     }
 
-    // MARK: - Views
+    // MARK: - Views (Internal)
 
     @ViewBuilder
-    public static func view(for navigation: {Feature}Navigation, router: RouterContract) -> some View {
+    static func view(for navigation: {Feature}Navigation, router: RouterContract) -> some View {
         switch navigation {
         case .list:
             {Name}ListView(viewModel: container.makeListViewModel(router: router))
         case .detail(let identifier):
             {Name}DetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: router))
+        }
+    }
+}
+
+// MARK: - Navigation Destination
+
+public extension View {
+    /// Registers navigation destinations for this feature.
+    func {feature}NavigationDestination(router: RouterContract) -> some View {
+        navigationDestination(for: {Feature}Navigation.self) { navigation in
+            {Feature}Feature.view(for: navigation, router: router)
         }
     }
 }
@@ -150,8 +161,9 @@ public enum {Feature}Feature {
 - **public enum** - Prevents instantiation, only static access
 - **private static let container** - Shared container (lazy repository is source of truth)
 - **registerDeepLinks()** - Public method to register deep links (called from App.init)
-- **view(for:router:)** - Builds view for each navigation destination
-- **router parameter** - Passed to Container factories for Navigator creation
+- **view(for:router:)** - Internal method, builds view for each navigation destination
+- **{feature}NavigationDestination(router:)** - Public View extension for App to register navigation
+- **{Feature}Navigation** - Internal enum, not exposed to App layer
 
 ---
 
@@ -259,8 +271,10 @@ func makeListViewModel(router: RouterContract) -> {Name}ListViewModel {
 |-----------|------------|--------|
 | Contract (Protocol) | **public** | API for consumers, enables DI |
 | Implementation (Class) | **public** / **open** | Direct instantiation allowed |
-| {Feature}Navigation | **public** | Navigation destinations |
-| {Feature}Feature | **public** | Entry point with `view(for:)` and `registerDeepLinks()` |
+| {Feature}Feature | **public** | Entry point enum |
+| {Feature}Feature.registerDeepLinks() | **public** | Called from App.init |
+| View.{feature}NavigationDestination() | **public** | Called from ContentView |
+| {Feature}Navigation | internal | Not exposed to App layer |
 | {Feature}DeepLinkHandler | internal | Accessed via Feature.registerDeepLinks() |
 | {Feature}Container | internal | Internal wiring |
 | NavigatorContract | internal | Internal to feature |
@@ -341,15 +355,15 @@ struct HomeNavigator: HomeNavigatorContract {
 
 ## Checklist
 
-- [ ] Create `{Feature}Navigation.swift` conforming to `Navigation` protocol
+- [ ] Create internal `{Feature}Navigation.swift` conforming to `Navigation` protocol
 - [ ] Create internal `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` with `register()` method
-- [ ] Create `{Feature}Feature.swift` with `registerDeepLinks()` and `view(for:)` methods
+- [ ] Create `{Feature}Feature.swift` with `registerDeepLinks()` and View extension `{feature}NavigationDestination(router:)`
 - [ ] Create internal Container as `final class` with optional `httpClient` in init
 - [ ] Use `lazy var` for repository (source of truth)
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigation/`
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] Views only receive ViewModel
 - [ ] Use factory methods for ViewModels
-- [ ] `ContentView` registers `.navigationDestination(for: {Feature}Navigation.self)`
+- [ ] `ContentView` uses `.{feature}NavigationDestination(router:)` extension
 - [ ] `ChallengeApp` calls `{Feature}Feature.registerDeepLinks()` in init
 - [ ] **Create container tests verifying factory methods and shared repository**
