@@ -1,19 +1,17 @@
 import ChallengeCore
 import Foundation
 
-public struct CharacterDeepLinkHandler: DeepLinkHandler {
-    public let scheme = "challenge"
-    public let host = "character"
-
-    public init() {}
+struct CharacterDeepLinkHandler: DeepLinkHandler {
+    let scheme = "challenge"
+    let host = "character"
 
     /// Registers this handler with the shared DeepLinkRegistry.
     @MainActor
-    public static func register() {
+    static func register() {
         DeepLinkRegistry.shared.register(Self())
     }
 
-    public func resolve(_ url: URL) -> (any Navigation)? {
+    func resolve(_ url: URL) -> (any Navigation)? {
         switch url.path {
         case "/list":
             return CharacterNavigation.list

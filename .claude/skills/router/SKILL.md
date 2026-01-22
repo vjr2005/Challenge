@@ -226,25 +226,23 @@ public enum {Feature}Navigation: Navigation {
 }
 ```
 
-### DeepLinkHandler
+### DeepLinkHandler (Internal)
 
 ```swift
 // Libraries/Features/{Feature}/Sources/Navigation/{Feature}DeepLinkHandler.swift
 import {AppName}Core
 import Foundation
 
-public struct {Feature}DeepLinkHandler: DeepLinkHandler {
-    public let scheme = "challenge"
-    public let host = "{feature}"  // e.g., "character"
-
-    public init() {}
+struct {Feature}DeepLinkHandler: DeepLinkHandler {
+    let scheme = "challenge"
+    let host = "{feature}"  // e.g., "character"
 
     @MainActor
-    public static func register() {
+    static func register() {
         DeepLinkRegistry.shared.register(Self())
     }
 
-    public func resolve(_ url: URL) -> (any Navigation)? {
+    func resolve(_ url: URL) -> (any Navigation)? {
         switch url.path {
         case "/list":
             return {Feature}Navigation.list
@@ -261,6 +259,8 @@ public struct {Feature}DeepLinkHandler: DeepLinkHandler {
     }
 }
 ```
+
+**Note:** DeepLinkHandler is `internal` - external access is through `{Feature}Feature.registerDeepLinks()`.
 
 **URL Format:** `challenge://{feature}/{path}?param=value`
 
@@ -345,6 +345,34 @@ struct HomeNavigator: HomeNavigatorContract {
 
 ## App Setup
 
+### ChallengeApp (Deep Link Registration)
+
+```swift
+// App/Sources/ChallengeApp.swift
+import {AppName}Character
+import SwiftUI
+
+@main
+struct ChallengeApp: App {
+    init() {
+        registerDeepLinks()
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+
+    private func registerDeepLinks() {
+        CharacterFeature.registerDeepLinks()
+        // Register other features here...
+    }
+}
+```
+
+### ContentView (Navigation Stack)
+
 ```swift
 // App/Sources/ContentView.swift
 import {AppName}Character
@@ -354,11 +382,6 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var router = Router()
-
-    init() {
-        // Register deep link handlers from each feature
-        CharacterDeepLinkHandler.register()
-    }
 
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -372,9 +395,9 @@ struct ContentView: View {
 ```
 
 **Rules:**
-- Create Router with `@State`
+- Register DeepLinkHandlers in `ChallengeApp.init()` (app-level configuration)
+- Create Router with `@State` in ContentView
 - Bind path with `$router.path`
-- Register DeepLinkHandlers in `init()`
 - Register `.navigationDestination` for each feature's Navigation type
 
 ---
@@ -645,9 +668,9 @@ Libraries/Features/{Feature}/
 - [ ] Feature has `{Feature}Navigation` conforming to `Navigation`
 - [ ] Feature has `{Feature}DeepLinkHandler` in `Sources/Navigation/` with `register()` method
 - [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigation/`
-- [ ] App creates `@State private var router = Router()`
-- [ ] App calls `{Feature}DeepLinkHandler.register()` in init
-- [ ] App uses `NavigationStack(path: $router.path)`
+- [ ] `ChallengeApp` calls `{Feature}Feature.registerDeepLinks()` in init
+- [ ] `ContentView` creates `@State private var router = Router()`
+- [ ] `ContentView` uses `NavigationStack(path: $router.path)`
 - [ ] App registers `.navigationDestination(for:)` for each feature
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] ViewModel injects `NavigatorContract` (not RouterContract)

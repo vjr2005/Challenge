@@ -75,25 +75,23 @@ public enum {Feature}Navigation: Navigation {
 
 ---
 
-## Deep Link Handler
+## Deep Link Handler (Internal)
 
 ```swift
 // Sources/Navigation/{Feature}DeepLinkHandler.swift
 import {AppName}Core
 import Foundation
 
-public struct {Feature}DeepLinkHandler: DeepLinkHandler {
-    public let scheme = "challenge"
-    public let host = "{feature}"
-
-    public init() {}
+struct {Feature}DeepLinkHandler: DeepLinkHandler {
+    let scheme = "challenge"
+    let host = "{feature}"
 
     @MainActor
-    public static func register() {
+    static func register() {
         DeepLinkRegistry.shared.register(Self())
     }
 
-    public func resolve(_ url: URL) -> (any Navigation)? {
+    func resolve(_ url: URL) -> (any Navigation)? {
         switch url.path {
         case "/list":
             return {Feature}Navigation.list
@@ -111,6 +109,8 @@ public struct {Feature}DeepLinkHandler: DeepLinkHandler {
 }
 ```
 
+**Note:** DeepLinkHandler is `internal` - external access is through `{Feature}Feature.registerDeepLinks()`.
+
 ---
 
 ## Public Entry Point
@@ -122,6 +122,17 @@ import SwiftUI
 
 public enum {Feature}Feature {
     private static let container = {Feature}Container()
+
+    // MARK: - Deep Links
+
+    /// Registers deep link handlers for this feature.
+    /// Call from `App.init()` to enable deep link navigation.
+    @MainActor
+    public static func registerDeepLinks() {
+        {Feature}DeepLinkHandler.register()
+    }
+
+    // MARK: - Views
 
     @ViewBuilder
     public static func view(for navigation: {Feature}Navigation, router: RouterContract) -> some View {
@@ -138,6 +149,7 @@ public enum {Feature}Feature {
 **Rules:**
 - **public enum** - Prevents instantiation, only static access
 - **private static let container** - Shared container (lazy repository is source of truth)
+- **registerDeepLinks()** - Public method to register deep links (called from App.init)
 - **view(for:router:)** - Builds view for each navigation destination
 - **router parameter** - Passed to Container factories for Navigator creation
 
@@ -248,8 +260,8 @@ func makeListViewModel(router: RouterContract) -> {Name}ListViewModel {
 | Contract (Protocol) | **public** | API for consumers, enables DI |
 | Implementation (Class) | **public** / **open** | Direct instantiation allowed |
 | {Feature}Navigation | **public** | Navigation destinations |
-| {Feature}DeepLinkHandler | **public** | Registered at app startup |
-| {Feature}Feature | **public** | Entry point with `view(for:)` |
+| {Feature}Feature | **public** | Entry point with `view(for:)` and `registerDeepLinks()` |
+| {Feature}DeepLinkHandler | internal | Accessed via Feature.registerDeepLinks() |
 | {Feature}Container | internal | Internal wiring |
 | NavigatorContract | internal | Internal to feature |
 | Navigator | internal | Internal implementation |
@@ -330,14 +342,14 @@ struct HomeNavigator: HomeNavigatorContract {
 ## Checklist
 
 - [ ] Create `{Feature}Navigation.swift` conforming to `Navigation` protocol
-- [ ] Create `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` with `register()` method
-- [ ] Create `{Feature}Feature.swift` with static container and `view(for:)` method
+- [ ] Create internal `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` with `register()` method
+- [ ] Create `{Feature}Feature.swift` with `registerDeepLinks()` and `view(for:)` methods
 - [ ] Create internal Container as `final class` with optional `httpClient` in init
 - [ ] Use `lazy var` for repository (source of truth)
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigation/`
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] Views only receive ViewModel
 - [ ] Use factory methods for ViewModels
-- [ ] App registers `.navigationDestination(for: {Feature}Navigation.self)`
-- [ ] App calls `{Feature}DeepLinkHandler.register()` in init
+- [ ] `ContentView` registers `.navigationDestination(for: {Feature}Navigation.self)`
+- [ ] `ChallengeApp` calls `{Feature}Feature.registerDeepLinks()` in init
 - [ ] **Create container tests verifying factory methods and shared repository**
