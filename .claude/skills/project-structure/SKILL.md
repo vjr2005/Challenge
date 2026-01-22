@@ -256,6 +256,8 @@ FeatureName/
 ```
 Libraries/Core/
 ├── Sources/
+│   ├── AppEnvironment/
+│   │   └── AppEnvironment.swift      # Base environment enum
 │   ├── Navigation/
 │   │   ├── Router.swift
 │   │   ├── RouterContract.swift
@@ -267,6 +269,9 @@ Libraries/Core/
 │   └── Extensions/
 │       └── ...
 ├── Tests/
+│   ├── AppEnvironment/
+│   │   └── AppEnvironmentTests.swift
+│   └── ...
 └── Mocks/
     ├── RouterMock.swift
     ├── ImageLoaderMock.swift
@@ -297,17 +302,18 @@ Libraries/Networking/
 ```
 Libraries/Common/
 ├── Sources/
-│   ├── Environment.swift
+│   ├── AppEnvironment+API.swift      # API configuration extension
 │   ├── Extensions/
 │   │   ├── Bundle+Module.swift       # Manual Bundle.module accessor
 │   │   └── String+Localized.swift    # localized() extension
 │   └── Resources/
 │       └── Localizable.xcstrings
 └── Tests/
+    └── AppEnvironment+APITests.swift
 ```
 
 The Common module provides:
-- **Environment**: Build configuration and API endpoints
+- **AppEnvironment+API**: API endpoint extensions (base `AppEnvironment` is in Core)
 - **Localization**: Centralized `Localizable.xcstrings` and `String.localized()` extension
 - **Bundle.module**: Manual accessor (Tuist generation disabled)
 

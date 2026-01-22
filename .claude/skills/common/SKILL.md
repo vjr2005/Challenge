@@ -1,6 +1,6 @@
 ---
 name: common
-description: Common module: Environment, localization, String extensions. Use when working with environments, schemes, build configs, API configuration, or localized strings.
+description: Common module: AppEnvironment, localization, String extensions. Use when working with environments, schemes, build configs, API configuration, or localized strings.
 ---
 
 # Skill: Common
@@ -21,7 +21,7 @@ Guide for the Common module: environment configuration and localization.
 
 The `Common` module provides shared utilities used across features:
 
-- **Environment**: Build configuration and API endpoints
+- **AppEnvironment**: API endpoint extensions (base definition in Core)
 - **Localization**: Centralized strings with `String.localized()` extension
 - **Bundle**: Manual `Bundle.module` accessor for resources
 
@@ -31,23 +31,26 @@ The `Common` module provides shared utilities used across features:
 ```
 Libraries/Common/
 ├── Sources/
-│   ├── Environment.swift
+│   ├── AppEnvironment+API.swift      # API configuration extension
 │   ├── Extensions/
-│   │   ├── Bundle+Module.swift      # Bundle.module accessor
-│   │   └── String+Localized.swift   # localized() extension
+│   │   ├── Bundle+Module.swift       # Bundle.module accessor
+│   │   └── String+Localized.swift    # localized() extension
 │   └── Resources/
 │       └── Localizable.xcstrings
 └── Tests/
-    └── EnvironmentTests.swift
+    └── AppEnvironment+APITests.swift
 ```
+
+**Note:** The base `AppEnvironment` enum is defined in `Core` module (`Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`). Common only extends it with API configurations.
 
 ---
 
-## Environment
+## AppEnvironment
 
-The `Environment` enum defines application environments and provides API configuration.
+The `AppEnvironment` enum defines application environments. The base definition is in Core, and Common extends it with API configuration.
 
-**Location:** `Libraries/Common/Sources/Environment.swift`
+**Base definition:** `Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`
+**API extension:** `Libraries/Common/Sources/AppEnvironment+API.swift`
 
 ### Usage
 
@@ -55,7 +58,7 @@ The `Environment` enum defines application environments and provides API configu
 import {AppName}Common
 
 // Get current environment (determined at compile time)
-let environment = Environment.current
+let environment = AppEnvironment.current
 
 // Check environment type
 if environment.isDebug {
@@ -63,7 +66,7 @@ if environment.isDebug {
 }
 
 // Get API configuration
-let apiURL = Environment.current.rickAndMorty.baseURL
+let apiURL = AppEnvironment.current.rickAndMorty.baseURL
 ```
 
 ### Environment Cases
@@ -74,13 +77,18 @@ let apiURL = Environment.current.rickAndMorty.baseURL
 | `staging` | Pre-production testing environment |
 | `production` | Live production environment |
 
-### Properties
+### Properties (from Core)
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `current` | `Environment` | Current environment based on build configuration |
+| `current` | `AppEnvironment` | Current environment based on build configuration |
 | `isDebug` | `Bool` | `true` only for `development` |
 | `isRelease` | `Bool` | `true` only for `production` |
+
+### Properties (from Common)
+
+| Property | Type | Description |
+|----------|------|-------------|
 | `rickAndMorty` | `API` | API configuration with `baseURL` |
 
 ---
@@ -219,8 +227,8 @@ Each environment has a distinct app icon with a colored banner:
 To add a new API endpoint configuration:
 
 ```swift
-// In Environment.swift
-public extension Environment {
+// In AppEnvironment+API.swift
+public extension AppEnvironment {
     var newAPI: API {
         let urlString: String
         switch self {
@@ -254,7 +262,7 @@ final class MyFeatureContainer {
 
     init(httpClient: (any HTTPClientContract)? = nil) {
         self.httpClient = httpClient ?? HTTPClient(
-            baseURL: Environment.current.rickAndMorty.baseURL
+            baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
     }
 }
@@ -267,12 +275,13 @@ final class MyFeatureContainer {
 The current environment is determined at compile time using Swift compiler flags:
 
 ```swift
-public enum Environment {
+// In Core module
+public enum AppEnvironment {
     case development
     case staging
     case production
 
-    public static var current: Environment {
+    public static var current: AppEnvironment {
         #if DEBUG
             #if STAGING
                 return .staging
@@ -326,13 +335,13 @@ public struct API {
 import {AppName}Common
 
 // Logging only in debug
-if Environment.current.isDebug {
+if AppEnvironment.current.isDebug {
     print("Debug: \(message)")
 }
 
 // Feature flags by environment
 var isFeatureEnabled: Bool {
-    switch Environment.current {
+    switch AppEnvironment.current {
     case .development, .staging:
         return true
     case .production:
@@ -342,7 +351,7 @@ var isFeatureEnabled: Bool {
 
 // Analytics
 func track(event: String) {
-    guard Environment.current.isRelease else { return }
+    guard AppEnvironment.current.isRelease else { return }
     analytics.track(event)
 }
 ```
@@ -353,16 +362,16 @@ func track(event: String) {
 
 ### Adding New Environment
 
-- [ ] Add case to `Environment` enum
+- [ ] Add case to `AppEnvironment` enum in Core
 - [ ] Update `current` property with compiler flag logic
 - [ ] Add build configuration in Xcode/Tuist
 - [ ] Add scheme for the environment
 - [ ] Create app icon variant if needed
-- [ ] Update API configurations
+- [ ] Update API configurations in Common
 
 ### Adding New API
 
-- [ ] Add computed property to `Environment` extension
+- [ ] Add computed property to `AppEnvironment` extension in Common
 - [ ] Define URL for each environment case
 - [ ] Use `preconditionFailure` for invalid URLs (compile-time constants)
 - [ ] Update feature Containers to use new API
