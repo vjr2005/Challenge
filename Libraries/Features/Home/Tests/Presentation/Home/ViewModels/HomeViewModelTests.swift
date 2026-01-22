@@ -1,34 +1,18 @@
-import ChallengeCharacter
-import ChallengeCoreMocks
 import Testing
 
 @testable import ChallengeHome
 
 struct HomeViewModelTests {
     @Test
-    func didTapOnCharacterButtonNavigatesToCharacterList() {
+    func didTapOnCharacterButtonCallsNavigator() {
         // Given
-        let routerMock = RouterMock()
-        let sut = HomeViewModel(router: routerMock)
+        let navigatorMock = HomeNavigatorMock()
+        let sut = HomeViewModel(navigator: navigatorMock)
 
         // When
         sut.didTapOnCharacterButton()
 
         // Then
-        let destination = routerMock.navigatedDestinations.first as? CharacterNavigation
-        #expect(destination == .list)
-    }
-
-    @Test
-    func didTapOnCharacterButtonCallsRouterOnce() {
-        // Given
-        let routerMock = RouterMock()
-        let sut = HomeViewModel(router: routerMock)
-
-        // When
-        sut.didTapOnCharacterButton()
-
-        // Then
-        #expect(routerMock.navigatedDestinations.count == 1)
+        #expect(navigatorMock.navigateToCharactersCallCount == 1)
     }
 }

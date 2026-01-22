@@ -2,6 +2,6 @@ import ChallengeCore
 
 final class HomeContainer {
     func makeHomeViewModel(router: RouterContract) -> HomeViewModel {
-        HomeViewModel(router: router)
+        HomeViewModel(navigator: HomeNavigator(router: router))
     }
 }

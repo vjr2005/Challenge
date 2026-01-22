@@ -48,7 +48,11 @@
       "Bash(mise exec:*)",
       "Bash(tuist:*)",
       "Bash(git restore:*)",
-      "WebFetch(domain:krzysztofzablocki.github.io)"
+      "WebFetch(domain:krzysztofzablocki.github.io)",
+      "Skill(router)",
+      "Skill(style-guide)",
+      "Skill(concurrency)",
+      "Skill(testing)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -6,6 +6,11 @@ import SwiftUI
 struct ContentView: View {
     @State private var router = Router()
 
+    init() {
+        // Register deep link handlers from each feature
+        CharacterDeepLinkHandler.register()
+    }
+
     var body: some View {
         NavigationStack(path: $router.path) {
             HomeFeature.makeHomeView(router: router)

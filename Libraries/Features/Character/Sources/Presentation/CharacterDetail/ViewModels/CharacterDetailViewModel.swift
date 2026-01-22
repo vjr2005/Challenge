@@ -1,4 +1,3 @@
-import ChallengeCore
 import Foundation
 
 /// ViewModel that manages Character state and coordinates with UseCases.
@@ -8,16 +7,16 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
 
     private let identifier: Int
     private let getCharacterUseCase: GetCharacterUseCaseContract
-    private let router: RouterContract
+    private let navigator: CharacterDetailNavigatorContract
 
     init(
         identifier: Int,
         getCharacterUseCase: GetCharacterUseCaseContract,
-        router: RouterContract
+        navigator: CharacterDetailNavigatorContract
     ) {
         self.identifier = identifier
         self.getCharacterUseCase = getCharacterUseCase
-        self.router = router
+        self.navigator = navigator
     }
 
     func load() async {
@@ -31,6 +30,6 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     }
 
     func didTapOnBack() {
-        router.goBack()
+        navigator.goBack()
     }
 }

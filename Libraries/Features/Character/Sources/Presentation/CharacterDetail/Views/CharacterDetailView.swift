@@ -192,77 +192,76 @@ private enum AccessibilityIdentifier {
 // MARK: - Previews
 
 #Preview("Loading") {
-	NavigationStack {
-		CharacterDetailView(
-			viewModel: CharacterDetailViewModel(
-				identifier: 1,
-				getCharacterUseCase: GetCharacterUseCasePreviewMock(delay: true),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterDetailView(
+            viewModel: CharacterDetailViewModel(
+                identifier: 1,
+                getCharacterUseCase: GetCharacterUseCasePreviewMock(delay: true),
+                navigator: CharacterDetailNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 #Preview("Loaded") {
-	NavigationStack {
-		CharacterDetailView(
-			viewModel: CharacterDetailViewModel(
-				identifier: 1,
-				getCharacterUseCase: GetCharacterUseCasePreviewMock(),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterDetailView(
+            viewModel: CharacterDetailViewModel(
+                identifier: 1,
+                getCharacterUseCase: GetCharacterUseCasePreviewMock(),
+                navigator: CharacterDetailNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 #Preview("Error") {
-	NavigationStack {
-		CharacterDetailView(
-			viewModel: CharacterDetailViewModel(
-				identifier: 1,
-				getCharacterUseCase: GetCharacterUseCasePreviewMock(shouldFail: true),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterDetailView(
+            viewModel: CharacterDetailViewModel(
+                identifier: 1,
+                getCharacterUseCase: GetCharacterUseCasePreviewMock(shouldFail: true),
+                navigator: CharacterDetailNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 // MARK: - Preview Mocks
 
 private final class GetCharacterUseCasePreviewMock: GetCharacterUseCaseContract {
-	private let delay: Bool
-	private let shouldFail: Bool
+    private let delay: Bool
+    private let shouldFail: Bool
 
-	init(delay: Bool = false, shouldFail: Bool = false) {
-		self.delay = delay
-		self.shouldFail = shouldFail
-	}
+    init(delay: Bool = false, shouldFail: Bool = false) {
+        self.delay = delay
+        self.shouldFail = shouldFail
+    }
 
-	func execute(identifier: Int) async throws -> Character {
-		if delay {
-			try? await Task.sleep(for: .seconds(100))
-		}
-		if shouldFail {
-			throw PreviewError.failed
-		}
-		return Character(
-			id: 1,
-			name: "Rick Sanchez",
-			status: .alive,
-			species: "Human",
-			gender: "Male",
-			origin: Location(name: "Earth (C-137)", url: nil),
-			location: Location(name: "Citadel of Ricks", url: nil),
-			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
-		)
-	}
+    func execute(identifier: Int) async throws -> Character {
+        if delay {
+            try? await Task.sleep(for: .seconds(100))
+        }
+        if shouldFail {
+            throw PreviewError.failed
+        }
+        return Character(
+            id: 1,
+            name: "Rick Sanchez",
+            status: .alive,
+            species: "Human",
+            gender: "Male",
+            origin: Location(name: "Earth (C-137)", url: nil),
+            location: Location(name: "Citadel of Ricks", url: nil),
+            imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
+        )
+    }
 }
 
 private enum PreviewError: Error {
-	case failed
+    case failed
 }
 
-private final class RouterPreviewMock: RouterContract {
-	func navigate(to destination: any Navigation) {}
-	func goBack() {}
+private final class CharacterDetailNavigatorPreviewMock: CharacterDetailNavigatorContract {
+    func goBack() {}
 }

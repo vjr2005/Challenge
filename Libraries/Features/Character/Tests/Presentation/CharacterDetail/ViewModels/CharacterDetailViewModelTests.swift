@@ -1,84 +1,83 @@
-import ChallengeCoreMocks
 import Foundation
 import Testing
 
 @testable import ChallengeCharacter
 
 struct CharacterDetailViewModelTests {
-	@Test
-	func initialStateIsIdle() {
-		// Given
-		let useCaseMock = GetCharacterUseCaseMock()
-		let routerMock = RouterMock()
-		let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, router: routerMock)
+    @Test
+    func initialStateIsIdle() {
+        // Given
+        let useCaseMock = GetCharacterUseCaseMock()
+        let navigatorMock = CharacterDetailNavigatorMock()
+        let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, navigator: navigatorMock)
 
-		// Then
-		#expect(sut.state == .idle)
-	}
+        // Then
+        #expect(sut.state == .idle)
+    }
 
-	@Test
-	func loadSetsLoadedStateOnSuccess() async {
-		// Given
-		let expected = Character.stub()
-		let useCaseMock = GetCharacterUseCaseMock()
-		useCaseMock.result = .success(expected)
-		let routerMock = RouterMock()
-		let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, router: routerMock)
+    @Test
+    func loadSetsLoadedStateOnSuccess() async {
+        // Given
+        let expected = Character.stub()
+        let useCaseMock = GetCharacterUseCaseMock()
+        useCaseMock.result = .success(expected)
+        let navigatorMock = CharacterDetailNavigatorMock()
+        let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, navigator: navigatorMock)
 
-		// When
-		await sut.load()
+        // When
+        await sut.load()
 
-		// Then
-		#expect(sut.state == .loaded(expected))
-	}
+        // Then
+        #expect(sut.state == .loaded(expected))
+    }
 
-	@Test
-	func loadSetsErrorStateOnFailure() async {
-		// Given
-		let useCaseMock = GetCharacterUseCaseMock()
-		useCaseMock.result = .failure(TestError.network)
-		let routerMock = RouterMock()
-		let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, router: routerMock)
+    @Test
+    func loadSetsErrorStateOnFailure() async {
+        // Given
+        let useCaseMock = GetCharacterUseCaseMock()
+        useCaseMock.result = .failure(TestError.network)
+        let navigatorMock = CharacterDetailNavigatorMock()
+        let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, navigator: navigatorMock)
 
-		// When
-		await sut.load()
+        // When
+        await sut.load()
 
-		// Then
-		#expect(sut.state == .error(TestError.network))
-	}
+        // Then
+        #expect(sut.state == .error(TestError.network))
+    }
 
-	@Test
-	func loadCallsUseCaseWithCorrectIdentifier() async {
-		// Given
-		let identifier = 42
-		let useCaseMock = GetCharacterUseCaseMock()
-		useCaseMock.result = .success(.stub())
-		let routerMock = RouterMock()
-		let sut = CharacterDetailViewModel(identifier: identifier, getCharacterUseCase: useCaseMock, router: routerMock)
+    @Test
+    func loadCallsUseCaseWithCorrectIdentifier() async {
+        // Given
+        let identifier = 42
+        let useCaseMock = GetCharacterUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterDetailNavigatorMock()
+        let sut = CharacterDetailViewModel(identifier: identifier, getCharacterUseCase: useCaseMock, navigator: navigatorMock)
 
-		// When
-		await sut.load()
+        // When
+        await sut.load()
 
-		// Then
-		#expect(useCaseMock.executeCallCount == 1)
-		#expect(useCaseMock.lastRequestedIdentifier == identifier)
-	}
+        // Then
+        #expect(useCaseMock.executeCallCount == 1)
+        #expect(useCaseMock.lastRequestedIdentifier == identifier)
+    }
 
-	@Test
-	func didTapOnBackCallsRouterGoBack() {
-		// Given
-		let useCaseMock = GetCharacterUseCaseMock()
-		let routerMock = RouterMock()
-		let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, router: routerMock)
+    @Test
+    func didTapOnBackCallsNavigatorGoBack() {
+        // Given
+        let useCaseMock = GetCharacterUseCaseMock()
+        let navigatorMock = CharacterDetailNavigatorMock()
+        let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, navigator: navigatorMock)
 
-		// When
-		sut.didTapOnBack()
+        // When
+        sut.didTapOnBack()
 
-		// Then
-		#expect(routerMock.goBackCallCount == 1)
-	}
+        // Then
+        #expect(navigatorMock.goBackCallCount == 1)
+    }
 }
 
 private enum TestError: Error {
-	case network
+    case network
 }

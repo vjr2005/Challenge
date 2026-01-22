@@ -218,126 +218,125 @@ private enum AccessibilityIdentifier {
 // MARK: - Previews
 
 #Preview("Loading") {
-	NavigationStack {
-		CharacterListView(
-			viewModel: CharacterListViewModel(
-				getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
+                navigator: CharacterListNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 #Preview("Loaded") {
-	NavigationStack {
-		CharacterListView(
-			viewModel: CharacterListViewModel(
-				getCharactersUseCase: GetCharactersUseCasePreviewMock(),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(),
+                navigator: CharacterListNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 #Preview("Empty") {
-	NavigationStack {
-		CharacterListView(
-			viewModel: CharacterListViewModel(
-				getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
+                navigator: CharacterListNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 #Preview("Error") {
-	NavigationStack {
-		CharacterListView(
-			viewModel: CharacterListViewModel(
-				getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
-				router: RouterPreviewMock()
-			)
-		)
-	}
+    NavigationStack {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
+                navigator: CharacterListNavigatorPreviewMock()
+            )
+        )
+    }
 }
 
 // MARK: - Preview Mocks
 
 private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContract {
-	private let delay: Bool
-	private let isEmpty: Bool
-	private let shouldFail: Bool
+    private let delay: Bool
+    private let isEmpty: Bool
+    private let shouldFail: Bool
 
-	init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
-		self.delay = delay
-		self.isEmpty = isEmpty
-		self.shouldFail = shouldFail
-	}
+    init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
+        self.delay = delay
+        self.isEmpty = isEmpty
+        self.shouldFail = shouldFail
+    }
 
-	func execute(page: Int) async throws -> CharactersPage {
-		if delay {
-			try? await Task.sleep(for: .seconds(100))
-		}
-		if shouldFail {
-			throw PreviewError.failed
-		}
-		if isEmpty {
-			return CharactersPage(
-				characters: [],
-				currentPage: 1,
-				totalPages: 0,
-				totalCount: 0,
-				hasNextPage: false,
-				hasPreviousPage: false
-			)
-		}
-		return CharactersPage(
-			characters: [
-				Character(
-					id: 1,
-					name: "Rick Sanchez",
-					status: .alive,
-					species: "Human",
-					gender: "Male",
-					origin: Location(name: "Earth (C-137)", url: nil),
-					location: Location(name: "Citadel of Ricks", url: nil),
-					imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
-				),
-				Character(
-					id: 2,
-					name: "Morty Smith",
-					status: .alive,
-					species: "Human",
-					gender: "Male",
-					origin: Location(name: "Earth (C-137)", url: nil),
-					location: Location(name: "Citadel of Ricks", url: nil),
-					imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/2.jpeg")
-				),
-				Character(
-					id: 3,
-					name: "Summer Smith",
-					status: .alive,
-					species: "Human",
-					gender: "Female",
-					origin: Location(name: "Earth (Replacement Dimension)", url: nil),
-					location: Location(name: "Earth (Replacement Dimension)", url: nil),
-					imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/3.jpeg")
-				)
-			],
-			currentPage: 1,
-			totalPages: 42,
-			totalCount: 826,
-			hasNextPage: true,
-			hasPreviousPage: false
-		)
-	}
+    func execute(page: Int) async throws -> CharactersPage {
+        if delay {
+            try? await Task.sleep(for: .seconds(100))
+        }
+        if shouldFail {
+            throw PreviewError.failed
+        }
+        if isEmpty {
+            return CharactersPage(
+                characters: [],
+                currentPage: 1,
+                totalPages: 0,
+                totalCount: 0,
+                hasNextPage: false,
+                hasPreviousPage: false
+            )
+        }
+        return CharactersPage(
+            characters: [
+                Character(
+                    id: 1,
+                    name: "Rick Sanchez",
+                    status: .alive,
+                    species: "Human",
+                    gender: "Male",
+                    origin: Location(name: "Earth (C-137)", url: nil),
+                    location: Location(name: "Citadel of Ricks", url: nil),
+                    imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
+                ),
+                Character(
+                    id: 2,
+                    name: "Morty Smith",
+                    status: .alive,
+                    species: "Human",
+                    gender: "Male",
+                    origin: Location(name: "Earth (C-137)", url: nil),
+                    location: Location(name: "Citadel of Ricks", url: nil),
+                    imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/2.jpeg")
+                ),
+                Character(
+                    id: 3,
+                    name: "Summer Smith",
+                    status: .alive,
+                    species: "Human",
+                    gender: "Female",
+                    origin: Location(name: "Earth (Replacement Dimension)", url: nil),
+                    location: Location(name: "Earth (Replacement Dimension)", url: nil),
+                    imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/3.jpeg")
+                )
+            ],
+            currentPage: 1,
+            totalPages: 42,
+            totalCount: 826,
+            hasNextPage: true,
+            hasPreviousPage: false
+        )
+    }
 }
 
 private enum PreviewError: Error {
-	case failed
+    case failed
 }
 
-private final class RouterPreviewMock: RouterContract {
-	func navigate(to destination: any Navigation) {}
-	func goBack() {}
+private final class CharacterListNavigatorPreviewMock: CharacterListNavigatorContract {
+    func navigateToDetail(id: Int) {}
 }

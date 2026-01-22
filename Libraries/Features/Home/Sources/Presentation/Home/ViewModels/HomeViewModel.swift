@@ -1,15 +1,12 @@
-import ChallengeCharacter
-import ChallengeCore
-
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class HomeViewModel {
-	private let router: RouterContract
+    private let navigator: HomeNavigatorContract
 
-	init(router: RouterContract) {
-		self.router = router
-	}
+    init(navigator: HomeNavigatorContract) {
+        self.navigator = navigator
+    }
 
-	func didTapOnCharacterButton() {
-		router.navigate(to: CharacterNavigation.list)
-	}
+    func didTapOnCharacterButton() {
+        navigator.navigateToCharacters()
+    }
 }

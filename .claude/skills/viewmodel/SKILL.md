@@ -20,18 +20,26 @@ Libraries/Features/{Feature}/
 ├── Sources/
 │   └── Presentation/
 │       └── {ScreenName}/                           # Group by screen (e.g., CharacterDetail)
+│           ├── Navigation/
+│           │   ├── {ScreenName}NavigatorContract.swift  # Navigator protocol
+│           │   └── {ScreenName}Navigator.swift          # Navigator implementation
+│           ├── Views/
+│           │   └── {ScreenName}View.swift
 │           └── ViewModels/
 │               ├── {ScreenName}ViewState.swift     # ViewState enum
 │               └── {ScreenName}ViewModel.swift     # ViewModel
 └── Tests/
     └── Presentation/
         └── {ScreenName}/                           # Same structure as Sources
+            ├── Navigation/
+            │   └── {ScreenName}NavigatorTests.swift
             └── ViewModels/
                 └── {ScreenName}ViewModelTests.swift
 ```
 
 **Examples:**
 - `Presentation/CharacterDetail/ViewModels/CharacterDetailViewModel.swift`
+- `Presentation/CharacterDetail/Navigation/CharacterDetailNavigator.swift`
 - `Presentation/CharacterList/ViewModels/CharacterListViewModel.swift`
 - `Tests/Presentation/CharacterDetail/ViewModels/CharacterDetailViewModelTests.swift`
 
@@ -160,16 +168,15 @@ final class {Name}ListViewModel {
 - **Internal visibility** (not public)
 - Inject UseCases via **protocol (contract)**
 - State is `private(set)` - only ViewModel mutates it
-- Inject `RouterContract` for navigation (see `/router` skill)
+- Inject `NavigatorContract` for navigation (see `/router` skill)
 
 ---
 
 ## ViewModel Pattern (with Navigation)
 
-ViewModels that trigger navigation receive `RouterContract`:
+ViewModels that trigger navigation receive a **NavigatorContract**:
 
 ```swift
-import {AppName}Core
 import Foundation
 
 @Observable
@@ -177,11 +184,11 @@ final class {Name}ListViewModel {
     private(set) var state: {Name}ListViewState = .idle
 
     private let get{Name}sUseCase: Get{Name}sUseCaseContract
-    private let router: RouterContract
+    private let navigator: {Name}ListNavigatorContract
 
-    init(get{Name}sUseCase: Get{Name}sUseCaseContract, router: RouterContract) {
+    init(get{Name}sUseCase: Get{Name}sUseCaseContract, navigator: {Name}ListNavigatorContract) {
         self.get{Name}sUseCase = get{Name}sUseCase
-        self.router = router
+        self.navigator = navigator
     }
 
     func load() async {
@@ -196,20 +203,21 @@ final class {Name}ListViewModel {
 
     // Semantic navigation methods
     func didSelectItem(_ item: {Name}) {
-        router.navigate(to: {Feature}Navigation.detail(identifier: item.id))
+        navigator.navigateToDetail(id: item.id)
     }
 
     func didTapOnBack() {
-        router.goBack()
+        navigator.goBack()
     }
 }
 ```
 
 **Rules:**
-- Inject `RouterContract` (not concrete Router)
+- Inject **NavigatorContract** (not RouterContract directly)
 - Use **semantic method names**: `didTapOn...`, `didSelect...`
-- Never expose router to View
-- See `/router` skill for full navigation documentation
+- Never expose navigator to View
+- Navigator handles internal vs external navigation details
+- See `/router` skill for Navigator pattern documentation
 
 ---
 
@@ -218,18 +226,16 @@ final class {Name}ListViewModel {
 ViewModels that **only trigger navigation** (no observable state) don't need `@Observable`:
 
 ```swift
-import {AppName}Core
-
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class {Name}ViewModel {
-    private let router: RouterContract
+    private let navigator: {Name}NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: {Name}NavigatorContract) {
+        self.navigator = navigator
     }
 
     func didTapOn{Action}() {
-        router.navigate(to: {Feature}Navigation.{destination})
+        navigator.navigateTo{Destination}()
     }
 }
 ```
@@ -242,18 +248,16 @@ final class {Name}ViewModel {
 **Example: HomeViewModel**
 
 ```swift
-import {AppName}Core
-
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class HomeViewModel {
-    private let router: RouterContract
+    private let navigator: HomeNavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: HomeNavigatorContract) {
+        self.navigator = navigator
     }
 
     func didTapOnCharacterButton() {
-        router.navigate(to: CharacterNavigation.list)
+        navigator.navigateToCharacters()
     }
 }
 ```
@@ -290,7 +294,8 @@ struct {Name}ViewModelTests {
     func initialStateIsIdle() {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock)
+        let navigatorMock = {Name}NavigatorMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
 
         // Then
         #expect(sut.state == .idle)
@@ -302,7 +307,8 @@ struct {Name}ViewModelTests {
         let expected = {Name}.stub()
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .success(expected)
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock)
+        let navigatorMock = {Name}NavigatorMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
 
         // When
         await sut.load(id: 1)
@@ -316,7 +322,8 @@ struct {Name}ViewModelTests {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .failure(TestError.network)
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock)
+        let navigatorMock = {Name}NavigatorMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
 
         // When
         await sut.load(id: 1)
@@ -330,7 +337,8 @@ struct {Name}ViewModelTests {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .success(.stub())
-        let sut = {Name}DetailViewModel(get{Name}UseCase: useCaseMock)
+        let navigatorMock = {Name}NavigatorMock()
+        let sut = {Name}DetailViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
 
         // When
         await sut.load(id: 42)
@@ -338,6 +346,34 @@ struct {Name}ViewModelTests {
         // Then
         #expect(useCaseMock.executeCallCount == 1)
         #expect(useCaseMock.lastRequestedId == 42)
+    }
+
+    @Test
+    func didSelectItemNavigatesToDetail() {
+        // Given
+        let useCaseMock = Get{Name}UseCaseMock()
+        let navigatorMock = {Name}NavigatorMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+
+        // When
+        sut.didSelectItem({Name}(id: 42))
+
+        // Then
+        #expect(navigatorMock.navigateToDetailIds == [42])
+    }
+
+    @Test
+    func didTapOnBackCallsNavigator() {
+        // Given
+        let useCaseMock = Get{Name}UseCaseMock()
+        let navigatorMock = {Name}NavigatorMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+
+        // When
+        sut.didTapOnBack()
+
+        // Then
+        #expect(navigatorMock.goBackCallCount == 1)
     }
 }
 
@@ -350,6 +386,7 @@ private enum TestError: Error {
 - Use **direct comparison** for state assertions when possible: `#expect(sut.state == .idle)`
 - ViewState must implement `==` operator for direct comparison
 - Test initial state, success, error, and call verification
+- Use **NavigatorMock** to verify navigation calls (not RouterMock)
 
 ---
 
@@ -394,19 +431,25 @@ final class CharacterListViewModel {
     private(set) var state: CharacterListViewState = .idle
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
+    private let navigator: CharacterListNavigatorContract
 
-    init(getCharactersUseCase: GetCharactersUseCaseContract) {
+    init(getCharactersUseCase: GetCharactersUseCaseContract, navigator: CharacterListNavigatorContract) {
         self.getCharactersUseCase = getCharactersUseCase
+        self.navigator = navigator
     }
 
     func load() async {
         state = .loading
         do {
-            let characters = try await getCharactersUseCase.execute()
-            state = characters.isEmpty ? .empty : .loaded(characters)
+            let result = try await getCharactersUseCase.execute(page: 1)
+            state = result.characters.isEmpty ? .empty : .loaded(result)
         } catch {
             state = .error(error)
         }
+    }
+
+    func didSelect(_ character: Character) {
+        navigator.navigateToDetail(id: character.id)
     }
 }
 ```
@@ -419,6 +462,8 @@ final class CharacterListViewModel {
 |-----------|------------|----------|
 | ViewState | internal | `Sources/Presentation/{ScreenName}/ViewModels/` |
 | ViewModel | internal | `Sources/Presentation/{ScreenName}/ViewModels/` |
+| NavigatorContract | internal | `Sources/Presentation/{ScreenName}/Navigation/` |
+| Navigator | internal | `Sources/Presentation/{ScreenName}/Navigation/` |
 
 ---
 
@@ -427,6 +472,8 @@ final class CharacterListViewModel {
 - [ ] Create ViewState enum with idle, loading, loaded, error cases
 - [ ] Create ViewModel class with @Observable
 - [ ] Inject UseCase via protocol (contract)
+- [ ] Inject NavigatorContract for navigation (not RouterContract)
 - [ ] Implement load/fetch method with state transitions
 - [ ] Create tests for initial state, success, error, and call verification
+- [ ] Create NavigatorMock for testing navigation
 - [ ] Run tests
