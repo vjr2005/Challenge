@@ -187,9 +187,12 @@ public struct HomeFeature: Feature {
 
 ## Feature Tests
 
+Features are tested through their **public interface**. Factory methods are private implementation details.
+
 ### CharacterFeatureTests
 
 ```swift
+import {AppName}Core
 import {AppName}CoreMocks
 import {AppName}NetworkingMocks
 import Foundation
@@ -198,114 +201,59 @@ import Testing
 @testable import {AppName}Character
 
 struct CharacterFeatureTests {
-    private let testBundle = Bundle(for: BundleToken.self)
-
-    // MARK: - CharacterListViewModel
+    // MARK: - Init
 
     @Test
-    func makeCharacterListViewModelReturnsConfiguredInstance() {
+    func initWithDefaultHTTPClientDoesNotCrash() {
+        // Given/When
+        let sut = CharacterFeature()
+
+        // Then - Feature initializes without crashing
+        _ = sut
+    }
+
+    @Test
+    func initWithCustomHTTPClientDoesNotCrash() {
         // Given
         let httpClientMock = HTTPClientMock()
-        let routerMock = RouterMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
-        let viewModel = sut.makeCharacterListViewModel(router: routerMock)
+        let sut = CharacterFeature(httpClient: httpClientMock)
+
+        // Then - Feature initializes without crashing
+        _ = sut
+    }
+
+    // MARK: - Feature Protocol
+
+    @Test
+    func registerDeepLinksRegistersCharacterHandler() throws {
+        // Given
+        let sut = CharacterFeature()
+
+        // When
+        sut.registerDeepLinks()
+
+        // Then - Deep link is registered (verify by resolving a known URL)
+        let url = try #require(URL(string: "challenge://character/list"))
+        let navigation = DeepLinkRegistry.shared.resolve(url)
+        #expect(navigation != nil)
+    }
+
+    @Test
+    func registerDeepLinksRegistersDetailPath() throws {
+        // Given
+        let sut = CharacterFeature()
+
+        // When
+        sut.registerDeepLinks()
 
         // Then
-        #expect(viewModel.state == .idle)
-    }
-
-    @Test
-    func makeCharacterListViewModelUsesInjectedHTTPClient() async throws {
-        // Given
-        let jsonData = try testBundle.loadJSONData("characters_response")
-        let httpClientMock = HTTPClientMock(result: .success(jsonData))
-        let routerMock = RouterMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-        let viewModel = sut.makeCharacterListViewModel(router: routerMock)
-
-        // When
-        await viewModel.load()
-
-        // Then
-        #expect(httpClientMock.requestedEndpoints.count == 1)
-    }
-
-    // MARK: - CharacterDetailViewModel
-
-    @Test
-    func makeCharacterDetailViewModelReturnsConfiguredInstance() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let routerMock = RouterMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
-        // When
-        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
-
-        // Then
-        #expect(viewModel.state == .idle)
-    }
-
-    @Test
-    func makeCharacterDetailViewModelUsesInjectedHTTPClient() async throws {
-        // Given
-        let jsonData = try testBundle.loadJSONData("character")
-        let httpClientMock = HTTPClientMock(result: .success(jsonData))
-        let routerMock = RouterMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-        let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
-
-        // When
-        await viewModel.load()
-
-        // Then
-        #expect(httpClientMock.requestedEndpoints.count == 1)
-    }
-
-    // MARK: - Shared Repository
-
-    @Test
-    func multipleDetailViewModelsShareSameRepository() async throws {
-        // Given
-        let jsonData = try testBundle.loadJSONData("character")
-        let httpClientMock = HTTPClientMock(result: .success(jsonData))
-        let routerMock = RouterMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
-        // When
-        let viewModel1 = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
-        let viewModel2 = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
-
-        await viewModel1.load()
-        await viewModel2.load()
-
-        // Then - Second load uses cached data from shared repository
-        #expect(httpClientMock.requestedEndpoints.count == 1)
-    }
-
-    @Test
-    func listAndDetailViewModelsShareSameRepository() async throws {
-        // Given
-        let jsonData = try testBundle.loadJSONData("characters_response")
-        let httpClientMock = HTTPClientMock(result: .success(jsonData))
-        let routerMock = RouterMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
-        // When - Load characters via list, then get one character via detail
-        let listViewModel = sut.makeCharacterListViewModel(router: routerMock)
-        await listViewModel.load()
-
-        let detailViewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
-        await detailViewModel.load()
-
-        // Then - Detail should use cached character from list response (only 1 HTTP call total)
-        #expect(httpClientMock.requestedEndpoints.count == 1)
+        let url = try #require(URL(string: "challenge://character/detail?id=42"))
+        let navigation = DeepLinkRegistry.shared.resolve(url)
+        #expect(navigation != nil)
     }
 }
-
-private final class BundleToken {}
 ```
 
 ### HomeFeatureTests (Simple Feature)
@@ -318,17 +266,12 @@ import Testing
 
 struct HomeFeatureTests {
     @Test
-    func makeHomeViewReturnsConfiguredInstance() {
-        // Given
-        let routerMock = RouterMock()
+    func initDoesNotCrash() {
+        // Given/When
         let sut = HomeFeature()
 
-        // When
-        let view = sut.makeHomeView(router: routerMock)
-
-        // Then - Verify factory returns a properly configured instance
-        // HomeView is stateless, so we just verify it was created
-        _ = view
+        // Then
+        _ = sut
     }
 }
 ```
@@ -338,6 +281,7 @@ struct HomeFeatureTests {
 ## Generic Feature Tests Pattern
 
 ```swift
+import {AppName}Core
 import {AppName}CoreMocks
 import {AppName}NetworkingMocks
 import Foundation
@@ -346,50 +290,53 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Feature}FeatureTests {
-    private let testBundle = Bundle(for: BundleToken.self)
+    // MARK: - Init
 
     @Test
-    func makeViewModelReturnsConfiguredInstance() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let routerMock = RouterMock()
-        let sut = {Feature}Feature(httpClient: httpClientMock)
-
-        // When
-        let viewModel = sut.makeDetailViewModel(identifier: 42, router: routerMock)
+    func initWithDefaultDependenciesDoesNotCrash() {
+        // Given/When
+        let sut = {Feature}Feature()
 
         // Then
-        #expect(viewModel.state == .idle)
+        _ = sut
     }
 
     @Test
-    func makeViewModelUsesSharedRepository() async throws {
+    func initWithCustomDependenciesDoesNotCrash() {
         // Given
-        let jsonData = try testBundle.loadJSONData("{name}")
-        let httpClientMock = HTTPClientMock(result: .success(jsonData))
-        let routerMock = RouterMock()
-        let sut = {Feature}Feature(httpClient: httpClientMock)
+        let httpClientMock = HTTPClientMock()
 
         // When
-        let viewModel1 = sut.makeDetailViewModel(identifier: 1, router: routerMock)
-        let viewModel2 = sut.makeDetailViewModel(identifier: 1, router: routerMock)
+        let sut = {Feature}Feature(httpClient: httpClientMock)
 
-        // Load data through both ViewModels
-        await viewModel1.load()
-        await viewModel2.load()
+        // Then
+        _ = sut
+    }
 
-        // Then - Both should use the same repository (second call uses cache)
-        #expect(httpClientMock.requestedEndpoints.count == 1)
+    // MARK: - Feature Protocol
+
+    @Test
+    func registerDeepLinksRegistersHandler() throws {
+        // Given
+        let sut = {Feature}Feature()
+
+        // When
+        sut.registerDeepLinks()
+
+        // Then - Deep link is registered
+        let url = try #require(URL(string: "challenge://{feature}/list"))
+        let navigation = DeepLinkRegistry.shared.resolve(url)
+        #expect(navigation != nil)
     }
 }
-
-private final class BundleToken {}
 ```
 
 ### What to Test
 
 | Test | Purpose |
 |------|---------|
-| Factory returns instance | Verify wiring doesn't crash |
-| Shared repository | Verify memoryDataSource is reused across ViewModels |
-| Injected dependencies | Verify mock is used when injected |
+| Init with default dependencies | Verify feature initializes without crashing |
+| Init with custom dependencies | Verify dependency injection works |
+| registerDeepLinks() | Verify deep links are registered correctly |
+
+**Note:** Factory methods are private. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.

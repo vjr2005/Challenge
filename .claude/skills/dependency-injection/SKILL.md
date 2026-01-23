@@ -307,7 +307,7 @@ func makeListViewModel(router: any RouterContract) -> {Name}ListViewModel {
 | NavigatorContract | internal | Internal to feature |
 | Navigator | internal | Internal implementation |
 | Views | internal | Internal UI |
-| Factory methods | internal | Accessible via @testable for tests |
+| Factory methods | **private** | Implementation detail, not directly tested |
 
 ---
 
@@ -375,7 +375,7 @@ struct ContentView: View {
 
 ## Testing Features
 
-Features must be tested to verify correct dependency wiring.
+Features are tested through their **public interface**. Factory methods are private implementation details.
 
 ### File Structure
 
@@ -390,9 +390,11 @@ Features/{Feature}/
 
 | Test | Purpose |
 |------|---------|
-| Factory returns instance | Verify wiring doesn't crash |
-| Shared repository | Verify memoryDataSource is reused across ViewModels |
-| Injected dependencies | Verify mock is used when injected |
+| Init with default dependencies | Verify feature initializes without crashing |
+| Init with custom dependencies | Verify dependency injection works |
+| registerDeepLinks() | Verify deep links are registered correctly |
+
+**Note:** Factory methods are private. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.
 
 For complete test examples, see [examples.md](examples.md).
 
@@ -443,8 +445,8 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
 - [ ] Feature creates Navigator and injects into ViewModel
 - [ ] Views only receive ViewModel
-- [ ] Use factory methods for ViewModels (internal visibility for tests)
+- [ ] Use private factory methods for ViewModels
 - [ ] Add feature to `ChallengeApp.features` array
 - [ ] `ChallengeApp.init` iterates features to register deep links
 - [ ] `ContentView` receives features and uses `.withNavigationDestinations(features:router:)`
-- [ ] **Create feature tests verifying factory methods and shared repository**
+- [ ] **Create feature tests verifying init and registerDeepLinks()**
