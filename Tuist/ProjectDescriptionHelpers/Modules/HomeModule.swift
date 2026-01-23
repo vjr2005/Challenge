@@ -3,7 +3,8 @@ import ProjectDescription
 public enum HomeModule {
     public static let module = FrameworkModule.create(
         name: "Home",
-        path: "Features/Home",
+        baseFolder: "Features",
+        path: "Home",
         dependencies: [
             .target(name: "\(appName)Core"),
             .target(name: "\(appName)Common"),

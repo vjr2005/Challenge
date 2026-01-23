@@ -21,7 +21,7 @@ Guide for creating Repositories that abstract data access following Clean Archit
 ## File structure
 
 ```
-Libraries/Features/{Feature}/
+Features/{Feature}/
 ├── Sources/
 │   ├── Domain/
 │   │   ├── Models/

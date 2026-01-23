@@ -49,24 +49,26 @@ public struct FrameworkModule: @unchecked Sendable {
 	}
 
 	/// Checks if a Mocks folder exists with Swift files.
-	private static func hasMocksFolder(path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/Libraries/\(path)/Mocks", withExtension: ".swift")
+	private static func hasMocksFolder(baseFolder: String, path: String) -> Bool {
+		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Mocks", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests folder exists with Swift files.
-	private static func hasTestsFolder(path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/Libraries/\(path)/Tests", withExtension: ".swift")
+	private static func hasTestsFolder(baseFolder: String, path: String) -> Bool {
+		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Tests", withExtension: ".swift")
 	}
 
 	/// Checks if a Sources/Resources folder exists with any files.
-	private static func hasResourcesFolder(path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/Libraries/\(path)/Sources/Resources")
+	private static func hasResourcesFolder(baseFolder: String, path: String) -> Bool {
+		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Sources/Resources")
 	}
 
 	/// Creates a framework module with targets (framework, mocks, tests) and scheme with coverage.
 	/// - Parameters:
 	///   - name: The framework name (e.g., "Networking", "Character"). Must not contain "/".
-	///   - path: The path to the module sources relative to Libraries/ (e.g., "Features/Character").
+	///   - baseFolder: The base folder containing the module (e.g., "Libraries" or "Features").
+	///                 Defaults to "Libraries".
+	///   - path: The path to the module sources relative to baseFolder (e.g., "Character").
 	///           Defaults to name if not specified.
 	///   - destinations: Deployment destinations (default: iPhone, iPad)
 	///   - dependencies: Framework dependencies
@@ -75,6 +77,7 @@ public struct FrameworkModule: @unchecked Sendable {
 	///         folders exist with appropriate files (Swift files for Mocks/Tests, any files for Resources).
 	public static func create(
 		name: String,
+		baseFolder: String = "Libraries",
 		path: String? = nil,
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
@@ -84,8 +87,8 @@ public struct FrameworkModule: @unchecked Sendable {
 		let testsTargetName = "\(targetName)Tests"
 		let sourcesPath = path ?? name
 
-		let resources: ResourceFileElements? = hasResourcesFolder(path: sourcesPath) ? [
-			.glob(pattern: "Libraries/\(sourcesPath)/Sources/Resources/**", excluding: [])
+		let resources: ResourceFileElements? = hasResourcesFolder(baseFolder: baseFolder, path: sourcesPath) ? [
+			.glob(pattern: "\(baseFolder)/\(sourcesPath)/Sources/Resources/**", excluding: [])
 		] : nil
 
 		let framework = Target.target(
@@ -94,23 +97,23 @@ public struct FrameworkModule: @unchecked Sendable {
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			deploymentTargets: developmentTarget,
-			sources: ["Libraries/\(sourcesPath)/Sources/**"],
+			sources: ["\(baseFolder)/\(sourcesPath)/Sources/**"],
 			resources: resources,
-			scripts: [SwiftLint.script(path: "Libraries/\(sourcesPath)/Sources")],
+			scripts: [SwiftLint.script(path: "\(baseFolder)/\(sourcesPath)/Sources")],
 			dependencies: dependencies
 		)
 
 		var targets = [framework]
 		var testsDependencies: [TargetDependency] = [.target(name: targetName)]
 
-		if hasMocksFolder(path: sourcesPath) {
+		if hasMocksFolder(baseFolder: baseFolder, path: sourcesPath) {
 			let mocks = Target.target(
 				name: "\(targetName)Mocks",
 				destinations: destinations,
 				product: .framework,
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)Mocks",
 				deploymentTargets: developmentTarget,
-				sources: ["Libraries/\(sourcesPath)/Mocks/**"],
+				sources: ["\(baseFolder)/\(sourcesPath)/Mocks/**"],
 				dependencies: [.target(name: targetName)]
 			)
 			targets.append(mocks)
@@ -119,17 +122,17 @@ public struct FrameworkModule: @unchecked Sendable {
 
 		var scheme: Scheme
 
-		if hasTestsFolder(path: sourcesPath) {
+		if hasTestsFolder(baseFolder: baseFolder, path: sourcesPath) {
 			let tests = Target.target(
 				name: testsTargetName,
 				destinations: destinations,
 				product: .unitTests,
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(testsTargetName)",
 				deploymentTargets: developmentTarget,
-				sources: ["Libraries/\(sourcesPath)/Tests/**"],
+				sources: ["\(baseFolder)/\(sourcesPath)/Tests/**"],
 				resources: [
-					.glob(pattern: "Libraries/\(sourcesPath)/Tests/Resources/**", excluding: []),
-					.glob(pattern: "Libraries/\(sourcesPath)/Tests/Fixtures/**", excluding: []),
+					.glob(pattern: "\(baseFolder)/\(sourcesPath)/Tests/Resources/**", excluding: []),
+					.glob(pattern: "\(baseFolder)/\(sourcesPath)/Tests/Fixtures/**", excluding: []),
 				],
 				dependencies: testsDependencies + testDependencies
 			)

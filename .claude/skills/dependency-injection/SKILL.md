@@ -20,7 +20,7 @@ Guide for creating dependency injection with Feature per Module pattern.
 ## File structure
 
 ```
-Libraries/Features/{Feature}/
+Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift              # Public entry point (struct implementing Feature protocol)
 │   ├── Navigation/
@@ -380,7 +380,7 @@ Features must be tested to verify correct dependency wiring.
 ### File Structure
 
 ```
-Libraries/Features/{Feature}/
+Features/{Feature}/
 └── Tests/
     └── Feature/
         └── {Feature}FeatureTests.swift

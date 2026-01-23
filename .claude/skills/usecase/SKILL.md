@@ -16,7 +16,7 @@ Guide for creating UseCases that encapsulate business logic following Clean Arch
 ## File structure
 
 ```
-Libraries/Features/{Feature}/
+Features/{Feature}/
 ├── Sources/
 │   └── Domain/
 │       ├── Models/

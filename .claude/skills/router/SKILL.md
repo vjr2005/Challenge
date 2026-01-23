@@ -247,7 +247,7 @@ Each feature defines its navigation destinations and deep link handler:
 ### Navigation Enum (Internal)
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Navigation/{Feature}Navigation.swift
+// Features/{Feature}/Sources/Navigation/{Feature}Navigation.swift
 import {AppName}Core
 
 enum {Feature}Navigation: Navigation {
@@ -261,7 +261,7 @@ enum {Feature}Navigation: Navigation {
 ### DeepLinkHandler (Internal)
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Navigation/{Feature}DeepLinkHandler.swift
+// Features/{Feature}/Sources/Navigation/{Feature}DeepLinkHandler.swift
 import {AppName}Core
 import Foundation
 
@@ -312,7 +312,7 @@ ViewModels use **Navigators** instead of Router directly. This:
 ### Navigator Contract
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift
+// Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift
 protocol {Screen}NavigatorContract {
     func navigateToDetail(id: Int)  // INTERNAL navigation
     func goBack()
@@ -322,7 +322,7 @@ protocol {Screen}NavigatorContract {
 ### Navigator Implementation
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift
+// Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift
 import {AppName}Core
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
@@ -346,12 +346,12 @@ struct {Screen}Navigator: {Screen}NavigatorContract {
 ### Navigator for External Navigation (Cross-Feature)
 
 ```swift
-// Libraries/Features/Home/Sources/Presentation/Home/Navigator/HomeNavigatorContract.swift
+// Features/Home/Sources/Presentation/Home/Navigator/HomeNavigatorContract.swift
 protocol HomeNavigatorContract {
     func navigateToCharacters()  // EXTERNAL navigation
 }
 
-// Libraries/Features/Home/Sources/Presentation/Home/Navigator/HomeNavigator.swift
+// Features/Home/Sources/Presentation/Home/Navigator/HomeNavigator.swift
 import {AppName}Core
 import Foundation
 
@@ -451,7 +451,7 @@ struct ContentView: View {
 ViewModels receive **NavigatorContract**, not RouterContract:
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Presentation/ViewModels/{Name}ViewModel.swift
+// Features/{Feature}/Sources/Presentation/ViewModels/{Name}ViewModel.swift
 import Foundation
 
 @Observable
@@ -492,7 +492,7 @@ final class {Name}ViewModel {
 Feature creates Navigator and injects into ViewModel:
 
 ```swift
-// Libraries/Features/{Feature}/Sources/{Feature}Feature.swift
+// Features/{Feature}/Sources/{Feature}Feature.swift
 import {AppName}Core
 import SwiftUI
 
@@ -523,7 +523,7 @@ public struct {Feature}Feature: Feature {
 ### Navigator Mock
 
 ```swift
-// Libraries/Features/{Feature}/Tests/Mocks/{Screen}NavigatorMock.swift
+// Features/{Feature}/Tests/Mocks/{Screen}NavigatorMock.swift
 @testable import {AppName}{Feature}
 
 final class {Screen}NavigatorMock: {Screen}NavigatorContract {
@@ -585,7 +585,7 @@ struct {Name}ViewModelTests {
 ### Navigator Tests
 
 ```swift
-// Libraries/Features/{Feature}/Tests/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift
+// Features/{Feature}/Tests/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift
 import {AppName}CoreMocks
 import Testing
 
@@ -678,7 +678,7 @@ Libraries/Core/
 └── Mocks/
     └── RouterMock.swift
 
-Libraries/Features/{Feature}/
+Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift               # Feature struct implementing Feature protocol
 │   ├── Navigation/

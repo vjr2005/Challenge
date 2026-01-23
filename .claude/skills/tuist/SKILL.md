@@ -88,7 +88,7 @@ extension Bundle {
 
 Currently used in:
 - `Libraries/Common/Sources/Bundle+Module.swift`
-- `Libraries/Features/{Feature}/Tests/Extensions/Bundle+Module.swift`
+- `Features/{Feature}/Tests/Extensions/Bundle+Module.swift`
 
 ---
 

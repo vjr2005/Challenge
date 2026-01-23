@@ -3,7 +3,8 @@ import ProjectDescription
 public enum CharacterModule {
 	public static let module = FrameworkModule.create(
 		name: "Character",
-		path: "Features/Character",
+		baseFolder: "Features",
+		path: "Character",
 		dependencies: [
 			.target(name: "\(appName)Core"),
 			.target(name: "\(appName)Networking"),

@@ -20,7 +20,7 @@ Guide for creating SwiftUI Views that use ViewModels with dependency injection.
 ## File structure
 
 ```
-Libraries/Features/{Feature}/
+Features/{Feature}/
 ├── Sources/
 │   └── Presentation/
 │       ├── {Name}List/

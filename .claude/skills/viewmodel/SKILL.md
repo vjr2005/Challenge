@@ -16,7 +16,7 @@ Guide for creating ViewModels that manage state and coordinate between Views and
 ## File structure
 
 ```
-Libraries/Features/{Feature}/
+Features/{Feature}/
 ├── Sources/
 │   └── Presentation/
 │       └── {ScreenName}/                           # Group by screen (e.g., CharacterDetail)
