@@ -106,18 +106,18 @@ import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    static let features: [any Feature] = [
+    let features: [any Feature] = [
         CharacterFeature(),
         HomeFeature()
     ]
 
     init() {
-        Self.features.forEach { $0.registerDeepLinks() }
+        features.forEach { $0.registerDeepLinks() }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(features: Self.features)
+            ContentView(features: features)
         }
     }
 }

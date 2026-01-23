@@ -20,7 +20,7 @@ Guide for implementing navigation using Router pattern with SwiftUI NavigationSt
 ┌─────────────────────────────────────────────────────────────┐
 │                         App                                  │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  static let features: [any Feature] = [...]         │    │
+│  │  let features: [any Feature] = [...]                │    │
 │  │  init() { features.forEach { $0.registerDeepLinks() } }  │
 │  └─────────────────────────────────────────────────────┘    │
 │                            │                                 │
@@ -388,18 +388,18 @@ import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    static let features: [any Feature] = [
+    let features: [any Feature] = [
         CharacterFeature(),
         HomeFeature()
     ]
 
     init() {
-        Self.features.forEach { $0.registerDeepLinks() }
+        features.forEach { $0.registerDeepLinks() }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(features: Self.features)
+            ContentView(features: features)
         }
     }
 }
@@ -436,7 +436,7 @@ struct ContentView: View {
 ```
 
 **Rules:**
-- Define features in `ChallengeApp` as static array
+- Define features in `ChallengeApp` as instance property
 - Register deep links in `ChallengeApp.init()` by iterating features
 - Pass features to ContentView
 - Create Router with `@State` in ContentView
@@ -729,7 +729,7 @@ Libraries/Features/{Feature}/
 
 ### App Configuration
 - [ ] `Project.swift` has `CFBundleURLTypes` with URL scheme (e.g., `challenge`)
-- [ ] `ChallengeApp` has static `features: [any Feature]` array
+- [ ] `ChallengeApp` has `let features: [any Feature]` property
 - [ ] `ChallengeApp.init` iterates features to call `registerDeepLinks()`
 - [ ] `ChallengeApp` passes features to `ContentView(features:)`
 - [ ] `ContentView` creates `@State private var router = Router()`
