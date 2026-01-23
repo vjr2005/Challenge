@@ -92,6 +92,49 @@ Currently used in:
 
 ---
 
+## URL Schemes (Deep Links)
+
+To enable the app to receive external URLs (from Safari, other apps, push notifications), configure `CFBundleURLTypes` in the app's Info.plist:
+
+```swift
+// Project.swift
+let appInfoPlist: [String: Plist.Value] = [
+    "UILaunchStoryboardName": "LaunchScreen",
+    // ... other settings ...
+    "CFBundleURLTypes": [
+        [
+            "CFBundleURLSchemes": ["challenge"],
+            "CFBundleURLName": "com.app.Challenge",
+        ],
+    ],
+]
+```
+
+**Configuration:**
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `CFBundleURLSchemes` | `["challenge"]` | URL scheme the app responds to |
+| `CFBundleURLName` | `"com.app.Challenge"` | Unique identifier for this URL type |
+
+**Usage:**
+
+After configuration, the app can receive URLs like:
+- `challenge://character/list`
+- `challenge://character/detail?id=42`
+
+Handle incoming URLs in `ContentView` with `.onOpenURL`:
+
+```swift
+.onOpenURL { url in
+    router.navigate(to: url)
+}
+```
+
+See `/router` skill for deep link implementation details.
+
+---
+
 ## Derived Folder
 
 Tuist generates files in the `Derived/` folder:

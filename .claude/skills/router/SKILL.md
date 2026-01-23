@@ -391,6 +391,9 @@ struct ContentView: View {
                 .characterNavigationDestination(router: router)
                 // Add other features here...
         }
+        .onOpenURL { url in
+            router.navigate(to: url)
+        }
     }
 }
 ```
@@ -400,6 +403,7 @@ struct ContentView: View {
 - Create Router with `@State` in ContentView
 - Bind path with `$router.path`
 - Use `.{feature}NavigationDestination(router:)` extensions (not `.navigationDestination(for:)` directly)
+- Use `.onOpenURL` to handle external URLs (from Safari, other apps, push notifications)
 
 ---
 
@@ -664,17 +668,26 @@ Libraries/Features/{Feature}/
 
 ## Checklist
 
+### Core Setup
 - [ ] Core has `RouterContract`, `Navigation`, `Router`, `RouterMock`
 - [ ] Core has `DeepLinkHandler`, `DeepLinkRegistry`, `URL+QueryParameter`
-- [ ] Feature has internal `{Feature}Navigation` conforming to `Navigation`
-- [ ] Feature has `{Feature}DeepLinkHandler` in `Sources/Navigation/` with `register()` method
-- [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigator/`
+
+### App Configuration
+- [ ] `Project.swift` has `CFBundleURLTypes` with URL scheme (e.g., `challenge`)
 - [ ] `ChallengeApp` calls `{Feature}Feature.registerDeepLinks()` in init
 - [ ] `ContentView` creates `@State private var router = Router()`
 - [ ] `ContentView` uses `NavigationStack(path: $router.path)`
 - [ ] `ContentView` uses `.{feature}NavigationDestination(router:)` for each feature
+- [ ] `ContentView` uses `.onOpenURL { url in router.navigate(to: url) }` for external URLs
+
+### Feature Implementation
+- [ ] Feature has internal `{Feature}Navigation` conforming to `Navigation`
+- [ ] Feature has `{Feature}DeepLinkHandler` in `Sources/Navigation/` with `register()` method
+- [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigator/`
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] ViewModel injects `NavigatorContract` (not RouterContract)
+
+### Testing
 - [ ] Tests use `NavigatorMock` to verify navigation
 - [ ] Tests for Navigator in `Tests/Presentation/{Screen}/Navigator/` verify Router calls
 - [ ] Tests for DeepLinkHandler in `Tests/Navigation/` verify URL resolution

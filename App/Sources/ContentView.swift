@@ -11,6 +11,9 @@ struct ContentView: View {
             HomeFeature.makeHomeView(router: router)
                 .characterNavigationDestination(router: router)
         }
+        .onOpenURL { url in
+            router.navigate(to: url)
+        }
     }
 }
 

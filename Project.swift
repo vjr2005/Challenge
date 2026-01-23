@@ -17,6 +17,12 @@ let appInfoPlist: [String: Plist.Value] = [
 		"UIInterfaceOrientationLandscapeLeft",
 		"UIInterfaceOrientationLandscapeRight",
 	],
+	"CFBundleURLTypes": [
+		[
+			"CFBundleURLSchemes": ["challenge"],
+			"CFBundleURLName": "com.app.Challenge",
+		],
+	],
 ]
 
 let appTarget = Target.target(
