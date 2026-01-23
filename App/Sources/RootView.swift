@@ -3,7 +3,7 @@ import ChallengeCore
 import ChallengeHome
 import SwiftUI
 
-struct ContentView: View {
+struct RootView: View {
     let features: [any Feature]
     @State private var router = Router()
 
@@ -20,5 +20,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: [CharacterFeature(), HomeFeature()])
 }

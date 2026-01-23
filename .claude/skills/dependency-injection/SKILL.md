@@ -335,22 +335,22 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(features: features)
+            RootView(features: features)
         }
     }
 }
 ```
 
-### ContentView (Using Features)
+### RootView (Using Features)
 
 ```swift
-// App/Sources/ContentView.swift
+// App/Sources/RootView.swift
 import {AppName}Character
 import {AppName}Core
 import {AppName}Home
 import SwiftUI
 
-struct ContentView: View {
+struct RootView: View {
     let features: [any Feature]
     @State private var router = Router()
 
@@ -367,7 +367,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: [CharacterFeature(), HomeFeature()])
 }
 ```
 
@@ -448,5 +448,5 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Use private factory methods for ViewModels
 - [ ] Add feature to `ChallengeApp.features` array
 - [ ] `ChallengeApp.init` iterates features to register deep links
-- [ ] `ContentView` receives features and uses `.withNavigationDestinations(features:router:)`
+- [ ] `RootView` receives features and uses `.withNavigationDestinations(features:router:)`
 - [ ] **Create feature tests verifying init and registerDeepLinks()**

@@ -369,7 +369,7 @@ Derived/
 App/
 ├── Sources/
 │   ├── {AppName}App.swift        # App entry point with features array
-│   ├── ContentView.swift         # Root view with navigation
+│   ├── RootView.swift            # Root view with navigation
 │   └── Resources/
 │       └── Assets.xcassets/
 │           ├── AppIcon.appiconset/        # Production icon

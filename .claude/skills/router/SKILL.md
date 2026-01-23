@@ -26,7 +26,7 @@ Guide for implementing navigation using Router pattern with SwiftUI NavigationSt
 │                            │                                 │
 │                            ▼ passes features                 │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  ContentView(features: features)                    │    │
+│  │  RootView(features: features)                    │    │
 │  │  @State private var router = Router()               │    │
 │  │  .withNavigationDestinations(features:, router:)    │    │
 │  └─────────────────────────────────────────────────────┘    │
@@ -399,22 +399,22 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(features: features)
+            RootView(features: features)
         }
     }
 }
 ```
 
-### ContentView (Navigation Stack with Features)
+### RootView (Navigation Stack with Features)
 
 ```swift
-// App/Sources/ContentView.swift
+// App/Sources/RootView.swift
 import {AppName}Character
 import {AppName}Core
 import {AppName}Home
 import SwiftUI
 
-struct ContentView: View {
+struct RootView: View {
     let features: [any Feature]
     @State private var router = Router()
 
@@ -431,15 +431,15 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: [CharacterFeature(), HomeFeature()])
 }
 ```
 
 **Rules:**
 - Define features in `ChallengeApp` as instance property
 - Register deep links in `ChallengeApp.init()` by iterating features
-- Pass features to ContentView
-- Create Router with `@State` in ContentView
+- Pass features to RootView
+- Create Router with `@State` in RootView
 - Bind path with `$router.path`
 - Use `.withNavigationDestinations(features:router:)` to register all navigation destinations
 - Use `.onOpenURL` to handle external URLs (from Safari, other apps, push notifications)
@@ -731,11 +731,11 @@ Features/{Feature}/
 - [ ] `Project.swift` has `CFBundleURLTypes` with URL scheme (e.g., `challenge`)
 - [ ] `ChallengeApp` has `let features: [any Feature]` property
 - [ ] `ChallengeApp.init` iterates features to call `registerDeepLinks()`
-- [ ] `ChallengeApp` passes features to `ContentView(features:)`
-- [ ] `ContentView` creates `@State private var router = Router()`
-- [ ] `ContentView` uses `NavigationStack(path: $router.path)`
-- [ ] `ContentView` uses `.withNavigationDestinations(features:router:)`
-- [ ] `ContentView` uses `.onOpenURL { url in router.navigate(to: url) }` for external URLs
+- [ ] `ChallengeApp` passes features to `RootView(features:)`
+- [ ] `RootView` creates `@State private var router = Router()`
+- [ ] `RootView` uses `NavigationStack(path: $router.path)`
+- [ ] `RootView` uses `.withNavigationDestinations(features:router:)`
+- [ ] `RootView` uses `.onOpenURL { url in router.navigate(to: url) }` for external URLs
 
 ### Feature Implementation
 - [ ] Feature struct implements `Feature` protocol

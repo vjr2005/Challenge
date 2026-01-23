@@ -117,20 +117,20 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(features: features)
+            RootView(features: features)
         }
     }
 }
 ```
 
 ```swift
-// In App/Sources/ContentView.swift
+// In App/Sources/RootView.swift
 import {AppName}Character
 import {AppName}Core
 import {AppName}Home
 import SwiftUI
 
-struct ContentView: View {
+struct RootView: View {
     let features: [any Feature]
     @State private var router = Router()
 
@@ -147,7 +147,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: [CharacterFeature(), HomeFeature()])
 }
 ```
 

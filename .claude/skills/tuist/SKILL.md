@@ -123,7 +123,7 @@ After configuration, the app can receive URLs like:
 - `challenge://character/list`
 - `challenge://character/detail?id=42`
 
-Handle incoming URLs in `ContentView` with `.onOpenURL`:
+Handle incoming URLs in `RootView` with `.onOpenURL`:
 
 ```swift
 .onOpenURL { url in

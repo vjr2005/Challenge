@@ -16,7 +16,7 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(features: features)
+            RootView(features: features)
         }
     }
 }
