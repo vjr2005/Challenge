@@ -192,76 +192,61 @@ private enum AccessibilityIdentifier {
 // MARK: - Previews
 
 #Preview("Loading") {
-    NavigationStack {
-        CharacterDetailView(
-            viewModel: CharacterDetailViewModel(
-                identifier: 1,
-                getCharacterUseCase: GetCharacterUseCasePreviewMock(delay: true),
-                navigator: CharacterDetailNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .loading))
+	}
 }
 
 #Preview("Loaded") {
-    NavigationStack {
-        CharacterDetailView(
-            viewModel: CharacterDetailViewModel(
-                identifier: 1,
-                getCharacterUseCase: GetCharacterUseCasePreviewMock(),
-                navigator: CharacterDetailNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .loaded(.previewStub())))
+	}
 }
 
 #Preview("Error") {
-    NavigationStack {
-        CharacterDetailView(
-            viewModel: CharacterDetailViewModel(
-                identifier: 1,
-                getCharacterUseCase: GetCharacterUseCasePreviewMock(shouldFail: true),
-                navigator: CharacterDetailNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(PreviewError.failed)))
+	}
 }
 
-// MARK: - Preview Mocks
+// MARK: - Preview Stubs
 
-private final class GetCharacterUseCasePreviewMock: GetCharacterUseCaseContract {
-    private let delay: Bool
-    private let shouldFail: Bool
+#if DEBUG
+@Observable
+private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {
+	var state: CharacterDetailViewState
 
-    init(delay: Bool = false, shouldFail: Bool = false) {
-        self.delay = delay
-        self.shouldFail = shouldFail
-    }
+	init(state: CharacterDetailViewState) {
+		self.state = state
+	}
 
-    func execute(identifier: Int) async throws -> Character {
-        if delay {
-            try? await Task.sleep(for: .seconds(100))
-        }
-        if shouldFail {
-            throw PreviewError.failed
-        }
-        return Character(
-            id: 1,
-            name: "Rick Sanchez",
-            status: .alive,
-            species: "Human",
-            gender: "Male",
-            origin: Location(name: "Earth (C-137)", url: nil),
-            location: Location(name: "Citadel of Ricks", url: nil),
-            imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
-        )
-    }
+	func load() async {}
+	func didTapOnBack() {}
 }
 
-private enum PreviewError: Error {
-    case failed
+private extension Character {
+	static func previewStub(
+		id: Int = 1,
+		name: String = "Rick Sanchez",
+		status: CharacterStatus = .alive,
+		species: String = "Human",
+		gender: String = "Male"
+	) -> Character {
+		Character(
+			id: id,
+			name: name,
+			status: status,
+			species: species,
+			gender: gender,
+			origin: Location(name: "Earth (C-137)", url: nil),
+			location: Location(name: "Citadel of Ricks", url: nil),
+			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
+		)
+	}
 }
 
-private final class CharacterDetailNavigatorPreviewMock: CharacterDetailNavigatorContract {
-    func goBack() {}
+private enum PreviewError: LocalizedError {
+	case failed
+	var errorDescription: String? { "Failed to load" }
 }
+#endif

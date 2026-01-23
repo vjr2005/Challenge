@@ -11,7 +11,7 @@ Guide for creating SwiftUI Views that use ViewModels with dependency injection.
 
 - Create a new View for a feature
 - Integrate View with ViewModel via init
-- Add SwiftUI Previews with mocks
+- Add SwiftUI Previews with ViewModel stubs
 
 ## Additional resources
 
@@ -40,13 +40,15 @@ Features/{Feature}/
 
 ## View Pattern
 
-Views receive ViewModel via init using `_viewModel = State(initialValue:)`:
+Views are generic over ViewModel contract and receive ViewModel via init:
+
+### Stateful Views (with ViewState)
 
 ```swift
-struct {Name}View: View {
-    @State private var viewModel: {Name}ViewModel
+struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
+    @State private var viewModel: ViewModel
 
-    init(viewModel: {Name}ViewModel) {
+    init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
 
@@ -67,9 +69,25 @@ struct {Name}View: View {
 }
 ```
 
+### Stateless Views (no ViewState)
+
+```swift
+struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
+    let viewModel: ViewModel
+
+    var body: some View {
+        Button("Action") {
+            viewModel.didTapOnButton()
+        }
+    }
+}
+```
+
 **Rules:**
-- **Init for ViewModel** - Use `_viewModel = State(initialValue:)` pattern
-- **Switch on state** - Use `switch` on `viewModel.state`
+- **Generic over contract** - Use `<ViewModel: {Name}ViewModelContract>` for testability
+- **Stateful views** - Use `@State` + `_viewModel = State(initialValue:)` pattern
+- **Stateless views** - Use `let viewModel` (no `@State` needed)
+- **Switch on state** - Use `switch` on `viewModel.state` for stateful views
 - **@ViewBuilder** - Use for computed properties returning Views
 - **Internal visibility**
 - **No Router in View** - Delegate actions to ViewModel
@@ -152,35 +170,75 @@ All Views must include previews. Create one for **each state except `idle`**.
 - **Skip `idle` state** - transient state with no visual content
 - **One preview per visual state** - Loading, Loaded, Empty, Error
 - **Use descriptive names** - `#Preview("Loading")`
-- **Create private preview mocks** - with configurable behavior
+- **Use ViewModel stubs** - same pattern as snapshot tests for consistency
 
-### Preview Mock Pattern
+### Preview Stub Pattern
+
+Use ViewModel stubs with direct state injection (same pattern as snapshot tests).
+
+> **IMPORTANT:** Wrap preview stubs in `#if DEBUG` to exclude them from release builds. The `#Preview` macro is already excluded automatically by the compiler.
 
 ```swift
-private final class Get{Name}UseCasePreviewMock: Get{Name}UseCaseContract {
-    private let delay: Bool
-    private let isEmpty: Bool
-    private let shouldFail: Bool
+// MARK: - Previews
 
-    init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
-        self.delay = delay
-        self.isEmpty = isEmpty
-        self.shouldFail = shouldFail
-    }
-
-    func execute() async throws -> {Name} {
-        if delay { try? await Task.sleep(for: .seconds(100)) }
-        if shouldFail { throw PreviewError.failed }
-        if isEmpty { return {Name}(items: []) }
-        return {Name}.stubForPreview()
+#Preview("Loading") {
+    NavigationStack {
+        {Name}View(viewModel: {Name}ViewModelPreviewStub(state: .loading))
     }
 }
 
-private final class RouterPreviewMock: RouterContract {
-    func navigate(to destination: any Navigation) {}
-    func goBack() {}
+#Preview("Loaded") {
+    NavigationStack {
+        {Name}View(viewModel: {Name}ViewModelPreviewStub(state: .loaded(.previewStub())))
+    }
 }
+
+#Preview("Error") {
+    NavigationStack {
+        {Name}View(viewModel: {Name}ViewModelPreviewStub(state: .error(PreviewError.failed)))
+    }
+}
+
+// MARK: - Preview Stubs
+
+#if DEBUG
+@Observable
+private final class {Name}ViewModelPreviewStub: {Name}ViewModelContract {
+    var state: {Name}ViewState
+
+    init(state: {Name}ViewState) {
+        self.state = state
+    }
+
+    func load() async {}
+    // Add other protocol methods as no-ops
+}
+
+private extension {Model} {
+    static func previewStub(
+        id: Int = 1,
+        name: String = "Sample Name"
+        // Add other properties with defaults
+    ) -> {Model} {
+        {Model}(id: id, name: name, ...)
+    }
+}
+
+private enum PreviewError: LocalizedError {
+    case failed
+    var errorDescription: String? { "Failed to load" }
+}
+#endif
 ```
+
+> **Note:** For stateless views (no ViewState), use ViewModel stubs with no-op implementations:
+> ```swift
+> #if DEBUG
+> private final class {Name}ViewModelPreviewStub: {Name}ViewModelContract {
+>     func didTapOnButton() {}
+> }
+> #endif
+> ```
 
 ---
 

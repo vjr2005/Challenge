@@ -1,24 +1,24 @@
 import ChallengeShared
 import SwiftUI
 
-struct HomeView: View {
-    /// Not @State: ViewModel has no observable state, just actions.
-    let viewModel: HomeViewModel
+struct HomeView<ViewModel: HomeViewModelContract>: View {
+	/// Not @State: ViewModel has no observable state, just actions.
+	let viewModel: ViewModel
 
-    var body: some View {
-        VStack(spacing: 20) {
-            Text(LocalizedStrings.title)
-                .font(.largeTitle)
+	var body: some View {
+		VStack(spacing: 20) {
+			Text(LocalizedStrings.title)
+				.font(.largeTitle)
 
-            Button {
-                viewModel.didTapOnCharacterButton()
-            } label: {
-                Text(LocalizedStrings.goToCharacters)
-            }
-            .buttonStyle(.borderedProminent)
-            .accessibilityIdentifier(AccessibilityIdentifier.characterButton)
-        }
-    }
+			Button {
+				viewModel.didTapOnCharacterButton()
+			} label: {
+				Text(LocalizedStrings.goToCharacters)
+			}
+			.buttonStyle(.borderedProminent)
+			.accessibilityIdentifier(AccessibilityIdentifier.characterButton)
+		}
+	}
 }
 
 // MARK: - LocalizedStrings
@@ -37,11 +37,13 @@ private enum AccessibilityIdentifier {
 // MARK: - Previews
 
 #Preview {
-    HomeView(viewModel: HomeViewModel(navigator: HomeNavigatorPreviewMock()))
+	HomeView(viewModel: HomeViewModelPreviewStub())
 }
 
-// MARK: - Preview Mocks
+// MARK: - Preview Stubs
 
-private final class HomeNavigatorPreviewMock: HomeNavigatorContract {
-    func navigateToCharacters() {}
+#if DEBUG
+private final class HomeViewModelPreviewStub: HomeViewModelContract {
+	func didTapOnCharacterButton() {}
 }
+#endif

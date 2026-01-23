@@ -218,125 +218,85 @@ private enum AccessibilityIdentifier {
 // MARK: - Previews
 
 #Preview("Loading") {
-    NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
-                navigator: CharacterListNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loading))
+	}
 }
 
 #Preview("Loaded") {
-    NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(),
-                navigator: CharacterListNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loaded(.previewStub())))
+	}
 }
 
 #Preview("Empty") {
-    NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
-                navigator: CharacterListNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .empty))
+	}
 }
 
 #Preview("Error") {
-    NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
-                navigator: CharacterListNavigatorPreviewMock()
-            )
-        )
-    }
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(PreviewError.failed)))
+	}
 }
 
-// MARK: - Preview Mocks
+// MARK: - Preview Stubs
 
-private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContract {
-    private let delay: Bool
-    private let isEmpty: Bool
-    private let shouldFail: Bool
+#if DEBUG
+@Observable
+private final class CharacterListViewModelPreviewStub: CharacterListViewModelContract {
+	var state: CharacterListViewState
 
-    init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
-        self.delay = delay
-        self.isEmpty = isEmpty
-        self.shouldFail = shouldFail
-    }
+	init(state: CharacterListViewState) {
+		self.state = state
+	}
 
-    func execute(page: Int) async throws -> CharactersPage {
-        if delay {
-            try? await Task.sleep(for: .seconds(100))
-        }
-        if shouldFail {
-            throw PreviewError.failed
-        }
-        if isEmpty {
-            return CharactersPage(
-                characters: [],
-                currentPage: 1,
-                totalPages: 0,
-                totalCount: 0,
-                hasNextPage: false,
-                hasPreviousPage: false
-            )
-        }
-        return CharactersPage(
-            characters: [
-                Character(
-                    id: 1,
-                    name: "Rick Sanchez",
-                    status: .alive,
-                    species: "Human",
-                    gender: "Male",
-                    origin: Location(name: "Earth (C-137)", url: nil),
-                    location: Location(name: "Citadel of Ricks", url: nil),
-                    imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
-                ),
-                Character(
-                    id: 2,
-                    name: "Morty Smith",
-                    status: .alive,
-                    species: "Human",
-                    gender: "Male",
-                    origin: Location(name: "Earth (C-137)", url: nil),
-                    location: Location(name: "Citadel of Ricks", url: nil),
-                    imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/2.jpeg")
-                ),
-                Character(
-                    id: 3,
-                    name: "Summer Smith",
-                    status: .alive,
-                    species: "Human",
-                    gender: "Female",
-                    origin: Location(name: "Earth (Replacement Dimension)", url: nil),
-                    location: Location(name: "Earth (Replacement Dimension)", url: nil),
-                    imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/3.jpeg")
-                )
-            ],
-            currentPage: 1,
-            totalPages: 42,
-            totalCount: 826,
-            hasNextPage: true,
-            hasPreviousPage: false
-        )
-    }
+	func load() async {}
+	func loadMore() async {}
+	func didSelect(_ character: Character) {}
 }
 
-private enum PreviewError: Error {
-    case failed
+private extension CharactersPage {
+	static func previewStub() -> CharactersPage {
+		CharactersPage(
+			characters: [
+				.previewStub(id: 1, name: "Rick Sanchez", status: .alive),
+				.previewStub(id: 2, name: "Morty Smith", status: .alive),
+				.previewStub(id: 3, name: "Summer Smith", status: .dead)
+			],
+			currentPage: 1,
+			totalPages: 42,
+			totalCount: 826,
+			hasNextPage: true,
+			hasPreviousPage: false
+		)
+	}
 }
 
-private final class CharacterListNavigatorPreviewMock: CharacterListNavigatorContract {
-    func navigateToDetail(id: Int) {}
+private extension Character {
+	static func previewStub(
+		id: Int = 1,
+		name: String = "Rick Sanchez",
+		status: CharacterStatus = .alive,
+		species: String = "Human",
+		gender: String = "Male"
+	) -> Character {
+		Character(
+			id: id,
+			name: name,
+			status: status,
+			species: species,
+			gender: gender,
+			origin: Location(name: "Earth (C-137)", url: nil),
+			location: Location(name: "Citadel of Ricks", url: nil),
+			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
+		)
+	}
 }
+
+private enum PreviewError: LocalizedError {
+	case failed
+	var errorDescription: String? { "Failed to load characters" }
+}
+#endif

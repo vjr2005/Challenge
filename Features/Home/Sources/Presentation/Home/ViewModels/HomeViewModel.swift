@@ -1,12 +1,12 @@
 /// Not @Observable: no state for the view to observe, only exposes actions.
-final class HomeViewModel {
-    private let navigator: HomeNavigatorContract
+final class HomeViewModel: HomeViewModelContract {
+	private let navigator: HomeNavigatorContract
 
-    init(navigator: HomeNavigatorContract) {
-        self.navigator = navigator
-    }
+	init(navigator: HomeNavigatorContract) {
+		self.navigator = navigator
+	}
 
-    func didTapOnCharacterButton() {
-        navigator.navigateToCharacters()
-    }
+	func didTapOnCharacterButton() {
+		navigator.navigateToCharacters()
+	}
 }

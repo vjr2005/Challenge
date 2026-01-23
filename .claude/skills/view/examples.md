@@ -82,83 +82,87 @@ private enum AccessibilityIdentifier {
 
 #Preview("Loading") {
     NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(delay: true),
-                router: RouterPreviewMock()
-            )
-        )
+        CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loading))
     }
 }
 
 #Preview("Loaded") {
     NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(),
-                router: RouterPreviewMock()
-            )
-        )
+        CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loaded(.previewStub())))
     }
 }
 
 #Preview("Empty") {
     NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(isEmpty: true),
-                router: RouterPreviewMock()
-            )
-        )
+        CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .empty))
     }
 }
 
 #Preview("Error") {
     NavigationStack {
-        CharacterListView(
-            viewModel: CharacterListViewModel(
-                getCharactersUseCase: GetCharactersUseCasePreviewMock(shouldFail: true),
-                router: RouterPreviewMock()
-            )
+        CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(PreviewError.failed)))
+    }
+}
+
+// MARK: - Preview Stubs
+
+#if DEBUG
+@Observable
+private final class CharacterListViewModelPreviewStub: CharacterListViewModelContract {
+    var state: CharacterListViewState
+
+    init(state: CharacterListViewState) {
+        self.state = state
+    }
+
+    func load() async {}
+    func loadMore() async {}
+    func didSelect(_ character: Character) {}
+}
+
+private extension CharactersPage {
+    static func previewStub() -> CharactersPage {
+        CharactersPage(
+            characters: [
+                .previewStub(id: 1, name: "Rick Sanchez", status: .alive),
+                .previewStub(id: 2, name: "Morty Smith", status: .alive),
+                .previewStub(id: 3, name: "Summer Smith", status: .dead)
+            ],
+            currentPage: 1,
+            totalPages: 42,
+            totalCount: 826,
+            hasNextPage: true,
+            hasPreviousPage: false
         )
     }
 }
 
-// MARK: - Preview Mocks
-
-private final class GetCharactersUseCasePreviewMock: GetCharactersUseCaseContract {
-    private let delay: Bool
-    private let isEmpty: Bool
-    private let shouldFail: Bool
-
-    init(delay: Bool = false, isEmpty: Bool = false, shouldFail: Bool = false) {
-        self.delay = delay
-        self.isEmpty = isEmpty
-        self.shouldFail = shouldFail
-    }
-
-    func execute() async throws -> [Character] {
-        if delay {
-            try? await Task.sleep(for: .seconds(100))
-        }
-        if shouldFail {
-            throw PreviewError.failed
-        }
-        if isEmpty {
-            return []
-        }
-        return [Character.stub()]
+private extension Character {
+    static func previewStub(
+        id: Int = 1,
+        name: String = "Rick Sanchez",
+        status: CharacterStatus = .alive,
+        species: String = "Human",
+        gender: String = "Male"
+    ) -> Character {
+        Character(
+            id: id,
+            name: name,
+            status: status,
+            species: species,
+            gender: gender,
+            origin: Location(name: "Earth (C-137)", url: nil),
+            location: Location(name: "Citadel of Ricks", url: nil),
+            imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
+        )
     }
 }
 
-private enum PreviewError: Error {
+private enum PreviewError: LocalizedError {
     case failed
+    var errorDescription: String? { "Failed to load characters" }
 }
-
-private final class RouterPreviewMock: RouterContract {
-    func navigate(to destination: any Navigation) {}
-    func goBack() {}
-}
+#endif
 ```
 
 ---
@@ -240,85 +244,78 @@ private enum AccessibilityIdentifier {
 
 #Preview("Loading") {
     NavigationStack {
-        CharacterDetailView(
-            viewModel: CharacterDetailViewModel(
-                identifier: 1,
-                getCharacterUseCase: GetCharacterUseCasePreviewMock(delay: true),
-                router: RouterPreviewMock()
-            )
-        )
+        CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .loading))
     }
 }
 
 #Preview("Loaded") {
     NavigationStack {
-        CharacterDetailView(
-            viewModel: CharacterDetailViewModel(
-                identifier: 1,
-                getCharacterUseCase: GetCharacterUseCasePreviewMock(),
-                router: RouterPreviewMock()
-            )
-        )
+        CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .loaded(.previewStub())))
     }
 }
 
 #Preview("Error") {
     NavigationStack {
-        CharacterDetailView(
-            viewModel: CharacterDetailViewModel(
-                identifier: 1,
-                getCharacterUseCase: GetCharacterUseCasePreviewMock(shouldFail: true),
-                router: RouterPreviewMock()
-            )
+        CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(PreviewError.failed)))
+    }
+}
+
+// MARK: - Preview Stubs
+
+#if DEBUG
+@Observable
+private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {
+    var state: CharacterDetailViewState
+
+    init(state: CharacterDetailViewState) {
+        self.state = state
+    }
+
+    func load() async {}
+    func didTapOnBack() {}
+}
+
+private extension Character {
+    static func previewStub(
+        id: Int = 1,
+        name: String = "Rick Sanchez",
+        status: CharacterStatus = .alive,
+        species: String = "Human",
+        gender: String = "Male"
+    ) -> Character {
+        Character(
+            id: id,
+            name: name,
+            status: status,
+            species: species,
+            gender: gender,
+            origin: Location(name: "Earth (C-137)", url: nil),
+            location: Location(name: "Citadel of Ricks", url: nil),
+            imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
         )
     }
 }
 
-// MARK: - Preview Mocks
-
-private final class GetCharacterUseCasePreviewMock: GetCharacterUseCaseContract {
-    private let delay: Bool
-    private let shouldFail: Bool
-
-    init(delay: Bool = false, shouldFail: Bool = false) {
-        self.delay = delay
-        self.shouldFail = shouldFail
-    }
-
-    func execute(identifier: Int) async throws -> Character {
-        if delay {
-            try? await Task.sleep(for: .seconds(100))
-        }
-        if shouldFail {
-            throw PreviewError.failed
-        }
-        return Character.stub()
-    }
-}
-
-private enum PreviewError: Error {
+private enum PreviewError: LocalizedError {
     case failed
+    var errorDescription: String? { "Failed to load" }
 }
-
-private final class RouterPreviewMock: RouterContract {
-    func navigate(to destination: any Navigation) {}
-    func goBack() {}
-}
+#endif
 ```
 
 ---
 
 ## HomeView (Stateless)
 
-Stateless views (no ViewState) need only one preview:
+Stateless views (no ViewState) still use ViewModel contracts for consistency:
 
 ```swift
 // Sources/Presentation/Home/Views/HomeView.swift
 import {AppName}Shared
 import SwiftUI
 
-struct HomeView: View {
-    let viewModel: HomeViewModel
+struct HomeView<ViewModel: HomeViewModelContract>: View {
+    let viewModel: ViewModel
 
     var body: some View {
         VStack(spacing: 24) {
@@ -351,16 +348,40 @@ private enum AccessibilityIdentifier {
 // MARK: - Previews
 
 #Preview {
-    NavigationStack {
-        HomeView(viewModel: HomeViewModel(router: RouterPreviewMock()))
-    }
+    HomeView(viewModel: HomeViewModelPreviewStub())
 }
 
-// MARK: - Preview Mocks
+// MARK: - Preview Stubs
 
-private final class RouterPreviewMock: RouterContract {
-    func navigate(to destination: any Navigation) {}
-    func goBack() {}
+#if DEBUG
+private final class HomeViewModelPreviewStub: HomeViewModelContract {
+    func didTapOnCharacterButton() {}
+}
+#endif
+```
+
+```swift
+// Sources/Presentation/Home/ViewModels/HomeViewModelContract.swift
+import Foundation
+
+protocol HomeViewModelContract {
+    func didTapOnCharacterButton()
+}
+```
+
+```swift
+// Sources/Presentation/Home/ViewModels/HomeViewModel.swift
+
+final class HomeViewModel: HomeViewModelContract {
+    private let navigator: HomeNavigatorContract
+
+    init(navigator: HomeNavigatorContract) {
+        self.navigator = navigator
+    }
+
+    func didTapOnCharacterButton() {
+        navigator.navigateToCharacters()
+    }
 }
 ```
 
