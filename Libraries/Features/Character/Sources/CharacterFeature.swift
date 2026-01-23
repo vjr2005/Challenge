@@ -24,12 +24,10 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    @MainActor
     public func registerDeepLinks() {
         CharacterDeepLinkHandler.register()
     }
 
-    @MainActor
     public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
         AnyView(
             view.navigationDestination(for: CharacterNavigation.self) { navigation in
@@ -40,7 +38,6 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Views
 
-    @MainActor
     @ViewBuilder
     private func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {
