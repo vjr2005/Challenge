@@ -1,6 +1,6 @@
 # Dependency Injection Examples
 
-Complete implementation examples for dependency injection with Container per Feature pattern.
+Complete implementation examples for dependency injection with Feature per Module pattern.
 
 ---
 
@@ -18,82 +18,109 @@ public enum CharacterNavigation: Navigation {
 }
 ```
 
-### Public Entry Point
+### Public Entry Point (Feature Struct)
 
 ```swift
 // Sources/CharacterFeature.swift
-import {AppName}Core
-import SwiftUI
-
-public enum CharacterFeature {
-    private static let container = CharacterContainer()
-
-    @ViewBuilder
-    public static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
-        switch navigation {
-        case .list:
-            CharacterListView(viewModel: container.makeListViewModel(router: router))
-        case .detail(let identifier):
-            CharacterDetailView(viewModel: container.makeDetailViewModel(identifier: identifier, router: router))
-        }
-    }
-}
-```
-
-### Internal Container
-
-```swift
-// Sources/Container/CharacterContainer.swift
+import {AppName}Common
 import {AppName}Core
 import {AppName}Networking
-import Foundation
+import SwiftUI
 
-final class CharacterContainer {
-    // MARK: - Infrastructure
+public struct CharacterFeature: Feature {
+    // MARK: - Dependencies
 
     private let httpClient: any HTTPClientContract
-
-    init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? HTTPClient(baseURL: APIConfiguration.rickAndMorty.baseURL)
-    }
-
-    // MARK: - Shared (lazy) - Source of Truth
-
     private let memoryDataSource = CharacterMemoryDataSource()
 
-    private lazy var repository: any CharacterRepositoryContract = CharacterRepository(
-        remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
-        memoryDataSource: memoryDataSource
-    )
+    private var repository: any CharacterRepositoryContract {
+        CharacterRepository(
+            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+            memoryDataSource: memoryDataSource
+        )
+    }
+
+    // MARK: - Init
+
+    public init(httpClient: (any HTTPClientContract)? = nil) {
+        self.httpClient = httpClient ?? HTTPClient(baseURL: AppEnvironment.current.rickAndMorty.baseURL)
+    }
+
+    // MARK: - Feature Protocol
+
+    @MainActor
+    public func registerDeepLinks() {
+        CharacterDeepLinkHandler.register()
+    }
+
+    @MainActor
+    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+        AnyView(
+            view.navigationDestination(for: CharacterNavigation.self) { navigation in
+                self.view(for: navigation, router: router)
+            }
+        )
+    }
+
+    // MARK: - Views
+
+    @MainActor
+    @ViewBuilder
+    private func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
+        switch navigation {
+        case .list:
+            CharacterListView(viewModel: makeCharacterListViewModel(router: router))
+        case .detail(let identifier):
+            CharacterDetailView(viewModel: makeCharacterDetailViewModel(identifier: identifier, router: router))
+        }
+    }
 
     // MARK: - Factories
 
-    func makeListViewModel(router: RouterContract) -> CharacterListViewModel {
+    func makeCharacterListViewModel(router: any RouterContract) -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: makeGetCharactersUseCase(),
-            router: router
+            getCharactersUseCase: GetCharactersUseCase(repository: repository),
+            navigator: CharacterListNavigator(router: router)
         )
     }
 
-    func makeDetailViewModel(identifier: Int, router: RouterContract) -> CharacterDetailViewModel {
+    func makeCharacterDetailViewModel(identifier: Int, router: any RouterContract) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterUseCase: makeGetCharacterUseCase(),
-            router: router
+            getCharacterUseCase: GetCharacterUseCase(repository: repository),
+            navigator: CharacterDetailNavigator(router: router)
         )
-    }
-
-    private func makeGetCharactersUseCase() -> some GetCharactersUseCaseContract {
-        GetCharactersUseCase(repository: repository)
-    }
-
-    private func makeGetCharacterUseCase() -> some GetCharacterUseCaseContract {
-        GetCharacterUseCase(repository: repository)
     }
 }
 ```
 
 ### Usage from App
+
+```swift
+// In App/Sources/ChallengeApp.swift
+import {AppName}Character
+import {AppName}Core
+import {AppName}Home
+import SwiftUI
+
+@main
+struct ChallengeApp: App {
+    static let features: [any Feature] = [
+        CharacterFeature(),
+        HomeFeature()
+    ]
+
+    init() {
+        Self.features.forEach { $0.registerDeepLinks() }
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView(features: Self.features)
+        }
+    }
+}
+```
 
 ```swift
 // In App/Sources/ContentView.swift
@@ -103,33 +130,29 @@ import {AppName}Home
 import SwiftUI
 
 struct ContentView: View {
+    let features: [any Feature]
     @State private var router = Router()
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            HomeFeature.makeHomeView(router: router)
-                .navigationDestination(for: CharacterNavigation.self) { navigation in
-                    CharacterFeature.view(for: navigation, router: router)
-                }
+            HomeFeature()
+                .makeHomeView(router: router)
+                .withNavigationDestinations(features: features, router: router)
+        }
+        .onOpenURL { url in
+            router.navigate(to: url)
         }
     }
+}
+
+#Preview {
+    ContentView(features: [CharacterFeature(), HomeFeature()])
 }
 ```
 
 ---
 
 ## HomeFeature Example (Simple)
-
-### Navigation Destinations
-
-```swift
-// Sources/Navigation/HomeNavigation.swift
-import {AppName}Core
-
-public enum HomeNavigation: Navigation {
-    case home
-}
-```
 
 ### Public Entry Point
 
@@ -138,49 +161,87 @@ public enum HomeNavigation: Navigation {
 import {AppName}Core
 import SwiftUI
 
-public enum HomeFeature {
-    private static let container = HomeContainer()
+public struct HomeFeature: Feature {
+    public init() {}
 
-    @ViewBuilder
-    public static func makeHomeView(router: RouterContract) -> some View {
-        HomeView(viewModel: container.makeHomeViewModel(router: router))
+    // MARK: - Feature Protocol
+
+    @MainActor
+    public func registerDeepLinks() {
+        // Home has no deep links
     }
-}
-```
 
-### Internal Container
+    @MainActor
+    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+        AnyView(view)
+    }
 
-```swift
-// Sources/Container/HomeContainer.swift
-import {AppName}Core
+    // MARK: - Factory
 
-final class HomeContainer {
-    func makeHomeViewModel(router: RouterContract) -> HomeViewModel {
-        HomeViewModel(router: router)
+    @MainActor
+    public func makeHomeView(router: any RouterContract) -> some View {
+        HomeView(viewModel: HomeViewModel(navigator: HomeNavigator(router: router)))
     }
 }
 ```
 
 ---
 
-## Container Tests
+## Feature Tests
 
-### CharacterContainerTests
+### CharacterFeatureTests
 
 ```swift
 import {AppName}CoreMocks
 import {AppName}NetworkingMocks
+import Foundation
 import Testing
 
 @testable import {AppName}Character
 
-struct CharacterContainerTests {
+struct CharacterFeatureTests {
+    private let testBundle = Bundle(for: BundleToken.self)
+
+    // MARK: - CharacterListViewModel
+
+    @Test
+    func makeCharacterListViewModelReturnsConfiguredInstance() {
+        // Given
+        let httpClientMock = HTTPClientMock()
+        let routerMock = RouterMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
+
+        // When
+        let viewModel = sut.makeCharacterListViewModel(router: routerMock)
+
+        // Then
+        #expect(viewModel.state == .idle)
+    }
+
+    @Test
+    func makeCharacterListViewModelUsesInjectedHTTPClient() async throws {
+        // Given
+        let jsonData = try testBundle.loadJSONData("characters_response")
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
+        let routerMock = RouterMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
+        let viewModel = sut.makeCharacterListViewModel(router: routerMock)
+
+        // When
+        await viewModel.load()
+
+        // Then
+        #expect(httpClientMock.requestedEndpoints.count == 1)
+    }
+
+    // MARK: - CharacterDetailViewModel
+
     @Test
     func makeCharacterDetailViewModelReturnsConfiguredInstance() {
         // Given
         let httpClientMock = HTTPClientMock()
         let routerMock = RouterMock()
-        let sut = CharacterContainer(httpClient: httpClientMock)
+        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
@@ -190,11 +251,12 @@ struct CharacterContainerTests {
     }
 
     @Test
-    func makeCharacterDetailViewModelUsesInjectedHTTPClient() async {
+    func makeCharacterDetailViewModelUsesInjectedHTTPClient() async throws {
         // Given
-        let httpClientMock = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let jsonData = try testBundle.loadJSONData("character")
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
         let routerMock = RouterMock()
-        let sut = CharacterContainer(httpClient: httpClientMock)
+        let sut = CharacterFeature(httpClient: httpClientMock)
         let viewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
 
         // When
@@ -204,12 +266,15 @@ struct CharacterContainerTests {
         #expect(httpClientMock.requestedEndpoints.count == 1)
     }
 
+    // MARK: - Shared Repository
+
     @Test
-    func multipleDetailViewModelsShareSameRepository() async {
+    func multipleDetailViewModelsShareSameRepository() async throws {
         // Given
-        let httpClientMock = HTTPClientMock(result: .success(CharacterDTO.stubJSONData()))
+        let jsonData = try testBundle.loadJSONData("character")
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
         let routerMock = RouterMock()
-        let sut = CharacterContainer(httpClient: httpClientMock)
+        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         let viewModel1 = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
@@ -221,10 +286,31 @@ struct CharacterContainerTests {
         // Then - Second load uses cached data from shared repository
         #expect(httpClientMock.requestedEndpoints.count == 1)
     }
+
+    @Test
+    func listAndDetailViewModelsShareSameRepository() async throws {
+        // Given
+        let jsonData = try testBundle.loadJSONData("characters_response")
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
+        let routerMock = RouterMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
+
+        // When - Load characters via list, then get one character via detail
+        let listViewModel = sut.makeCharacterListViewModel(router: routerMock)
+        await listViewModel.load()
+
+        let detailViewModel = sut.makeCharacterDetailViewModel(identifier: 1, router: routerMock)
+        await detailViewModel.load()
+
+        // Then - Detail should use cached character from list response (only 1 HTTP call total)
+        #expect(httpClientMock.requestedEndpoints.count == 1)
+    }
 }
+
+private final class BundleToken {}
 ```
 
-### HomeContainerTests (Simple Container)
+### HomeFeatureTests (Simple Feature)
 
 ```swift
 import {AppName}CoreMocks
@@ -232,55 +318,59 @@ import Testing
 
 @testable import {AppName}Home
 
-struct HomeContainerTests {
+struct HomeFeatureTests {
     @Test
-    func makeHomeViewModelReturnsConfiguredInstance() {
+    func makeHomeViewReturnsConfiguredInstance() {
         // Given
         let routerMock = RouterMock()
-        let sut = HomeContainer()
+        let sut = HomeFeature()
 
         // When
-        let viewModel = sut.makeHomeViewModel(router: routerMock)
+        let view = sut.makeHomeView(router: routerMock)
 
         // Then - Verify factory returns a properly configured instance
-        // HomeViewModel is stateless, so we just verify it was created
-        _ = viewModel
+        // HomeView is stateless, so we just verify it was created
+        _ = view
     }
 }
 ```
 
 ---
 
-## Generic Container Tests Pattern
+## Generic Feature Tests Pattern
 
 ```swift
 import {AppName}CoreMocks
 import {AppName}NetworkingMocks
+import Foundation
 import Testing
 
 @testable import {AppName}{Feature}
 
-struct {Feature}ContainerTests {
+struct {Feature}FeatureTests {
+    private let testBundle = Bundle(for: BundleToken.self)
+
     @Test
     func makeViewModelReturnsConfiguredInstance() {
         // Given
         let httpClientMock = HTTPClientMock()
         let routerMock = RouterMock()
-        let sut = {Feature}Container(httpClient: httpClientMock)
+        let sut = {Feature}Feature(httpClient: httpClientMock)
 
         // When
         let viewModel = sut.makeDetailViewModel(identifier: 42, router: routerMock)
 
         // Then
-        #expect(viewModel != nil)
+        #expect(viewModel.state == .idle)
     }
 
     @Test
-    func makeViewModelUsesSharedRepository() async {
+    func makeViewModelUsesSharedRepository() async throws {
         // Given
-        let httpClientMock = HTTPClientMock(result: .success({Name}DTO.stubJSONData()))
+        let jsonData = try testBundle.loadJSONData("{name}")
+        let httpClientMock = HTTPClientMock(result: .success(jsonData))
         let routerMock = RouterMock()
-        let sut = {Feature}Container(httpClient: httpClientMock)
+        let sut = {Feature}Feature(httpClient: httpClientMock)
 
         // When
         let viewModel1 = sut.makeDetailViewModel(identifier: 1, router: routerMock)
@@ -294,6 +384,8 @@ struct {Feature}ContainerTests {
         #expect(httpClientMock.requestedEndpoints.count == 1)
     }
 }
+
+private final class BundleToken {}
 ```
 
 ### What to Test
@@ -301,5 +393,5 @@ struct {Feature}ContainerTests {
 | Test | Purpose |
 |------|---------|
 | Factory returns instance | Verify wiring doesn't crash |
-| Shared repository | Verify lazy var is reused across ViewModels |
+| Shared repository | Verify memoryDataSource is reused across ViewModels |
 | Injected dependencies | Verify mock is used when injected |

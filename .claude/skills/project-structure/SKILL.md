@@ -69,12 +69,10 @@ Each feature module follows this internal structure:
 ```
 FeatureName/
 ├── Sources/
-│   ├── {Feature}Feature.swift              # Public entry point
+│   ├── {Feature}Feature.swift              # Public entry point (struct implementing Feature protocol)
 │   ├── Navigation/
 │   │   ├── {Feature}Navigation.swift       # Navigation destinations
 │   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler
-│   ├── Container/
-│   │   └── {Feature}Container.swift        # Dependency injection
 │   ├── Domain/
 │   │   ├── Models/
 │   │   │   └── {Name}.swift                # Domain models
@@ -92,12 +90,18 @@ FeatureName/
 │   │       └── {Name}Repository.swift
 │   └── Presentation/
 │       ├── {Name}List/
+│       │   ├── Navigator/
+│       │   │   ├── {Name}ListNavigatorContract.swift
+│       │   │   └── {Name}ListNavigator.swift
 │       │   ├── Views/
 │       │   │   └── {Name}ListView.swift
 │       │   └── ViewModels/
 │       │       ├── {Name}ListViewModel.swift
 │       │       └── {Name}ListViewState.swift
 │       └── {Name}Detail/
+│           ├── Navigator/
+│           │   ├── {Name}DetailNavigatorContract.swift
+│           │   └── {Name}DetailNavigator.swift
 │           ├── Views/
 │           │   └── {Name}DetailView.swift
 │           └── ViewModels/
@@ -115,6 +119,8 @@ FeatureName/
 │   │       │   └── {Name}ListViewModelTests.swift
 │   │       └── Snapshots/
 │   │           └── {Name}ListViewSnapshotTests.swift
+│   ├── Feature/
+│   │   └── {Feature}FeatureTests.swift     # Feature factory tests
 │   ├── Stubs/
 │   │   └── {Name}+Stub.swift
 │   ├── Fixtures/
@@ -135,12 +141,18 @@ The Presentation layer groups related Views and ViewModels by feature name:
 ```
 Presentation/
 ├── CharacterDetail/            # Feature: Character detail screen
+│   ├── Navigator/
+│   │   ├── CharacterDetailNavigatorContract.swift
+│   │   └── CharacterDetailNavigator.swift
 │   ├── Views/
 │   │   └── CharacterDetailView.swift
 │   └── ViewModels/
 │       ├── CharacterDetailViewModel.swift
 │       └── CharacterDetailViewState.swift
 ├── CharacterList/              # Feature: Character list screen
+│   ├── Navigator/
+│   │   ├── CharacterListNavigatorContract.swift
+│   │   └── CharacterListNavigator.swift
 │   ├── Views/
 │   │   └── CharacterListView.swift
 │   └── ViewModels/
@@ -151,6 +163,7 @@ Presentation/
 
 **Naming conventions:**
 - Folder name matches the feature (e.g., `CharacterDetail`)
+- Navigator: `{Feature}Navigator.swift` and `{Feature}NavigatorContract.swift`
 - View: `{Feature}View.swift`
 - ViewModel: `{Feature}ViewModel.swift`
 - ViewState: `{Feature}ViewState.swift`
@@ -218,8 +231,8 @@ Tests/
 │       │   └── {ScreenName}ViewModelTests.swift
 │       └── Snapshots/
 │           └── {ScreenName}ViewSnapshotTests.swift
-├── Container/
-│   └── {Feature}ContainerTests.swift
+├── Feature/
+│   └── {Feature}FeatureTests.swift
 ├── Stubs/                        # Domain model test data
 │   ├── Character+Stub.swift
 │   └── Location+Stub.swift
@@ -260,10 +273,15 @@ Libraries/Core/
 ├── Sources/
 │   ├── AppEnvironment/
 │   │   └── AppEnvironment.swift      # Base environment enum
+│   ├── Feature/
+│   │   ├── Feature.swift             # Feature protocol
+│   │   └── View+FeatureNavigation.swift  # withNavigationDestinations extension
 │   ├── Navigation/
 │   │   ├── Router.swift
 │   │   ├── RouterContract.swift
-│   │   └── Navigation.swift
+│   │   ├── Navigation.swift
+│   │   ├── DeepLinkHandler.swift
+│   │   └── DeepLinkRegistry.swift
 │   ├── ImageLoader/
 │   │   ├── ImageLoaderContract.swift
 │   │   ├── CachedImageLoader.swift
@@ -348,7 +366,7 @@ Derived/
 ```
 App/
 ├── Sources/
-│   ├── {AppName}App.swift        # App entry point
+│   ├── {AppName}App.swift        # App entry point with features array
 │   ├── ContentView.swift         # Root view with navigation
 │   └── Resources/
 │       └── Assets.xcassets/
@@ -370,17 +388,19 @@ App/
 | Feature folder | `{Name}/` | `Character/` |
 | Public entry | `{Feature}Feature.swift` | `CharacterFeature.swift` |
 | Navigation | `Navigation/{Feature}Navigation.swift` | `Navigation/CharacterNavigation.swift` |
-| Container | `{Feature}Container.swift` | `CharacterContainer.swift` |
 | Domain model | `{Name}.swift` | `Character.swift` |
 | DTO | `{Name}DTO.swift` | `CharacterDTO.swift` |
 | UseCase | `{Action}{Name}UseCase.swift` | `GetCharacterUseCase.swift` |
 | Repository | `{Name}Repository.swift` | `CharacterRepository.swift` |
 | Contract | `{Name}Contract.swift` | `CharacterRepositoryContract.swift` |
 | DataSource | `{Name}{Type}DataSource.swift` | `CharacterRemoteDataSource.swift` |
+| Navigator | `{ScreenName}Navigator.swift` | `CharacterDetailNavigator.swift` |
+| NavigatorContract | `{ScreenName}NavigatorContract.swift` | `CharacterDetailNavigatorContract.swift` |
 | View | `{ScreenName}View.swift` | `CharacterDetailView.swift` |
 | ViewModel | `{ScreenName}ViewModel.swift` | `CharacterDetailViewModel.swift` |
 | ViewState | `{ScreenName}ViewState.swift` | `CharacterDetailViewState.swift` |
 | Test | `{Component}Tests.swift` | `CharacterRepositoryTests.swift` |
+| Feature Test | `{Feature}FeatureTests.swift` | `CharacterFeatureTests.swift` |
 | Stub | `{Name}+Stub.swift` | `Character+Stub.swift` |
 | Mock | `{Name}Mock.swift` | `CharacterRepositoryMock.swift` |
 | Extension | `{Type}+{Purpose}.swift` | `URL+QueryItems.swift` |
@@ -393,8 +413,9 @@ App/
 
 - [ ] Feature folder does not contain "Feature" suffix
 - [ ] Sources organized by layer: Domain, Data, Presentation
-- [ ] Presentation organized by screen: {ScreenName}/Views/, {ScreenName}/ViewModels/
+- [ ] Presentation organized by screen: {ScreenName}/Navigator/, {ScreenName}/Views/, {ScreenName}/ViewModels/
 - [ ] Tests mirror Sources structure
+- [ ] Feature tests in Tests/Feature/
 - [ ] Extensions in dedicated `Extensions/` folder
 - [ ] Extension files named `{Type}+{Purpose}.swift`
 - [ ] Mocks in correct location (Tests/Mocks/ vs Mocks/)

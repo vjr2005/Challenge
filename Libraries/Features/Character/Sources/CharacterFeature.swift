@@ -1,38 +1,70 @@
+import ChallengeCommon
 import ChallengeCore
+import ChallengeNetworking
 import SwiftUI
 
-public enum CharacterFeature {
-    private static let container = CharacterContainer()
+public struct CharacterFeature: Feature {
+    // MARK: - Dependencies
 
-    // MARK: - Deep Links
+    private let httpClient: any HTTPClientContract
+    private let memoryDataSource = CharacterMemoryDataSource()
 
-    /// Registers deep link handlers for this feature.
-    /// Call from `App.init()` to enable deep link navigation.
+    private var repository: any CharacterRepositoryContract {
+        CharacterRepository(
+            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+            memoryDataSource: memoryDataSource
+        )
+    }
+
+    // MARK: - Init
+
+    public init(httpClient: (any HTTPClientContract)? = nil) {
+        self.httpClient = httpClient ?? HTTPClient(baseURL: AppEnvironment.current.rickAndMorty.baseURL)
+    }
+
+    // MARK: - Feature Protocol
+
     @MainActor
-    public static func registerDeepLinks() {
+    public func registerDeepLinks() {
         CharacterDeepLinkHandler.register()
+    }
+
+    @MainActor
+    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+        AnyView(
+            view.navigationDestination(for: CharacterNavigation.self) { navigation in
+                self.view(for: navigation, router: router)
+            }
+        )
     }
 
     // MARK: - Views
 
+    @MainActor
     @ViewBuilder
-    static func view(for navigation: CharacterNavigation, router: RouterContract) -> some View {
+    private func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
-            CharacterListView(viewModel: container.makeCharacterListViewModel(router: router))
+            CharacterListView(viewModel: makeCharacterListViewModel(router: router))
         case .detail(let identifier):
-            CharacterDetailView(viewModel: container.makeCharacterDetailViewModel(identifier: identifier, router: router))
+            CharacterDetailView(viewModel: makeCharacterDetailViewModel(identifier: identifier, router: router))
         }
     }
-}
 
-// MARK: - Navigation Destination
+    // MARK: - Factories
 
-public extension View {
-    /// Registers navigation destinations for Character feature.
-    func characterNavigationDestination(router: RouterContract) -> some View {
-        navigationDestination(for: CharacterNavigation.self) { navigation in
-            CharacterFeature.view(for: navigation, router: router)
-        }
+    func makeCharacterListViewModel(router: any RouterContract) -> CharacterListViewModel {
+        CharacterListViewModel(
+            getCharactersUseCase: GetCharactersUseCase(repository: repository),
+            navigator: CharacterListNavigator(router: router)
+        )
+    }
+
+    func makeCharacterDetailViewModel(identifier: Int, router: any RouterContract) -> CharacterDetailViewModel {
+        CharacterDetailViewModel(
+            identifier: identifier,
+            getCharacterUseCase: GetCharacterUseCase(repository: repository),
+            navigator: CharacterDetailNavigator(router: router)
+        )
     }
 }

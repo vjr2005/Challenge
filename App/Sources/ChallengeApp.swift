@@ -1,19 +1,22 @@
 import ChallengeCharacter
+import ChallengeCore
+import ChallengeHome
 import SwiftUI
 
 @main
 struct ChallengeApp: App {
+    static let features: [any Feature] = [
+        CharacterFeature(),
+        HomeFeature()
+    ]
+
     init() {
-        registerDeepLinks()
+        Self.features.forEach { $0.registerDeepLinks() }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(features: Self.features)
         }
-    }
-
-    private func registerDeepLinks() {
-        CharacterFeature.registerDeepLinks()
     }
 }
