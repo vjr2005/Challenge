@@ -144,7 +144,7 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
 
 ```swift
 // Sources/{Feature}Feature.swift
-import {AppName}Common
+import {AppName}Shared
 import {AppName}Core
 import {AppName}Networking
 import SwiftUI

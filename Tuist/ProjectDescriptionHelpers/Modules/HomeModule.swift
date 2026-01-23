@@ -7,7 +7,7 @@ public enum HomeModule {
         path: "Home",
         dependencies: [
             .target(name: "\(appName)Core"),
-            .target(name: "\(appName)Common"),
+            .target(name: "\(appName)Shared"),
         ],
         testDependencies: [
             .target(name: "\(appName)CoreMocks"),

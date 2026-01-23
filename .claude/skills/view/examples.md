@@ -8,7 +8,7 @@ Complete implementation examples for SwiftUI Views.
 
 ```swift
 // Sources/Presentation/CharacterList/Views/CharacterListView.swift
-import {AppName}Common
+import {AppName}Shared
 import SwiftUI
 
 struct CharacterListView: View {
@@ -167,7 +167,7 @@ private final class RouterPreviewMock: RouterContract {
 
 ```swift
 // Sources/Presentation/CharacterDetail/Views/CharacterDetailView.swift
-import {AppName}Common
+import {AppName}Shared
 import SwiftUI
 
 struct CharacterDetailView: View {
@@ -314,7 +314,7 @@ Stateless views (no ViewState) need only one preview:
 
 ```swift
 // Sources/Presentation/Home/Views/HomeView.swift
-import {AppName}Common
+import {AppName}Shared
 import SwiftUI
 
 struct HomeView: View {

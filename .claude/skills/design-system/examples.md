@@ -3,7 +3,7 @@
 ## Complete View Using Design System
 
 ```swift
-import ChallengeCommon
+import ChallengeShared
 import ChallengeCore
 import ChallengeDesignSystem
 import SwiftUI

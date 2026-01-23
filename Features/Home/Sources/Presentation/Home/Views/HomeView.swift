@@ -1,4 +1,4 @@
-import ChallengeCommon
+import ChallengeShared
 import SwiftUI
 
 struct HomeView: View {

@@ -8,7 +8,7 @@ public enum CharacterModule {
 		dependencies: [
 			.target(name: "\(appName)Core"),
 			.target(name: "\(appName)Networking"),
-			.target(name: "\(appName)Common"),
+			.target(name: "\(appName)Shared"),
 			.target(name: "\(appName)DesignSystem"),
 		],
 		testDependencies: [

@@ -1,11 +1,11 @@
 ---
 name: common
-description: Common module: AppEnvironment, localization, String extensions. Use when working with environments, schemes, build configs, API configuration, or localized strings.
+description: Shared module: AppEnvironment, localization, String extensions. Use when working with environments, schemes, build configs, API configuration, or localized strings.
 ---
 
-# Skill: Common
+# Skill: Shared
 
-Guide for the Common module: environment configuration and localization.
+Guide for the Shared module: environment configuration and localization.
 
 ## When to use this skill
 
@@ -19,17 +19,19 @@ Guide for the Common module: environment configuration and localization.
 
 ## Module Overview
 
-The `Common` module provides shared utilities used across features:
+The `Shared` module provides app-specific utilities used across features:
 
 - **AppEnvironment**: API endpoint extensions (base definition in Core)
 - **Localization**: Centralized strings with `String.localized()` extension
 - **Bundle**: Manual `Bundle.module` accessor for resources
 
-**Location:** `Libraries/Common/`
+**Location:** `Shared/Common/`
+
+**Note:** Shared modules are app-specific (not reusable across apps), unlike Libraries which are generic and reusable.
 
 **Structure:**
 ```
-Libraries/Common/
+Shared/Common/
 ├── Sources/
 │   ├── AppEnvironment+API.swift      # API configuration extension
 │   ├── Extensions/
@@ -41,7 +43,7 @@ Libraries/Common/
     └── AppEnvironment+APITests.swift
 ```
 
-**Note:** The base `AppEnvironment` enum is defined in `Core` module (`Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`). Common only extends it with API configurations.
+**Note:** The base `AppEnvironment` enum is defined in `Core` module (`Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`). Shared only extends it with API configurations.
 
 ---
 
@@ -55,7 +57,7 @@ The `AppEnvironment` enum defines application environments. The base definition 
 ### Usage
 
 ```swift
-import {AppName}Common
+import {AppName}Shared
 
 // Get current environment (determined at compile time)
 let environment = AppEnvironment.current
@@ -97,14 +99,14 @@ let apiURL = AppEnvironment.current.rickAndMorty.baseURL
 
 All localized strings are centralized in the Common module.
 
-**Location:** `Libraries/Common/Sources/Resources/Localizable.xcstrings`
+**Location:** `Shared/Common/Sources/Resources/Localizable.xcstrings`
 
 ### String Extension
 
 The `localized()` extension converts string keys to localized values:
 
 ```swift
-// Libraries/Common/Sources/String+Localized.swift
+// Shared/Common/Sources/Extensions/String+Localized.swift
 public extension String {
     func localized() -> String {
         String(localized: LocalizationValue(self), bundle: .module)
@@ -122,7 +124,7 @@ public extension String {
 Each View defines a private `LocalizedStrings` enum that uses `localized()`:
 
 ```swift
-import {AppName}Common
+import {AppName}Shared
 
 struct MyView: View {
     var body: some View {
@@ -143,7 +145,7 @@ private enum LocalizedStrings {
 
 ### Adding New Strings
 
-1. Add the key to `Libraries/Common/Sources/Resources/Localizable.xcstrings`
+1. Add the key to `Shared/Common/Sources/Resources/Localizable.xcstrings`
 2. Provide translations for all supported languages (en, es)
 3. Add the string to the View's private `LocalizedStrings` enum
 
@@ -164,7 +166,7 @@ The `Bundle+Module.swift` file provides access to the module's resource bundle.
 **Why manual?** Tuist's bundle accessor generation is disabled (`disableBundleAccessors: true`) to avoid generated code.
 
 ```swift
-// Libraries/Common/Sources/Bundle+Module.swift
+// Shared/Common/Sources/Extensions/Bundle+Module.swift
 import Foundation
 
 private final class BundleFinder {}
@@ -254,7 +256,7 @@ public extension AppEnvironment {
 Features access API configuration through their Container:
 
 ```swift
-import {AppName}Common
+import {AppName}Shared
 import {AppName}Networking
 
 final class MyFeatureContainer {
@@ -332,7 +334,7 @@ public struct API {
 ## Environment-Specific Behavior
 
 ```swift
-import {AppName}Common
+import {AppName}Shared
 
 // Logging only in debug
 if AppEnvironment.current.isDebug {
@@ -367,7 +369,7 @@ func track(event: String) {
 - [ ] Add build configuration in Xcode/Tuist
 - [ ] Add scheme for the environment
 - [ ] Create app icon variant if needed
-- [ ] Update API configurations in Common
+- [ ] Update API configurations in Shared
 
 ### Adding New API
 

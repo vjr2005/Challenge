@@ -22,7 +22,7 @@ public enum CharacterNavigation: Navigation {
 
 ```swift
 // Sources/CharacterFeature.swift
-import {AppName}Common
+import {AppName}Shared
 import {AppName}Core
 import {AppName}Networking
 import SwiftUI

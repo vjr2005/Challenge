@@ -189,7 +189,7 @@ private final class RouterPreviewMock: RouterContract {
 Views must define **private LocalizedStrings** for type-safe localization.
 
 ```swift
-import {AppName}Common
+import {AppName}Shared
 
 // MARK: - LocalizedStrings
 

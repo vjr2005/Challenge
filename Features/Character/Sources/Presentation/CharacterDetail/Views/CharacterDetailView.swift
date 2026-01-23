@@ -1,4 +1,4 @@
-import ChallengeCommon
+import ChallengeShared
 import ChallengeCore
 import ChallengeDesignSystem
 import SwiftUI
