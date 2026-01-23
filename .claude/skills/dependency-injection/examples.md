@@ -9,7 +9,7 @@ Complete implementation examples for dependency injection with Container per Fea
 ### Navigation Destinations
 
 ```swift
-// Sources/CharacterNavigation.swift
+// Sources/Navigation/CharacterNavigation.swift
 import {AppName}Core
 
 public enum CharacterNavigation: Navigation {
@@ -123,7 +123,7 @@ struct ContentView: View {
 ### Navigation Destinations
 
 ```swift
-// Sources/HomeNavigation.swift
+// Sources/Navigation/HomeNavigation.swift
 import {AppName}Core
 
 public enum HomeNavigation: Navigation {

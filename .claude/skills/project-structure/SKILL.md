@@ -70,7 +70,9 @@ Each feature module follows this internal structure:
 FeatureName/
 ├── Sources/
 │   ├── {Feature}Feature.swift              # Public entry point
-│   ├── {Feature}Navigation.swift           # Navigation destinations
+│   ├── Navigation/
+│   │   ├── {Feature}Navigation.swift       # Navigation destinations
+│   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler
 │   ├── Container/
 │   │   └── {Feature}Container.swift        # Dependency injection
 │   ├── Domain/
@@ -367,7 +369,7 @@ App/
 |-----------|----------------|---------|
 | Feature folder | `{Name}/` | `Character/` |
 | Public entry | `{Feature}Feature.swift` | `CharacterFeature.swift` |
-| Navigation | `{Feature}Navigation.swift` | `CharacterNavigation.swift` |
+| Navigation | `Navigation/{Feature}Navigation.swift` | `Navigation/CharacterNavigation.swift` |
 | Container | `{Feature}Container.swift` | `CharacterContainer.swift` |
 | Domain model | `{Name}.swift` | `Character.swift` |
 | DTO | `{Name}DTO.swift` | `CharacterDTO.swift` |

@@ -23,8 +23,8 @@ Guide for creating dependency injection with Container per Feature pattern.
 Libraries/Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift              # Public entry point (enum with view builder)
-│   ├── {Feature}Navigation.swift           # Public navigation destinations
 │   ├── Navigation/
+│   │   ├── {Feature}Navigation.swift       # Navigation destinations
 │   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler (feature-level)
 │   ├── Container/
 │   │   └── {Feature}Container.swift        # Internal container (creates Navigators)
@@ -59,7 +59,7 @@ Libraries/Features/{Feature}/
 ## Navigation Destinations
 
 ```swift
-// Sources/{Feature}Navigation.swift
+// Sources/Navigation/{Feature}Navigation.swift
 import {AppName}Core
 
 public enum {Feature}Navigation: Navigation {
@@ -355,7 +355,7 @@ struct HomeNavigator: HomeNavigatorContract {
 
 ## Checklist
 
-- [ ] Create internal `{Feature}Navigation.swift` conforming to `Navigation` protocol
+- [ ] Create internal `Navigation/{Feature}Navigation.swift` conforming to `Navigation` protocol
 - [ ] Create internal `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` with `register()` method
 - [ ] Create `{Feature}Feature.swift` with `registerDeepLinks()` and View extension `{feature}NavigationDestination(router:)`
 - [ ] Create internal Container as `final class` with optional `httpClient` in init

@@ -217,7 +217,7 @@ Each feature defines its navigation destinations and deep link handler:
 ### Navigation Enum (Internal)
 
 ```swift
-// Libraries/Features/{Feature}/Sources/{Feature}Navigation.swift
+// Libraries/Features/{Feature}/Sources/Navigation/{Feature}Navigation.swift
 import {AppName}Core
 
 enum {Feature}Navigation: Navigation {
@@ -623,8 +623,8 @@ struct {Feature}DeepLinkHandlerTests {
 Libraries/Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift
-│   ├── {Feature}Navigation.swift
 │   ├── Navigation/
+│   │   ├── {Feature}Navigation.swift            # Navigation destinations
 │   │   └── {Feature}DeepLinkHandler.swift       # Feature-level (handles deep links)
 │   ├── Container/
 │   ├── Domain/
