@@ -52,7 +52,8 @@
       "Skill(router)",
       "Skill(style-guide)",
       "Skill(concurrency)",
-      "Skill(testing)"
+      "Skill(testing)",
+      "Bash(git mv:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

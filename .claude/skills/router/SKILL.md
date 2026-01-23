@@ -282,7 +282,7 @@ ViewModels use **Navigators** instead of Router directly. This:
 ### Navigator Contract
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Presentation/{Screen}/Navigation/{Screen}NavigatorContract.swift
+// Libraries/Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift
 protocol {Screen}NavigatorContract {
     func navigateToDetail(id: Int)  // INTERNAL navigation
     func goBack()
@@ -292,7 +292,7 @@ protocol {Screen}NavigatorContract {
 ### Navigator Implementation
 
 ```swift
-// Libraries/Features/{Feature}/Sources/Presentation/{Screen}/Navigation/{Screen}Navigator.swift
+// Libraries/Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift
 import {AppName}Core
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
@@ -316,12 +316,12 @@ struct {Screen}Navigator: {Screen}NavigatorContract {
 ### Navigator for External Navigation (Cross-Feature)
 
 ```swift
-// Libraries/Features/Home/Sources/Presentation/Home/Navigation/HomeNavigatorContract.swift
+// Libraries/Features/Home/Sources/Presentation/Home/Navigator/HomeNavigatorContract.swift
 protocol HomeNavigatorContract {
     func navigateToCharacters()  // EXTERNAL navigation
 }
 
-// Libraries/Features/Home/Sources/Presentation/Home/Navigation/HomeNavigator.swift
+// Libraries/Features/Home/Sources/Presentation/Home/Navigator/HomeNavigator.swift
 import {AppName}Core
 import Foundation
 
@@ -541,7 +541,7 @@ struct {Name}ViewModelTests {
 ### Navigator Tests
 
 ```swift
-// Libraries/Features/{Feature}/Tests/Presentation/{Screen}/Navigation/{Screen}NavigatorTests.swift
+// Libraries/Features/{Feature}/Tests/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift
 import {AppName}CoreMocks
 import Testing
 
@@ -631,13 +631,13 @@ Libraries/Features/{Feature}/
 │   ├── Data/
 │   └── Presentation/
 │       ├── {Screen}List/
-│       │   ├── Navigation/                       # Screen-level navigators
+│       │   ├── Navigator/                        # Screen-level navigators
 │       │   │   ├── {Screen}ListNavigatorContract.swift
 │       │   │   └── {Screen}ListNavigator.swift
 │       │   ├── Views/
 │       │   └── ViewModels/
 │       └── {Screen}Detail/
-│           ├── Navigation/
+│           ├── Navigator/
 │           │   ├── {Screen}DetailNavigatorContract.swift
 │           │   └── {Screen}DetailNavigator.swift
 │           ├── Views/
@@ -649,16 +649,16 @@ Libraries/Features/{Feature}/
     │   └── {Feature}DeepLinkHandlerTests.swift
     └── Presentation/
         ├── {Screen}List/
-        │   └── Navigation/
+        │   └── Navigator/
         │       └── {Screen}ListNavigatorTests.swift
         └── {Screen}Detail/
-            └── Navigation/
+            └── Navigator/
                 └── {Screen}DetailNavigatorTests.swift
 ```
 
 **Notes:**
 - **DeepLinkHandler** stays at feature level (`Sources/Navigation/`) - handles external URLs for the whole feature
-- **Navigators** are inside screen folders (`Presentation/{Screen}/Navigation/`) - each screen has its own navigator
+- **Navigators** are inside screen folders (`Presentation/{Screen}/Navigator/`) - each screen has its own navigator
 
 ---
 
@@ -668,7 +668,7 @@ Libraries/Features/{Feature}/
 - [ ] Core has `DeepLinkHandler`, `DeepLinkRegistry`, `URL+QueryParameter`
 - [ ] Feature has internal `{Feature}Navigation` conforming to `Navigation`
 - [ ] Feature has `{Feature}DeepLinkHandler` in `Sources/Navigation/` with `register()` method
-- [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigation/`
+- [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigator/`
 - [ ] `ChallengeApp` calls `{Feature}Feature.registerDeepLinks()` in init
 - [ ] `ContentView` creates `@State private var router = Router()`
 - [ ] `ContentView` uses `NavigationStack(path: $router.path)`
@@ -676,5 +676,5 @@ Libraries/Features/{Feature}/
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] ViewModel injects `NavigatorContract` (not RouterContract)
 - [ ] Tests use `NavigatorMock` to verify navigation
-- [ ] Tests for Navigator in `Tests/Presentation/{Screen}/Navigation/` verify Router calls
+- [ ] Tests for Navigator in `Tests/Presentation/{Screen}/Navigator/` verify Router calls
 - [ ] Tests for DeepLinkHandler in `Tests/Navigation/` verify URL resolution

@@ -32,13 +32,13 @@ Libraries/Features/{Feature}/
 │   ├── Data/
 │   └── Presentation/
 │       ├── {Name}List/
-│       │   ├── Navigation/                  # Screen-level navigators
+│       │   ├── Navigator/                   # Screen-level navigators
 │       │   │   ├── {Name}ListNavigatorContract.swift
 │       │   │   └── {Name}ListNavigator.swift
 │       │   ├── Views/
 │       │   └── ViewModels/
 │       └── {Name}Detail/
-│           ├── Navigation/
+│           ├── Navigator/
 │           │   ├── {Name}DetailNavigatorContract.swift
 │           │   └── {Name}DetailNavigator.swift
 │           ├── Views/
@@ -47,7 +47,7 @@ Libraries/Features/{Feature}/
 
 **Notes:**
 - **DeepLinkHandler** stays at feature level (`Sources/Navigation/`) - handles deep links for the whole feature
-- **Navigators** are inside screen folders (`Presentation/{Screen}/Navigation/`) - each screen has its own navigator
+- **Navigators** are inside screen folders (`Presentation/{Screen}/Navigator/`) - each screen has its own navigator
 - Container is at the root of Sources/, NOT inside Presentation/
 - Container is accessed via static property in `{Feature}Feature` enum
 - Container creates **Navigators** and injects them into ViewModels
@@ -324,14 +324,14 @@ final class HomeContainer {
 ```
 
 ```swift
-// Sources/Presentation/Home/Navigation/HomeNavigatorContract.swift
+// Sources/Presentation/Home/Navigator/HomeNavigatorContract.swift
 protocol HomeNavigatorContract {
     func navigateToCharacters()
 }
 ```
 
 ```swift
-// Sources/Presentation/Home/Navigation/HomeNavigator.swift
+// Sources/Presentation/Home/Navigator/HomeNavigator.swift
 import {AppName}Core
 import Foundation
 
@@ -360,7 +360,7 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Create `{Feature}Feature.swift` with `registerDeepLinks()` and View extension `{feature}NavigationDestination(router:)`
 - [ ] Create internal Container as `final class` with optional `httpClient` in init
 - [ ] Use `lazy var` for repository (source of truth)
-- [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigation/`
+- [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
 - [ ] Container creates Navigator and injects into ViewModel
 - [ ] Views only receive ViewModel
 - [ ] Use factory methods for ViewModels
