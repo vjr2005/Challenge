@@ -35,11 +35,15 @@ public struct CharacterFeature: Feature {
             }
         )
     }
+}
 
+// MARK: - Private
+
+private extension CharacterFeature {
     // MARK: - Views
 
     @ViewBuilder
-    private func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
+    func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
             CharacterListView(viewModel: makeCharacterListViewModel(router: router))

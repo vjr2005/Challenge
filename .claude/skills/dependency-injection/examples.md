@@ -48,12 +48,10 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    @MainActor
     public func registerDeepLinks() {
         CharacterDeepLinkHandler.register()
     }
 
-    @MainActor
     public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
         AnyView(
             view.navigationDestination(for: CharacterNavigation.self) { navigation in
@@ -61,12 +59,15 @@ public struct CharacterFeature: Feature {
             }
         )
     }
+}
 
+// MARK: - Private
+
+private extension CharacterFeature {
     // MARK: - Views
 
-    @MainActor
     @ViewBuilder
-    private func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
+    func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
             CharacterListView(viewModel: makeCharacterListViewModel(router: router))
@@ -166,19 +167,16 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    @MainActor
     public func registerDeepLinks() {
         // Home has no deep links
     }
 
-    @MainActor
     public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
         AnyView(view)
     }
 
     // MARK: - Factory
 
-    @MainActor
     public func makeHomeView(router: any RouterContract) -> some View {
         HomeView(viewModel: HomeViewModel(navigator: HomeNavigator(router: router)))
     }

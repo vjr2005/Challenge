@@ -62,7 +62,6 @@ Libraries/Features/{Feature}/
 // Libraries/Core/Sources/Feature/Feature.swift
 import SwiftUI
 
-@MainActor
 public protocol Feature {
     func registerDeepLinks()
     func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView
@@ -74,7 +73,6 @@ public protocol Feature {
 import SwiftUI
 
 public extension View {
-    @MainActor
     func withNavigationDestinations(features: [any Feature], router: any RouterContract) -> some View {
         features.reduce(AnyView(self)) { view, feature in
             feature.applyNavigationDestination(to: view, router: router)
@@ -172,12 +170,10 @@ public struct {Feature}Feature: Feature {
 
     // MARK: - Feature Protocol
 
-    @MainActor
     public func registerDeepLinks() {
         {Feature}DeepLinkHandler.register()
     }
 
-    @MainActor
     public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
         AnyView(
             view.navigationDestination(for: {Feature}Navigation.self) { navigation in
@@ -185,12 +181,15 @@ public struct {Feature}Feature: Feature {
             }
         )
     }
+}
 
+// MARK: - Private
+
+private extension {Feature}Feature {
     // MARK: - Views
 
-    @MainActor
     @ViewBuilder
-    private func view(for navigation: {Feature}Navigation, router: any RouterContract) -> some View {
+    func view(for navigation: {Feature}Navigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
             {Name}ListView(viewModel: makeListViewModel(router: router))
@@ -242,19 +241,16 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    @MainActor
     public func registerDeepLinks() {
         // Home has no deep links
     }
 
-    @MainActor
     public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
         AnyView(view)
     }
 
     // MARK: - Factory
 
-    @MainActor
     public func makeHomeView(router: any RouterContract) -> some View {
         HomeView(viewModel: HomeViewModel(navigator: HomeNavigator(router: router)))
     }
