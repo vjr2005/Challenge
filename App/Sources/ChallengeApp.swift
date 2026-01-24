@@ -6,7 +6,7 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(features: container.features)
+            container.makeRootView()
         }
     }
 }

@@ -19,5 +19,5 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(features: AppContainer().features)
+    AppContainer().makeRootView()
 }

@@ -46,7 +46,9 @@ App/
 ├── Sources/
 │   ├── {AppName}App.swift           # Minimal entry point
 │   ├── AppContainer.swift           # Composition Root (centralized DI)
-│   └── RootView.swift               # Root navigation view
+│   └── Presentation/
+│       └── Views/
+│           └── RootView.swift       # Root navigation view
 
 Features/{Feature}/
 ├── Sources/
@@ -93,6 +95,7 @@ import {AppName}Core
 import {AppName}Home
 import {AppName}Networking
 import {AppName}Shared
+import SwiftUI
 
 struct AppContainer: Sendable {
     // MARK: - Shared Dependencies
@@ -116,6 +119,12 @@ struct AppContainer: Sendable {
         ]
 
         features.forEach { $0.registerDeepLinks() }
+    }
+
+    // MARK: - Factory Methods
+
+    func makeRootView() -> some View {
+        RootView(features: features)
     }
 }
 ```
@@ -440,18 +449,18 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(features: container.features)
+            container.makeRootView()
         }
     }
 }
 ```
 
-**Note:** ChallengeApp is minimal - just creates AppContainer and passes features to RootView.
+**Note:** ChallengeApp is minimal - just creates AppContainer and uses `makeRootView()` factory method.
 
 ### RootView (Using Features)
 
 ```swift
-// App/Sources/RootView.swift
+// App/Sources/Presentation/Views/RootView.swift
 import {AppName}Core
 import {AppName}Home
 import SwiftUI
@@ -473,7 +482,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(features: AppContainer().features)
+    AppContainer().makeRootView()
 }
 ```
 
@@ -555,6 +564,7 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Views only receive ViewModel
 - [ ] Add feature to `AppContainer.features` array
 - [ ] `AppContainer.init` registers deep links automatically
-- [ ] `ChallengeApp` only creates AppContainer
-- [ ] `RootView` receives features and uses `.withNavigationDestinations(features:router:)`
+- [ ] `AppContainer` has `makeRootView()` factory method
+- [ ] `ChallengeApp` only creates AppContainer and uses `makeRootView()`
+- [ ] `RootView` in `App/Sources/Presentation/Views/` receives features and uses `.withNavigationDestinations(features:router:)`
 - [ ] **Create feature tests with HTTPClientMock**

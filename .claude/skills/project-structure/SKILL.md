@@ -24,7 +24,9 @@ Guide for project organization and directory structure.
 │   ├── Sources/
 │   │   ├── {AppName}App.swift        # Minimal entry point
 │   │   ├── AppContainer.swift        # Composition Root (centralized DI)
-│   │   ├── RootView.swift            # Root navigation view
+│   │   ├── Presentation/
+│   │   │   └── Views/
+│   │   │       └── RootView.swift    # Root navigation view
 │   │   └── Resources/
 │   │       └── Assets.xcassets/
 │   ├── Tests/
@@ -373,7 +375,9 @@ App/
 ├── Sources/
 │   ├── {AppName}App.swift        # Minimal entry point (creates AppContainer)
 │   ├── AppContainer.swift        # Composition Root (centralized DI)
-│   ├── RootView.swift            # Root view with navigation
+│   ├── Presentation/
+│   │   └── Views/
+│   │       └── RootView.swift    # Root view with navigation
 │   └── Resources/
 │       └── Assets.xcassets/
 │           ├── AppIcon.appiconset/        # Production icon
