@@ -1,4 +1,3 @@
-import ChallengeShared
 import ChallengeCore
 import ChallengeNetworking
 import SwiftUI
@@ -6,20 +5,12 @@ import SwiftUI
 public struct CharacterFeature: Feature {
     // MARK: - Dependencies
 
-    private let httpClient: any HTTPClientContract
-    private let memoryDataSource = CharacterMemoryDataSource()
-
-    private var repository: any CharacterRepositoryContract {
-        CharacterRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
-            memoryDataSource: memoryDataSource
-        )
-    }
+    private let container: CharacterContainer
 
     // MARK: - Init
 
-    public init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? HTTPClient(baseURL: AppEnvironment.current.rickAndMorty.baseURL)
+    public init(httpClient: any HTTPClientContract) {
+        self.container = CharacterContainer(httpClient: httpClient)
     }
 
     // MARK: - Feature Protocol
@@ -40,32 +31,18 @@ public struct CharacterFeature: Feature {
 // MARK: - Private
 
 private extension CharacterFeature {
-    // MARK: - Views
-
     @ViewBuilder
     func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
-            CharacterListView(viewModel: makeCharacterListViewModel(router: router))
+            CharacterListView(viewModel: container.makeCharacterListViewModel(router: router))
         case .detail(let identifier):
-            CharacterDetailView(viewModel: makeCharacterDetailViewModel(identifier: identifier, router: router))
+            CharacterDetailView(
+                viewModel: container.makeCharacterDetailViewModel(
+                    identifier: identifier,
+                    router: router
+                )
+            )
         }
-    }
-
-    // MARK: - Factories
-
-    func makeCharacterListViewModel(router: any RouterContract) -> CharacterListViewModel {
-        CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCase(repository: repository),
-            navigator: CharacterListNavigator(router: router)
-        )
-    }
-
-    func makeCharacterDetailViewModel(identifier: Int, router: any RouterContract) -> CharacterDetailViewModel {
-        CharacterDetailViewModel(
-            identifier: identifier,
-            getCharacterUseCase: GetCharacterUseCase(repository: repository),
-            navigator: CharacterDetailNavigator(router: router)
-        )
     }
 }

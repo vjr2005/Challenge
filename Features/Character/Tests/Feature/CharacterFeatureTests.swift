@@ -10,16 +10,7 @@ struct CharacterFeatureTests {
     // MARK: - Init
 
     @Test
-    func initWithDefaultHTTPClientDoesNotCrash() {
-        // Given/When
-        let sut = CharacterFeature()
-
-        // Then - Feature initializes without crashing
-        _ = sut
-    }
-
-    @Test
-    func initWithCustomHTTPClientDoesNotCrash() {
+    func initWithHTTPClientDoesNotCrash() {
         // Given
         let httpClientMock = HTTPClientMock()
 
@@ -35,7 +26,8 @@ struct CharacterFeatureTests {
     @Test
     func registerDeepLinksRegistersCharacterHandler() throws {
         // Given
-        let sut = CharacterFeature()
+        let httpClientMock = HTTPClientMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         sut.registerDeepLinks()
@@ -49,7 +41,8 @@ struct CharacterFeatureTests {
     @Test
     func registerDeepLinksRegistersDetailPath() throws {
         // Given
-        let sut = CharacterFeature()
+        let httpClientMock = HTTPClientMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         sut.registerDeepLinks()

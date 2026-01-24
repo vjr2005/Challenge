@@ -1,4 +1,3 @@
-import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
 import SwiftUI
@@ -20,5 +19,5 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: AppContainer().features)
 }

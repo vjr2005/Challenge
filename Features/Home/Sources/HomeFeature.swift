@@ -2,7 +2,15 @@ import ChallengeCore
 import SwiftUI
 
 public struct HomeFeature: Feature {
-    public init() {}
+    // MARK: - Dependencies
+
+    private let container: HomeContainer
+
+    // MARK: - Init
+
+    public init() {
+        self.container = HomeContainer()
+    }
 
     // MARK: - Feature Protocol
 
@@ -17,6 +25,6 @@ public struct HomeFeature: Feature {
     // MARK: - Factory
 
     public func makeHomeView(router: any RouterContract) -> some View {
-        HomeView(viewModel: HomeViewModel(navigator: HomeNavigator(router: router)))
+        HomeView(viewModel: container.makeHomeViewModel(router: router))
     }
 }

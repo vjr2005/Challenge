@@ -5,11 +5,12 @@ description: Creates Features for dependency injection. Use when creating featur
 
 # Skill: Dependency Injection
 
-Guide for creating dependency injection with Feature per Module pattern.
+Guide for creating dependency injection with Composition Root pattern.
 
 ## When to use this skill
 
 - Create a Feature struct for a module
+- Create a Container for dependency composition
 - Expose a public entry point for the feature
 - Wire up dependencies with stored properties for stateful objects
 
@@ -17,12 +18,40 @@ Guide for creating dependency injection with Feature per Module pattern.
 
 - For complete implementation examples, see [examples.md](examples.md)
 
+## Architecture Overview
+
+```
+ChallengeApp
+    │
+    └── AppContainer (Composition Root)
+        │
+        ├── httpClient: HTTPClientContract
+        │
+        └── features: [Feature]
+            ├── CharacterFeature (navigation + deep links)
+            │   └── CharacterContainer (DI composition)
+            │       ├── repository
+            │       ├── makeCharacterListViewModel()
+            │       └── makeCharacterDetailViewModel()
+            │
+            └── HomeFeature (navigation)
+                └── HomeContainer (DI composition)
+                    └── makeHomeViewModel()
+```
+
 ## File structure
 
 ```
+App/
+├── Sources/
+│   ├── {AppName}App.swift           # Minimal entry point
+│   ├── AppContainer.swift           # Composition Root (centralized DI)
+│   └── RootView.swift               # Root navigation view
+
 Features/{Feature}/
 ├── Sources/
-│   ├── {Feature}Feature.swift              # Public entry point (struct implementing Feature protocol)
+│   ├── {Feature}Feature.swift       # Public entry point (navigation + deep links)
+│   ├── {Feature}Container.swift     # Dependency composition (factories)
 │   ├── Navigation/
 │   │   ├── {Feature}Navigation.swift       # Navigation destinations
 │   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler (feature-level)
@@ -30,7 +59,7 @@ Features/{Feature}/
 │   ├── Data/
 │   └── Presentation/
 │       ├── {Name}List/
-│       │   ├── Navigator/                   # Screen-level navigators
+│       │   ├── Navigator/
 │       │   │   ├── {Name}ListNavigatorContract.swift
 │       │   │   └── {Name}ListNavigator.swift
 │       │   ├── Views/
@@ -46,13 +75,116 @@ Features/{Feature}/
         └── {Feature}FeatureTests.swift
 ```
 
-**Notes:**
-- **DeepLinkHandler** stays at feature level (`Sources/Navigation/`) - handles deep links for the whole feature
-- **Navigators** are inside screen folders (`Presentation/{Screen}/Navigator/`) - each screen has its own navigator
-- Feature struct contains all dependency wiring (no separate Container)
-- Feature creates **Navigators** and injects them into ViewModels
+**Key Concepts:**
+- **AppContainer**: Composition Root - creates shared dependencies (HTTPClient) and all features
+- **{Feature}Container**: Handles dependency composition (repositories, factories)
+- **{Feature}Feature**: Handles navigation and deep links, delegates DI to Container
 - Views receive **only ViewModel** via init
 - Navigation is handled by App using `NavigationPath`
+
+---
+
+## AppContainer (Composition Root)
+
+```swift
+// App/Sources/AppContainer.swift
+import {AppName}Character
+import {AppName}Core
+import {AppName}Home
+import {AppName}Networking
+import {AppName}Shared
+
+struct AppContainer: Sendable {
+    // MARK: - Shared Dependencies
+
+    let httpClient: any HTTPClientContract
+
+    // MARK: - Features
+
+    let features: [any Feature]
+
+    // MARK: - Init
+
+    init(httpClient: (any HTTPClientContract)? = nil) {
+        self.httpClient = httpClient ?? HTTPClient(
+            baseURL: AppEnvironment.current.rickAndMorty.baseURL
+        )
+
+        self.features = [
+            CharacterFeature(httpClient: self.httpClient),
+            HomeFeature()
+        ]
+
+        features.forEach { $0.registerDeepLinks() }
+    }
+}
+```
+
+**Rules:**
+- Centralizes ALL dependency injection in one place
+- Creates shared dependencies (HTTPClient, analytics, logger, etc.)
+- Injects shared dependencies into features
+- Registers deep links automatically
+- `features` is stored property (not computed) to avoid duplicate registrations
+
+---
+
+## Feature Container
+
+```swift
+// Features/{Feature}/Sources/{Feature}Container.swift
+import {AppName}Core
+import {AppName}Networking
+
+public final class {Feature}Container: Sendable {
+    // MARK: - Dependencies
+
+    private let httpClient: any HTTPClientContract
+    private let memoryDataSource = {Name}MemoryDataSource()
+
+    // MARK: - Init
+
+    public init(httpClient: any HTTPClientContract) {
+        self.httpClient = httpClient
+    }
+
+    // MARK: - Repository
+
+    private var repository: any {Name}RepositoryContract {
+        {Name}Repository(
+            remoteDataSource: {Name}RemoteDataSource(httpClient: httpClient),
+            memoryDataSource: memoryDataSource
+        )
+    }
+
+    // MARK: - Factories
+
+    func make{Name}ListViewModel(router: any RouterContract) -> {Name}ListViewModel {
+        {Name}ListViewModel(
+            get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
+            navigator: {Name}ListNavigator(router: router)
+        )
+    }
+
+    func make{Name}DetailViewModel(
+        identifier: Int,
+        router: any RouterContract
+    ) -> {Name}DetailViewModel {
+        {Name}DetailViewModel(
+            identifier: identifier,
+            get{Name}UseCase: Get{Name}UseCase(repository: repository),
+            navigator: {Name}DetailNavigator(router: router)
+        )
+    }
+}
+```
+
+**Rules:**
+- **public final class** with `Sendable` conformance
+- Receives `httpClient` from Feature (injected by AppContainer)
+- Owns **stored memoryDataSource** (source of truth for caching)
+- Has **computed repository** (uses shared memoryDataSource)
+- Contains all **factory methods** for ViewModels
 
 ---
 
@@ -140,11 +272,10 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
 
 ---
 
-## Public Entry Point (Feature Struct)
+## Feature Struct (Public Entry Point)
 
 ```swift
 // Sources/{Feature}Feature.swift
-import {AppName}Shared
 import {AppName}Core
 import {AppName}Networking
 import SwiftUI
@@ -152,20 +283,12 @@ import SwiftUI
 public struct {Feature}Feature: Feature {
     // MARK: - Dependencies
 
-    private let httpClient: any HTTPClientContract
-    private let memoryDataSource = {Name}MemoryDataSource()
-
-    private var repository: any {Name}RepositoryContract {
-        {Name}Repository(
-            remoteDataSource: {Name}RemoteDataSource(httpClient: httpClient),
-            memoryDataSource: memoryDataSource
-        )
-    }
+    private let container: {Feature}Container
 
     // MARK: - Init
 
-    public init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? HTTPClient(baseURL: AppEnvironment.current.{api}.baseURL)
+    public init(httpClient: any HTTPClientContract) {
+        self.container = {Feature}Container(httpClient: httpClient)
     }
 
     // MARK: - Feature Protocol
@@ -186,46 +309,30 @@ public struct {Feature}Feature: Feature {
 // MARK: - Private
 
 private extension {Feature}Feature {
-    // MARK: - Views
-
     @ViewBuilder
     func view(for navigation: {Feature}Navigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
-            {Name}ListView(viewModel: makeListViewModel(router: router))
+            {Name}ListView(viewModel: container.make{Name}ListViewModel(router: router))
         case .detail(let identifier):
-            {Name}DetailView(viewModel: makeDetailViewModel(identifier: identifier, router: router))
+            {Name}DetailView(
+                viewModel: container.make{Name}DetailViewModel(
+                    identifier: identifier,
+                    router: router
+                )
+            )
         }
-    }
-
-    // MARK: - Factories
-
-    func makeListViewModel(router: any RouterContract) -> {Name}ListViewModel {
-        {Name}ListViewModel(
-            get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
-            navigator: {Name}ListNavigator(router: router)
-        )
-    }
-
-    func makeDetailViewModel(identifier: Int, router: any RouterContract) -> {Name}DetailViewModel {
-        {Name}DetailViewModel(
-            identifier: identifier,
-            get{Name}UseCase: Get{Name}UseCase(repository: repository),
-            navigator: {Name}DetailNavigator(router: router)
-        )
     }
 }
 ```
 
 **Rules:**
 - **public struct** implementing `Feature` protocol
-- **private let httpClient** - Injected via init for testability
-- **private let memoryDataSource** - Stored property (source of truth for caching)
-- **private var repository** - Computed property (creates repository using shared memoryDataSource)
-- **registerDeepLinks()** - Public method to register deep links (called from App.init)
+- **Required httpClient** in init (injected by AppContainer)
+- Creates and owns its **Container**
+- **registerDeepLinks()** - Public method to register deep links
 - **applyNavigationDestination()** - Public method to register navigation destinations
-- **view(for:router:)** - Private method, builds view for each navigation destination
-- **Factory methods** - Internal for testability via `@testable`
+- **view(for:router:)** - Private method, delegates to Container factories
 
 ---
 
@@ -237,7 +344,15 @@ import {AppName}Core
 import SwiftUI
 
 public struct HomeFeature: Feature {
-    public init() {}
+    // MARK: - Dependencies
+
+    private let container: HomeContainer
+
+    // MARK: - Init
+
+    public init() {
+        self.container = HomeContainer()
+    }
 
     // MARK: - Feature Protocol
 
@@ -252,31 +367,29 @@ public struct HomeFeature: Feature {
     // MARK: - Factory
 
     public func makeHomeView(router: any RouterContract) -> some View {
-        HomeView(viewModel: HomeViewModel(navigator: HomeNavigator(router: router)))
+        HomeView(viewModel: container.makeHomeViewModel(router: router))
     }
 }
 ```
 
----
-
-## Navigator Pattern
-
-Feature is responsible for creating Navigators:
-
 ```swift
-func makeListViewModel(router: any RouterContract) -> {Name}ListViewModel {
-    {Name}ListViewModel(
-        get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
-        navigator: {Name}ListNavigator(router: router)  // Feature creates Navigator
-    )
+// Sources/HomeContainer.swift
+import {AppName}Core
+
+public final class HomeContainer: Sendable {
+    // MARK: - Init
+
+    public init() {}
+
+    // MARK: - Factories
+
+    func makeHomeViewModel(router: any RouterContract) -> HomeViewModel {
+        HomeViewModel(navigator: HomeNavigator(router: router))
+    }
 }
 ```
 
-**Why Navigator in Feature?**
-1. Feature owns the dependency graph
-2. Navigator is a dependency of ViewModel
-3. Feature knows which Navigator each ViewModel needs
-4. ViewModel remains decoupled from routing implementation
+**Note:** Even simple features use Container for architectural consistency and future extensibility.
 
 ---
 
@@ -284,9 +397,10 @@ func makeListViewModel(router: any RouterContract) -> {Name}ListViewModel {
 
 | Type | Pattern | Reason |
 |------|---------|--------|
-| HTTPClient | Optional init parameter | Injectable for tests |
-| MemoryDataSource | Instance property (`let`) | Maintains cache state |
-| Repository | Computed property (`var`) | Uses shared memoryDataSource |
+| HTTPClient | Required init parameter | Injected by AppContainer |
+| Container | Created in Feature init | Owns dependency composition |
+| MemoryDataSource | Instance property in Container (`let`) | Maintains cache state |
+| Repository | Computed property in Container (`var`) | Uses shared memoryDataSource |
 | Navigator | Factory method (inline) | New instance per ViewModel |
 | ViewModel | Factory method | New instance per navigation |
 | UseCase | Created inline | Stateless |
@@ -300,52 +414,44 @@ func makeListViewModel(router: any RouterContract) -> {Name}ListViewModel {
 | Contract (Protocol) | **public** | API for consumers, enables DI |
 | Implementation (Class) | **public** / **open** | Direct instantiation allowed |
 | {Feature}Feature | **public** | Entry point struct |
-| Feature.registerDeepLinks() | **public** | Called from App.init |
+| {Feature}Container | **public** | Created by Feature |
+| Feature.registerDeepLinks() | **public** | Called from AppContainer |
 | Feature.applyNavigationDestination() | **public** | Called via withNavigationDestinations |
+| Container factory methods | **internal** | Called by Feature |
 | {Feature}Navigation | internal | Not exposed to App layer |
 | {Feature}DeepLinkHandler | internal | Accessed via Feature.registerDeepLinks() |
 | NavigatorContract | internal | Internal to feature |
 | Navigator | internal | Internal implementation |
 | Views | internal | Internal UI |
-| Factory methods | **private** | Implementation detail, not directly tested |
 
 ---
 
 ## App Integration
 
-### ChallengeApp (Centralized Features)
+### ChallengeApp (Minimal Entry Point)
 
 ```swift
 // App/Sources/ChallengeApp.swift
-import {AppName}Character
-import {AppName}Core
-import {AppName}Home
 import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    let features: [any Feature] = [
-        CharacterFeature(),
-        HomeFeature()
-    ]
-
-    init() {
-        features.forEach { $0.registerDeepLinks() }
-    }
+    private let container = AppContainer()
 
     var body: some Scene {
         WindowGroup {
-            RootView(features: features)
+            RootView(features: container.features)
         }
     }
 }
 ```
 
+**Note:** ChallengeApp is minimal - just creates AppContainer and passes features to RootView.
+
 ### RootView (Using Features)
 
 ```swift
 // App/Sources/RootView.swift
-import {AppName}Character
 import {AppName}Core
 import {AppName}Home
 import SwiftUI
@@ -367,7 +473,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: AppContainer().features)
 }
 ```
 
@@ -375,7 +481,7 @@ struct RootView: View {
 
 ## Testing Features
 
-Features are tested through their **public interface**. Factory methods are private implementation details.
+Features are tested through their **public interface**. Factory methods are internal to Container.
 
 ### File Structure
 
@@ -390,11 +496,10 @@ Features/{Feature}/
 
 | Test | Purpose |
 |------|---------|
-| Init with default dependencies | Verify feature initializes without crashing |
-| Init with custom dependencies | Verify dependency injection works |
+| Init with HTTPClient | Verify feature initializes without crashing |
 | registerDeepLinks() | Verify deep links are registered correctly |
 
-**Note:** Factory methods are private. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.
+**Note:** Factory methods are internal to Container. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.
 
 For complete test examples, see [examples.md](examples.md).
 
@@ -436,17 +541,20 @@ struct HomeNavigator: HomeNavigatorContract {
 
 ## Checklist
 
-- [ ] Create internal `Navigation/{Feature}Navigation.swift` conforming to `Navigation` protocol
-- [ ] Create internal `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` with `register()` method
+- [ ] Create `AppContainer.swift` in App/Sources/ as Composition Root
+- [ ] Create `{Feature}Container.swift` for dependency composition
 - [ ] Create `{Feature}Feature.swift` as struct implementing `Feature` protocol
-- [ ] Feature has optional `httpClient` in init for testability
-- [ ] Feature has stored `memoryDataSource` property (source of truth)
-- [ ] Feature has computed `repository` property
+- [ ] Feature requires `httpClient` in init (no optional default)
+- [ ] Feature creates Container in init
+- [ ] Container has stored `memoryDataSource` property (source of truth)
+- [ ] Container has computed `repository` property
+- [ ] Container has factory methods for ViewModels
+- [ ] Create internal `Navigation/{Feature}Navigation.swift` conforming to `Navigation` protocol
+- [ ] Create internal `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/`
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
-- [ ] Feature creates Navigator and injects into ViewModel
 - [ ] Views only receive ViewModel
-- [ ] Use private factory methods for ViewModels
-- [ ] Add feature to `ChallengeApp.features` array
-- [ ] `ChallengeApp.init` iterates features to register deep links
+- [ ] Add feature to `AppContainer.features` array
+- [ ] `AppContainer.init` registers deep links automatically
+- [ ] `ChallengeApp` only creates AppContainer
 - [ ] `RootView` receives features and uses `.withNavigationDestinations(features:router:)`
-- [ ] **Create feature tests verifying init and registerDeepLinks()**
+- [ ] **Create feature tests with HTTPClientMock**

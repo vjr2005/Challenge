@@ -1,37 +1,69 @@
 # Dependency Injection Examples
 
-Complete implementation examples for dependency injection with Feature per Module pattern.
+Complete implementation examples for dependency injection with Composition Root pattern.
+
+---
+
+## AppContainer Example (Composition Root)
+
+```swift
+// App/Sources/AppContainer.swift
+import ChallengeCharacter
+import ChallengeCore
+import ChallengeHome
+import ChallengeNetworking
+import ChallengeShared
+
+struct AppContainer: Sendable {
+    // MARK: - Shared Dependencies
+
+    let httpClient: any HTTPClientContract
+
+    // MARK: - Features
+
+    let features: [any Feature]
+
+    // MARK: - Init
+
+    init(httpClient: (any HTTPClientContract)? = nil) {
+        self.httpClient = httpClient ?? HTTPClient(
+            baseURL: AppEnvironment.current.rickAndMorty.baseURL
+        )
+
+        self.features = [
+            CharacterFeature(httpClient: self.httpClient),
+            HomeFeature()
+        ]
+
+        features.forEach { $0.registerDeepLinks() }
+    }
+}
+```
 
 ---
 
 ## CharacterFeature Example
 
-### Navigation Destinations
+### Container (Dependency Composition)
 
 ```swift
-// Sources/Navigation/CharacterNavigation.swift
-import {AppName}Core
+// Features/Character/Sources/CharacterContainer.swift
+import ChallengeCore
+import ChallengeNetworking
 
-public enum CharacterNavigation: Navigation {
-    case list
-    case detail(identifier: Int)
-}
-```
-
-### Public Entry Point (Feature Struct)
-
-```swift
-// Sources/CharacterFeature.swift
-import {AppName}Shared
-import {AppName}Core
-import {AppName}Networking
-import SwiftUI
-
-public struct CharacterFeature: Feature {
+public final class CharacterContainer: Sendable {
     // MARK: - Dependencies
 
     private let httpClient: any HTTPClientContract
     private let memoryDataSource = CharacterMemoryDataSource()
+
+    // MARK: - Init
+
+    public init(httpClient: any HTTPClientContract) {
+        self.httpClient = httpClient
+    }
+
+    // MARK: - Repository
 
     private var repository: any CharacterRepositoryContract {
         CharacterRepository(
@@ -40,10 +72,57 @@ public struct CharacterFeature: Feature {
         )
     }
 
+    // MARK: - Factories
+
+    func makeCharacterListViewModel(router: any RouterContract) -> CharacterListViewModel {
+        CharacterListViewModel(
+            getCharactersUseCase: GetCharactersUseCase(repository: repository),
+            navigator: CharacterListNavigator(router: router)
+        )
+    }
+
+    func makeCharacterDetailViewModel(
+        identifier: Int,
+        router: any RouterContract
+    ) -> CharacterDetailViewModel {
+        CharacterDetailViewModel(
+            identifier: identifier,
+            getCharacterUseCase: GetCharacterUseCase(repository: repository),
+            navigator: CharacterDetailNavigator(router: router)
+        )
+    }
+}
+```
+
+### Navigation Destinations
+
+```swift
+// Features/Character/Sources/Navigation/CharacterNavigation.swift
+import ChallengeCore
+
+public enum CharacterNavigation: Navigation {
+    case list
+    case detail(identifier: Int)
+}
+```
+
+### Feature (Public Entry Point)
+
+```swift
+// Features/Character/Sources/CharacterFeature.swift
+import ChallengeCore
+import ChallengeNetworking
+import SwiftUI
+
+public struct CharacterFeature: Feature {
+    // MARK: - Dependencies
+
+    private let container: CharacterContainer
+
     // MARK: - Init
 
-    public init(httpClient: (any HTTPClientContract)? = nil) {
-        self.httpClient = httpClient ?? HTTPClient(baseURL: AppEnvironment.current.rickAndMorty.baseURL)
+    public init(httpClient: any HTTPClientContract) {
+        self.container = CharacterContainer(httpClient: httpClient)
     }
 
     // MARK: - Feature Protocol
@@ -64,33 +143,19 @@ public struct CharacterFeature: Feature {
 // MARK: - Private
 
 private extension CharacterFeature {
-    // MARK: - Views
-
     @ViewBuilder
     func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {
         case .list:
-            CharacterListView(viewModel: makeCharacterListViewModel(router: router))
+            CharacterListView(viewModel: container.makeCharacterListViewModel(router: router))
         case .detail(let identifier):
-            CharacterDetailView(viewModel: makeCharacterDetailViewModel(identifier: identifier, router: router))
+            CharacterDetailView(
+                viewModel: container.makeCharacterDetailViewModel(
+                    identifier: identifier,
+                    router: router
+                )
+            )
         }
-    }
-
-    // MARK: - Factories
-
-    func makeCharacterListViewModel(router: any RouterContract) -> CharacterListViewModel {
-        CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCase(repository: repository),
-            navigator: CharacterListNavigator(router: router)
-        )
-    }
-
-    func makeCharacterDetailViewModel(identifier: Int, router: any RouterContract) -> CharacterDetailViewModel {
-        CharacterDetailViewModel(
-            identifier: identifier,
-            getCharacterUseCase: GetCharacterUseCase(repository: repository),
-            navigator: CharacterDetailNavigator(router: router)
-        )
     }
 }
 ```
@@ -98,36 +163,25 @@ private extension CharacterFeature {
 ### Usage from App
 
 ```swift
-// In App/Sources/ChallengeApp.swift
-import {AppName}Character
-import {AppName}Core
-import {AppName}Home
+// App/Sources/ChallengeApp.swift
 import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    let features: [any Feature] = [
-        CharacterFeature(),
-        HomeFeature()
-    ]
-
-    init() {
-        features.forEach { $0.registerDeepLinks() }
-    }
+    private let container = AppContainer()
 
     var body: some Scene {
         WindowGroup {
-            RootView(features: features)
+            RootView(features: container.features)
         }
     }
 }
 ```
 
 ```swift
-// In App/Sources/RootView.swift
-import {AppName}Character
-import {AppName}Core
-import {AppName}Home
+// App/Sources/RootView.swift
+import ChallengeCore
+import ChallengeHome
 import SwiftUI
 
 struct RootView: View {
@@ -147,7 +201,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(features: [CharacterFeature(), HomeFeature()])
+    RootView(features: AppContainer().features)
 }
 ```
 
@@ -155,15 +209,42 @@ struct RootView: View {
 
 ## HomeFeature Example (Simple)
 
-### Public Entry Point
+### Container
 
 ```swift
-// Sources/HomeFeature.swift
-import {AppName}Core
+// Features/Home/Sources/HomeContainer.swift
+import ChallengeCore
+
+public final class HomeContainer: Sendable {
+    // MARK: - Init
+
+    public init() {}
+
+    // MARK: - Factories
+
+    func makeHomeViewModel(router: any RouterContract) -> HomeViewModel {
+        HomeViewModel(navigator: HomeNavigator(router: router))
+    }
+}
+```
+
+### Feature (Public Entry Point)
+
+```swift
+// Features/Home/Sources/HomeFeature.swift
+import ChallengeCore
 import SwiftUI
 
 public struct HomeFeature: Feature {
-    public init() {}
+    // MARK: - Dependencies
+
+    private let container: HomeContainer
+
+    // MARK: - Init
+
+    public init() {
+        self.container = HomeContainer()
+    }
 
     // MARK: - Feature Protocol
 
@@ -178,7 +259,7 @@ public struct HomeFeature: Feature {
     // MARK: - Factory
 
     public func makeHomeView(router: any RouterContract) -> some View {
-        HomeView(viewModel: HomeViewModel(navigator: HomeNavigator(router: router)))
+        HomeView(viewModel: container.makeHomeViewModel(router: router))
     }
 }
 ```
@@ -187,33 +268,24 @@ public struct HomeFeature: Feature {
 
 ## Feature Tests
 
-Features are tested through their **public interface**. Factory methods are private implementation details.
+Features are tested through their **public interface**. Factory methods are internal to Container.
 
 ### CharacterFeatureTests
 
 ```swift
-import {AppName}Core
-import {AppName}CoreMocks
-import {AppName}NetworkingMocks
+import ChallengeCore
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
 import Foundation
 import Testing
 
-@testable import {AppName}Character
+@testable import ChallengeCharacter
 
 struct CharacterFeatureTests {
     // MARK: - Init
 
     @Test
-    func initWithDefaultHTTPClientDoesNotCrash() {
-        // Given/When
-        let sut = CharacterFeature()
-
-        // Then - Feature initializes without crashing
-        _ = sut
-    }
-
-    @Test
-    func initWithCustomHTTPClientDoesNotCrash() {
+    func initWithHTTPClientDoesNotCrash() {
         // Given
         let httpClientMock = HTTPClientMock()
 
@@ -229,7 +301,8 @@ struct CharacterFeatureTests {
     @Test
     func registerDeepLinksRegistersCharacterHandler() throws {
         // Given
-        let sut = CharacterFeature()
+        let httpClientMock = HTTPClientMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         sut.registerDeepLinks()
@@ -243,7 +316,8 @@ struct CharacterFeatureTests {
     @Test
     func registerDeepLinksRegistersDetailPath() throws {
         // Given
-        let sut = CharacterFeature()
+        let httpClientMock = HTTPClientMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         sut.registerDeepLinks()
@@ -259,10 +333,10 @@ struct CharacterFeatureTests {
 ### HomeFeatureTests (Simple Feature)
 
 ```swift
-import {AppName}CoreMocks
+import ChallengeCoreMocks
 import Testing
 
-@testable import {AppName}Home
+@testable import ChallengeHome
 
 struct HomeFeatureTests {
     @Test
@@ -281,28 +355,19 @@ struct HomeFeatureTests {
 ## Generic Feature Tests Pattern
 
 ```swift
-import {AppName}Core
-import {AppName}CoreMocks
-import {AppName}NetworkingMocks
+import ChallengeCore
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
 import Foundation
 import Testing
 
-@testable import {AppName}{Feature}
+@testable import Challenge{Feature}
 
 struct {Feature}FeatureTests {
     // MARK: - Init
 
     @Test
-    func initWithDefaultDependenciesDoesNotCrash() {
-        // Given/When
-        let sut = {Feature}Feature()
-
-        // Then
-        _ = sut
-    }
-
-    @Test
-    func initWithCustomDependenciesDoesNotCrash() {
+    func initWithHTTPClientDoesNotCrash() {
         // Given
         let httpClientMock = HTTPClientMock()
 
@@ -318,7 +383,8 @@ struct {Feature}FeatureTests {
     @Test
     func registerDeepLinksRegistersHandler() throws {
         // Given
-        let sut = {Feature}Feature()
+        let httpClientMock = HTTPClientMock()
+        let sut = {Feature}Feature(httpClient: httpClientMock)
 
         // When
         sut.registerDeepLinks()
@@ -335,8 +401,7 @@ struct {Feature}FeatureTests {
 
 | Test | Purpose |
 |------|---------|
-| Init with default dependencies | Verify feature initializes without crashing |
-| Init with custom dependencies | Verify dependency injection works |
+| Init with HTTPClient | Verify feature initializes without crashing |
 | registerDeepLinks() | Verify deep links are registered correctly |
 
-**Note:** Factory methods are private. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.
+**Note:** Factory methods are internal to Container. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.

@@ -22,7 +22,9 @@ Guide for project organization and directory structure.
 {AppName}/
 ├── App/
 │   ├── Sources/
-│   │   ├── {AppName}App.swift
+│   │   ├── {AppName}App.swift        # Minimal entry point
+│   │   ├── AppContainer.swift        # Composition Root (centralized DI)
+│   │   ├── RootView.swift            # Root navigation view
 │   │   └── Resources/
 │   │       └── Assets.xcassets/
 │   ├── Tests/
@@ -71,7 +73,8 @@ Each feature module follows this internal structure:
 ```
 FeatureName/
 ├── Sources/
-│   ├── {Feature}Feature.swift              # Public entry point (struct implementing Feature protocol)
+│   ├── {Feature}Feature.swift              # Public entry point (navigation + deep links)
+│   ├── {Feature}Container.swift            # Dependency composition (factories)
 │   ├── Navigation/
 │   │   ├── {Feature}Navigation.swift       # Navigation destinations
 │   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler
@@ -368,7 +371,8 @@ Derived/
 ```
 App/
 ├── Sources/
-│   ├── {AppName}App.swift        # App entry point with features array
+│   ├── {AppName}App.swift        # Minimal entry point (creates AppContainer)
+│   ├── AppContainer.swift        # Composition Root (centralized DI)
 │   ├── RootView.swift            # Root view with navigation
 │   └── Resources/
 │       └── Assets.xcassets/
@@ -389,6 +393,7 @@ App/
 |-----------|----------------|---------|
 | Feature folder | `{Name}/` | `Character/` |
 | Public entry | `{Feature}Feature.swift` | `CharacterFeature.swift` |
+| Container | `{Feature}Container.swift` | `CharacterContainer.swift` |
 | Navigation | `Navigation/{Feature}Navigation.swift` | `Navigation/CharacterNavigation.swift` |
 | Domain model | `{Name}.swift` | `Character.swift` |
 | DTO | `{Name}DTO.swift` | `CharacterDTO.swift` |
@@ -413,7 +418,10 @@ App/
 
 ## Checklist
 
+- [ ] AppContainer.swift in App/Sources/ as Composition Root
 - [ ] Feature folder does not contain "Feature" suffix
+- [ ] {Feature}Container.swift for dependency composition
+- [ ] {Feature}Feature.swift as public entry point
 - [ ] Sources organized by layer: Domain, Data, Presentation
 - [ ] Presentation organized by screen: {ScreenName}/Navigator/, {ScreenName}/Views/, {ScreenName}/ViewModels/
 - [ ] Tests mirror Sources structure
