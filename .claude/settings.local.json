@@ -53,7 +53,8 @@
       "Skill(style-guide)",
       "Skill(concurrency)",
       "Skill(testing)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(grep:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
