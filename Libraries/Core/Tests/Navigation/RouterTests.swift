@@ -99,6 +99,5 @@ struct RouterTests {
 // MARK: - Test Helpers
 
 private enum TestNavigation: Navigation {
-    case list
     case detail(id: Int)
 }

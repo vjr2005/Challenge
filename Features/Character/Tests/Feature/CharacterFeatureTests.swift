@@ -1,5 +1,4 @@
 import ChallengeCore
-import ChallengeCoreMocks
 import ChallengeNetworkingMocks
 import Foundation
 import Testing
