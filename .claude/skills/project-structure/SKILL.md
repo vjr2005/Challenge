@@ -329,18 +329,15 @@ Libraries/Networking/
 ```
 Shared/Common/
 ├── Sources/
-│   ├── AppEnvironment+API.swift      # API configuration extension
 │   ├── Extensions/
 │   │   ├── Bundle+Module.swift       # Manual Bundle.module accessor
 │   │   └── String+Localized.swift    # localized() extension
 │   └── Resources/
 │       └── Localizable.xcstrings
 └── Tests/
-    └── AppEnvironment+APITests.swift
 ```
 
 The Shared module provides app-specific utilities (not reusable across apps):
-- **AppEnvironment+API**: API endpoint extensions (base `AppEnvironment` is in Core)
 - **Localization**: Centralized `Localizable.xcstrings` and `String.localized()` extension
 - **Bundle.module**: Manual accessor (Tuist generation disabled)
 
@@ -375,6 +372,8 @@ App/
 ├── Sources/
 │   ├── {AppName}App.swift        # Minimal entry point (creates AppContainer)
 │   ├── AppContainer.swift        # Composition Root (centralized DI)
+│   ├── Data/
+│   │   └── AppEnvironment+API.swift  # API configuration extension
 │   ├── Presentation/
 │   │   └── Views/
 │   │       └── RootView.swift    # Root view with navigation
@@ -384,6 +383,8 @@ App/
 │           ├── AppIconDev.appiconset/     # Development icon
 │           └── AppIconStaging.appiconset/ # Staging icon
 ├── Tests/                        # Unit tests for App target
+│   └── Data/
+│       └── AppEnvironment+APITests.swift
 └── E2ETests/                     # End-to-end UI tests
     ├── Robots/
     └── Tests/

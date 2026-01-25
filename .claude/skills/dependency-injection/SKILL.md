@@ -94,7 +94,6 @@ import {AppName}Character
 import {AppName}Core
 import {AppName}Home
 import {AppName}Networking
-import {AppName}Shared
 import SwiftUI
 
 struct AppContainer: Sendable {

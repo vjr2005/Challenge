@@ -3,9 +3,9 @@ import Foundation
 
 // MARK: - API Configuration
 
-public extension AppEnvironment {
+extension AppEnvironment {
 	struct API {
-		public let baseURL: URL
+		let baseURL: URL
 	}
 
 	var rickAndMorty: API {

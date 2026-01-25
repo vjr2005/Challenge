@@ -49,7 +49,11 @@ let appTestsTarget = Target.target(
 	bundleId: "com.app.\(appName)Tests",
 	deploymentTargets: developmentTarget,
 	infoPlist: .default,
-	sources: ["App/Tests/**"]
+	sources: ["App/Tests/**"],
+	dependencies: [
+		.target(name: appName),
+		.target(name: "\(appName)Core"),
+	]
 )
 
 let appE2ETestsTarget = Target.target(

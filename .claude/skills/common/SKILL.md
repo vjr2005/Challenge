@@ -21,7 +21,6 @@ Guide for the Shared module: environment configuration and localization.
 
 The `Shared` module provides app-specific utilities used across features:
 
-- **AppEnvironment**: API endpoint extensions (base definition in Core)
 - **Localization**: Centralized strings with `String.localized()` extension
 - **Bundle**: Manual `Bundle.module` accessor for resources
 
@@ -33,31 +32,29 @@ The `Shared` module provides app-specific utilities used across features:
 ```
 Shared/Common/
 ├── Sources/
-│   ├── AppEnvironment+API.swift      # API configuration extension
 │   ├── Extensions/
 │   │   ├── Bundle+Module.swift       # Bundle.module accessor
 │   │   └── String+Localized.swift    # localized() extension
 │   └── Resources/
 │       └── Localizable.xcstrings
 └── Tests/
-    └── AppEnvironment+APITests.swift
 ```
 
-**Note:** The base `AppEnvironment` enum is defined in `Core` module (`Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`). Shared only extends it with API configurations.
+**Note:** The base `AppEnvironment` enum is defined in `Core` module (`Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`). API configuration extensions are in `App/Sources/Data/AppEnvironment+API.swift`.
 
 ---
 
 ## AppEnvironment
 
-The `AppEnvironment` enum defines application environments. The base definition is in Core, and Common extends it with API configuration.
+The `AppEnvironment` enum defines application environments. The base definition is in Core, and the App extends it with API configuration.
 
 **Base definition:** `Libraries/Core/Sources/AppEnvironment/AppEnvironment.swift`
-**API extension:** `Libraries/Common/Sources/AppEnvironment+API.swift`
+**API extension:** `App/Sources/Data/AppEnvironment+API.swift`
 
 ### Usage
 
 ```swift
-import {AppName}Shared
+import {AppName}Core
 
 // Get current environment (determined at compile time)
 let environment = AppEnvironment.current
@@ -67,7 +64,7 @@ if environment.isDebug {
     // Development-only code
 }
 
-// Get API configuration
+// Get API configuration (within App target)
 let apiURL = AppEnvironment.current.rickAndMorty.baseURL
 ```
 
@@ -87,7 +84,7 @@ let apiURL = AppEnvironment.current.rickAndMorty.baseURL
 | `isDebug` | `Bool` | `true` only for `development` |
 | `isRelease` | `Bool` | `true` only for `production` |
 
-### Properties (from Common)
+### Properties (from App)
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -229,8 +226,8 @@ Each environment has a distinct app icon with a colored banner:
 To add a new API endpoint configuration:
 
 ```swift
-// In AppEnvironment+API.swift
-public extension AppEnvironment {
+// In App/Sources/Data/AppEnvironment+API.swift
+extension AppEnvironment {
     var newAPI: API {
         let urlString: String
         switch self {
@@ -251,16 +248,16 @@ public extension AppEnvironment {
 
 ---
 
-## Usage in Features
+## Usage in App
 
-Features access API configuration through their Container:
+The App accesses API configuration through `AppContainer`:
 
 ```swift
-import {AppName}Shared
+import {AppName}Core
 import {AppName}Networking
 
-final class MyFeatureContainer {
-    private let httpClient: any HTTPClientContract
+struct AppContainer: Sendable {
+    let httpClient: any HTTPClientContract
 
     init(httpClient: (any HTTPClientContract)? = nil) {
         self.httpClient = httpClient ?? HTTPClient(
@@ -269,6 +266,8 @@ final class MyFeatureContainer {
     }
 }
 ```
+
+**Note:** API configuration is internal to the App target. Features receive the configured `HTTPClient` via dependency injection.
 
 ---
 
@@ -373,10 +372,11 @@ func track(event: String) {
 
 ### Adding New API
 
-- [ ] Add computed property to `AppEnvironment` extension in Common
+- [ ] Add computed property to `AppEnvironment` extension in `App/Sources/Data/AppEnvironment+API.swift`
 - [ ] Define URL for each environment case
 - [ ] Use `preconditionFailure` for invalid URLs (compile-time constants)
-- [ ] Update feature Containers to use new API
+- [ ] Update `AppContainer` to use new API
+- [ ] Add tests in `App/Tests/Data/`
 
 ### Adding Localized Strings
 

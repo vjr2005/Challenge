@@ -2,7 +2,6 @@ import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
 import ChallengeNetworking
-import ChallengeShared
 import SwiftUI
 
 struct AppContainer: Sendable {

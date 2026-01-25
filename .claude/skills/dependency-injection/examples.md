@@ -12,7 +12,6 @@ import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
 import ChallengeNetworking
-import ChallengeShared
 
 struct AppContainer: Sendable {
     // MARK: - Shared Dependencies
