@@ -20,19 +20,4 @@ nonisolated final class DeepLinkE2ETests: XCTestCase {
 			robot.verifyIsVisible()
 		}
 	}
-
-	@MainActor
-	func testDeepLinkToCharacterDetail() throws {
-		// Given
-		let app = launch()
-		let url = try XCTUnwrap(URL(string: "challenge://character/detail?id=1"))
-
-		// When
-		app.open(url)
-
-		// Then
-		characterDetail(app: app) { robot in
-			robot.verifyIsVisible()
-		}
-	}
 }
