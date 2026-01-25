@@ -87,7 +87,7 @@ extension Bundle {
 ```
 
 Currently used in:
-- `Shared/Common/Sources/Extensions/Bundle+Module.swift`
+- `Shared/Resources/Sources/Extensions/Bundle+Module.swift`
 - `Features/{Feature}/Tests/Extensions/Bundle+Module.swift`
 
 ---
@@ -144,7 +144,7 @@ Derived/
 └── InfoPlists/
     ├── {AppName}-Info.plist
     ├── {AppName}Core-Info.plist
-    ├── {AppName}Shared-Info.plist
+    ├── {AppName}Resources-Info.plist
     └── ...
 ```
 

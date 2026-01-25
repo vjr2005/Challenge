@@ -7,7 +7,7 @@ public enum Modules {
 	private static let all: [FrameworkModule] = [
 		CoreModule.module,
 		NetworkingModule.module,
-		SharedModule.module,
+		ResourcesModule.module,
 		DesignSystemModule.module,
 		CharacterModule.module,
 		HomeModule.module,
@@ -30,7 +30,7 @@ public enum Modules {
 		[.target(appName)]
 			+ CoreModule.targetReferences
 			+ NetworkingModule.targetReferences
-			+ SharedModule.targetReferences
+			+ ResourcesModule.targetReferences
 			+ DesignSystemModule.targetReferences
 			+ CharacterModule.targetReferences
 			+ HomeModule.targetReferences

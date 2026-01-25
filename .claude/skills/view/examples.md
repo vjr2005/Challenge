@@ -8,7 +8,7 @@ Complete implementation examples for SwiftUI Views.
 
 ```swift
 // Sources/Presentation/CharacterList/Views/CharacterListView.swift
-import {AppName}Shared
+import {AppName}Resources
 import SwiftUI
 
 struct CharacterListView: View {
@@ -171,7 +171,7 @@ private enum PreviewError: LocalizedError {
 
 ```swift
 // Sources/Presentation/CharacterDetail/Views/CharacterDetailView.swift
-import {AppName}Shared
+import {AppName}Resources
 import SwiftUI
 
 struct CharacterDetailView: View {
@@ -311,7 +311,7 @@ Stateless views (no ViewState) still use ViewModel contracts for consistency:
 
 ```swift
 // Sources/Presentation/Home/Views/HomeView.swift
-import {AppName}Shared
+import {AppName}Resources
 import SwiftUI
 
 struct HomeView<ViewModel: HomeViewModelContract>: View {

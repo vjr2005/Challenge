@@ -1,16 +1,16 @@
 import ProjectDescription
 
-public enum SharedModule {
+public enum ResourcesModule {
 	public static let module = FrameworkModule.create(
-		name: "Shared",
+		name: "Resources",
 		baseFolder: "Shared",
-		path: "Common",
+		path: "Resources",
 		dependencies: [
 			.target(name: "\(appName)Core"),
 		]
 	)
 
 	public static let targetReferences: [TargetReference] = [
-		.target("\(appName)Shared"),
+		.target("\(appName)Resources"),
 	]
 }

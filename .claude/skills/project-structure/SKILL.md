@@ -324,10 +324,14 @@ Libraries/Networking/
 
 ---
 
-## Shared Module
+## Shared Directory
+
+The `Shared/` directory contains app-specific modules (not reusable across apps).
+
+### Resources Module
 
 ```
-Shared/Common/
+Shared/Resources/
 ├── Sources/
 │   ├── Extensions/
 │   │   ├── Bundle+Module.swift       # Manual Bundle.module accessor
@@ -337,7 +341,7 @@ Shared/Common/
 └── Tests/
 ```
 
-The Shared module provides app-specific utilities (not reusable across apps):
+The Resources module provides:
 - **Localization**: Centralized `Localizable.xcstrings` and `String.localized()` extension
 - **Bundle.module**: Manual accessor (Tuist generation disabled)
 
@@ -354,7 +358,7 @@ Derived/
 └── InfoPlists/
     ├── {AppName}-Info.plist
     ├── {AppName}Core-Info.plist
-    ├── {AppName}Shared-Info.plist
+    ├── {AppName}Resources-Info.plist
     ├── {AppName}{Feature}-Info.plist
     └── ...
 ```

@@ -32,7 +32,7 @@ Use these skills for detailed implementation patterns:
 | `/testing` | Unit testing patterns, Given/When/Then, parameterized tests |
 | `/e2e-tests` | End-to-end UI tests with Robot pattern |
 | `/project-structure` | Directory organization, feature modules, extensions |
-| `/common` | Common module: AppEnvironment, localization, String extensions |
+| `/resources` | Resources module: localization, String extensions |
 | `/tuist` | Tuist configuration: xcframeworks, dependencies, Project.swift |
 | `/datasource` | RemoteDataSource for APIs, MemoryDataSource for caching, DTOs |
 | `/repository` | Repository pattern, DTO-to-Domain mapping, local-first caching |

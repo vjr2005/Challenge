@@ -247,7 +247,7 @@ private enum PreviewError: LocalizedError {
 Views must define **private LocalizedStrings** for type-safe localization.
 
 ```swift
-import {AppName}Shared
+import {AppName}Resources
 
 // MARK: - LocalizedStrings
 

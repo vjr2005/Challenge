@@ -1,4 +1,4 @@
-import ChallengeShared
+import ChallengeResources
 import SwiftUI
 
 struct HomeView<ViewModel: HomeViewModelContract>: View {
