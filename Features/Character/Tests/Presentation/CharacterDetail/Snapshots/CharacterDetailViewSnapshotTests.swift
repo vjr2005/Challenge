@@ -13,6 +13,23 @@ struct CharacterDetailViewSnapshotTests {
 		imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
 	}
 
+	// MARK: - Idle State
+
+	@Test
+	func idleState() {
+		// Given
+		let viewModel = CharacterDetailViewModelStub(state: .idle)
+
+		// When
+		let view = NavigationStack {
+			CharacterDetailView(viewModel: viewModel)
+		}
+		.imageLoader(imageLoader)
+
+		// Then
+		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+	}
+
 	// MARK: - Loading State
 
 	@Test
@@ -88,6 +105,23 @@ struct CharacterDetailViewSnapshotTests {
 			CharacterDetailView(viewModel: viewModel)
 		}
 		.imageLoader(imageLoader)
+
+		// Then
+		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+	}
+
+	@Test
+	func loadedStateWithImagePlaceholder() {
+		// Given
+		let character = Character.stub()
+		let viewModel = CharacterDetailViewModelStub(state: .loaded(character))
+		let imageLoaderWithoutImage = ImageLoaderMock(image: nil)
+
+		// When
+		let view = NavigationStack {
+			CharacterDetailView(viewModel: viewModel)
+		}
+		.imageLoader(imageLoaderWithoutImage)
 
 		// Then
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))

@@ -28,9 +28,9 @@ public struct CharacterFeature: Feature {
     }
 }
 
-// MARK: - Private
+// MARK: - Internal
 
-private extension CharacterFeature {
+extension CharacterFeature {
     @ViewBuilder
     func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
         switch navigation {

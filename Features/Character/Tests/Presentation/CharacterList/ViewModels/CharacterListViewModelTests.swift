@@ -150,6 +150,46 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.executeCallCount == callCountAfterLoad)
     }
 
+    @Test
+    func loadMoreKeepsExistingDataOnError() async {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(firstPage)
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        await sut.load()
+        useCaseMock.result = .failure(TestError.network)
+
+        // When
+        await sut.loadMore()
+
+        // Then
+        #expect(sut.state == .loaded(firstPage))
+    }
+
+    @Test
+    func loadMoreRevertsPageOnError() async {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(firstPage)
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        await sut.load()
+        useCaseMock.result = .failure(TestError.network)
+        await sut.loadMore()
+
+        // When - retry after error
+        useCaseMock.result = .success(CharactersPage.stub(currentPage: 2))
+        await sut.loadMore()
+
+        // Then - should request page 2 again, not page 3
+        #expect(useCaseMock.lastRequestedPage == 2)
+    }
+
     // MARK: - Navigation
 
     @Test

@@ -217,6 +217,12 @@ private enum AccessibilityIdentifier {
 
 // MARK: - Previews
 
+#Preview("Idle") {
+    NavigationStack {
+        CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .idle))
+    }
+}
+
 #Preview("Loading") {
 	NavigationStack {
 		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loading))

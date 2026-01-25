@@ -9,26 +9,20 @@ extension AppEnvironment {
     }
 
     // swiftlint:disable force_unwrapping
-    private enum URLs {
-        // TODO: Replace with development environment URL
-        static let development = URL(string: "https://rickandmortyapi.com/api")!
-        // TODO: Replace with staging environment URL
-        static let staging = URL(string: "https://rickandmortyapi.com/api")!
-        // TODO: Replace with production environment URL
-        static let production = URL(string: "https://rickandmortyapi.com/api")!
-    }
-    // swiftlint:enable force_unwrapping
-
     var rickAndMorty: API {
-        let url: URL
-        switch self {
+        let urlString: String = switch self {
         case .development:
-            url = URLs.development
+            // TODO: replace by development url
+            "https://rickandmortyapi.com/api"
         case .staging:
-            url = URLs.staging
+            // TODO: replace by staging url
+            "https://rickandmortyapi.com/api"
         case .production:
-            url = URLs.production
+            // TODO: replace by production url
+            "https://rickandmortyapi.com/api"
         }
+        let url = URL(string: urlString)!
         return API(baseURL: url)
     }
+    // swiftlint:enable force_unwrapping
 }
