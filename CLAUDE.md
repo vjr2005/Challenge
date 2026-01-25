@@ -113,6 +113,8 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 | Stubs location | `Tests/Stubs/` for Domain models |
 | Fixtures location | `Tests/Fixtures/` for JSON (DTOs) |
 | Coverage scope | Only source targets (never mocks or external libraries) |
+| Unit tests | Use Swift Testing (`@Test`, `#expect`) |
+| E2E/UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
 
 For details, see `/testing` skill.
 

@@ -1,7 +1,7 @@
 import Foundation
 
 /// DTO for location data from the Rick and Morty API.
-nonisolated struct LocationDTO: Decodable, Equatable {
+struct LocationDTO: Decodable, Equatable, Sendable {
 	let name: String
 	let url: String
 }

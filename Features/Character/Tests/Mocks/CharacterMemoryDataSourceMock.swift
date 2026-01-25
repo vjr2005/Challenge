@@ -2,44 +2,49 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-actor CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract {
-	private var characterStorage: [Int: CharacterDTO] = [:]
-	private var pageStorage: [Int: CharactersResponseDTO] = [:]
-	private(set) var saveCharacterCallCount = 0
-	private(set) var savePageCallCount = 0
+final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @unchecked Sendable {
+    // MARK: - Configurable Returns
 
-	// MARK: - Individual Characters
+    var characterToReturn: CharacterDTO?
+    var pageToReturn: CharactersResponseDTO?
 
-	func getCharacter(identifier: Int) -> CharacterDTO? {
-		characterStorage[identifier]
-	}
+    // MARK: - Call Tracking
 
-	func saveCharacter(_ character: CharacterDTO) {
-		saveCharacterCallCount += 1
-		characterStorage[character.id] = character
-	}
+    private(set) var getCharacterCallCount = 0
+    private(set) var getCharacterLastIdentifier: Int?
 
-	// MARK: - Paginated Results
+    private(set) var saveCharacterCallCount = 0
+    private(set) var saveCharacterLastValue: CharacterDTO?
 
-	func getPage(_ page: Int) -> CharactersResponseDTO? {
-		pageStorage[page]
-	}
+    private(set) var getPageCallCount = 0
+    private(set) var getPageLastPage: Int?
 
-	func savePage(_ response: CharactersResponseDTO, page: Int) {
-		savePageCallCount += 1
-		pageStorage[page] = response
-		for character in response.results {
-			characterStorage[character.id] = character
-		}
-	}
+    private(set) var savePageCallCount = 0
+    private(set) var savePageLastResponse: CharactersResponseDTO?
+    private(set) var savePageLastPage: Int?
 
-	// MARK: - Test Helpers
+    // MARK: - CharacterMemoryDataSourceContract
 
-	func getAllCharactersForTest() -> [CharacterDTO] {
-		Array(characterStorage.values)
-	}
+    func getCharacter(identifier: Int) -> CharacterDTO? {
+        getCharacterCallCount += 1
+        getCharacterLastIdentifier = identifier
+        return characterToReturn
+    }
 
-	func setPageStorage(_ pages: [Int: CharactersResponseDTO]) {
-		pageStorage = pages
-	}
+    func saveCharacter(_ character: CharacterDTO) {
+        saveCharacterCallCount += 1
+        saveCharacterLastValue = character
+    }
+
+    func getPage(_ page: Int) -> CharactersResponseDTO? {
+        getPageCallCount += 1
+        getPageLastPage = page
+        return pageToReturn
+    }
+
+    func savePage(_ response: CharactersResponseDTO, page: Int) {
+        savePageCallCount += 1
+        savePageLastResponse = response
+        savePageLastPage = page
+    }
 }

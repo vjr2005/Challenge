@@ -294,6 +294,56 @@ func processesUserCorrectly() {
 | `Mocks/` (framework) | Public | Mocks used by other modules |
 | `Tests/Mocks/` | Internal | Mocks only used within the test target |
 
+### Mock vs Fake
+
+**Mocks** should NOT contain implementation logic. They only:
+1. Return configurable values
+2. Track method calls (counts, parameters)
+
+```swift
+// RIGHT - Pure Mock (no logic)
+final class DataSourceMock: DataSourceContract {
+    var valueToReturn: Data?
+    private(set) var saveCallCount = 0
+    private(set) var saveLastValue: Data?
+
+    func get() -> Data? { valueToReturn }
+    func save(_ data: Data) {
+        saveCallCount += 1
+        saveLastValue = data
+    }
+}
+
+// WRONG - Fake with implementation logic
+final class DataSourceMock: DataSourceContract {
+    private var storage: [String: Data] = [:]  // ❌ Real storage
+
+    func get(key: String) -> Data? {
+        storage[key]  // ❌ Real lookup
+    }
+    func save(_ data: Data, key: String) {
+        storage[key] = data  // ❌ Real storage
+    }
+}
+```
+
+### Mock Actor Isolation
+
+The project uses `SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor`. When mocking `actor` types from the main module:
+
+```swift
+// Original in main module (compiles because same-module access)
+actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract { }
+
+// Mock in test module - use @MainActor class instead of actor
+@MainActor
+final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @unchecked Sendable {
+    // Implementation
+}
+```
+
+**Why:** When importing types with `@testable import`, the test module sees types with MainActor isolation. Using `@MainActor final class` aligns the mock with this isolation context.
+
 ---
 
 ## Equatable Extensions for Tests

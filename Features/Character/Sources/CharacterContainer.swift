@@ -1,6 +1,7 @@
 import ChallengeCore
 import ChallengeNetworking
 
+/// Dependency container for the Character feature.
 public final class CharacterContainer: Sendable {
     // MARK: - Dependencies
 
@@ -9,6 +10,8 @@ public final class CharacterContainer: Sendable {
 
     // MARK: - Init
 
+    /// Creates a new CharacterContainer with the given HTTP client.
+    /// - Parameter httpClient: The HTTP client used for network requests.
     public init(httpClient: any HTTPClientContract) {
         self.httpClient = httpClient
     }

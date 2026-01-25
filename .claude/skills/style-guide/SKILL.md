@@ -124,6 +124,26 @@ let characterId = character.id
 
 ---
 
+## Access Modifiers
+
+```swift
+// WRONG - Explicit internal (redundant)
+internal struct Character { }
+internal func loadData() { }
+
+// RIGHT - Implicit internal
+struct Character { }
+func loadData() { }
+
+// RIGHT - Only explicit when necessary
+public struct PublicAPI { }
+private func helperMethod() { }
+```
+
+> **Rule:** Never use explicit `internal` - it's the default and adds noise. Only use access modifiers when the visibility differs from internal (`public`, `private`, `fileprivate`, `open`).
+
+---
+
 ## Type Inference
 
 ```swift
