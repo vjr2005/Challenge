@@ -7,6 +7,7 @@ import Testing
 
 @testable import ChallengeCharacter
 
+@Suite(.timeLimit(.minutes(1)))
 struct CharacterFeatureTests {
     // MARK: - Init
 

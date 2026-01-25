@@ -2,6 +2,7 @@ import Testing
 
 @testable import ChallengeCore
 
+@Suite(.timeLimit(.minutes(1)))
 struct AppEnvironmentTests {
 	// MARK: - current
 

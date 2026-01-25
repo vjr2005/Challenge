@@ -4,6 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
+@Suite(.timeLimit(.minutes(1)))
 struct ColorTokenSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)

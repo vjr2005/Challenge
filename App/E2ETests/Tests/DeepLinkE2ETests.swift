@@ -4,6 +4,7 @@ import XCTest
 nonisolated final class DeepLinkE2ETests: XCTestCase {
 	override func setUpWithError() throws {
 		continueAfterFailure = false
+		executionTimeAllowance = 60
 	}
 
 	@MainActor

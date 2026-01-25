@@ -4,6 +4,7 @@ import UIKit
 
 @testable import ChallengeCore
 
+@Suite(.timeLimit(.minutes(1)))
 struct CachedImageLoaderTests {
 	// MARK: - Cached Image
 

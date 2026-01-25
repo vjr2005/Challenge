@@ -5,6 +5,7 @@ import Testing
 
 @testable import Challenge
 
+@Suite(.timeLimit(.minutes(1)))
 struct RootViewSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)

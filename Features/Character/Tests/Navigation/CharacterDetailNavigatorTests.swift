@@ -3,6 +3,7 @@ import Testing
 
 @testable import ChallengeCharacter
 
+@Suite(.timeLimit(.minutes(1)))
 struct CharacterDetailNavigatorTests {
     @Test
     func goBackCallsRouter() {

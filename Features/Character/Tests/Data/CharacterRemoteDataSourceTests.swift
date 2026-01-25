@@ -5,6 +5,7 @@ import Testing
 
 @testable import ChallengeCharacter
 
+@Suite(.timeLimit(.minutes(1)))
 struct CharacterRemoteDataSourceTests {
 	private let testBundle = Bundle(for: BundleToken.self)
 

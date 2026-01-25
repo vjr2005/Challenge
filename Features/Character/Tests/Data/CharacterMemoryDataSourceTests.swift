@@ -4,6 +4,7 @@ import Testing
 
 @testable import ChallengeCharacter
 
+@Suite(.timeLimit(.minutes(1)))
 struct CharacterMemoryDataSourceTests {
 	private let testBundle = Bundle(for: BundleToken.self)
 

@@ -5,6 +5,7 @@ import Testing
 
 @testable import ChallengeCharacter
 
+@Suite(.timeLimit(.minutes(1)))
 struct CharacterDetailViewSnapshotTests {
 	private let imageLoader: ImageLoaderMock
 

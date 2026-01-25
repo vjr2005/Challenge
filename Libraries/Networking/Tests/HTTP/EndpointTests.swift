@@ -3,6 +3,7 @@ import Testing
 
 @testable import ChallengeNetworking
 
+@Suite(.timeLimit(.minutes(1)))
 struct EndpointTests {
 	@Test
 	func defaultsToGetMethod() {
