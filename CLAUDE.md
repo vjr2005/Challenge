@@ -18,6 +18,13 @@ This document defines the coding standards, architecture patterns, and developme
 > **Maximum test coverage is required.** When creating or modifying any component, all related changes must be fully tested.
 >
 > **Code coherence is mandatory.** The same logic must be used to solve the same problem throughout the project. When refactoring or adding new code, analyze the entire project to identify similar patterns and ensure consistency. Never implement the same solution in different ways.
+>
+> **All code must follow SOLID principles:**
+> - **S**ingle Responsibility: Each class/struct should have only one reason to change
+> - **O**pen/Closed: Open for extension, closed for modification
+> - **L**iskov Substitution: Subtypes must be substitutable for their base types
+> - **I**nterface Segregation: Prefer small, specific protocols over large, general ones
+> - **D**ependency Inversion: Depend on abstractions (protocols), not concrete implementations
 
 ---
 
