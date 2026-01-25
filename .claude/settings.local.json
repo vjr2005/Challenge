@@ -58,7 +58,9 @@
       "Bash(sort:*)",
       "Bash(tee:*)",
       "Bash(xcrun xcresulttool:*)",
-      "Bash(swift test:*)"
+      "Bash(swift test:*)",
+      "Bash(done)",
+      "Bash(wc:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
