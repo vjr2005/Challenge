@@ -15,10 +15,11 @@ struct HomeViewSnapshotTests {
 		// Given
 		let viewModel = HomeViewModelStub()
 
-		// Whenn
+		// When
 		let view = HomeView(viewModel: viewModel)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view,
+                       as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 }
