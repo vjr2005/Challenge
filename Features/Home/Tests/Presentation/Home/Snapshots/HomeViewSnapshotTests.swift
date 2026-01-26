@@ -15,7 +15,7 @@ struct HomeViewSnapshotTests {
 		// Given
 		let viewModel = HomeViewModelStub()
 
-		// When
+		// Whenn
 		let view = HomeView(viewModel: viewModel)
 
 		// Then
