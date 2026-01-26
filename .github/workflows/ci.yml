@@ -22,7 +22,6 @@ jobs:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
       RESULT_BUNDLE_PATH: fastlane/test_output/Challenge.xcresult
-      SNAPSHOT_ARTIFACTS: /tmp/snapshot-failures
 
     steps:
       - name: Checkout
@@ -70,15 +69,46 @@ jobs:
       - name: Run tests
         run: bundle exec fastlane execute_tests
 
-      - name: Upload snapshot failures
+      - name: Extract test failures
         if: failure()
-        id: upload-snapshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: snapshot-failures
-          path: /tmp/snapshot-failures
-          if-no-files-found: ignore
-          retention-days: 7
+        run: |
+          if [ -d "$RESULT_BUNDLE_PATH" ]; then
+            python3 << 'PYEOF'
+          import json, subprocess, os
+
+          result = subprocess.run(
+              ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
+               '--path', os.environ['RESULT_BUNDLE_PATH']],
+              capture_output=True, text=True
+          )
+          if result.returncode != 0:
+              exit(0)
+
+          data = json.loads(result.stdout)
+          failures = []
+
+          def walk(node, parts):
+              name = node.get('name', '')
+              node_type = node.get('nodeType', '')
+              if node_type == 'Test Plan':
+                  for child in node.get('children', []):
+                      walk(child, [])
+                  return
+              current = parts + [name] if name else parts
+              if node.get('result') == 'Failed' and node_type == 'Test Case':
+                  failures.append('/'.join(current))
+              for child in node.get('children', []):
+                  walk(child, current)
+
+          for node in data.get('testNodes', []):
+              walk(node, [])
+
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write('TEST_FAILURES<<TEST_FAILURES_EOF\n')
+              env.write('\n'.join(failures))
+              env.write('\nTEST_FAILURES_EOF\n')
+          PYEOF
+          fi
 
       - name: Upload xcresult on failure
         if: failure()
@@ -89,32 +119,39 @@ jobs:
           path: fastlane/test_output
           retention-days: 7
 
-      - name: Comment PR with test failure artifact
+      - name: Comment PR with test failures
         if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         env:
           XCRESULT_URL: ${{ steps.upload-xcresult.outputs.artifact-url }}
-          SNAPSHOTS_URL: ${{ steps.upload-snapshots.outputs.artifact-url }}
         with:
           script: |
             const xcresultUrl = process.env.XCRESULT_URL || '';
-            const snapshotsUrl = process.env.SNAPSHOTS_URL || '';
-            core.info(`xcresult URL: "${xcresultUrl}"`);
-            core.info(`snapshots URL: "${snapshotsUrl}"`);
+            const rawFailures = process.env.TEST_FAILURES || '';
+
             const lines = [
               '## Test Results',
               '',
               ':x: **Tests failed.**',
-              '',
-              `[:arrow_down: Download xcresult](${xcresultUrl})`,
             ];
-            if (snapshotsUrl) {
-              lines.push(`[:camera: Download snapshot failures](${snapshotsUrl})`);
+
+            if (rawFailures.trim()) {
+              const failures = rawFailures.trim().split('\n');
+              lines.push(
+                '',
+                '| | Test |',
+                '|---|------|',
+                ...failures.map(f => `| :x: | \`${f}\` |`)
+              );
             }
+
             lines.push(
               '',
-              '_Open the `.xcresult` file in Xcode to inspect failures. Snapshot PNGs show what CI captured._'
+              `[:arrow_down: Download xcresult](${xcresultUrl})`,
+              '',
+              '_Open the `.xcresult` file in Xcode to inspect failures._'
             );
+
             const body = lines.join('\n');
 
             await github.rest.issues.createComment({
