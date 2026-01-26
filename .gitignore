@@ -34,6 +34,9 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+# Ruby / Bundler
+vendor/
+
 # App Store Connect
 *.ipa
 *.dSYM.zip

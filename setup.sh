@@ -8,6 +8,10 @@ else
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+# Install Ruby build dependencies
+echo "Installing Ruby build dependencies..."
+brew install libyaml openssl
+
 # Check if mise is installed
 if command -v mise >/dev/null 2>&1; then
     echo "mise is already installed."
@@ -16,20 +20,14 @@ else
     brew install mise
 fi
 
-# Check if mise activation is in .zshrc
-if ! grep -q 'eval "$(mise activate zsh)"' ~/.zshrc; then
-    echo "Adding mise activation to .zshrc..."
-    echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
-    echo "Activating mise..."
-    source ~/.zshrc
-else
-    echo "mise activation already in .zshrc."
-fi
-
 echo "Trusting mise config files..."
 mise trust .
 
 echo "Installing tools from .mise.toml..."
 mise install
+
+echo "Installing Ruby gems..."
+mise x -- gem install bundler
+mise x -- bundle install
 
 echo "Setup complete."

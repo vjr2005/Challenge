@@ -11,7 +11,7 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards. **After generating code**, use the `/testing` skill to create corresponding tests.
 >
-> **After writing code, always verify compilation** by running `tuist test`.
+> **After writing code, always verify compilation** by running `bundle exec fastlane ci`.
 >
 > **All code must pass SwiftLint validation.**
 >
@@ -101,8 +101,35 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 | Tool | Purpose | Command |
 |------|---------|---------|
+| Ruby | Ruby runtime (for Fastlane) | Managed by mise |
+| Tuist | Project generation | `mise x -- tuist` |
 | SwiftLint | Code linting | `mise x -- swiftlint` |
 | Periphery | Dead code detection | `mise x -- periphery scan` |
+
+### Ruby Gems (via Bundler)
+
+| Gem | Purpose | Command |
+|-----|---------|---------|
+| Fastlane | CI/CD automation | `bundle exec fastlane <lane>` |
+
+### Fastlane Lanes
+
+**Atomic** (single responsibility):
+
+| Lane | Description |
+|------|-------------|
+| `install` | Install SPM dependencies |
+| `generate` | Generate Xcode project |
+| `lint` | Run SwiftLint |
+| `detect_dead_code` | Run Periphery dead code detection |
+| `execute_tests` | Execute unit tests |
+| `clean` | Clean Tuist cache and generated project |
+
+**Composite** (CI entry point):
+
+| Lane | Description |
+|------|-------------|
+| `ci` | install + generate + execute_tests + detect_dead_code |
 
 **Policy:** Prefer native implementations. No external dependencies unless strictly necessary.
 

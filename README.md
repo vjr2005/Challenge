@@ -26,21 +26,19 @@ This script will:
 - Install **mise** (tool version manager)
 - Configure mise activation in your shell
 - Install project tools from `.mise.toml`:
+  - `ruby` 3.3 - Ruby runtime (for Fastlane)
   - `tuist` 4.129.0 - Project generation
   - `swiftlint` 0.63.1 - Code linting
   - `periphery` 3.4.0 - Dead code detection
+- Install **Bundler** and Ruby gems (Fastlane)
 
 ### 2. Build the Project
 
 Generate the Xcode project and install dependencies:
 
 ```bash
-./build.sh
+bundle exec fastlane build
 ```
-
-This script runs:
-1. `tuist install` - Install SPM dependencies
-2. `tuist generate` - Generate Xcode project
 
 ### 3. Open in Xcode
 
@@ -54,18 +52,40 @@ open Challenge.xcodeproj
 
 | Script | Description |
 |--------|-------------|
-| `./setup.sh` | Initial setup - installs brew, mise, and project tools |
-| `./build.sh` | Installs dependencies and generates Xcode project |
-| `./clean.sh` | Cleans Tuist cache and removes generated project files |
-| `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase |
+| `./setup.sh` | Initial setup - installs brew, mise, project tools, and Ruby gems |
+| `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
 
 ### Clean Build
 
 To perform a clean build from scratch:
 
 ```bash
-./clean.sh && ./build.sh
+bundle exec fastlane clean
+bundle exec fastlane build
 ```
+
+## Fastlane
+
+The project uses [Fastlane](https://fastlane.tools/) for CI/CD automation. Configuration is in the `fastlane/` directory.
+
+### Available Lanes
+
+**Atomic lanes** (single responsibility):
+
+| Lane | Description | Command |
+|------|-------------|---------|
+| `install` | Install SPM dependencies | `bundle exec fastlane install` |
+| `generate` | Generate Xcode project | `bundle exec fastlane generate` |
+| `lint` | Run SwiftLint | `bundle exec fastlane lint` |
+| `detect_dead_code` | Run Periphery dead code detection | `bundle exec fastlane detect_dead_code` |
+| `execute_tests` | Execute unit tests | `bundle exec fastlane execute_tests` |
+| `clean` | Clean Tuist cache and generated project | `bundle exec fastlane clean` |
+
+**Composite lane** (CI entry point):
+
+| Lane | Description | Command |
+|------|-------------|---------|
+| `ci` | install + generate + execute_tests + detect_dead_code | `bundle exec fastlane ci` |
 
 ## Tools (mise)
 
@@ -73,9 +93,16 @@ This project uses [mise](https://mise.jdx.dev/) as a tool version manager. All t
 
 | Tool | Version | Description |
 |------|---------|-------------|
+| **[Ruby](https://www.ruby-lang.org/)** | 3.3 | Ruby runtime (for Fastlane) |
 | **[Tuist](https://tuist.io/)** | 4.129.0 | Xcode project generation and dependency management |
 | **[SwiftLint](https://github.com/realm/SwiftLint)** | 0.63.1 | Swift style and conventions linter |
 | **[Periphery](https://github.com/peripheryapp/periphery)** | 3.4.0 | Dead code detection for Swift |
+
+### Ruby Gems (via Bundler)
+
+| Gem | Purpose |
+|-----|---------|
+| **[Fastlane](https://fastlane.tools/)** | CI/CD automation |
 
 ## Architecture
 
@@ -168,8 +195,11 @@ Challenge/
 │   ├── ProjectDescriptionHelpers/
 │   └── Package.swift
 ├── Scripts/
+├── fastlane/
+│   └── Fastfile                  # CI/CD lane definitions
 ├── Project.swift
 ├── Tuist.swift
+├── Gemfile                       # Ruby dependencies (Fastlane)
 └── .mise.toml
 ```
 
