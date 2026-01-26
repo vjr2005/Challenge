@@ -21,7 +21,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
-      RESULT_BUNDLE_PATH: fastlane/test_output/Challenge.xcresult
+      RESULT_BUNDLE_PATH: test_output/Challenge.xcresult
 
     steps:
       - name: Checkout
@@ -37,19 +37,6 @@ jobs:
         with:
           cache: true
 
-      - name: Cache Ruby gems
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: gems-${{ runner.os }}-${{ hashFiles('Gemfile') }}
-          restore-keys: |
-            gems-${{ runner.os }}-
-
-      - name: Install Fastlane
-        run: |
-          bundle config set --local path vendor/bundle
-          bundle install --jobs 4 --retry 3
-
       - name: Cache Tuist and SPM dependencies
         uses: actions/cache@v4
         with:
@@ -61,13 +48,17 @@ jobs:
             tuist-${{ runner.os }}-
 
       - name: Install SPM dependencies
-        run: bundle exec fastlane install
+        run: mise x -- tuist install
 
       - name: Generate Xcode project
-        run: bundle exec fastlane generate
+        run: mise x -- tuist generate
 
       - name: Run tests
-        run: bundle exec fastlane execute_tests
+        run: |
+          mise x -- tuist test \
+            --device "$TUIST_TEST_DEVICE" \
+            --os "$TUIST_TEST_OS" \
+            --result-bundle-path "$RESULT_BUNDLE_PATH"
 
       - name: Extract test failures
         if: failure()
@@ -116,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: fastlane/test_output
+          path: test_output
           retention-days: 7
 
       - name: Comment PR with test failures
@@ -166,7 +157,7 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          OUTPUT=$(bundle exec fastlane detect_dead_code 2>&1)
+          OUTPUT=$(mise x -- periphery scan 2>&1)
           echo "$OUTPUT"
           echo 'PERIPHERY_OUTPUT<<PERIPHERY_EOF' >> "$GITHUB_ENV"
           echo "$OUTPUT" >> "$GITHUB_ENV"

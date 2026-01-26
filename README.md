@@ -26,18 +26,16 @@ This script will:
 - Install **mise** (tool version manager)
 - Configure mise activation in your shell
 - Install project tools from `.mise.toml`:
-  - `ruby` 3.3 - Ruby runtime (for Fastlane)
   - `tuist` 4.129.0 - Project generation
   - `swiftlint` 0.63.1 - Code linting
   - `periphery` 3.4.0 - Dead code detection
-- Install **Bundler** and Ruby gems (Fastlane)
 
 ### 2. Build the Project
 
 Generate the Xcode project and install dependencies:
 
 ```bash
-bundle exec fastlane build
+./generate.sh
 ```
 
 ### 3. Open in Xcode
@@ -52,7 +50,9 @@ open Challenge.xcodeproj
 
 | Script | Description |
 |--------|-------------|
-| `./setup.sh` | Initial setup - installs brew, mise, project tools, and Ruby gems |
+| `./setup.sh` | Initial setup - installs brew, mise, and project tools |
+| `./generate.sh` | Install dependencies and generate the Xcode project |
+| `./generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
 | `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
 
 ### Clean Build
@@ -60,32 +60,8 @@ open Challenge.xcodeproj
 To perform a clean build from scratch:
 
 ```bash
-bundle exec fastlane clean
-bundle exec fastlane build
+./generate.sh --clean
 ```
-
-## Fastlane
-
-The project uses [Fastlane](https://fastlane.tools/) for CI/CD automation. Configuration is in the `fastlane/` directory.
-
-### Available Lanes
-
-**Atomic lanes** (single responsibility):
-
-| Lane | Description | Command |
-|------|-------------|---------|
-| `install` | Install SPM dependencies | `bundle exec fastlane install` |
-| `generate` | Generate Xcode project | `bundle exec fastlane generate` |
-| `lint` | Run SwiftLint | `bundle exec fastlane lint` |
-| `detect_dead_code` | Run Periphery dead code detection | `bundle exec fastlane detect_dead_code` |
-| `execute_tests` | Execute unit tests | `bundle exec fastlane execute_tests` |
-| `clean` | Clean Tuist cache and generated project | `bundle exec fastlane clean` |
-
-**Composite lane** (CI entry point):
-
-| Lane | Description | Command |
-|------|-------------|---------|
-| `ci` | install + generate + execute_tests + detect_dead_code | `bundle exec fastlane ci` |
 
 ## Continuous Integration
 
@@ -100,13 +76,12 @@ The CI workflow (`.github/workflows/ci.yml`) runs a single job on `macos-15` wit
 | Checkout | Clone the repository |
 | Select Xcode 26 | Use the latest Xcode 26.x available on the runner |
 | Install mise tools | Install tuist, swiftlint, and periphery via mise (cached) |
-| Install Fastlane | `bundle install` with vendored gems (cached) |
-| Install SPM dependencies | `bundle exec fastlane install` (cached) |
-| Generate Xcode project | `bundle exec fastlane generate` |
-| Run tests | `bundle exec fastlane execute_tests` (includes SwiftLint as build phase) |
-| Upload xcresult | On failure: uploads `fastlane/test_output` as artifact preserving `.xcresult` bundle |
+| Install SPM dependencies | `mise x -- tuist install` (cached) |
+| Generate Xcode project | `mise x -- tuist generate` |
+| Run tests | `mise x -- tuist test` (includes SwiftLint as build phase) |
+| Upload xcresult | On failure: uploads `test_output` as artifact preserving `.xcresult` bundle |
 | Comment PR (test failure) | On failure: posts a PR comment with a download link to the `.xcresult` artifact |
-| Detect dead code | `bundle exec fastlane detect_dead_code` (informational, never blocks CI) |
+| Detect dead code | `mise x -- periphery scan` (informational, never blocks CI) |
 | Comment PR (Periphery) | Posts Periphery results as a PR comment |
 
 ### Test Failure Artifacts
@@ -116,7 +91,7 @@ When tests fail, the workflow:
 1. **Uploads the `.xcresult` bundle** as a GitHub artifact (`test-results`), retained for 7 days
 2. **Posts a PR comment** with a direct download link to the artifact
 
-The artifact uploads the `fastlane/test_output` directory (not the bundle itself) so that the `.xcresult` directory name is preserved when extracted from the zip. To inspect failures, download the artifact, extract it, and open `Challenge.xcresult` in Xcode.
+The artifact uploads the `test_output` directory (not the bundle itself) so that the `.xcresult` directory name is preserved when extracted from the zip. To inspect failures, download the artifact, extract it, and open `Challenge.xcresult` in Xcode.
 
 Successive pushes update the same comment instead of creating duplicates.
 
@@ -174,7 +149,7 @@ After pushing the workflow file, configure the repository:
 
 - **Single job**: All steps run in one macOS job to minimize runner overhead. macOS minutes are billed at 10x in private repos.
 - **Concurrency group**: Concurrent runs on the same branch are cancelled automatically, saving CI minutes.
-- **Separate lanes**: Individual Fastlane lanes are used instead of the composite `ci` lane to allow `continue-on-error` on Periphery and capture its output for PR comments.
+- **Separate steps**: Individual CI steps are used instead of a single composite command to allow `continue-on-error` on Periphery and capture its output for PR comments.
 
 ## Tools (mise)
 
@@ -182,16 +157,9 @@ This project uses [mise](https://mise.jdx.dev/) as a tool version manager. All t
 
 | Tool | Version | Description |
 |------|---------|-------------|
-| **[Ruby](https://www.ruby-lang.org/)** | 3.3 | Ruby runtime (for Fastlane) |
 | **[Tuist](https://tuist.io/)** | 4.129.0 | Xcode project generation and dependency management |
 | **[SwiftLint](https://github.com/realm/SwiftLint)** | 0.63.1 | Swift style and conventions linter |
 | **[Periphery](https://github.com/peripheryapp/periphery)** | 3.4.0 | Dead code detection for Swift |
-
-### Ruby Gems (via Bundler)
-
-| Gem | Purpose |
-|-----|---------|
-| **[Fastlane](https://fastlane.tools/)** | CI/CD automation |
 
 ## Architecture
 
@@ -287,11 +255,8 @@ Challenge/
 │   ├── ProjectDescriptionHelpers/
 │   └── Package.swift
 ├── Scripts/
-├── fastlane/
-│   └── Fastfile                  # CI/CD lane definitions
 ├── Project.swift
 ├── Tuist.swift
-├── Gemfile                       # Ruby dependencies (Fastlane)
 └── .mise.toml
 ```
 

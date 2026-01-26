@@ -8,10 +8,6 @@ else
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# Install Ruby build dependencies
-echo "Installing Ruby build dependencies..."
-brew install libyaml openssl
-
 # Check if mise is installed
 if command -v mise >/dev/null 2>&1; then
     echo "mise is already installed."
@@ -25,9 +21,5 @@ mise trust .
 
 echo "Installing tools from .mise.toml..."
 mise install
-
-echo "Installing Ruby gems..."
-mise x -- gem install bundler
-mise x -- bundle install
 
 echo "Setup complete."
