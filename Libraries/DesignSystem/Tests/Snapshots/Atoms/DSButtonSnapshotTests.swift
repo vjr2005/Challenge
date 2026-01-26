@@ -4,7 +4,6 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-/*
 @Suite(.timeLimit(.minutes(1)))
 struct DSButtonSnapshotTests {
 	init() {
@@ -99,4 +98,3 @@ struct DSButtonSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 }
-*/
