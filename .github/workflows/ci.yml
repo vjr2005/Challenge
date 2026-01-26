@@ -18,18 +18,17 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
 
+    env:
+      TUIST_TEST_DEVICE: iPhone 17 Pro
+      TUIST_TEST_OS: "26.1"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode 26
+      - name: Select Xcode 26.1.1
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
-          if [ -z "$XCODE_PATH" ]; then
-            echo "::warning::Xcode 26 not found, using default Xcode"
-          else
-            sudo xcode-select -s "$XCODE_PATH"
-          fi
+          sudo xcode-select -s /Applications/Xcode_26.1.1.app
           xcodebuild -version
 
       - name: Install mise tools

@@ -36,7 +36,12 @@ platform :ios do
   desc "Execute unit tests"
   lane :execute_tests do
     Dir.chdir(PROJECT_ROOT) do
-      sh "mise x -- tuist test"
+      device = ENV["TUIST_TEST_DEVICE"]
+      os = ENV["TUIST_TEST_OS"]
+      cmd = "mise x -- tuist test"
+      cmd += " --device '#{device}'" if device
+      cmd += " --os '#{os}'" if os
+      sh cmd
     end
   end
 
