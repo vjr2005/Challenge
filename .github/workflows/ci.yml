@@ -110,9 +110,7 @@ jobs:
             const snapshotsUrl = process.env.SNAPSHOTS_URL || '';
             core.info(`xcresult URL: "${xcresultUrl}"`);
             core.info(`snapshots URL: "${snapshotsUrl}"`);
-            const marker = '<!-- test-failure-artifact -->';
             const lines = [
-              marker,
               '## Test Results',
               '',
               ':x: **Tests failed.**',
@@ -128,28 +126,12 @@ jobs:
             );
             const body = lines.join('\n');
 
-            const { data: comments } = await github.rest.issues.listComments({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number
+              issue_number: context.issue.number,
+              body
             });
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body
-              });
-            }
 
       - name: Detect dead code
         id: periphery
