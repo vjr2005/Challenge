@@ -87,6 +87,82 @@ The project uses [Fastlane](https://fastlane.tools/) for CI/CD automation. Confi
 |------|-------------|---------|
 | `ci` | install + generate + execute_tests + detect_dead_code | `bundle exec fastlane ci` |
 
+## Continuous Integration
+
+The project uses [GitHub Actions](https://github.com/features/actions) to run quality checks on every pull request targeting `main`.
+
+### Workflow Overview
+
+The CI workflow (`.github/workflows/ci.yml`) runs a single job on `macos-15` with the following steps:
+
+| Step | Description |
+|------|-------------|
+| Checkout | Clone the repository |
+| Select Xcode 26 | Use the latest Xcode 26.x available on the runner |
+| Install mise tools | Install tuist, swiftlint, and periphery via mise (cached) |
+| Install Fastlane | `bundle install` with vendored gems (cached) |
+| Install SPM dependencies | `bundle exec fastlane install` (cached) |
+| Generate Xcode project | `bundle exec fastlane generate` |
+| Run tests | `bundle exec fastlane execute_tests` (includes SwiftLint as build phase) |
+| Detect dead code | `bundle exec fastlane detect_dead_code` (informational, never blocks CI) |
+| Comment PR | Posts Periphery results as a PR comment |
+
+### Periphery PR Comments
+
+Periphery runs with `continue-on-error: true` so it never blocks the pipeline. After execution, the workflow parses the output and posts a comment on the PR with:
+
+- A table of unused code occurrences (file, line, description)
+- The full Periphery output in a collapsible section
+- If no issues are found, a success message
+
+Successive pushes update the same comment instead of creating duplicates.
+
+### GitHub Configuration
+
+After pushing the workflow file, configure the repository:
+
+#### 1. Workflow Permissions (required for private repos)
+
+1. Go to **Settings** > **Actions** > **General**
+2. Under **Workflow permissions**, select **Read and write permissions**
+3. Save
+
+#### 2. Branch Ruleset
+
+1. Go to **Settings** > **Rules** > **Rulesets**
+2. Click **New ruleset** > **New branch ruleset**
+3. Configure:
+
+| Field | Value |
+|-------|-------|
+| Ruleset name | `Protect main` |
+| Enforcement status | `Active` |
+| Target branches | **Add a target** > **Include default branch** |
+
+4. Enable the following rules:
+
+| Rule | Setting |
+|------|---------|
+| **Restrict deletions** | Enabled |
+| **Require a pull request before merging** | Enabled |
+| -- Required approvals | `1` |
+| -- Dismiss stale approvals on new commits | Enabled |
+| -- Require conversation resolution | Enabled |
+| **Require status checks to pass** | Enabled |
+| -- Status check | `Build & Test` (type the name and click **+**) |
+| -- Require branches to be up to date | Enabled |
+| **Block force pushes** | Enabled |
+
+5. Click **Create**
+
+> **Note:** The `Build & Test` status check will only appear after the workflow has run at least once. Create a test PR to trigger the first execution before configuring the ruleset.
+
+### Design Decisions
+
+- **Single job**: All steps run in one macOS job to minimize runner overhead. macOS minutes are billed at 10x in private repos.
+- **Concurrency group**: Concurrent runs on the same branch are cancelled automatically, saving CI minutes.
+- **Separate lanes**: Individual Fastlane lanes are used instead of the composite `ci` lane to allow `continue-on-error` on Periphery and capture its output for PR comments.
+
 ## Tools (mise)
 
 This project uses [mise](https://mise.jdx.dev/) as a tool version manager. All tool versions are defined in `.mise.toml`:
@@ -178,6 +254,9 @@ The codebase adheres to SOLID principles to ensure maintainable, extensible, and
 
 ```
 Challenge/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                # GitHub Actions CI workflow
 ├── App/                          # Main application target
 │   ├── Sources/
 │   ├── Tests/
