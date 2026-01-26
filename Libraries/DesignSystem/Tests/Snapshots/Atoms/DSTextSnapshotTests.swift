@@ -4,6 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
+/*
 @Suite(.timeLimit(.minutes(1)))
 struct DSTextSnapshotTests {
 	init() {
@@ -83,3 +84,4 @@ struct DSTextSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 }
+*/

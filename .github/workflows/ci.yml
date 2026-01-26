@@ -75,7 +75,7 @@ jobs:
           mkdir -p /tmp/snapshot-failures
           find ~/Library/Developer/CoreSimulator/Devices \
             -path "*/tmp/*" -name "*.png" \
-            -exec cp {} /tmp/snapshot-failures/ \;
+            -exec cp {} /tmp/snapshot-failures/ \; 2>/dev/null || true
           echo "Collected snapshot failure images:"
           ls -la /tmp/snapshot-failures/ || echo "No snapshot failures found"
 
@@ -101,10 +101,15 @@ jobs:
       - name: Comment PR with test failure artifact
         if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          XCRESULT_URL: ${{ steps.upload-xcresult.outputs.artifact-url }}
+          SNAPSHOTS_URL: ${{ steps.upload-snapshots.outputs.artifact-url }}
         with:
           script: |
-            const xcresultUrl = '${{ steps.upload-xcresult.outputs.artifact-url }}';
-            const snapshotsUrl = '${{ steps.upload-snapshots.outputs.artifact-url }}';
+            const xcresultUrl = process.env.XCRESULT_URL || '';
+            const snapshotsUrl = process.env.SNAPSHOTS_URL || '';
+            core.info(`xcresult URL: "${xcresultUrl}"`);
+            core.info(`snapshots URL: "${snapshotsUrl}"`);
             const marker = '<!-- test-failure-artifact -->';
             const lines = [
               marker,

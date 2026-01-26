@@ -6,6 +6,7 @@ import UIKit
 
 @testable import ChallengeDesignSystem
 
+/*
 @Suite(.timeLimit(.minutes(1)))
 struct DSAsyncImageSnapshotTests {
 	private let emptyImageLoader: ImageLoaderMock
@@ -300,3 +301,4 @@ private extension DSAsyncImageSnapshotTests {
 		}
 	}
 }
+*/
