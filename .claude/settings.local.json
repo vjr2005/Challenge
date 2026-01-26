@@ -62,7 +62,8 @@
       "Bash(done)",
       "Bash(wc:*)",
       "WebFetch(domain:docs.github.com)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(bundle exec fastlane:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
