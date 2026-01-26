@@ -104,8 +104,21 @@ The CI workflow (`.github/workflows/ci.yml`) runs a single job on `macos-15` wit
 | Install SPM dependencies | `bundle exec fastlane install` (cached) |
 | Generate Xcode project | `bundle exec fastlane generate` |
 | Run tests | `bundle exec fastlane execute_tests` (includes SwiftLint as build phase) |
+| Upload xcresult | On failure: uploads `fastlane/test_output` as artifact preserving `.xcresult` bundle |
+| Comment PR (test failure) | On failure: posts a PR comment with a download link to the `.xcresult` artifact |
 | Detect dead code | `bundle exec fastlane detect_dead_code` (informational, never blocks CI) |
-| Comment PR | Posts Periphery results as a PR comment |
+| Comment PR (Periphery) | Posts Periphery results as a PR comment |
+
+### Test Failure Artifacts
+
+When tests fail, the workflow:
+
+1. **Uploads the `.xcresult` bundle** as a GitHub artifact (`test-results`), retained for 7 days
+2. **Posts a PR comment** with a direct download link to the artifact
+
+The artifact uploads the `fastlane/test_output` directory (not the bundle itself) so that the `.xcresult` directory name is preserved when extracted from the zip. To inspect failures, download the artifact, extract it, and open `Challenge.xcresult` in Xcode.
+
+Successive pushes update the same comment instead of creating duplicates.
 
 ### Periphery PR Comments
 
