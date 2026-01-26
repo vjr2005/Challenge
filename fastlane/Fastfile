@@ -38,9 +38,11 @@ platform :ios do
     Dir.chdir(PROJECT_ROOT) do
       device = ENV["TUIST_TEST_DEVICE"]
       os = ENV["TUIST_TEST_OS"]
+      result_path = ENV["RESULT_BUNDLE_PATH"]
       cmd = "mise x -- tuist test"
       cmd += " --device '#{device}'" if device
       cmd += " --os '#{os}'" if os
+      cmd += " --result-bundle-path '#{result_path}'" if result_path
       sh cmd
     end
   end

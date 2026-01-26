@@ -21,6 +21,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
+      RESULT_BUNDLE_PATH: fastlane/test_output/Challenge.xcresult
 
     steps:
       - name: Checkout
@@ -67,6 +68,14 @@ jobs:
 
       - name: Run tests
         run: bundle exec fastlane execute_tests
+
+      - name: Upload xcresult on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: fastlane/test_output/Challenge.xcresult
+          retention-days: 7
 
       - name: Detect dead code
         id: periphery
