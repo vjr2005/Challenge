@@ -22,6 +22,7 @@ jobs:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
       RESULT_BUNDLE_PATH: fastlane/test_output/Challenge.xcresult
+      SNAPSHOT_ARTIFACTS: /tmp/snapshot-failures
 
     steps:
       - name: Checkout
@@ -68,16 +69,6 @@ jobs:
 
       - name: Run tests
         run: bundle exec fastlane execute_tests
-
-      - name: Collect snapshot failures
-        if: failure()
-        run: |
-          mkdir -p /tmp/snapshot-failures
-          find ~/Library/Developer/CoreSimulator/Devices \
-            -path "*/tmp/*" -name "*.png" \
-            -exec cp {} /tmp/snapshot-failures/ \; 2>/dev/null || true
-          echo "Collected snapshot failure images:"
-          ls -la /tmp/snapshot-failures/ || echo "No snapshot failures found"
 
       - name: Upload snapshot failures
         if: failure()
