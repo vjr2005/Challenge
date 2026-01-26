@@ -142,7 +142,6 @@ jobs:
           script: |
             const raw = process.env.PERIPHERY_OUTPUT || '';
             const output = raw.replace(/\x1b\[[0-9;]*m/g, '');
-            const marker = '<!-- periphery-report -->';
 
             // Parse diagnostic lines: path/File.swift:line:col: warning: message
             const diagnosticRegex = /^(.+?):(\d+):(\d+):\s+warning:\s+(.+)$/gm;
@@ -159,7 +158,6 @@ jobs:
             let body;
             if (findings.length === 0) {
               body = [
-                marker,
                 '## Periphery \u2014 Dead code detection',
                 '',
                 ':white_check_mark: No unused code detected.'
@@ -171,7 +169,6 @@ jobs:
               });
 
               body = [
-                marker,
                 '## Periphery \u2014 Dead code detection',
                 '',
                 `Found **${findings.length}** unused code occurrence(s):`,
@@ -182,26 +179,9 @@ jobs:
               ].join('\n');
             }
 
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number
+              issue_number: context.issue.number,
+              body
             });
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body
-              });
-            }

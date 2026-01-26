@@ -43,8 +43,6 @@ platform :ios do
       cmd += " --device '#{device}'" if device
       cmd += " --os '#{os}'" if os
       cmd += " --result-bundle-path '#{result_path}'" if result_path
-      # TODO: Temporary filter — remove after CI snapshot testing is validated
-      cmd += " ChallengeHome --test-targets 'ChallengeHomeTests/HomeViewSnapshotTests/defaultState'"
       sh cmd
     end
   end
