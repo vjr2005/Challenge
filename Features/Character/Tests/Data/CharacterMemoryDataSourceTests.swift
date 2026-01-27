@@ -6,12 +6,10 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct CharacterMemoryDataSourceTests {
-	private let testBundle = Bundle(for: BundleToken.self)
-
 	@Test
 	func savesAndRetrievesCharacter() async throws {
 		// Given
-		let expected: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
+        let expected: CharacterDTO = try loadJSON("character")
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -37,8 +35,8 @@ struct CharacterMemoryDataSourceTests {
 	@Test
 	func updatesExistingCharacter() async throws {
 		// Given
-		let original: CharacterDTO = try testBundle.loadJSON("character", as: CharacterDTO.self)
-		let updated: CharacterDTO = try testBundle.loadJSON("character_dead", as: CharacterDTO.self)
+		let original: CharacterDTO = try loadJSON("character")
+		let updated: CharacterDTO = try loadJSON("character_dead")
 		let sut = CharacterMemoryDataSource()
 		await sut.saveCharacter(original)
 
@@ -55,7 +53,7 @@ struct CharacterMemoryDataSourceTests {
 	@Test
 	func savesAndRetrievesPage() async throws {
 		// Given
-		let expected: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
+		let expected: CharactersResponseDTO = try loadJSON("characters_response")
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -81,7 +79,7 @@ struct CharacterMemoryDataSourceTests {
 	@Test
 	func savePageAlsoSavesIndividualCharacters() async throws {
 		// Given
-		let response: CharactersResponseDTO = try testBundle.loadJSON("characters_response_two_results", as: CharactersResponseDTO.self)
+		let response: CharactersResponseDTO = try loadJSON("characters_response_two_results")
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -97,8 +95,8 @@ struct CharacterMemoryDataSourceTests {
 	@Test
 	func differentPagesAreCachedSeparately() async throws {
 		// Given
-		let page1Response: CharactersResponseDTO = try testBundle.loadJSON("characters_response", as: CharactersResponseDTO.self)
-		let page2Response: CharactersResponseDTO = try testBundle.loadJSON("characters_response_page_2", as: CharactersResponseDTO.self)
+		let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
+		let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
 		let sut = CharacterMemoryDataSource()
 
 		// When
@@ -113,4 +111,10 @@ struct CharacterMemoryDataSourceTests {
 	}
 }
 
-private final class BundleToken {}
+// MARK: - Private
+
+private extension CharacterMemoryDataSourceTests {
+    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+        try Bundle.module.loadJSON(filename)
+    }
+}

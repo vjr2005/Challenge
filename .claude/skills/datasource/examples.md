@@ -88,12 +88,10 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}RemoteDataSourceTests {
-    private let testBundle = Bundle(for: BundleToken.self)
-
     @Test
     func fetchesFromCorrectEndpoint() async throws {
         // Given
-        let jsonData = try testBundle.loadJSONData("{name}")
+        let jsonData = try loadJSONData("{name}")
         let httpClientMock = HTTPClientMock(result: .success(jsonData))
         let sut = {Name}RemoteDataSource(httpClient: httpClientMock)
 
@@ -109,7 +107,7 @@ struct {Name}RemoteDataSourceTests {
     @Test
     func decodesResponseCorrectly() async throws {
         // Given
-        let jsonData = try testBundle.loadJSONData("{name}")
+        let jsonData = try loadJSONData("{name}")
         let httpClientMock = HTTPClientMock(result: .success(jsonData))
         let sut = {Name}RemoteDataSource(httpClient: httpClientMock)
 
@@ -134,7 +132,13 @@ struct {Name}RemoteDataSourceTests {
     }
 }
 
-private final class BundleToken {}
+// MARK: - Private
+
+private extension {Name}RemoteDataSourceTests {
+    func loadJSONData(_ filename: String) throws -> Data {
+        try Bundle.module.loadJSONData(filename)
+    }
+}
 
 private enum TestError: Error {
     case network
@@ -199,44 +203,49 @@ import Foundation
 
 @testable import {AppName}{Feature}
 
-actor {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract {
-    private var storage: [Int: {Name}DTO] = [:]
+final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @unchecked Sendable {
+    // MARK: - Configurable Returns
+
+    var itemToReturn: {Name}DTO?
+    var allItemsToReturn: [{Name}DTO] = []
+
+    // MARK: - Call Tracking
+
+    private(set) var getCallCount = 0
+    private(set) var getAllCallCount = 0
     private(set) var saveCallCount = 0
+    private(set) var saveLastValue: {Name}DTO?
+    private(set) var saveAllCallCount = 0
     private(set) var deleteCallCount = 0
+    private(set) var deleteAllCallCount = 0
+
+    // MARK: - {Name}MemoryDataSourceContract
 
     func get{Name}(id: Int) -> {Name}DTO? {
-        storage[id]
+        getCallCount += 1
+        return itemToReturn
     }
 
     func getAll{Name}s() -> [{Name}DTO] {
-        Array(storage.values)
+        getAllCallCount += 1
+        return allItemsToReturn
     }
 
     func save{Name}(_ item: {Name}DTO) {
         saveCallCount += 1
-        storage[item.id] = item
+        saveLastValue = item
     }
 
     func save{Name}s(_ items: [{Name}DTO]) {
-        saveCallCount += 1
-        for item in items {
-            storage[item.id] = item
-        }
+        saveAllCallCount += 1
     }
 
     func delete{Name}(id: Int) {
         deleteCallCount += 1
-        storage.removeValue(forKey: id)
     }
 
     func deleteAll{Name}s() {
-        deleteCallCount += 1
-        storage.removeAll()
-    }
-
-    // Test helper
-    func setStorage(_ items: [{Name}DTO]) {
-        storage = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+        deleteAllCallCount += 1
     }
 }
 ```
@@ -251,12 +260,10 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}MemoryDataSourceTests {
-    private let testBundle = Bundle(for: BundleToken.self)
-
     @Test
     func savesAndRetrievesItem() async throws {
         // Given
-        let expected: {Name}DTO = try testBundle.loadJSON("{name}", as: {Name}DTO.self)
+        let expected: {Name}DTO = try loadJSON("{name}")
         let sut = {Name}MemoryDataSource()
 
         // When
@@ -282,7 +289,7 @@ struct {Name}MemoryDataSourceTests {
     @Test
     func savesMultipleItems() async throws {
         // Given
-        let items: [{Name}DTO] = try testBundle.loadJSON("{name}_list", as: [{Name}DTO].self)
+        let items: [{Name}DTO] = try loadJSON("{name}_list")
         let sut = {Name}MemoryDataSource()
 
         // When
@@ -296,7 +303,7 @@ struct {Name}MemoryDataSourceTests {
     @Test
     func deletesItem() async throws {
         // Given
-        let item: {Name}DTO = try testBundle.loadJSON("{name}", as: {Name}DTO.self)
+        let item: {Name}DTO = try loadJSON("{name}")
         let sut = {Name}MemoryDataSource()
         await sut.save{Name}(item)
 
@@ -311,7 +318,7 @@ struct {Name}MemoryDataSourceTests {
     @Test
     func deletesAllItems() async throws {
         // Given
-        let items: [{Name}DTO] = try testBundle.loadJSON("{name}_list", as: [{Name}DTO].self)
+        let items: [{Name}DTO] = try loadJSON("{name}_list")
         let sut = {Name}MemoryDataSource()
         await sut.save{Name}s(items)
 
@@ -324,7 +331,13 @@ struct {Name}MemoryDataSourceTests {
     }
 }
 
-private final class BundleToken {}
+// MARK: - Private
+
+private extension {Name}MemoryDataSourceTests {
+    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+        try Bundle.module.loadJSON(filename)
+    }
+}
 ```
 
 ---
@@ -362,11 +375,8 @@ private final class BundleToken {}
 import Foundation
 
 public extension Bundle {
-    func loadJSON<T: Decodable>(_ filename: String, as type: T.Type) throws -> T {
-        guard let url = url(forResource: filename, withExtension: "json") else {
-            throw JSONLoadError.fileNotFound(filename)
-        }
-        let data = try Data(contentsOf: url)
+    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+        let data = try loadJSONData(filename)
         return try JSONDecoder().decode(T.self, from: data)
     }
 
@@ -378,8 +388,15 @@ public extension Bundle {
     }
 }
 
-public enum JSONLoadError: Error {
+public enum JSONLoadError: Error, CustomStringConvertible {
     case fileNotFound(String)
+
+    public var description: String {
+        switch self {
+        case let .fileNotFound(filename):
+            "JSON file '\(filename).json' not found in bundle"
+        }
+    }
 }
 ```
 

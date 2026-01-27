@@ -147,7 +147,7 @@ struct {Name}RepositoryTests {
         // Given
         let expected = {Name}.stub()
         let memoryDataSourceMock = {Name}MemoryDataSourceMock()
-        await memoryDataSourceMock.save{Name}(.stub())
+        memoryDataSourceMock.itemToReturn = .stub()
         let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
 
         // When
@@ -178,10 +178,10 @@ struct {Name}RepositoryTests {
 
         // When
         await sut.save{Name}(model)
-        let value = await memoryDataSourceMock.get{Name}(id: model.id)
 
         // Then
-        #expect(value == model.toDTO())
+        #expect(memoryDataSourceMock.saveCallCount == 1)
+        #expect(memoryDataSourceMock.saveLastValue == model.toDTO())
     }
 }
 ```
@@ -257,7 +257,7 @@ struct {Name}RepositoryTests {
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         let memoryDataSourceMock = {Name}MemoryDataSourceMock()
-        await memoryDataSourceMock.save{Name}(.stub())
+        memoryDataSourceMock.itemToReturn = .stub()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
@@ -276,7 +276,7 @@ struct {Name}RepositoryTests {
         // Given
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         let memoryDataSourceMock = {Name}MemoryDataSourceMock()
-        await memoryDataSourceMock.save{Name}(.stub())
+        memoryDataSourceMock.itemToReturn = .stub()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
@@ -324,11 +324,10 @@ struct {Name}RepositoryTests {
 
         // When
         _ = try await sut.get{Name}(id: 1)
-        let cachedValue = await memoryDataSourceMock.get{Name}(id: 1)
 
         // Then
-        #expect(cachedValue == .stub())
-        #expect(await memoryDataSourceMock.saveCallCount == 1)
+        #expect(memoryDataSourceMock.saveCallCount == 1)
+        #expect(memoryDataSourceMock.saveLastValue == .stub())
     }
 
     // MARK: - Error Tests
@@ -365,7 +364,7 @@ struct {Name}RepositoryTests {
         _ = try? await sut.get{Name}(id: 1)
 
         // Then
-        #expect(await memoryDataSourceMock.saveCallCount == 0)
+        #expect(memoryDataSourceMock.saveCallCount == 0)
     }
 }
 

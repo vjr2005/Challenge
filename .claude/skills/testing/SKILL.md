@@ -327,22 +327,29 @@ final class DataSourceMock: DataSourceContract {
 }
 ```
 
-### Mock Actor Isolation
+### Mock Pattern for Actor Types
 
-The project uses `SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor`. When mocking `actor` types from the main module:
+When mocking `actor` types (e.g., MemoryDataSource), use a plain `final class` with `@unchecked Sendable`:
 
 ```swift
-// Original in main module (compiles because same-module access)
+// Original in main module
 actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract { }
 
-// Mock in test module - use @MainActor class instead of actor
-@MainActor
+// Mock in test module - plain class, no actor isolation
 final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @unchecked Sendable {
-    // Implementation
+    var characterToReturn: CharacterDTO?
+    private(set) var saveCallCount = 0
+    private(set) var saveLastValue: CharacterDTO?
+
+    func getCharacter(identifier: Int) -> CharacterDTO? { characterToReturn }
+    func saveCharacter(_ character: CharacterDTO) {
+        saveCallCount += 1
+        saveLastValue = character
+    }
 }
 ```
 
-**Why:** When importing types with `@testable import`, the test module sees types with MainActor isolation. Using `@MainActor final class` aligns the mock with this isolation context.
+**Why:** Using a plain class avoids actor isolation in tests, allowing direct property access without `await` for configuring and verifying mocks.
 
 ---
 

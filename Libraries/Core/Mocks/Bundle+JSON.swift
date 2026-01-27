@@ -1,11 +1,8 @@
 import Foundation
 
 public extension Bundle {
-    func loadJSON<T: Decodable>(_ filename: String, as type: T.Type) throws -> T {
-        guard let url = url(forResource: filename, withExtension: "json") else {
-            throw JSONLoadError.fileNotFound(filename)
-        }
-        let data = try Data(contentsOf: url)
+    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+        let data = try loadJSONData(filename)
         return try JSONDecoder().decode(T.self, from: data)
     }
 

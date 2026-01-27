@@ -124,12 +124,20 @@ Tests use JSON files replicating real API responses.
 **Location:** `Tests/Fixtures/`
 **Naming:** snake_case (`character.json`, `character_list.json`)
 
-**Loading:**
+**Loading in tests:**
+
+Each test file defines a private extension to wrap `Bundle.module` access:
 
 ```swift
-let testBundle = Bundle(for: BundleToken.self)
-let dto: {Name}DTO = try testBundle.loadJSON("{name}", as: {Name}DTO.self)
-let data = try testBundle.loadJSONData("{name}")
+private extension {Name}DataSourceTests {
+    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+        try Bundle.module.loadJSON(filename)
+    }
+
+    func loadJSONData(_ filename: String) throws -> Data {
+        try Bundle.module.loadJSONData(filename)
+    }
+}
 ```
 
 Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
@@ -162,5 +170,5 @@ Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
 
 - [ ] Create Contract with `async` methods
 - [ ] Create `actor` Implementation
-- [ ] Create `actor` Mock with call tracking
+- [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
 - [ ] Create tests
