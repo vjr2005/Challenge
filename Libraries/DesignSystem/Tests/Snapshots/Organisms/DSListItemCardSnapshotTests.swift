@@ -5,7 +5,6 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-/*
 @Suite(.timeLimit(.minutes(1)))
 struct DSListItemCardSnapshotTests {
 	private let imageLoader: ImageLoaderMock
@@ -158,4 +157,3 @@ struct DSListItemCardSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 }
-*/

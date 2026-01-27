@@ -4,7 +4,6 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-/*
 @Suite(.timeLimit(.minutes(1)))
 struct DSLoadingViewSnapshotTests {
 	init() {
@@ -31,4 +30,3 @@ struct DSLoadingViewSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 }
-*/
