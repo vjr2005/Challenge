@@ -1,7 +1,5 @@
 import ChallengeCore
 
-/// Navigator for Character List screen.
-/// Uses Navigation directly for internal navigation.
 struct CharacterListNavigator: CharacterListNavigatorContract {
     private let router: RouterContract
 
@@ -10,7 +8,6 @@ struct CharacterListNavigator: CharacterListNavigatorContract {
     }
 
     func navigateToDetail(id: Int) {
-        // INTERNAL navigation: uses Navigation directly
         router.navigate(to: CharacterNavigation.detail(identifier: id))
     }
 }

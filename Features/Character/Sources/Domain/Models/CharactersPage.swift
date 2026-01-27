@@ -1,6 +1,5 @@
 import Foundation
 
-/// Domain model representing a paginated list of characters.
 struct CharactersPage: Equatable {
 	let characters: [Character]
 	let currentPage: Int

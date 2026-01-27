@@ -3,11 +3,13 @@ import Foundation
 /// Central registry for deep link handlers.
 /// Supports dynamic registration of handlers at runtime.
 public final class DeepLinkRegistry: @unchecked Sendable {
+    /// The shared deep link registry instance.
     public static let shared = DeepLinkRegistry()
 
     private var handlers: [String: any DeepLinkHandler] = [:]
     private let lock = NSLock()
 
+    /// Creates a new deep link registry.
     public init() {}
 
     /// Registers a handler for deep link resolution.
@@ -19,6 +21,7 @@ public final class DeepLinkRegistry: @unchecked Sendable {
         lock.unlock()
     }
 
+    /// Resolves a URL into a navigation destination using registered handlers.
     public func resolve(_ url: URL) -> (any Navigation)? {
         guard let scheme = url.scheme, let host = url.host else {
             return nil

@@ -1,6 +1,5 @@
 import Foundation
 
-/// Represents the possible states of the Character view.
 enum CharacterDetailViewState {
 	case idle
 	case loading

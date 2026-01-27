@@ -1,11 +1,9 @@
 import Foundation
 
-/// Contract for getting a character by ID.
 protocol GetCharacterUseCaseContract: Sendable {
 	func execute(identifier: Int) async throws -> Character
 }
 
-/// UseCase that retrieves a character from the repository.
 struct GetCharacterUseCase: GetCharacterUseCaseContract {
 	private let repository: CharacterRepositoryContract
 

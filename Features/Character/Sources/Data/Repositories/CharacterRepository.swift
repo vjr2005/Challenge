@@ -1,7 +1,5 @@
 import Foundation
 
-/// Repository implementation for character data using local-first policy.
-/// Checks cache first, then fetches from remote if not found, and saves to cache.
 struct CharacterRepository: CharacterRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterMemoryDataSourceContract
@@ -15,30 +13,24 @@ struct CharacterRepository: CharacterRepositoryContract {
 	}
 
 	func getCharacter(identifier: Int) async throws -> Character {
-		// Check cache first
 		if let cachedDTO = await memoryDataSource.getCharacter(identifier: identifier) {
 			return cachedDTO.toDomain()
 		}
 
-		// Fetch from remote
 		let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
 
-		// Save to cache
 		await memoryDataSource.saveCharacter(dto)
 
 		return dto.toDomain()
 	}
 
 	func getCharacters(page: Int) async throws -> CharactersPage {
-		// Check cache first
 		if let cachedResponse = await memoryDataSource.getPage(page) {
 			return cachedResponse.toDomain(currentPage: page)
 		}
 
-		// Fetch from remote
 		let response = try await remoteDataSource.fetchCharacters(page: page)
 
-		// Save page to cache (also saves individual characters)
 		await memoryDataSource.savePage(response, page: page)
 
 		return response.toDomain(currentPage: page)

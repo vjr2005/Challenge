@@ -17,10 +17,12 @@ public final class CachedImageLoader: ImageLoaderContract, Sendable {
 		self.requestCoordinator = ImageRequestCoordinator()
 	}
 
+	/// Returns the cached image for the given URL, or `nil` if not cached.
 	public func cachedImage(for url: URL) -> UIImage? {
 		cache.image(for: url)
 	}
 
+	/// Returns the image for the given URL, loading from the network if not cached.
 	public func image(for url: URL) async -> UIImage? {
 		if let cached = cache.image(for: url) {
 			return cached
@@ -36,7 +38,6 @@ public final class CachedImageLoader: ImageLoaderContract, Sendable {
 	}
 }
 
-/// Thread-safe image cache using NSCache.
 private final class ImageCache: Sendable {
 	private let storage = NSCache<NSURL, UIImage>()
 
@@ -49,7 +50,6 @@ private final class ImageCache: Sendable {
 	}
 }
 
-/// Actor that coordinates image loading requests to prevent duplicate downloads.
 private actor ImageRequestCoordinator {
 	private var inFlightRequests: [URL: Task<UIImage?, Never>] = [:]
 

@@ -2,7 +2,6 @@ import ChallengeResources
 import SwiftUI
 
 struct HomeView<ViewModel: HomeViewModelContract>: View {
-	/// Not @State: ViewModel has no observable state, just actions.
 	let viewModel: ViewModel
 
 	var body: some View {

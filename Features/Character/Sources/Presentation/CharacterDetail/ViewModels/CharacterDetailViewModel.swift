@@ -1,6 +1,5 @@
 import Foundation
 
-/// ViewModel that manages Character state and coordinates with UseCases.
 @Observable
 final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     private(set) var state: CharacterDetailViewState = .idle

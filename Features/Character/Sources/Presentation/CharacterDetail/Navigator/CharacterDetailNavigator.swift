@@ -1,6 +1,5 @@
 import ChallengeCore
 
-/// Navigator for Character Detail screen.
 struct CharacterDetailNavigator: CharacterDetailNavigatorContract {
     private let router: RouterContract
 

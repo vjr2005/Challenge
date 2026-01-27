@@ -1,6 +1,5 @@
 import Foundation
 
-/// Domain model representing a character.
 struct Character: Equatable, Hashable {
 	let id: Int
 	let name: String
@@ -12,7 +11,6 @@ struct Character: Equatable, Hashable {
 	let imageURL: URL?
 }
 
-/// Character life status.
 enum CharacterStatus: String {
 	case alive = "Alive"
 	case dead = "Dead"

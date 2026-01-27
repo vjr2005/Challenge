@@ -1,6 +1,5 @@
 import Foundation
 
-/// Contract for in-memory character data storage.
 protocol CharacterMemoryDataSourceContract: Sendable {
 	// MARK: - Individual Characters
 
@@ -13,8 +12,6 @@ protocol CharacterMemoryDataSourceContract: Sendable {
 	func savePage(_ response: CharactersResponseDTO, page: Int) async
 }
 
-/// Actor-based in-memory storage for character data.
-/// Uses actor isolation to guarantee thread safety.
 actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract {
 	private var characterStorage: [Int: CharacterDTO] = [:]
 	private var pageStorage: [Int: CharactersResponseDTO] = [:]
@@ -37,7 +34,6 @@ actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract {
 
 	func savePage(_ response: CharactersResponseDTO, page: Int) {
 		pageStorage[page] = response
-		// Also save individual characters for single lookups
 		for character in response.results {
 			characterStorage[character.id] = character
 		}

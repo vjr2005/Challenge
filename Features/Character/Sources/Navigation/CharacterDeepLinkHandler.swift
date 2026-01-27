@@ -5,7 +5,6 @@ struct CharacterDeepLinkHandler: DeepLinkHandler {
     let scheme = "challenge"
     let host = "character"
 
-    /// Registers this handler with the shared DeepLinkRegistry.
     @MainActor
     static func register() {
         DeepLinkRegistry.shared.register(Self())

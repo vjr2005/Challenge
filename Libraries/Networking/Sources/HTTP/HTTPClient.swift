@@ -6,6 +6,11 @@ open class HTTPClient: HTTPClientContract {
 	private let baseURL: URL
 	private let decoder: JSONDecoder
 
+	/// Creates a new HTTP client.
+	/// - Parameters:
+	///   - baseURL: The base URL for all requests.
+	///   - session: The URL session to use. Defaults to `.shared`.
+	///   - decoder: The JSON decoder to use. Defaults to a new `JSONDecoder`.
 	public init(
 		baseURL: URL,
 		session: URLSession = .shared,
@@ -16,11 +21,13 @@ open class HTTPClient: HTTPClientContract {
 		self.decoder = decoder
 	}
 
+	/// Performs a request and decodes the response into the specified type.
 	public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		let data = try await request(endpoint)
 		return try decoder.decode(T.self, from: data)
 	}
 
+	/// Performs a request and returns the raw response data.
 	public func request(_ endpoint: Endpoint) async throws -> Data {
 		let request = try buildRequest(for: endpoint)
 		let (data, response) = try await session.data(for: request)
@@ -47,9 +54,6 @@ private extension HTTPClient {
 		)
 		components?.queryItems = endpoint.queryItems
 
-		// Defensive check: URLComponents.url can return nil in edge cases
-		// that are difficult to reproduce (e.g., invalid percent encoding).
-		// In practice, appendingPathComponent always produces valid URLs.
 		guard let url = components?.url else {
 			throw HTTPError.invalidURL
 		}

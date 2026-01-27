@@ -1,13 +1,11 @@
 import ChallengeNetworking
 import Foundation
 
-/// Contract for fetching character data from a remote source.
 protocol CharacterRemoteDataSourceContract: Sendable {
 	func fetchCharacter(identifier: Int) async throws -> CharacterDTO
 	func fetchCharacters(page: Int) async throws -> CharactersResponseDTO
 }
 
-/// Remote data source implementation for character data.
 struct CharacterRemoteDataSource: CharacterRemoteDataSourceContract {
 	private let httpClient: HTTPClientContract
 

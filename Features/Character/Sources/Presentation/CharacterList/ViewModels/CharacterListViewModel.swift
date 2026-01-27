@@ -68,7 +68,6 @@ private extension CharacterListViewModel {
             )
             state = .loaded(updatedPage)
         } catch {
-            // Keep existing data on pagination error, just don't update
             currentPage -= 1
         }
     }
