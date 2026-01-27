@@ -18,37 +18,24 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
 
+    env:
+      TUIST_TEST_DEVICE: iPhone 17 Pro
+      TUIST_TEST_OS: "26.1"
+      RESULT_BUNDLE_PATH: test_output/Challenge.xcresult
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode 26
+      - name: Select Xcode 26.1.1
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
-          if [ -z "$XCODE_PATH" ]; then
-            echo "::warning::Xcode 26 not found, using default Xcode"
-          else
-            sudo xcode-select -s "$XCODE_PATH"
-          fi
+          sudo xcode-select -s /Applications/Xcode_26.1.1.app
           xcodebuild -version
 
       - name: Install mise tools
         uses: jdx/mise-action@v2
         with:
           cache: true
-
-      - name: Cache Ruby gems
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: gems-${{ runner.os }}-${{ hashFiles('Gemfile') }}
-          restore-keys: |
-            gems-${{ runner.os }}-
-
-      - name: Install Fastlane
-        run: |
-          bundle config set --local path vendor/bundle
-          bundle install --jobs 4 --retry 3
 
       - name: Cache Tuist and SPM dependencies
         uses: actions/cache@v4
@@ -61,20 +48,116 @@ jobs:
             tuist-${{ runner.os }}-
 
       - name: Install SPM dependencies
-        run: bundle exec fastlane install
+        run: mise x -- tuist install
 
       - name: Generate Xcode project
-        run: bundle exec fastlane generate
+        run: mise x -- tuist generate
 
       - name: Run tests
-        run: bundle exec fastlane execute_tests
+        run: |
+          mise x -- tuist test \
+            --device "$TUIST_TEST_DEVICE" \
+            --os "$TUIST_TEST_OS" \
+            --result-bundle-path "$RESULT_BUNDLE_PATH"
+
+      - name: Extract test failures
+        if: failure()
+        run: |
+          if [ -d "$RESULT_BUNDLE_PATH" ]; then
+            python3 << 'PYEOF'
+          import json, subprocess, os
+
+          result = subprocess.run(
+              ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
+               '--path', os.environ['RESULT_BUNDLE_PATH']],
+              capture_output=True, text=True
+          )
+          if result.returncode != 0:
+              exit(0)
+
+          data = json.loads(result.stdout)
+          failures = []
+
+          def walk(node, parts):
+              name = node.get('name', '')
+              node_type = node.get('nodeType', '')
+              if node_type == 'Test Plan':
+                  for child in node.get('children', []):
+                      walk(child, [])
+                  return
+              current = parts + [name] if name else parts
+              if node.get('result') == 'Failed' and node_type == 'Test Case':
+                  failures.append('/'.join(current))
+              for child in node.get('children', []):
+                  walk(child, current)
+
+          for node in data.get('testNodes', []):
+              walk(node, [])
+
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write('TEST_FAILURES<<TEST_FAILURES_EOF\n')
+              env.write('\n'.join(failures))
+              env.write('\nTEST_FAILURES_EOF\n')
+          PYEOF
+          fi
+
+      - name: Upload xcresult on failure
+        if: failure()
+        id: upload-xcresult
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_output
+          retention-days: 7
+
+      - name: Comment PR with test failures
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          XCRESULT_URL: ${{ steps.upload-xcresult.outputs.artifact-url }}
+        with:
+          script: |
+            const xcresultUrl = process.env.XCRESULT_URL || '';
+            const rawFailures = process.env.TEST_FAILURES || '';
+
+            const lines = [
+              '## Test Results',
+              '',
+              ':x: **Tests failed.**',
+            ];
+
+            if (rawFailures.trim()) {
+              const failures = rawFailures.trim().split('\n');
+              lines.push(
+                '',
+                '| | Test |',
+                '|---|------|',
+                ...failures.map(f => `| :x: | \`${f}\` |`)
+              );
+            }
+
+            lines.push(
+              '',
+              `[:arrow_down: Download xcresult](${xcresultUrl})`,
+              '',
+              '_Open the `.xcresult` file in Xcode to inspect failures._'
+            );
+
+            const body = lines.join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
 
       - name: Detect dead code
         id: periphery
         continue-on-error: true
         run: |
           set +e
-          OUTPUT=$(bundle exec fastlane detect_dead_code 2>&1)
+          OUTPUT=$(mise x -- periphery scan 2>&1)
           echo "$OUTPUT"
           echo 'PERIPHERY_OUTPUT<<PERIPHERY_EOF' >> "$GITHUB_ENV"
           echo "$OUTPUT" >> "$GITHUB_ENV"
@@ -85,8 +168,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const output = process.env.PERIPHERY_OUTPUT || '';
-            const marker = '<!-- periphery-report -->';
+            const raw = process.env.PERIPHERY_OUTPUT || '';
+            const output = raw.replace(/\x1b\[[0-9;]*m/g, '');
 
             // Parse diagnostic lines: path/File.swift:line:col: warning: message
             const diagnosticRegex = /^(.+?):(\d+):(\d+):\s+warning:\s+(.+)$/gm;
@@ -103,7 +186,6 @@ jobs:
             let body;
             if (findings.length === 0) {
               body = [
-                marker,
                 '## Periphery \u2014 Dead code detection',
                 '',
                 ':white_check_mark: No unused code detected.'
@@ -115,45 +197,19 @@ jobs:
               });
 
               body = [
-                marker,
                 '## Periphery \u2014 Dead code detection',
                 '',
                 `Found **${findings.length}** unused code occurrence(s):`,
                 '',
                 '| | File | Line | Description |',
                 '|---|------|------|-------------|',
-                ...rows,
-                '',
-                '<details><summary>Full output</summary>',
-                '',
-                '```',
-                output.substring(output.lastIndexOf('periphery scan'), output.length).substring(0, 65000),
-                '```',
-                '',
-                '</details>'
+                ...rows
               ].join('\n');
             }
 
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number
+              issue_number: context.issue.number,
+              body
             });
-            const existing = comments.find(c => c.body && c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body
-              });
-            }

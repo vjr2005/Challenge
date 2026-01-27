@@ -60,7 +60,9 @@
       "Bash(xcrun xcresulttool:*)",
       "Bash(swift test:*)",
       "Bash(done)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "WebFetch(domain:docs.github.com)",
+      "Bash(gh api:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

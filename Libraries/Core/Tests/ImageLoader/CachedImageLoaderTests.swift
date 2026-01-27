@@ -24,8 +24,7 @@ struct CachedImageLoaderTests {
 	@Test
 	func cachedImageForURLReturnsImageAfterLoading() async throws {
 		// Given
-		let testImage = createTestImage()
-		let testImageData = try #require(testImage.pngData())
+		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://example.com/image.png"))
 
 		URLProtocolMock.requestHandler = { request in
@@ -56,8 +55,7 @@ struct CachedImageLoaderTests {
 	@Test
 	func imageForURLReturnsImageOnSuccess() async throws {
 		// Given
-		let testImage = createTestImage()
-		let testImageData = try #require(testImage.pngData())
+		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://example.com/image.png"))
 
 		URLProtocolMock.requestHandler = { request in
@@ -131,8 +129,7 @@ struct CachedImageLoaderTests {
 	@Test
 	func imageForURLReturnsCachedImageOnSecondRequest() async throws {
 		// Given
-		let testImage = createTestImage()
-		let testImageData = try #require(testImage.pngData())
+		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://example.com/image.png"))
 		let requestCount = RequestCounter()
 
@@ -167,8 +164,7 @@ struct CachedImageLoaderTests {
 	@Test
 	func concurrentRequestsForSameURLAreDeduplicated() async throws {
 		// Given
-		let testImage = createTestImage()
-		let testImageData = try #require(testImage.pngData())
+		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://example.com/image.png"))
 		let requestCount = RequestCounter()
 
@@ -206,8 +202,7 @@ struct CachedImageLoaderTests {
 	@Test
 	func concurrentRequestsForDifferentURLsAreNotDeduplicated() async throws {
 		// Given
-		let testImage = createTestImage()
-		let testImageData = try #require(testImage.pngData())
+		let testImageData = UIImage.checkmark.pngData()
 		let url1 = try #require(URL(string: "https://example.com/image1.png"))
 		let url2 = try #require(URL(string: "https://example.com/image2.png"))
 		let requestCount = RequestCounter()
@@ -240,19 +235,6 @@ struct CachedImageLoaderTests {
 		#expect(results[1] != nil)
 		let count = await requestCount.value
 		#expect(count == 2)
-	}
-}
-
-// MARK: - Helpers
-
-private extension CachedImageLoaderTests {
-	func createTestImage() -> UIImage {
-		let size = CGSize(width: 10, height: 10)
-		let renderer = UIGraphicsImageRenderer(size: size)
-		return renderer.image { context in
-			UIColor.red.setFill()
-			context.fill(CGRect(origin: .zero, size: size))
-		}
 	}
 }
 
