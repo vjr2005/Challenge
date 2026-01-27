@@ -11,7 +11,7 @@ struct CharacterListViewSnapshotTests {
 
 	init() {
 		UIView.setAnimationsEnabled(false)
-		imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(image: .stub)
 	}
 
 	// MARK: - Idle State

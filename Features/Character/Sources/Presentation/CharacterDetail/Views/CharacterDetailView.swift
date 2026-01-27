@@ -25,20 +25,6 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 			}
 			.accessibilityIdentifier(AccessibilityIdentifier.view)
 	}
-
-	@ViewBuilder
-	private var content: some View {
-		switch viewModel.state {
-		case .idle:
-			Color.clear
-		case .loading:
-			loadingView
-		case .loaded(let character):
-			characterContent(character)
-		case .error:
-			errorView
-		}
-	}
 }
 
 // MARK: - Subviews
@@ -58,9 +44,35 @@ private extension CharacterDetailView {
 		.accessibilityIdentifier(AccessibilityIdentifier.backButton)
 	}
 
+    @ViewBuilder
+    var content: some View {
+        switch viewModel.state {
+            case .idle:
+                Color.clear
+            case .loading:
+                loadingView
+            case .loaded(let character):
+                characterContent(character)
+            case .error:
+                errorView
+        }
+    }
+
 	var loadingView: some View {
 		DSLoadingView(message: LocalizedStrings.loading)
 	}
+
+    var errorView: some View {
+        DSErrorView(
+            title: LocalizedStrings.Error.title,
+            message: LocalizedStrings.Error.description,
+            retryTitle: LocalizedStrings.Common.tryAgain
+        ) {
+            Task {
+                await viewModel.load()
+            }
+        }
+    }
 
 	func characterContent(_ character: Character) -> some View {
 		ScrollView {
@@ -150,18 +162,6 @@ private extension CharacterDetailView {
 			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 	}
-
-	var errorView: some View {
-		DSErrorView(
-			title: LocalizedStrings.Error.title,
-			message: LocalizedStrings.Error.description,
-			retryTitle: LocalizedStrings.Common.tryAgain
-		) {
-			Task {
-				await viewModel.load()
-			}
-		}
-	}
 }
 
 // MARK: - LocalizedStrings
@@ -218,7 +218,6 @@ private enum AccessibilityIdentifier {
 // MARK: - Preview Stubs
 
 #if DEBUG
-@Observable
 private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {
 	var state: CharacterDetailViewState
 

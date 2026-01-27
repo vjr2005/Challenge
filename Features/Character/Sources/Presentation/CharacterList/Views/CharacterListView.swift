@@ -4,7 +4,7 @@ import ChallengeDesignSystem
 import SwiftUI
 
 struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
-	@State private var viewModel: ViewModel
+	@State private var viewModel: CharacterListViewModelContract
 
 	init(viewModel: ViewModel) {
 		_viewModel = State(initialValue: viewModel)
@@ -42,6 +42,36 @@ private extension CharacterListView {
 	var loadingView: some View {
 		DSLoadingView(message: LocalizedStrings.loading)
 	}
+
+    var loadMoreButton: some View {
+        DSButton(
+            LocalizedStrings.loadMore,
+            icon: "arrow.down.circle.fill",
+            variant: .tertiary
+        ) {
+            Task {
+                await viewModel.loadMore()
+            }
+        }
+        .accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
+        .padding(.vertical, SpacingToken.sm)
+    }
+
+    func footerView(page: CharactersPage) -> some View {
+        DSText(
+            LocalizedStrings.pageIndicator(page.currentPage, page.totalPages),
+            style: .caption2
+        )
+        .padding(.bottom, SpacingToken.lg)
+    }
+
+    var emptyView: some View {
+        DSEmptyState(
+            icon: "person.slash",
+            title: LocalizedStrings.Empty.title,
+            message: LocalizedStrings.Empty.description
+        )
+    }
 
 	func characterList(page: CharactersPage) -> some View {
 		ScrollView {
@@ -81,36 +111,6 @@ private extension CharacterListView {
 		.padding(.vertical, SpacingToken.sm)
 	}
 
-	var loadMoreButton: some View {
-		DSButton(
-			LocalizedStrings.loadMore,
-			icon: "arrow.down.circle.fill",
-			variant: .tertiary
-		) {
-			Task {
-				await viewModel.loadMore()
-			}
-		}
-		.accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
-		.padding(.vertical, SpacingToken.sm)
-	}
-
-	func footerView(page: CharactersPage) -> some View {
-		DSText(
-			LocalizedStrings.pageIndicator(page.currentPage, page.totalPages),
-			style: .caption2
-		)
-		.padding(.bottom, SpacingToken.lg)
-	}
-
-	var emptyView: some View {
-		DSEmptyState(
-			icon: "person.slash",
-			title: LocalizedStrings.Empty.title,
-			message: LocalizedStrings.Empty.description
-		)
-	}
-
 	func errorView(error: Error) -> some View {
 		DSErrorView(
 			title: LocalizedStrings.Error.title,
@@ -135,7 +135,7 @@ private struct CharacterRowView: View {
 		}
 	}
 
-	private var characterImage: some View {
+	var characterImage: some View {
 		DSAsyncImage(url: character.imageURL) { image in
 			image
 				.resizable()
@@ -147,7 +147,7 @@ private struct CharacterRowView: View {
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 	}
 
-	private var characterInfo: some View {
+	var characterInfo: some View {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
 			DSText(character.name, style: .headline)
 				.lineLimit(1)
@@ -167,7 +167,7 @@ private struct CharacterRowView: View {
 		}
 	}
 
-	private var statusIndicator: some View {
+	var statusIndicator: some View {
 		VStack(spacing: SpacingToken.xs) {
 			DSStatusIndicator(status: characterStatus)
 
@@ -177,7 +177,7 @@ private struct CharacterRowView: View {
 		}
 	}
 
-	private var characterStatus: DSStatus {
+	var characterStatus: DSStatus {
 		DSStatus.from(character.status.rawValue)
 	}
 }

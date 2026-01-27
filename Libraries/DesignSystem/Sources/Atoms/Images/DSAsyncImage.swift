@@ -37,19 +37,21 @@ public struct DSAsyncImage<Content: View, Placeholder: View>: View {
 			await loadImage()
 		}
 	}
-
-	private var displayImage: UIImage? {
-		if let loadedImage {
-			return loadedImage
-		}
-		guard let url else {
-			return nil
-		}
-		return imageLoader.cachedImage(for: url)
-	}
 }
 
+// MARK: - Private
+
 private extension DSAsyncImage {
+    var displayImage: UIImage? {
+        if let loadedImage {
+            return loadedImage
+        }
+        guard let url else {
+            return nil
+        }
+        return imageLoader.cachedImage(for: url)
+    }
+
 	func loadImage() async {
 		guard let url else {
 			return

@@ -63,7 +63,8 @@
       "Bash(wc:*)",
       "WebFetch(domain:docs.github.com)",
       "Bash(gh api:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "WebFetch(domain:www.avanderlee.com)"
     ]
   },
   "enableAllProjectMcpServers": true,

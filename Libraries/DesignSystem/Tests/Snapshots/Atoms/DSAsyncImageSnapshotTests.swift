@@ -14,7 +14,7 @@ struct DSAsyncImageSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 		emptyImageLoader = ImageLoaderMock(image: nil)
-		loadedImageLoader = ImageLoaderMock(image: Self.testImage)
+        loadedImageLoader = ImageLoaderMock(image: .stub)
 	}
 
 	// MARK: - Placeholder State (nil URL)
@@ -226,34 +226,10 @@ struct DSAsyncImageSnapshotTests {
 	}
 }
 
-// MARK: - Test Helpers
+// MARK: - Private
 
 private extension DSAsyncImageSnapshotTests {
 	static let testURL = URL(string: "https://example.com/test-image.jpg")
-
-	/// Creates a simple gradient test image programmatically.
-	static var testImage: UIImage {
-		let size = CGSize(width: 200, height: 200)
-		let renderer = UIGraphicsImageRenderer(size: size)
-
-		return renderer.image { context in
-			let colors = [UIColor.systemBlue.cgColor, UIColor.systemPurple.cgColor]
-			let colorSpace = CGColorSpaceCreateDeviceRGB()
-
-			guard let gradient = CGGradient(
-				colorsSpace: colorSpace,
-				colors: colors as CFArray,
-				locations: [0, 1]
-			) else { return }
-
-			context.cgContext.drawLinearGradient(
-				gradient,
-				start: .zero,
-				end: CGPoint(x: size.width, y: size.height),
-				options: []
-			)
-		}
-	}
 
 	func stateItem(url: URL?, label: String) -> some View {
 		VStack(spacing: SpacingToken.sm) {
