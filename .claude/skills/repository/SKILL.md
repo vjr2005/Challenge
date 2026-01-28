@@ -24,6 +24,8 @@ Guide for creating Repositories that abstract data access following Clean Archit
 Features/{Feature}/
 ├── Sources/
 │   ├── Domain/
+│   │   ├── Errors/
+│   │   │   └── {Feature}Error.swift              # Domain error (typed throws)
 │   │   ├── Models/
 │   │   │   └── {Name}.swift                      # Domain model
 │   │   └── Repositories/
@@ -39,6 +41,9 @@ Features/{Feature}/
 └── Tests/
     ├── Data/
     │   └── {Name}RepositoryTests.swift
+    ├── Domain/
+    │   └── Errors/
+    │       └── {Feature}ErrorTests.swift         # Error tests
     └── Mocks/
         └── {Name}RepositoryMock.swift
 ```
@@ -119,6 +124,91 @@ final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable 
 
 ---
 
+## Error Handling
+
+Repositories transform data layer errors (e.g., `HTTPError`) into domain-specific errors using **typed throws**.
+
+### Domain Error
+
+```
+Features/{Feature}/
+└── Sources/
+    └── Domain/
+        └── Errors/
+            └── {Feature}Error.swift
+```
+
+```swift
+public enum {Feature}Error: Error, Equatable, Sendable, LocalizedError {
+    case loadFailed
+    case notFound(id: Int)
+    case invalidPage(page: Int)
+
+    public var errorDescription: String? {
+        switch self {
+        case .loadFailed:
+            return "{feature}Error.loadFailed".localized()
+        case .notFound(let id):
+            return "{feature}Error.notFound %lld".localized(id)
+        case .invalidPage(let page):
+            return "{feature}Error.invalidPage %lld".localized(page)
+        }
+    }
+}
+```
+
+**Rules:**
+- Located in `Domain/Errors/`
+- **Public visibility** (used by presentation layer)
+- Conform to `Error`, `Equatable`, `Sendable`, `LocalizedError`
+- Use localized strings from Resources module
+
+### Typed Throws in Contract
+
+```swift
+protocol {Name}RepositoryContract: Sendable {
+    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name}
+}
+```
+
+### Error Mapping in Implementation
+
+```swift
+struct {Name}Repository: {Name}RepositoryContract {
+    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+        do {
+            let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
+            return dto.toDomain()
+        } catch let error as HTTPError {
+            throw mapHTTPError(error, identifier: identifier)
+        } catch {
+            throw .loadFailed
+        }
+    }
+}
+
+// MARK: - Error Mapping
+
+private extension {Name}Repository {
+    func mapHTTPError(_ error: HTTPError, identifier: Int) -> {Feature}Error {
+        switch error {
+        case .statusCode(404, _):
+            return .notFound(id: identifier)
+        case .invalidURL, .invalidResponse, .statusCode:
+            return .loadFailed
+        }
+    }
+}
+```
+
+**Rules:**
+- Use `throws({Feature}Error)` (typed throws) instead of generic `throws`
+- Map `HTTPError` cases to domain-specific errors
+- Include context in errors (e.g., `id`, `page`) for better debugging
+- Fallback to generic error (`.loadFailed`) for unexpected cases
+
+---
+
 ## Local-First Policy
 
 When using both DataSources, follow this order:
@@ -159,28 +249,34 @@ func get{Name}(id: Int) async throws -> {Name} {
 ### Remote Only Repository
 
 - [ ] Create Domain model with Equatable conformance
-- [ ] Create Contract in Domain/Repositories/
+- [ ] Create Domain error enum in Domain/Errors/ with typed throws
+- [ ] Create Contract in Domain/Repositories/ using typed throws
 - [ ] Create Implementation injecting RemoteDataSource
 - [ ] Add DTO to Domain mapping extension
+- [ ] Add HTTPError to Domain error mapping
 - [ ] Create Mock in Tests/Mocks/
-- [ ] Create tests verifying transformation and error propagation
+- [ ] Create tests verifying transformation and error mapping
+- [ ] Add localized strings for error messages
 
 ### Local Only Repository
 
 - [ ] Create Domain model with Equatable conformance
-- [ ] Create Contract in Domain/Repositories/
+- [ ] Create Domain error enum in Domain/Errors/
+- [ ] Create Contract in Domain/Repositories/ using typed throws
 - [ ] Create Implementation injecting MemoryDataSource
 - [ ] Add DTO to Domain mapping
 - [ ] Add Domain to DTO mapping (for saving)
-- [ ] Create error enum for not found cases
 - [ ] Create Mock and tests
 
 ### Local-First Repository
 
 - [ ] Create Domain model with Equatable conformance
-- [ ] Create Contract in Domain/Repositories/
+- [ ] Create Domain error enum in Domain/Errors/ with typed throws
+- [ ] Create Contract in Domain/Repositories/ using typed throws
 - [ ] Create Implementation injecting both DataSources
 - [ ] Implement local-first policy
+- [ ] Add HTTPError to Domain error mapping
 - [ ] Create tests for cache hit (no remote call)
 - [ ] Create tests for cache miss (remote call + cache save)
-- [ ] Create tests for error propagation
+- [ ] Create tests for error mapping (404 → notFound, etc.)
+- [ ] Add localized strings for error messages

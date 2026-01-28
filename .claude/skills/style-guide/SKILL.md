@@ -124,6 +124,46 @@ let characterId = character.id
 
 ---
 
+## Domain Model Types
+
+Prefer **enums** over strings for values with a known finite set of options:
+
+```swift
+// RIGHT - Enum for finite set of values
+enum CharacterGender: Sendable {
+    case male
+    case female
+    case genderless
+    case unknown
+
+    init(from string: String) {
+        switch string.lowercased() {
+        case "male": self = .male
+        case "female": self = .female
+        case "genderless": self = .genderless
+        default: self = .unknown
+        }
+    }
+}
+
+struct Character {
+    let gender: CharacterGender  // Type-safe
+}
+
+// WRONG - String for finite set
+struct Character {
+    let gender: String  // No type safety
+}
+```
+
+**Rules:**
+- Use enums for status, type, category, and similar fields
+- Add `init(from string:)` to parse API string values
+- Include `.unknown` case for unexpected values
+- Conform to `Sendable` for concurrency safety
+
+---
+
 ## Access Modifiers
 
 ```swift

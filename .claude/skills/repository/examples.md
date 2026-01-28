@@ -375,7 +375,32 @@ private enum TestError: Error {
 
 ---
 
-## Complete Example: Character (Local-First)
+## Complete Example: Character (Local-First with Typed Throws)
+
+### Domain Error
+
+```swift
+// Sources/Domain/Errors/CharacterError.swift
+import ChallengeResources
+import Foundation
+
+public enum CharacterError: Error, Equatable, Sendable, LocalizedError {
+    case loadFailed
+    case characterNotFound(id: Int)
+    case invalidPage(page: Int)
+
+    public var errorDescription: String? {
+        switch self {
+        case .loadFailed:
+            return "characterError.loadFailed".localized()
+        case .characterNotFound(let id):
+            return "characterError.characterNotFound %lld".localized(id)
+        case .invalidPage(let page):
+            return "characterError.invalidPage %lld".localized(page)
+        }
+    }
+}
+```
 
 ### Domain Model
 
@@ -386,12 +411,37 @@ struct Character: Equatable {
     let name: String
     let status: CharacterStatus
     let species: String
+    let gender: CharacterGender
 }
 
-enum CharacterStatus: String, Sendable {
-    case alive = "Alive"
-    case dead = "Dead"
+enum CharacterStatus: Sendable {
+    case alive
+    case dead
     case unknown
+
+    init(from string: String) {
+        switch string.lowercased() {
+        case "alive": self = .alive
+        case "dead": self = .dead
+        default: self = .unknown
+        }
+    }
+}
+
+enum CharacterGender: Sendable {
+    case male
+    case female
+    case genderless
+    case unknown
+
+    init(from string: String) {
+        switch string.lowercased() {
+        case "male": self = .male
+        case "female": self = .female
+        case "genderless": self = .genderless
+        default: self = .unknown
+        }
+    }
 }
 ```
 
@@ -400,7 +450,7 @@ enum CharacterStatus: String, Sendable {
 ```swift
 // Sources/Domain/Repositories/CharacterRepositoryContract.swift
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacter(id: Int) async throws -> Character
+    func getCharacter(identifier: Int) async throws(CharacterError) -> Character
 }
 ```
 
@@ -408,6 +458,8 @@ protocol CharacterRepositoryContract: Sendable {
 
 ```swift
 // Sources/Data/Repositories/CharacterRepository.swift
+import ChallengeNetworking
+
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
     private let memoryDataSource: CharacterMemoryDataSourceContract
@@ -420,24 +472,46 @@ struct CharacterRepository: CharacterRepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func getCharacter(id: Int) async throws -> Character {
-        if let cachedDTO = await memoryDataSource.getCharacter(id: id) {
+    func getCharacter(identifier: Int) async throws(CharacterError) -> Character {
+        if let cachedDTO = await memoryDataSource.getCharacter(identifier: identifier) {
             return cachedDTO.toDomain()
         }
 
-        let dto = try await remoteDataSource.fetchCharacter(id: id)
-        await memoryDataSource.saveCharacter(dto)
-        return dto.toDomain()
+        do {
+            let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
+            await memoryDataSource.saveCharacter(dto)
+            return dto.toDomain()
+        } catch let error as HTTPError {
+            throw mapHTTPError(error, identifier: identifier)
+        } catch {
+            throw .loadFailed
+        }
     }
 }
+
+// MARK: - Error Mapping
+
+private extension CharacterRepository {
+    func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
+        switch error {
+        case .statusCode(404, _):
+            return .characterNotFound(id: identifier)
+        case .invalidURL, .invalidResponse, .statusCode:
+            return .loadFailed
+        }
+    }
+}
+
+// MARK: - DTO to Domain Mapping
 
 extension CharacterDTO {
     func toDomain() -> Character {
         Character(
             id: id,
             name: name,
-            status: CharacterStatus(rawValue: status) ?? .unknown,
-            species: species
+            status: CharacterStatus(from: status),
+            species: species,
+            gender: CharacterGender(from: gender)
         )
     }
 }
@@ -452,18 +526,64 @@ import Foundation
 @testable import {AppName}Character
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
-    var result: Result<Character, Error> = .failure(NotConfiguredError.notConfigured)
+    var result: Result<Character, CharacterError> = .failure(.loadFailed)
     private(set) var getCallCount = 0
-    private(set) var lastRequestedId: Int?
+    private(set) var lastRequestedIdentifier: Int?
 
-    func getCharacter(id: Int) async throws -> Character {
+    func getCharacter(identifier: Int) async throws(CharacterError) -> Character {
         getCallCount += 1
-        lastRequestedId = id
+        lastRequestedIdentifier = identifier
         return try result.get()
     }
 }
+```
 
-private enum NotConfiguredError: Error {
-    case notConfigured
+### Error Tests
+
+```swift
+// Tests/Domain/Errors/CharacterErrorTests.swift
+import Foundation
+import Testing
+
+@testable import {AppName}Character
+
+struct CharacterErrorTests {
+    @Test(arguments: [
+        (CharacterError.loadFailed, CharacterError.loadFailed, true),
+        (CharacterError.characterNotFound(id: 1), CharacterError.characterNotFound(id: 1), true),
+        (CharacterError.characterNotFound(id: 1), CharacterError.characterNotFound(id: 2), false),
+        (CharacterError.loadFailed, CharacterError.characterNotFound(id: 1), false)
+    ])
+    func equality(lhs: CharacterError, rhs: CharacterError, expectedEqual: Bool) {
+        // When
+        let areEqual = lhs == rhs
+
+        // Then
+        #expect(areEqual == expectedEqual)
+    }
+
+    @Test
+    func loadFailedErrorDescription() {
+        // Given
+        let sut = CharacterError.loadFailed
+
+        // When
+        let description = sut.errorDescription
+
+        // Then
+        #expect(description != nil)
+    }
+
+    @Test
+    func characterNotFoundErrorDescription() {
+        // Given
+        let sut = CharacterError.characterNotFound(id: 42)
+
+        // When
+        let description = sut.errorDescription
+
+        // Then
+        #expect(description != nil)
+    }
 }
 ```
