@@ -14,7 +14,7 @@ struct DSAsyncImageSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 		emptyImageLoader = ImageLoaderMock(image: nil)
-        loadedImageLoader = ImageLoaderMock(image: .stub)
+		loadedImageLoader = ImageLoaderMock(image: .stub)
 	}
 
 	// MARK: - Placeholder State (nil URL)

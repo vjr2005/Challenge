@@ -14,7 +14,7 @@ struct DSAvatarSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 		emptyImageLoader = ImageLoaderMock(image: nil)
-        loadedImageLoader = ImageLoaderMock(image: .stub)
+		loadedImageLoader = ImageLoaderMock(image: .stub)
 	}
 
 	// MARK: - DSAsyncAvatar Placeholder State (when URL is nil or image fails to load)

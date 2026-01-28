@@ -64,7 +64,8 @@
       "WebFetch(domain:docs.github.com)",
       "Bash(gh api:*)",
       "Bash(git reset:*)",
-      "WebFetch(domain:www.avanderlee.com)"
+      "WebFetch(domain:www.avanderlee.com)",
+      "Bash(RECORD_SNAPSHOTS=1 xcodebuild test:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

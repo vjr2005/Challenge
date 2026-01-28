@@ -11,7 +11,7 @@ struct CharacterDetailViewSnapshotTests {
 
 	init() {
 		UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: .stub)
+		imageLoader = ImageLoaderMock(image: .stub)
 	}
 
 	// MARK: - Idle State
