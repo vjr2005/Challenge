@@ -242,7 +242,19 @@ DSBadge("Pending", variant: .neutral)
 
 ### DSAsyncImage
 
-Async image with caching support (replaces `AsyncImage` for snapshot testing). Uses `AsyncImagePhase` for handling loading states:
+Async image with caching support (replaces `AsyncImage` for snapshot testing). Uses `AsyncImagePhase` for handling loading states.
+
+**Simple usage (with default content):**
+
+```swift
+DSAsyncImage(url: character.imageURL)
+    .frame(width: 70, height: 70)
+    .clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+```
+
+Default behavior: shows `ProgressView` while loading, error placeholder on failure, and `image.resizable().scaledToFill()` on success.
+
+**Custom content:**
 
 ```swift
 DSAsyncImage(url: character.imageURL) { phase in

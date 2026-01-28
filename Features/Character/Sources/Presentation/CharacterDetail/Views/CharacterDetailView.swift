@@ -98,32 +98,10 @@ private extension CharacterDetailView {
 	}
 
 	func characterImage(_ character: Character) -> some View {
-		DSAsyncImage(url: character.imageURL) { phase in
-			switch phase {
-			case .success(let image):
-				image
-					.resizable()
-					.scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				errorImage
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 150, height: 150)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.xl))
-		.shadow(.medium)
-	}
-
-	var errorImage: some View {
-		ZStack {
-			ColorToken.surfaceSecondary
-			Image(systemName: "photo")
-				.font(.largeTitle)
-				.foregroundStyle(ColorToken.textTertiary)
-		}
+		DSAsyncImage(url: character.imageURL)
+			.frame(width: 150, height: 150)
+			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.xl))
+			.shadow(.medium)
 	}
 
 	func nameAndStatus(_ character: Character) -> some View {

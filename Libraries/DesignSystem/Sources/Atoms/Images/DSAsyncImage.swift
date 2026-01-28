@@ -29,6 +29,49 @@ public struct DSAsyncImage<Content: View>: View {
 	}
 }
 
+// MARK: - Default Content
+
+public extension DSAsyncImage where Content == AnyView {
+	/// Creates a cached async image view with default content.
+	/// - Parameter url: The URL of the image to load.
+	///
+	/// Default behavior:
+	/// - Success: displays the image with `resizable()` and `scaledToFill()`
+	/// - Empty: displays a `ProgressView`
+	/// - Failure: displays an error placeholder
+	init(url: URL?) {
+		self.url = url
+		self.content = { phase in
+			AnyView(DefaultPhaseContent(phase: phase))
+		}
+	}
+}
+
+// MARK: - DefaultPhaseContent
+
+private struct DefaultPhaseContent: View {
+	let phase: AsyncImagePhase
+
+	var body: some View {
+		switch phase {
+		case .success(let image):
+			image
+				.resizable()
+				.scaledToFill()
+		case .empty:
+			ProgressView()
+		case .failure:
+			ZStack {
+				ColorToken.surfaceSecondary
+				Image(systemName: "photo")
+					.foregroundStyle(ColorToken.textTertiary)
+			}
+		@unknown default:
+			ProgressView()
+		}
+	}
+}
+
 // MARK: - Private
 
 private extension DSAsyncImage {

@@ -136,30 +136,9 @@ private struct CharacterRowView: View {
 	}
 
 	var characterImage: some View {
-		DSAsyncImage(url: character.imageURL) { phase in
-			switch phase {
-			case .success(let image):
-				image
-					.resizable()
-					.scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				errorImage
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 70, height: 70)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-	}
-
-	var errorImage: some View {
-		ZStack {
-			ColorToken.surfaceSecondary
-			Image(systemName: "photo")
-				.foregroundStyle(ColorToken.textTertiary)
-		}
+		DSAsyncImage(url: character.imageURL)
+			.frame(width: 70, height: 70)
+			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 	}
 
 	var characterInfo: some View {
