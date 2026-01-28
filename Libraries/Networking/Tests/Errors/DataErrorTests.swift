@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import ChallengeCore
+@testable import ChallengeNetworking
 
 struct DataErrorTests {
     // MARK: - Equatability
