@@ -154,6 +154,68 @@ struct CharacterRepositoryTests {
         #expect(value == expected)
     }
 
+    // MARK: - Gender Transformation Tests
+
+    @Test
+    func transformsFemaleGender() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character_female")
+        let expected = Character.stub(gender: .female)
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(characterDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        let value = try await sut.getCharacter(identifier: 1)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test
+    func transformsGenderlessGender() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character_genderless")
+        let expected = Character.stub(gender: .genderless)
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(characterDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        let value = try await sut.getCharacter(identifier: 1)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test
+    func transformsUnknownGender() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character_unknown_gender")
+        let expected = Character.stub(gender: .unknown)
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(characterDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        let value = try await sut.getCharacter(identifier: 1)
+
+        // Then
+        #expect(value == expected)
+    }
+
     // MARK: - Error Tests
 
     @Test

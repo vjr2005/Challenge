@@ -46,7 +46,7 @@ extension CharacterDTO {
 			name: name,
 			status: CharacterStatus(from: status),
 			species: species,
-			gender: gender,
+			gender: CharacterGender(from: gender),
 			origin: origin.toDomain(),
 			location: location.toDomain(),
 			imageURL: URL(string: image)

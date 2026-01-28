@@ -56,7 +56,7 @@ struct CharacterDetailViewSnapshotTests {
 			name: "Rick Sanchez",
 			status: .alive,
 			species: "Human",
-			gender: "Male"
+			gender: .male
 		)
 		let viewModel = CharacterDetailViewModelStub(state: .loaded(character))
 

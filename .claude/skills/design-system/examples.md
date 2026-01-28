@@ -143,7 +143,7 @@ func infoCard(_ character: Character) -> some View {
             DSText(LocalizedStrings.information, style: .headline)
 
             VStack(spacing: SpacingToken.md) {
-                DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender)
+                DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
                 Divider()
                 DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
             }

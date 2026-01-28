@@ -280,7 +280,7 @@ private extension Character {
 		name: String = "Rick Sanchez",
 		status: CharacterStatus = .alive,
 		species: String = "Human",
-		gender: String = "Male"
+		gender: CharacterGender = .male
 	) -> Character {
 		Character(
 			id: id,

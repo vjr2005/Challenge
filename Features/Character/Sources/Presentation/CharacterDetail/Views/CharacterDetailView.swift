@@ -133,7 +133,7 @@ private extension CharacterDetailView {
 				DSText(LocalizedStrings.information, style: .headline)
 
 				VStack(spacing: SpacingToken.md) {
-					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender)
+					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
 					Divider()
 					DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
 				}
@@ -229,7 +229,7 @@ private extension Character {
 		name: String = "Rick Sanchez",
 		status: CharacterStatus = .alive,
 		species: String = "Human",
-		gender: String = "Male"
+		gender: CharacterGender = .male
 	) -> Character {
 		Character(
 			id: id,

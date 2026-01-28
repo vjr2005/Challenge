@@ -8,10 +8,10 @@ extension Character {
 		name: String = "Rick Sanchez",
 		status: CharacterStatus = .alive,
 		species: String = "Human",
-		gender: String = "Male",
+		gender: CharacterGender = .male,
 		origin: Location = .stub(name: "Earth (C-137)"),
 		location: Location = .stub(name: "Citadel of Ricks", url: URL(string: "https://rickandmortyapi.com/api/location/3")),
-		imageURL: URL? = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"),
+		imageURL: URL? = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
 	) -> Character {
 		Character(
 			id: id,
