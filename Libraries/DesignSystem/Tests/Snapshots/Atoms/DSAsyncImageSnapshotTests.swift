@@ -21,12 +21,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func placeholderWithNilURL() {
-		let view = DSAsyncImage(url: nil) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: nil) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 100, height: 100)
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
@@ -39,16 +44,21 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func placeholderWithCustomView() {
-		let view = DSAsyncImage(url: nil) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ZStack {
-				ColorToken.surfaceSecondary
-				Image(systemName: "photo")
-					.font(.title)
-					.foregroundStyle(ColorToken.textTertiary)
+		let view = DSAsyncImage(url: nil) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ZStack {
+					ColorToken.surfaceSecondary
+					Image(systemName: "hourglass")
+						.font(.title)
+						.foregroundStyle(ColorToken.textTertiary)
+				}
+			case .failure:
+				Self.errorView
+			@unknown default:
+				EmptyView()
 			}
 		}
 		.frame(width: 100, height: 100)
@@ -64,12 +74,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func loadedStateSmall() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 50, height: 50)
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.sm))
@@ -82,12 +97,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func loadedStateMedium() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 100, height: 100)
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
@@ -100,12 +120,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func loadedStateLarge() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 150, height: 150)
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.lg))
@@ -120,12 +145,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func scaledToFit() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFit()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFit()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 150, height: 100)
 		.background(ColorToken.surfaceSecondary)
@@ -139,12 +169,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func scaledToFill() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 150, height: 100)
 		.clipped()
@@ -160,12 +195,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func circleShape() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 100, height: 100)
 		.clipShape(Circle())
@@ -178,12 +218,17 @@ struct DSAsyncImageSnapshotTests {
 
 	@Test
 	func roundedRectangleShape() {
-		let view = DSAsyncImage(url: Self.testURL) { image in
-			image
-				.resizable()
-				.scaledToFill()
-		} placeholder: {
-			ProgressView()
+		let view = DSAsyncImage(url: Self.testURL) { phase in
+			switch phase {
+			case .success(let image):
+				image.resizable().scaledToFill()
+			case .empty:
+				ProgressView()
+			case .failure:
+				Self.errorView
+			@unknown default:
+				ProgressView()
+			}
 		}
 		.frame(width: 120, height: 80)
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.xl))
@@ -231,13 +276,29 @@ struct DSAsyncImageSnapshotTests {
 private extension DSAsyncImageSnapshotTests {
 	static let testURL = URL(string: "https://example.com/test-image.jpg")
 
+	static var errorView: some View {
+		ZStack {
+			ColorToken.surfaceSecondary
+			Image(systemName: "photo")
+				.font(.title)
+				.foregroundStyle(ColorToken.textTertiary)
+		}
+	}
+
 	func stateItem(url: URL?, label: String) -> some View {
 		VStack(spacing: SpacingToken.sm) {
-			DSAsyncImage(url: url) { image in
-				image.resizable().scaledToFill()
-			} placeholder: {
-				ZStack {
-					ColorToken.surfaceSecondary
+			DSAsyncImage(url: url) { phase in
+				switch phase {
+				case .success(let image):
+					image.resizable().scaledToFill()
+				case .empty:
+					ZStack {
+						ColorToken.surfaceSecondary
+						ProgressView()
+					}
+				case .failure:
+					Self.errorView
+				@unknown default:
 					ProgressView()
 				}
 			}
@@ -250,10 +311,17 @@ private extension DSAsyncImageSnapshotTests {
 
 	func circleStateItem(url: URL?, label: String) -> some View {
 		VStack(spacing: SpacingToken.sm) {
-			DSAsyncImage(url: url) { image in
-				image.resizable().scaledToFill()
-			} placeholder: {
-				ProgressView()
+			DSAsyncImage(url: url) { phase in
+				switch phase {
+				case .success(let image):
+					image.resizable().scaledToFill()
+				case .empty:
+					ProgressView()
+				case .failure:
+					Self.errorView
+				@unknown default:
+					ProgressView()
+				}
 			}
 			.frame(width: 80, height: 80)
 			.clipShape(Circle())
@@ -264,10 +332,17 @@ private extension DSAsyncImageSnapshotTests {
 
 	func sizeItem(size: CGFloat, cornerRadius: CGFloat, label: String) -> some View {
 		VStack(spacing: SpacingToken.sm) {
-			DSAsyncImage(url: Self.testURL) { image in
-				image.resizable().scaledToFill()
-			} placeholder: {
-				ProgressView()
+			DSAsyncImage(url: Self.testURL) { phase in
+				switch phase {
+				case .success(let image):
+					image.resizable().scaledToFill()
+				case .empty:
+					ProgressView()
+				case .failure:
+					Self.errorView
+				@unknown default:
+					ProgressView()
+				}
 			}
 			.frame(width: size, height: size)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))

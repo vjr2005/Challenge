@@ -78,12 +78,19 @@ public struct DSAsyncAvatar: View {
 
 	public var body: some View {
 		DSAvatar(size: size) {
-			DSAsyncImage(url: url) { image in
-				image
-					.resizable()
-					.aspectRatio(contentMode: .fill)
-			} placeholder: {
-				placeholderView
+			DSAsyncImage(url: url) { phase in
+				switch phase {
+				case .success(let image):
+					image
+						.resizable()
+						.aspectRatio(contentMode: .fill)
+				case .empty:
+					placeholderView
+				case .failure:
+					errorView
+				@unknown default:
+					placeholderView
+				}
 			}
 		}
 	}
@@ -92,6 +99,15 @@ public struct DSAsyncAvatar: View {
 		ZStack {
 			ColorToken.surfaceSecondary
 			Image(systemName: "person.fill")
+				.font(.system(size: size.dimension * OpacityToken.medium))
+				.foregroundStyle(ColorToken.textTertiary)
+		}
+	}
+
+	private var errorView: some View {
+		ZStack {
+			ColorToken.surfaceSecondary
+			Image(systemName: "photo")
 				.font(.system(size: size.dimension * OpacityToken.medium))
 				.foregroundStyle(ColorToken.textTertiary)
 		}

@@ -99,10 +99,21 @@ private struct CharacterRowView: View {
     }
 
     private var characterImage: some View {
-        DSAsyncImage(url: character.imageURL) { image in
-            image.resizable().scaledToFill()
-        } placeholder: {
-            ProgressView()
+        DSAsyncImage(url: character.imageURL) { phase in
+            switch phase {
+            case .success(let image):
+                image.resizable().scaledToFill()
+            case .empty:
+                ProgressView()
+            case .failure:
+                ZStack {
+                    ColorToken.surfaceSecondary
+                    Image(systemName: "photo")
+                        .foregroundStyle(ColorToken.textTertiary)
+                }
+            @unknown default:
+                ProgressView()
+            }
         }
         .frame(width: 70, height: 70)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))

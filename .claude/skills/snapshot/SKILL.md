@@ -44,13 +44,20 @@ Tests/
 
 ### DSAsyncImage
 
-Views must use `DSAsyncImage` instead of `AsyncImage`:
+Views must use `DSAsyncImage` instead of `AsyncImage`. Uses `AsyncImagePhase` for handling states:
 
 ```swift
-DSAsyncImage(url: character.imageURL) { image in
-    image.resizable().scaledToFill()
-} placeholder: {
-    ProgressView()
+DSAsyncImage(url: character.imageURL) { phase in
+    switch phase {
+    case .success(let image):
+        image.resizable().scaledToFill()
+    case .empty:
+        ProgressView()
+    case .failure:
+        Image(systemName: "photo")
+    @unknown default:
+        ProgressView()
+    }
 }
 ```
 

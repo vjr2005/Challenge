@@ -70,7 +70,11 @@ private actor ImageRequestCoordinator {
 	}
 
 	private static func downloadImage(from url: URL, session: URLSession) async -> UIImage? {
-		guard let (data, _) = try? await session.data(from: url) else {
+		guard let (data, response) = try? await session.data(from: url) else {
+			return nil
+		}
+		guard let httpResponse = response as? HTTPURLResponse,
+			  (200...299).contains(httpResponse.statusCode) else {
 			return nil
 		}
 		return UIImage(data: data)

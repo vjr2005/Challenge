@@ -2,60 +2,60 @@ import ChallengeCore
 import SwiftUI
 
 /// A view that asynchronously loads and displays an image with caching support.
-public struct DSAsyncImage<Content: View, Placeholder: View>: View {
+public struct DSAsyncImage<Content: View>: View {
 	private let url: URL?
-	private let content: (Image) -> Content
-	private let placeholder: () -> Placeholder
+	private let content: (AsyncImagePhase) -> Content
 
 	@Environment(\.imageLoader) private var imageLoader
-	@State private var loadedImage: UIImage?
+	@State private var phase: AsyncImagePhase = .empty
 
-	/// Creates a cached async image view.
+	/// Creates a cached async image view with phase-based content.
 	/// - Parameters:
 	///   - url: The URL of the image to load.
-	///   - content: A closure that takes the loaded image and returns a view.
-	///   - placeholder: A closure that returns a view to display while loading.
+	///   - content: A closure that takes the current async image phase and returns a view.
 	public init(
 		url: URL?,
-		@ViewBuilder content: @escaping (Image) -> Content,
-		@ViewBuilder placeholder: @escaping () -> Placeholder
+		@ViewBuilder content: @escaping (AsyncImagePhase) -> Content
 	) {
 		self.url = url
 		self.content = content
-		self.placeholder = placeholder
 	}
 
 	public var body: some View {
-		Group {
-			if let displayImage {
-				content(Image(uiImage: displayImage))
-			} else {
-				placeholder()
+		content(displayPhase)
+			.task(id: url) {
+				await loadImage()
 			}
-		}
-		.task(id: url) {
-			await loadImage()
-		}
 	}
 }
 
 // MARK: - Private
 
 private extension DSAsyncImage {
-    var displayImage: UIImage? {
-        if let loadedImage {
-            return loadedImage
-        }
-        guard let url else {
-            return nil
-        }
-        return imageLoader.cachedImage(for: url)
-    }
+	var displayPhase: AsyncImagePhase {
+		if case .success = phase {
+			return phase
+		}
+		guard let url else {
+			return phase
+		}
+		if let cachedImage = imageLoader.cachedImage(for: url) {
+			return .success(Image(uiImage: cachedImage))
+		}
+		return phase
+	}
 
 	func loadImage() async {
 		guard let url else {
 			return
 		}
-		loadedImage = await imageLoader.image(for: url)
+		if imageLoader.cachedImage(for: url) != nil {
+			return
+		}
+		if let image = await imageLoader.image(for: url) {
+			phase = .success(Image(uiImage: image))
+		} else if !Task.isCancelled {
+			phase = .failure(URLError(.cannotLoadFromNetwork))
+		}
 	}
 }
