@@ -3,7 +3,6 @@ import Testing
 
 @testable import ChallengeCore
 
-@Suite(.timeLimit(.minutes(1)))
 struct DeepLinkRegistryTests {
     @Test
     func resolvesURLWithRegisteredHandler() throws {

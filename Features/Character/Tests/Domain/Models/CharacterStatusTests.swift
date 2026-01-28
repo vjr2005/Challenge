@@ -2,7 +2,6 @@ import Testing
 
 @testable import ChallengeCharacter
 
-@Suite(.timeLimit(.minutes(1)))
 struct CharacterStatusTests {
     @Test
     func initFromAliveStringReturnsAlive() {

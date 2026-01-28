@@ -4,7 +4,6 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-@Suite(.timeLimit(.minutes(1)))
 struct ViewDesignSystemSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)

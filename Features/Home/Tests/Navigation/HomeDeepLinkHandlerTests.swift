@@ -3,7 +3,6 @@ import Testing
 
 @testable import ChallengeHome
 
-@Suite(.timeLimit(.minutes(1)))
 struct HomeDeepLinkHandlerTests {
     @Test
     func resolvesMainURL() throws {

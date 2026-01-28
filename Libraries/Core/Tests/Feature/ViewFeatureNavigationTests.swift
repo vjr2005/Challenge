@@ -4,7 +4,6 @@ import Testing
 @testable import ChallengeCore
 @testable import ChallengeCoreMocks
 
-@Suite(.timeLimit(.minutes(1)))
 struct ViewFeatureNavigationTests {
     @Test
     func withNavigationDestinationsAppliesAllFeatures() {

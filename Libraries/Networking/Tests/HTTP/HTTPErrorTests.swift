@@ -3,7 +3,6 @@ import Testing
 
 @testable import ChallengeNetworking
 
-@Suite(.timeLimit(.minutes(1)))
 struct HTTPErrorTests {
 	@Test(arguments: [
 		(HTTPError.invalidURL, HTTPError.invalidURL, true),

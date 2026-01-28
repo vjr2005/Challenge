@@ -4,7 +4,6 @@ import Testing
 
 @testable import ChallengeCharacter
 
-@Suite(.timeLimit(.minutes(1)))
 struct CharacterContainerTests {
     @Test
     func initWithHTTPClientDoesNotCrash() {

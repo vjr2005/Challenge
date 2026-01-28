@@ -4,7 +4,6 @@ import Testing
 
 @testable import ChallengeHome
 
-@Suite(.timeLimit(.minutes(1)))
 struct HomeViewSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)

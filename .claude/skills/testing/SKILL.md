@@ -220,6 +220,36 @@ func testThrowsError() { }
 
 ---
 
+## Time Limits
+
+Use `@Suite(.timeLimit(.minutes(1)))` **only** for test suites that use `async/await` to prevent infinite waits:
+
+```swift
+// RIGHT - Async tests need time limit
+@Suite(.timeLimit(.minutes(1)))
+struct GetCharacterUseCaseTests {
+    @Test
+    func fetchesCharacterSuccessfully() async throws {
+        // ...
+    }
+}
+
+// RIGHT - Synchronous tests don't need time limit
+struct CharacterStatusTests {
+    @Test
+    func initFromStringReturnsCorrectValue() {
+        // ...
+    }
+}
+```
+
+**Rules:**
+- Add `@Suite(.timeLimit(.minutes(1)))` to suites with `async` test functions
+- Omit time limit for synchronous test suites (snapshot tests, unit tests without async)
+- Time limit prevents tests from hanging indefinitely on failed async operations
+
+---
+
 ## Stubs (Test Data for Domain Models)
 
 Use the **stub pattern** to create test data for **Domain Models only**.
