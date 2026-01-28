@@ -1,3 +1,4 @@
+import ChallengeNetworking
 import Foundation
 
 struct CharacterRepository: CharacterRepositoryContract {
@@ -12,28 +13,58 @@ struct CharacterRepository: CharacterRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	func getCharacter(identifier: Int) async throws -> Character {
+	func getCharacter(identifier: Int) async throws(CharacterError) -> Character {
 		if let cachedDTO = await memoryDataSource.getCharacter(identifier: identifier) {
 			return cachedDTO.toDomain()
 		}
 
-		let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
-
-		await memoryDataSource.saveCharacter(dto)
-
-		return dto.toDomain()
+		do {
+			let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
+			await memoryDataSource.saveCharacter(dto)
+			return dto.toDomain()
+		} catch let error as HTTPError {
+			throw mapHTTPError(error, identifier: identifier)
+		} catch {
+			throw .loadFailed
+		}
 	}
 
-	func getCharacters(page: Int) async throws -> CharactersPage {
+	func getCharacters(page: Int) async throws(CharacterError) -> CharactersPage {
 		if let cachedResponse = await memoryDataSource.getPage(page) {
 			return cachedResponse.toDomain(currentPage: page)
 		}
 
-		let response = try await remoteDataSource.fetchCharacters(page: page)
+		do {
+			let response = try await remoteDataSource.fetchCharacters(page: page)
+			await memoryDataSource.savePage(response, page: page)
+			return response.toDomain(currentPage: page)
+		} catch let error as HTTPError {
+			throw mapHTTPError(error, page: page)
+		} catch {
+			throw .loadFailed
+		}
+	}
+}
 
-		await memoryDataSource.savePage(response, page: page)
+// MARK: - Error Mapping
 
-		return response.toDomain(currentPage: page)
+private extension CharacterRepository {
+	func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
+		switch error {
+		case .statusCode(404, _):
+			return .characterNotFound(id: identifier)
+		case .invalidURL, .invalidResponse, .statusCode:
+			return .loadFailed
+		}
+	}
+
+	func mapHTTPError(_ error: HTTPError, page: Int) -> CharacterError {
+		switch error {
+		case .statusCode(404, _):
+			return .invalidPage(page: page)
+		case .invalidURL, .invalidResponse, .statusCode:
+			return .loadFailed
+		}
 	}
 }
 

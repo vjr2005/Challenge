@@ -39,16 +39,12 @@ struct GetCharactersUseCaseTests {
 	func propagatesRepositoryError() async throws {
 		// Given
 		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.charactersResult = .failure(TestError.network)
+		repositoryMock.charactersResult = .failure(.loadFailed)
 		let sut = GetCharactersUseCase(repository: repositoryMock)
 
 		// When / Then
-		await #expect(throws: TestError.network) {
+		await #expect(throws: CharacterError.loadFailed) {
 			_ = try await sut.execute(page: 1)
 		}
 	}
-}
-
-private enum TestError: Error {
-	case network
 }

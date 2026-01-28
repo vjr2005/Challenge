@@ -4,5 +4,5 @@ enum CharacterDetailViewState {
 	case idle
 	case loading
 	case loaded(Character)
-	case error(Error)
+	case error(CharacterError)
 }

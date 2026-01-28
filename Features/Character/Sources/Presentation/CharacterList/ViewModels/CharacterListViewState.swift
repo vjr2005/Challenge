@@ -5,5 +5,5 @@ enum CharacterListViewState {
 	case loading
 	case loaded(CharactersPage)
 	case empty
-	case error(Error)
+	case error(CharacterError)
 }

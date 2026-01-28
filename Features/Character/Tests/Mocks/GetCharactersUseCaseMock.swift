@@ -4,17 +4,13 @@ import Foundation
 
 /// Mock implementation of GetCharactersUseCaseContract for testing.
 final class GetCharactersUseCaseMock: GetCharactersUseCaseContract, @unchecked Sendable {
-	var result: Result<CharactersPage, Error> = .failure(NotConfiguredError.notConfigured)
+	var result: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedPage: Int?
 
-	func execute(page: Int) async throws -> CharactersPage {
+	func execute(page: Int) async throws(CharacterError) -> CharactersPage {
 		executeCallCount += 1
 		lastRequestedPage = page
 		return try result.get()
 	}
-}
-
-private enum NotConfiguredError: Error {
-	case notConfigured
 }

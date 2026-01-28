@@ -56,7 +56,7 @@ struct CharacterListViewModelTests {
     func loadSetsErrorStateOnFailure() async {
         // Given
         let useCaseMock = GetCharactersUseCaseMock()
-        useCaseMock.result = .failure(TestError.network)
+        useCaseMock.result = .failure(.loadFailed)
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
@@ -64,7 +64,7 @@ struct CharacterListViewModelTests {
         await sut.load()
 
         // Then
-        #expect(sut.state == .error(TestError.network))
+        #expect(sut.state == .error(.loadFailed))
     }
 
     @Test
@@ -161,7 +161,7 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
         await sut.load()
-        useCaseMock.result = .failure(TestError.network)
+        useCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.loadMore()
@@ -180,7 +180,7 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
         await sut.load()
-        useCaseMock.result = .failure(TestError.network)
+        useCaseMock.result = .failure(.loadFailed)
         await sut.loadMore()
 
         // When - retry after error
@@ -207,8 +207,4 @@ struct CharacterListViewModelTests {
         // Then
         #expect(navigatorMock.navigateToDetailIds == [42])
     }
-}
-
-private enum TestError: Error {
-    case network
 }

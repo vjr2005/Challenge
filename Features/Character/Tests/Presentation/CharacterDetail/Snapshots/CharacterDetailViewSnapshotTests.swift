@@ -132,7 +132,7 @@ struct CharacterDetailViewSnapshotTests {
 	@Test
 	func errorState() {
 		// Given
-		let viewModel = CharacterDetailViewModelStub(state: .error(SnapshotTestError.loadFailed))
+		let viewModel = CharacterDetailViewModelStub(state: .error(.loadFailed))
 
 		// When
 		let view = NavigationStack {
@@ -142,15 +142,5 @@ struct CharacterDetailViewSnapshotTests {
 
 		// Then
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
-	}
-}
-
-// MARK: - Test Helpers
-
-private enum SnapshotTestError: LocalizedError {
-	case loadFailed
-
-	var errorDescription: String? {
-		"Failed to load character details"
 	}
 }

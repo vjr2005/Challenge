@@ -129,7 +129,7 @@ struct CharacterListViewSnapshotTests {
 	@Test
 	func errorState() {
 		// Given
-		let viewModel = CharacterListViewModelStub(state: .error(SnapshotTestError.networkError))
+		let viewModel = CharacterListViewModelStub(state: .error(.loadFailed))
 
 		// When
 		let view = NavigationStack {
@@ -139,15 +139,5 @@ struct CharacterListViewSnapshotTests {
 
 		// Then
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
-	}
-}
-
-// MARK: - Test Helpers
-
-private enum SnapshotTestError: LocalizedError {
-	case networkError
-
-	var errorDescription: String? {
-		"Unable to connect to the server"
 	}
 }

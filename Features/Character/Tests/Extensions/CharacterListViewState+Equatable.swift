@@ -8,7 +8,7 @@ extension CharacterListViewState: @retroactive Equatable {
 		case let (.loaded(lhsPage), .loaded(rhsPage)):
 			lhsPage == rhsPage
 		case let (.error(lhsError), .error(rhsError)):
-			lhsError.localizedDescription == rhsError.localizedDescription
+			lhsError == rhsError
 		default:
 			false
 		}

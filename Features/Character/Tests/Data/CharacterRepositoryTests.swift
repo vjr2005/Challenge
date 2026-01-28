@@ -1,4 +1,5 @@
 import ChallengeCoreMocks
+import ChallengeNetworking
 import Foundation
 import Testing
 
@@ -216,13 +217,13 @@ struct CharacterRepositoryTests {
         #expect(value == expected)
     }
 
-    // MARK: - Error Tests
+    // MARK: - Error Mapping Tests
 
     @Test
-    func propagatesRemoteErrorOnCacheMiss() async throws {
+    func mapsHTTPNotFoundErrorToCharacterNotFound() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-        remoteDataSourceMock.result = .failure(TestError.network)
+        remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
@@ -230,7 +231,58 @@ struct CharacterRepositoryTests {
         )
 
         // When / Then
-        await #expect(throws: TestError.network) {
+        await #expect(throws: CharacterError.characterNotFound(id: 42)) {
+            _ = try await sut.getCharacter(identifier: 42)
+        }
+    }
+
+    @Test
+    func mapsHTTPServerErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(HTTPError.statusCode(500, Data()))
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.getCharacter(identifier: 1)
+        }
+    }
+
+    @Test
+    func mapsHTTPInvalidURLToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(HTTPError.invalidURL)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.getCharacter(identifier: 1)
+        }
+    }
+
+    @Test
+    func mapsHTTPInvalidResponseToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
             _ = try await sut.getCharacter(identifier: 1)
         }
     }
@@ -239,7 +291,7 @@ struct CharacterRepositoryTests {
     func doesNotSaveToCacheOnRemoteError() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-        remoteDataSourceMock.result = .failure(TestError.network)
+        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
@@ -387,10 +439,10 @@ struct CharacterRepositoryTests {
     // MARK: - Get Characters (Paginated) - Errors
 
     @Test
-    func getCharactersPropagatesRemoteErrorOnCacheMiss() async throws {
+    func getCharactersMapsHTTPNotFoundToInvalidPage() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-        remoteDataSourceMock.charactersResult = .failure(TestError.network)
+        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
@@ -398,7 +450,24 @@ struct CharacterRepositoryTests {
         )
 
         // When / Then
-        await #expect(throws: TestError.network) {
+        await #expect(throws: CharacterError.invalidPage(page: 5)) {
+            _ = try await sut.getCharacters(page: 5)
+        }
+    }
+
+    @Test
+    func getCharactersMapsHTTPServerErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
             _ = try await sut.getCharacters(page: 1)
         }
     }
@@ -407,7 +476,7 @@ struct CharacterRepositoryTests {
     func getCharactersDoesNotSaveToCacheOnError() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-        remoteDataSourceMock.charactersResult = .failure(TestError.network)
+        remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
@@ -429,8 +498,4 @@ private extension CharacterRepositoryTests {
     func loadJSON<T: Decodable>(_ filename: String) throws -> T {
         try Bundle.module.loadJSON(filename)
     }
-}
-
-private enum TestError: Error {
-    case network
 }

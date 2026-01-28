@@ -111,7 +111,7 @@ private extension CharacterListView {
 		.padding(.vertical, SpacingToken.sm)
 	}
 
-	func errorView(error: Error) -> some View {
+	func errorView(error: CharacterError) -> some View {
 		DSErrorView(
 			title: LocalizedStrings.Error.title,
 			message: error.localizedDescription,
@@ -246,7 +246,7 @@ private enum AccessibilityIdentifier {
 
 #Preview("Error") {
 	NavigationStack {
-		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(PreviewError.failed)))
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(.loadFailed)))
 	}
 }
 
@@ -302,10 +302,5 @@ private extension Character {
 			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
 		)
 	}
-}
-
-private enum PreviewError: LocalizedError {
-	case failed
-	var errorDescription: String? { "Failed to load characters" }
 }
 #endif

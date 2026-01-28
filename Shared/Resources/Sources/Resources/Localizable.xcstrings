@@ -306,6 +306,57 @@
           }
         }
       }
+    },
+    "characterError.loadFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load characters. Please try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error al cargar los personajes. Por favor, inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "characterError.characterNotFound %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character with ID %lld was not found."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró el personaje con ID %lld."
+          }
+        }
+      }
+    },
+    "characterError.invalidPage %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page %lld does not exist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La página %lld no existe."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -1,7 +1,7 @@
 import Foundation
 
 protocol GetCharacterUseCaseContract: Sendable {
-	func execute(identifier: Int) async throws -> Character
+	func execute(identifier: Int) async throws(CharacterError) -> Character
 }
 
 struct GetCharacterUseCase: GetCharacterUseCaseContract {
@@ -11,7 +11,7 @@ struct GetCharacterUseCase: GetCharacterUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(identifier: Int) async throws -> Character {
+	func execute(identifier: Int) async throws(CharacterError) -> Character {
 		try await repository.getCharacter(identifier: identifier)
 	}
 }

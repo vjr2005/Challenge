@@ -36,7 +36,7 @@ struct CharacterDetailViewModelTests {
     func loadSetsErrorStateOnFailure() async {
         // Given
         let useCaseMock = GetCharacterUseCaseMock()
-        useCaseMock.result = .failure(TestError.network)
+        useCaseMock.result = .failure(.loadFailed)
         let navigatorMock = CharacterDetailNavigatorMock()
         let sut = CharacterDetailViewModel(identifier: 1, getCharacterUseCase: useCaseMock, navigator: navigatorMock)
 
@@ -44,7 +44,7 @@ struct CharacterDetailViewModelTests {
         await sut.load()
 
         // Then
-        #expect(sut.state == .error(TestError.network))
+        #expect(sut.state == .error(.loadFailed))
     }
 
     @Test
@@ -77,8 +77,4 @@ struct CharacterDetailViewModelTests {
         // Then
         #expect(navigatorMock.goBackCallCount == 1)
     }
-}
-
-private enum TestError: Error {
-    case network
 }

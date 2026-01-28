@@ -8,7 +8,7 @@ extension CharacterDetailViewState: @retroactive Equatable {
 		case let (.loaded(lhsCharacter), .loaded(rhsCharacter)):
 			lhsCharacter == rhsCharacter
 		case let (.error(lhsError), .error(rhsError)):
-			lhsError.localizedDescription == rhsError.localizedDescription
+			lhsError == rhsError
 		default:
 			false
 		}
