@@ -47,21 +47,16 @@ Libraries/DesignSystem/
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
 │   │   ├── Images/
-│   │   │   ├── DSAvatar.swift
 │   │   │   └── DSAsyncImage.swift
 │   │   └── Indicators/
-│   │       ├── DSStatusIndicator.swift
-│   │       └── DSBadge.swift
+│   │       └── DSStatusIndicator.swift
 │   │
 │   ├── Molecules/            # Combinations of atoms
-│   │   ├── DSInfoRow.swift
-│   │   ├── DSStatusBadge.swift
-│   │   └── DSLabeledValue.swift
+│   │   └── DSInfoRow.swift
 │   │
 │   ├── Organisms/            # Complex components
 │   │   ├── Cards/
-│   │   │   ├── DSCard.swift
-│   │   │   └── DSListItemCard.swift
+│   │   │   └── DSCard.swift
 │   │   └── Feedback/
 │   │       ├── DSLoadingView.swift
 │   │       ├── DSErrorView.swift
@@ -230,16 +225,6 @@ DSStatusIndicator(status: .dead, size: 8)   // Red circle, smaller
 DSStatusIndicator(status: .unknown)         // Gray circle
 ```
 
-### DSBadge
-
-Badge with semantic colors:
-
-```swift
-DSBadge("Active", variant: .success)
-DSBadge("Failed", variant: .error)
-DSBadge("Pending", variant: .neutral)
-```
-
 ### DSAsyncImage
 
 Async image with caching support (replaces `AsyncImage` for snapshot testing). Uses `AsyncImagePhase` for handling loading states.
@@ -292,24 +277,6 @@ DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
 DSInfoRow(icon: "heart.fill", label: "Status", value: "Alive", iconColor: ColorToken.statusSuccess)
 ```
 
-### DSStatusBadge
-
-Status indicator with label:
-
-```swift
-DSStatusBadge(status: .alive)                    // Shows "Alive" with green indicator
-DSStatusBadge(status: .dead, label: "Deceased")  // Custom label
-```
-
-### DSLabeledValue
-
-Label-value pair:
-
-```swift
-DSLabeledValue(label: "Species", value: "Human")
-DSLabeledValue(label: "Gender", value: "Male", orientation: .horizontal)
-```
-
 ---
 
 ## Organisms
@@ -329,22 +296,6 @@ DSCard {
 // Customized
 DSCard(padding: SpacingToken.xl, shadow: .medium) {
     // content
-}
-```
-
-### DSListItemCard
-
-List item with leading, info, and trailing sections:
-
-```swift
-DSListItemCard(
-    title: "Rick Sanchez",
-    subtitle: "Human",
-    caption: "Earth (C-137)"
-) {
-    DSAsyncAvatar(url: imageURL, size: .medium)
-} trailing: {
-    DSStatusBadge(status: .alive)
 }
 ```
 
