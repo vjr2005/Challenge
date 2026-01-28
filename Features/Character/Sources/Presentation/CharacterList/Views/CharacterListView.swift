@@ -114,8 +114,13 @@ private extension CharacterListView {
 	func errorView(error: Error) -> some View {
 		DSErrorView(
 			title: LocalizedStrings.Error.title,
-			message: error.localizedDescription
-		)
+			message: error.localizedDescription,
+			retryTitle: LocalizedStrings.Common.tryAgain
+		) {
+			Task {
+				await viewModel.load()
+			}
+		}
 	}
 }
 
@@ -195,6 +200,10 @@ private enum LocalizedStrings {
 
 	enum Error {
 		static var title: String { "characterList.error.title".localized() }
+	}
+
+	enum Common {
+		static var tryAgain: String { "common.tryAgain".localized() }
 	}
 }
 
