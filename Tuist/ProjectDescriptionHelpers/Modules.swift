@@ -11,6 +11,7 @@ public enum Modules {
 		DesignSystemModule.module,
 		CharacterModule.module,
 		HomeModule.module,
+		SystemModule.module,
 	]
 
 	/// All targets from all modules.
@@ -34,6 +35,7 @@ public enum Modules {
 			+ DesignSystemModule.targetReferences
 			+ CharacterModule.targetReferences
 			+ HomeModule.targetReferences
+			+ SystemModule.targetReferences
 	}
 
 	/// App dependencies (modules that the app target depends on).
@@ -42,6 +44,7 @@ public enum Modules {
 			.target(name: "\(appName)Core"),
 			.target(name: "\(appName)Character"),
 			.target(name: "\(appName)Home"),
+			.target(name: "\(appName)System"),
 		]
 	}
 }

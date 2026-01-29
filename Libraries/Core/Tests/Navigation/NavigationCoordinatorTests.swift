@@ -21,7 +21,7 @@ struct NavigationCoordinatorTests {
         let sut = NavigationCoordinator()
 
         // When
-        sut.navigate(to: TestNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen1)
 
         // Then
         #expect(sut.path.count == 1)
@@ -33,9 +33,9 @@ struct NavigationCoordinatorTests {
         let sut = NavigationCoordinator()
 
         // When
-        sut.navigate(to: TestNavigation.screen1)
-        sut.navigate(to: TestNavigation.screen2)
-        sut.navigate(to: TestNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen2)
+        sut.navigate(to: TestIncomingNavigation.screen1)
 
         // Then
         #expect(sut.path.count == 3)
@@ -45,8 +45,8 @@ struct NavigationCoordinatorTests {
     func goBackRemovesLastFromPath() {
         // Given
         let sut = NavigationCoordinator()
-        sut.navigate(to: TestNavigation.screen1)
-        sut.navigate(to: TestNavigation.screen2)
+        sut.navigate(to: TestIncomingNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen2)
 
         // When
         sut.goBack()
@@ -71,8 +71,8 @@ struct NavigationCoordinatorTests {
     func goBackMultipleTimesEmptiesPath() {
         // Given
         let sut = NavigationCoordinator()
-        sut.navigate(to: TestNavigation.screen1)
-        sut.navigate(to: TestNavigation.screen2)
+        sut.navigate(to: TestIncomingNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen2)
 
         // When
         sut.goBack()
@@ -86,7 +86,7 @@ struct NavigationCoordinatorTests {
     func goBackBeyondEmptyPathIsSafe() {
         // Given
         let sut = NavigationCoordinator()
-        sut.navigate(to: TestNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen1)
 
         // When
         sut.goBack()
@@ -97,28 +97,44 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.isEmpty)
     }
 
-    // MARK: - Redirects
+    // MARK: - IncomingNavigation
 
     @Test
-    func navigateWithoutRedirectorUsesOriginal() {
+    func incomingNavigationAppendsDirectlyWithoutRedirector() {
         // Given
         let sut = NavigationCoordinator(redirector: nil)
 
         // When
-        sut.navigate(to: TestNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen1)
 
         // Then
         #expect(sut.path.count == 1)
     }
 
     @Test
-    func navigateWithRedirectorAppliesRedirect() {
+    func incomingNavigationDoesNotCallRedirector() {
         // Given
-        let redirector = TestRedirector(result: TestNavigation.screen2)
+        let redirector = TestRedirector(result: TestIncomingNavigation.screen2)
         let sut = NavigationCoordinator(redirector: redirector)
 
         // When
-        sut.navigate(to: TestNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigation.screen1)
+
+        // Then
+        #expect(sut.path.count == 1)
+        #expect(redirector.redirectedNavigations.isEmpty)
+    }
+
+    // MARK: - OutgoingNavigation
+
+    @Test
+    func outgoingNavigationWithRedirectAppendsRedirectedDestination() {
+        // Given
+        let redirector = TestRedirector(result: TestIncomingNavigation.screen2)
+        let sut = NavigationCoordinator(redirector: redirector)
+
+        // When
+        sut.navigate(to: TestOutgoingNavigation.external)
 
         // Then
         #expect(sut.path.count == 1)
@@ -126,13 +142,25 @@ struct NavigationCoordinatorTests {
     }
 
     @Test
-    func navigateWithRedirectorReturningNilUsesOriginal() {
+    func outgoingNavigationWithoutRedirectAppendsUnknownNavigation() {
         // Given
         let redirector = TestRedirector(result: nil)
         let sut = NavigationCoordinator(redirector: redirector)
 
         // When
-        sut.navigate(to: TestNavigation.screen1)
+        sut.navigate(to: TestOutgoingNavigation.external)
+
+        // Then
+        #expect(sut.path.count == 1)
+    }
+
+    @Test
+    func outgoingNavigationWithoutRedirectorAppendsUnknownNavigation() {
+        // Given
+        let sut = NavigationCoordinator(redirector: nil)
+
+        // When
+        sut.navigate(to: TestOutgoingNavigation.external)
 
         // Then
         #expect(sut.path.count == 1)
@@ -141,9 +169,13 @@ struct NavigationCoordinatorTests {
 
 // MARK: - Test Helpers
 
-private enum TestNavigation: Navigation {
+private enum TestIncomingNavigation: IncomingNavigation {
     case screen1
     case screen2
+}
+
+private enum TestOutgoingNavigation: OutgoingNavigation {
+    case external
 }
 
 private final class TestRedirector: NavigationRedirectContract, @unchecked Sendable {

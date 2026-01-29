@@ -2,6 +2,7 @@ import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
 import ChallengeNetworking
+import ChallengeSystem
 import SwiftUI
 
 struct AppContainer: Sendable {
@@ -22,7 +23,8 @@ struct AppContainer: Sendable {
 
         self.features = [
             CharacterFeature(httpClient: self.httpClient),
-            HomeFeature()
+            HomeFeature(),
+            SystemFeature()
         ]
     }
 

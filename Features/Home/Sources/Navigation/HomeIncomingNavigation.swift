@@ -1,5 +1,5 @@
 import ChallengeCore
 
-public enum HomeIncomingNavigation: Navigation {
+public enum HomeIncomingNavigation: IncomingNavigation {
     case main
 }

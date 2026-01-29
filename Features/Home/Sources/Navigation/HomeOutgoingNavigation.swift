@@ -1,5 +1,5 @@
 import ChallengeCore
 
-public enum HomeOutgoingNavigation: Navigation {
+public enum HomeOutgoingNavigation: OutgoingNavigation {
     case characters
 }

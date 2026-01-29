@@ -1,0 +1,3 @@
+protocol NotFoundViewModelContract {
+    func didTapGoBack()
+}

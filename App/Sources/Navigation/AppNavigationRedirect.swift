@@ -8,9 +8,9 @@ struct AppNavigationRedirect: NavigationRedirectContract {
     func redirect(_ navigation: any Navigation) -> (any Navigation)? {
         switch navigation {
         case let outgoing as HomeOutgoingNavigation:
-            return redirect(outgoing)
+            redirect(outgoing)
         default:
-            return nil
+            nil
         }
     }
 
@@ -19,7 +19,7 @@ struct AppNavigationRedirect: NavigationRedirectContract {
     private func redirect(_ navigation: HomeOutgoingNavigation) -> any Navigation {
         switch navigation {
         case .characters:
-            return CharacterIncomingNavigation.list
+            CharacterIncomingNavigation.list
         }
     }
 }

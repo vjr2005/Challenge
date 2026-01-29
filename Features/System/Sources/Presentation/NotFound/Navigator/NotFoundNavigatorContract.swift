@@ -1,0 +1,3 @@
+protocol NotFoundNavigatorContract {
+    func goBack()
+}
