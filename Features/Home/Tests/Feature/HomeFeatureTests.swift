@@ -22,30 +22,14 @@ struct HomeFeatureTests {
     @Test
     func makeHomeViewReturnsConfiguredInstance() {
         // Given
-        let routerMock = RouterMock()
+        let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
 
         // When
-        let view = sut.makeHomeView(router: routerMock)
+        let view = sut.makeHomeView(navigator: navigatorMock)
 
         // Then
         _ = view
-    }
-
-    // MARK: - Deep Links
-
-    @Test
-    func registerDeepLinksRegistersHomeHandler() throws {
-        // Given
-        let sut = HomeFeature()
-
-        // When
-        sut.registerDeepLinks()
-
-        // Then
-        let url = try #require(URL(string: "challenge://home/main"))
-        let navigation = DeepLinkRegistry.shared.resolve(url)
-        #expect(navigation != nil)
     }
 
     // MARK: - Navigation Destination
@@ -53,12 +37,12 @@ struct HomeFeatureTests {
     @Test
     func applyNavigationDestinationReturnsView() {
         // Given
-        let routerMock = RouterMock()
+        let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
         let baseView = EmptyView()
 
         // When
-        let result = sut.applyNavigationDestination(to: baseView, router: routerMock)
+        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
 
         // Then
         _ = result
@@ -69,11 +53,11 @@ struct HomeFeatureTests {
     @Test
     func viewForMainNavigationReturnsHomeView() {
         // Given
-        let routerMock = RouterMock()
+        let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
 
         // When
-        let result = sut.view(for: .main, router: routerMock)
+        let result = sut.view(for: .main, navigator: navigatorMock)
 
         // Then
         let viewName = String(describing: type(of: result))

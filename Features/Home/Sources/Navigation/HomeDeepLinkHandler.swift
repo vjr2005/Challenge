@@ -5,15 +5,10 @@ struct HomeDeepLinkHandler: DeepLinkHandler {
     let scheme = "challenge"
     let host = "home"
 
-    @MainActor
-    static func register() {
-        DeepLinkRegistry.shared.register(Self())
-    }
-
     func resolve(_ url: URL) -> (any Navigation)? {
         switch url.path {
         case "/main", "/":
-            return HomeNavigation.main
+            return HomeIncomingNavigation.main
 
         default:
             return nil

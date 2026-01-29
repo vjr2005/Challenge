@@ -1,3 +1,5 @@
+import ChallengeCore
+import ChallengeCoreMocks
 import ChallengeNetworkingMocks
 import SnapshotTesting
 import SwiftUI
@@ -6,20 +8,21 @@ import Testing
 @testable import Challenge
 
 struct RootViewSnapshotTests {
-	init() {
-		UIView.setAnimationsEnabled(false)
-	}
+    init() {
+        UIView.setAnimationsEnabled(false)
+    }
 
-	@Test
-	func initialState() {
-		// Given
-		let httpClient = HTTPClientMock()
-		let appContainer = AppContainer(httpClient: httpClient)
+    @Test
+    func initialState() {
+        // Given
+        let httpClient = HTTPClientMock()
+        let navigator = NavigatorMock()
+        let appContainer = AppContainer(httpClient: httpClient)
 
-		// When
-		let view = appContainer.makeRootView()
+        // When
+        let view = appContainer.makeRootView(navigator: navigator)
 
-		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
-	}
+        // Then
+        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+    }
 }

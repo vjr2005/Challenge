@@ -27,21 +27,21 @@ public final class CharacterContainer: Sendable {
 
     // MARK: - Factories
 
-    func makeCharacterListViewModel(router: any RouterContract) -> CharacterListViewModel {
+    func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
             getCharactersUseCase: GetCharactersUseCase(repository: repository),
-            navigator: CharacterListNavigator(router: router)
+            navigator: CharacterListNavigator(navigator: navigator)
         )
     }
 
     func makeCharacterDetailViewModel(
         identifier: Int,
-        router: any RouterContract
+        navigator: any NavigatorContract
     ) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
             getCharacterUseCase: GetCharacterUseCase(repository: repository),
-            navigator: CharacterDetailNavigator(router: router)
+            navigator: CharacterDetailNavigator(navigator: navigator)
         )
     }
 }

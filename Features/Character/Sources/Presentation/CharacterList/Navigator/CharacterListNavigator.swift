@@ -1,13 +1,13 @@
 import ChallengeCore
 
 struct CharacterListNavigator: CharacterListNavigatorContract {
-    private let router: RouterContract
+    private let navigator: NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
     }
 
     func navigateToDetail(id: Int) {
-        router.navigate(to: CharacterNavigation.detail(identifier: id))
+        navigator.navigate(to: CharacterIncomingNavigation.detail(identifier: id))
     }
 }

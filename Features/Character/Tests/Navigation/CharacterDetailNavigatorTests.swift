@@ -5,15 +5,15 @@ import Testing
 
 struct CharacterDetailNavigatorTests {
     @Test
-    func goBackCallsRouter() {
+    func goBackCallsNavigator() {
         // Given
-        let routerMock = RouterMock()
-        let sut = CharacterDetailNavigator(router: routerMock)
+        let navigatorMock = NavigatorMock()
+        let sut = CharacterDetailNavigator(navigator: navigatorMock)
 
         // When
         sut.goBack()
 
         // Then
-        #expect(routerMock.goBackCallCount == 1)
+        #expect(navigatorMock.goBackCallCount == 1)
     }
 }

@@ -24,13 +24,20 @@ struct AppContainer: Sendable {
             CharacterFeature(httpClient: self.httpClient),
             HomeFeature()
         ]
+    }
 
-        features.forEach { $0.registerDeepLinks() }
+    func handle(url: URL, navigator: any NavigatorContract) {
+        for feature in features {
+            if let navigation = feature.deepLinkHandler.resolve(url) {
+                navigator.navigate(to: navigation)
+                return
+            }
+        }
     }
 
     // MARK: - Factory Methods
 
-    func makeRootView() -> some View {
-        RootView(features: features)
+    func makeRootView(navigator: any NavigatorContract) -> some View {
+        HomeFeature().makeHomeView(navigator: navigator)
     }
 }

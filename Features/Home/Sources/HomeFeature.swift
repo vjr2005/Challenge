@@ -16,25 +16,24 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    /// Registers deep link handlers for the Home feature.
-    public func registerDeepLinks() {
-        HomeDeepLinkHandler.register()
+    public var deepLinkHandler: any DeepLinkHandler {
+        HomeDeepLinkHandler()
     }
 
     /// Applies navigation destinations for Home screens to the given view.
-    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
         AnyView(
-            view.navigationDestination(for: HomeNavigation.self) { navigation in
-                self.view(for: navigation, router: router)
+            view.navigationDestination(for: HomeIncomingNavigation.self) { navigation in
+                self.view(for: navigation, navigator: navigator)
             }
         )
     }
 
     // MARK: - Factory
 
-    /// Creates the root Home view with the given router.
-    public func makeHomeView(router: any RouterContract) -> some View {
-        HomeView(viewModel: container.makeHomeViewModel(router: router))
+    /// Creates the root Home view with the given navigator.
+    public func makeHomeView(navigator: any NavigatorContract) -> some View {
+        HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
     }
 }
 
@@ -42,10 +41,10 @@ public struct HomeFeature: Feature {
 
 extension HomeFeature {
     @ViewBuilder
-    func view(for navigation: HomeNavigation, router: any RouterContract) -> some View {
+    func view(for navigation: HomeIncomingNavigation, navigator: any NavigatorContract) -> some View {
         switch navigation {
         case .main:
-            HomeView(viewModel: container.makeHomeViewModel(router: router))
+            HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
         }
     }
 }

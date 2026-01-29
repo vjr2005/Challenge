@@ -12,11 +12,11 @@ struct ViewFeatureNavigationTests {
         let feature2 = FeatureMock()
         let feature3 = FeatureMock()
         let features: [any Feature] = [feature1, feature2, feature3]
-        let router = RouterMock()
+        let navigator = NavigatorMock()
         let view = Text("Test")
 
         // When
-        _ = view.withNavigationDestinations(features: features, router: router)
+        _ = view.withNavigationDestinations(features: features, navigator: navigator)
 
         // Then
         #expect(feature1.applyNavigationDestinationCallCount == 1)
@@ -25,29 +25,29 @@ struct ViewFeatureNavigationTests {
     }
 
     @Test
-    func withNavigationDestinationsPassesRouterToFeatures() {
+    func withNavigationDestinationsPassesNavigatorToFeatures() {
         // Given
         let feature = FeatureMock()
         let features: [any Feature] = [feature]
-        let router = RouterMock()
+        let navigator = NavigatorMock()
         let view = Text("Test")
 
         // When
-        _ = view.withNavigationDestinations(features: features, router: router)
+        _ = view.withNavigationDestinations(features: features, navigator: navigator)
 
         // Then
-        #expect(feature.lastRouter as? RouterMock === router)
+        #expect(feature.lastNavigator as? NavigatorMock === navigator)
     }
 
     @Test
     func withNavigationDestinationsDoesNotCallFeaturesWhenEmpty() {
         // Given
         let features: [any Feature] = []
-        let router = RouterMock()
+        let navigator = NavigatorMock()
         let view = Text("Test")
 
         // When
-        _ = view.withNavigationDestinations(features: features, router: router)
+        _ = view.withNavigationDestinations(features: features, navigator: navigator)
 
         // Then
         #expect(features.isEmpty)
@@ -61,11 +61,11 @@ struct ViewFeatureNavigationTests {
         let feature2 = FeatureMock { callOrder.append("feature2") }
         let feature3 = FeatureMock { callOrder.append("feature3") }
         let features: [any Feature] = [feature1, feature2, feature3]
-        let router = RouterMock()
+        let navigator = NavigatorMock()
         let view = Text("Test")
 
         // When
-        _ = view.withNavigationDestinations(features: features, router: router)
+        _ = view.withNavigationDestinations(features: features, navigator: navigator)
 
         // Then
         #expect(callOrder == ["feature1", "feature2", "feature3"])
@@ -76,22 +76,30 @@ struct ViewFeatureNavigationTests {
 
 private final class FeatureMock: Feature {
     private(set) var applyNavigationDestinationCallCount = 0
-    private(set) var registerDeepLinksCallCount = 0
-    private(set) var lastRouter: (any RouterContract)?
+    private(set) var lastNavigator: (any NavigatorContract)?
     private let onApply: (() -> Void)?
+
+    var deepLinkHandler: any DeepLinkHandler {
+        TestDeepLinkHandler()
+    }
 
     init(onApply: (() -> Void)? = nil) {
         self.onApply = onApply
     }
 
-    func registerDeepLinks() {
-        registerDeepLinksCallCount += 1
-    }
-
-    func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+    func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
         applyNavigationDestinationCallCount += 1
-        lastRouter = router
+        lastNavigator = navigator
         onApply?()
         return AnyView(view)
+    }
+}
+
+private struct TestDeepLinkHandler: DeepLinkHandler {
+    let scheme = "test"
+    let host = "test"
+
+    func resolve(_ url: URL) -> (any Navigation)? {
+        nil
     }
 }

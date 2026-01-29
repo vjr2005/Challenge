@@ -1,13 +1,13 @@
 import ChallengeCore
 
 struct CharacterDetailNavigator: CharacterDetailNavigatorContract {
-    private let router: RouterContract
+    private let navigator: NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
     }
 
     func goBack() {
-        router.goBack()
+        navigator.goBack()
     }
 }

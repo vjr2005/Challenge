@@ -5,45 +5,37 @@ description: Creates Router for navigation. Use when setting up navigation, addi
 
 # Skill: Router
 
-Guide for implementing navigation using Router pattern with SwiftUI NavigationStack, Navigator pattern for decoupling, and Deep Links for cross-feature navigation.
+Guide for implementing navigation using NavigationCoordinator with SwiftUI NavigationStack, Navigator pattern for decoupling, and Outgoing/Incoming Navigation for cross-feature communication.
 
 ## When to use this skill
 
 - Set up navigation in the App
 - Add navigation to ViewModels via Navigator pattern
 - Implement deep link handlers for features
+- Connect features via Outgoing/Incoming Navigation
 - Test navigation behavior
 
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         App                                  │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  let features: [any Feature] = [...]                │    │
-│  │  init() { features.forEach { $0.registerDeepLinks() } }  │
-│  └─────────────────────────────────────────────────────┘    │
-│                            │                                 │
-│                            ▼ passes features                 │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  RootView(features: features)                    │    │
-│  │  @State private var router = Router()               │    │
-│  │  .withNavigationDestinations(features:, router:)    │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                            │                                 │
-│                            ▼ Feature creates Navigator       │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  feature.makeViewModel(router: router)              │    │
-│  │  → Navigator = Navigator(router: router)            │    │
-│  │  → ViewModel(navigator: navigator)                  │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                            │                                 │
-│                            ▼ ViewModel uses Navigator        │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  navigator.navigateToDetail(id:)  // INTERNAL       │    │
-│  │  navigator.navigateToExternal()   // EXTERNAL (URL) │    │
-│  └─────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          RootContainerView                              │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  @State private var coordinator = NavigationCoordinator(        │    │
+│  │      redirector: AppNavigationRedirect()                        │    │
+│  │  )                                                              │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                │                                        │
+│  NavigationStack(path: $coordinator.path) {                             │
+│      Features receive coordinator (NavigatorContract)                   │
+│  }                                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Navigation Flow:
+1. HomeNavigator.navigateToCharacters()
+2. coordinator.navigate(to: HomeOutgoingNavigation.characters)
+3. AppNavigationRedirect.redirect() → CharacterIncomingNavigation.list
+4. NavigationStack shows CharacterListView
 ```
 
 ---
@@ -52,53 +44,24 @@ Guide for implementing navigation using Router pattern with SwiftUI NavigationSt
 
 | Type | Description | Implementation |
 |------|-------------|----------------|
-| **INTERNAL** | Same feature navigation | Use `Navigation` enum directly |
-| **EXTERNAL** | Cross-feature navigation | Use URL deep links |
+| **Incoming** | Destinations a feature can handle | `{Feature}IncomingNavigation` enum |
+| **Outgoing** | Destinations a feature wants to navigate to | `{Feature}OutgoingNavigation` enum |
+| **Redirect** | Connects Outgoing → Incoming | `AppNavigationRedirect` in App layer |
 
-**Why?** External navigation via URLs allows features to remain decoupled. Feature A doesn't need to import Feature B.
+**Why?** Features remain decoupled. Feature A doesn't import Feature B. The App layer connects them via redirects.
 
 ---
 
 ## Core Module Components
 
-### Feature Protocol
+### NavigatorContract (Protocol)
 
 ```swift
-// Libraries/Core/Sources/Feature/Feature.swift
-import SwiftUI
-
-@MainActor
-public protocol Feature {
-    func registerDeepLinks()
-    func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView
-}
-```
-
-### View Extension for Features
-
-```swift
-// Libraries/Core/Sources/Feature/View+FeatureNavigation.swift
-import SwiftUI
-
-public extension View {
-    @MainActor
-    func withNavigationDestinations(features: [any Feature], router: any RouterContract) -> some View {
-        features.reduce(AnyView(self)) { view, feature in
-            feature.applyNavigationDestination(to: view, router: router)
-        }
-    }
-}
-```
-
-### RouterContract (Protocol)
-
-```swift
-// Libraries/Core/Sources/Navigation/RouterContract.swift
+// Libraries/Core/Sources/Navigation/NavigatorContract.swift
 import Foundation
 
-public protocol RouterContract {
+public protocol NavigatorContract {
     func navigate(to destination: any Navigation)
-    func navigate(to url: URL?)
     func goBack()
 }
 ```
@@ -110,29 +73,26 @@ public protocol RouterContract {
 public protocol Navigation: Hashable, Sendable {}
 ```
 
-### Router (Implementation)
+### NavigationCoordinator (Implementation)
 
 ```swift
-// Libraries/Core/Sources/Navigation/Router.swift
+// Libraries/Core/Sources/Navigation/NavigationCoordinator.swift
 import Foundation
 import SwiftUI
 
 @Observable
-public final class Router: RouterContract {
+public final class NavigationCoordinator: NavigatorContract {
     public var path = NavigationPath()
 
-    public init() {}
+    private let redirector: (any NavigationRedirectContract)?
 
-    public func navigate(to destination: any Navigation) {
-        path.append(destination)
+    public init(redirector: (any NavigationRedirectContract)? = nil) {
+        self.redirector = redirector
     }
 
-    public func navigate(to url: URL?) {
-        guard let url,
-              let destination = DeepLinkRegistry.shared.resolve(url) else {
-            return
-        }
-        path.append(destination)
+    public func navigate(to destination: any Navigation) {
+        let resolved = redirector?.redirect(destination) ?? destination
+        path.append(resolved)
     }
 
     public func goBack() {
@@ -140,6 +100,37 @@ public final class Router: RouterContract {
             return
         }
         path.removeLast()
+    }
+}
+```
+
+### NavigationRedirectContract (Protocol)
+
+```swift
+// Libraries/Core/Sources/Navigation/NavigationRedirectContract.swift
+import Foundation
+
+public protocol NavigationRedirectContract: Sendable {
+    func redirect(_ navigation: any Navigation) -> (any Navigation)?
+}
+```
+
+### Feature Protocol
+
+```swift
+// Libraries/Core/Sources/Feature/Feature.swift
+import SwiftUI
+
+public protocol Feature {
+    var deepLinkHandler: any DeepLinkHandler { get }
+    func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView
+}
+
+public extension View {
+    func withNavigationDestinations(features: [any Feature], navigator: any NavigatorContract) -> some View {
+        features.reduce(AnyView(self)) { view, feature in
+            feature.applyNavigationDestination(to: view, navigator: navigator)
+        }
     }
 }
 ```
@@ -157,79 +148,21 @@ public protocol DeepLinkHandler: Sendable {
 }
 ```
 
-### DeepLinkRegistry (Singleton)
+### NavigatorMock (for testing)
 
 ```swift
-// Libraries/Core/Sources/Navigation/DeepLinkRegistry.swift
+// Libraries/Core/Mocks/NavigatorMock.swift
+import ChallengeCore
 import Foundation
 
-public final class DeepLinkRegistry: @unchecked Sendable {
-    public static let shared = DeepLinkRegistry()
-
-    private var handlers: [String: any DeepLinkHandler] = [:]
-    private let lock = NSLock()
-
-    public init() {}
-
-    public func register(_ handler: any DeepLinkHandler) {
-        let key = "\(handler.scheme)://\(handler.host)"
-        lock.lock()
-        handlers[key] = handler
-        lock.unlock()
-    }
-
-    public func resolve(_ url: URL) -> (any Navigation)? {
-        guard let scheme = url.scheme, let host = url.host else {
-            return nil
-        }
-        let key = "\(scheme)://\(host)"
-        lock.lock()
-        let handler = handlers[key]
-        lock.unlock()
-        return handler?.resolve(url)
-    }
-}
-```
-
-### URL+QueryParameter (Extension)
-
-```swift
-// Libraries/Core/Sources/Extensions/URL+QueryParameter.swift
-import Foundation
-
-public extension URL {
-    func queryParameter(_ name: String) -> String? {
-        URLComponents(url: self, resolvingAgainstBaseURL: false)?
-            .queryItems?
-            .first { $0.name == name }?
-            .value
-    }
-}
-```
-
-### RouterMock (for testing)
-
-```swift
-// Libraries/Core/Mocks/RouterMock.swift
-import {AppName}Core
-import Foundation
-
-public final class RouterMock: RouterContract {
+public final class NavigatorMock: NavigatorContract {
     public private(set) var navigatedDestinations: [any Navigation] = []
-    public private(set) var navigatedURLs: [URL] = []
     public private(set) var goBackCallCount = 0
 
     public init() {}
 
     public func navigate(to destination: any Navigation) {
         navigatedDestinations.append(destination)
-    }
-
-    public func navigate(to url: URL?) {
-        guard let url else {
-            return
-        }
-        navigatedURLs.append(url)
     }
 
     public func goBack() {
@@ -242,48 +175,55 @@ public final class RouterMock: RouterContract {
 
 ## Feature Navigation
 
-Each feature defines its navigation destinations and deep link handler:
+Each feature defines Incoming and optionally Outgoing navigation:
 
-### Navigation Enum (Internal)
+### Incoming Navigation (Destinations the feature handles)
 
 ```swift
-// Features/{Feature}/Sources/Navigation/{Feature}Navigation.swift
-import {AppName}Core
+// Features/{Feature}/Sources/Navigation/{Feature}IncomingNavigation.swift
+import ChallengeCore
 
-enum {Feature}Navigation: Navigation {
+public enum {Feature}IncomingNavigation: Navigation {
     case list
     case detail(identifier: Int)
 }
 ```
 
-**Note:** Navigation enum is `internal` - not exposed to App layer. App uses `withNavigationDestinations(features:router:)` instead.
+### Outgoing Navigation (Destinations to other features)
 
-### DeepLinkHandler (Internal)
+```swift
+// Features/{Feature}/Sources/Navigation/{Feature}OutgoingNavigation.swift
+import ChallengeCore
+
+public enum {Feature}OutgoingNavigation: Navigation {
+    case characters  // Navigates to Character feature
+    case settings    // Navigates to Settings feature
+}
+```
+
+**Note:** Outgoing navigations are `public` so AppNavigationRedirect can access them.
+
+### DeepLinkHandler
 
 ```swift
 // Features/{Feature}/Sources/Navigation/{Feature}DeepLinkHandler.swift
-import {AppName}Core
+import ChallengeCore
 import Foundation
 
 struct {Feature}DeepLinkHandler: DeepLinkHandler {
     let scheme = "challenge"
     let host = "{feature}"  // e.g., "character"
 
-    @MainActor
-    static func register() {
-        DeepLinkRegistry.shared.register(Self())
-    }
-
     func resolve(_ url: URL) -> (any Navigation)? {
         switch url.path {
         case "/list":
-            return {Feature}Navigation.list
+            return {Feature}IncomingNavigation.list
 
         case "/detail":
             guard let id = url.queryParameter("id").flatMap(Int.init) else {
                 return nil
             }
-            return {Feature}Navigation.detail(identifier: id)
+            return {Feature}IncomingNavigation.detail(identifier: id)
 
         default:
             return nil
@@ -291,8 +231,6 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
     }
 }
 ```
-
-**Note:** DeepLinkHandler is `internal` - external access is through `{Feature}Feature.registerDeepLinks()`.
 
 **URL Format:** `challenge://{feature}/{path}?param=value`
 
@@ -302,153 +240,207 @@ Examples:
 
 ---
 
+## App Layer: Connecting Features
+
+### AppNavigationRedirect
+
+```swift
+// App/Sources/Navigation/AppNavigationRedirect.swift
+import ChallengeCharacter
+import ChallengeCore
+import ChallengeHome
+
+struct AppNavigationRedirect: NavigationRedirectContract {
+    func redirect(_ navigation: any Navigation) -> (any Navigation)? {
+        switch navigation {
+        case let outgoing as HomeOutgoingNavigation:
+            return redirect(outgoing)
+        default:
+            return nil
+        }
+    }
+
+    // MARK: - Private
+
+    private func redirect(_ navigation: HomeOutgoingNavigation) -> any Navigation {
+        switch navigation {
+        case .characters:
+            return CharacterIncomingNavigation.list
+        }
+    }
+}
+```
+
+**Rules:**
+- Centralized place to connect features
+- Maps Outgoing → Incoming navigation
+- Only place that imports multiple features
+
+### RootContainerView
+
+```swift
+// App/Sources/Presentation/Views/RootContainerView.swift
+import ChallengeCore
+import ChallengeHome
+import SwiftUI
+
+struct RootContainerView: View {
+    let appContainer: AppContainer
+    @State private var coordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
+
+    var body: some View {
+        NavigationStack(path: $coordinator.path) {
+            appContainer.makeRootView(navigator: coordinator)
+                .withNavigationDestinations(features: appContainer.features, navigator: coordinator)
+        }
+        .onOpenURL { url in
+            appContainer.handle(url: url, navigator: coordinator)
+        }
+    }
+}
+
+#Preview {
+    RootContainerView(appContainer: AppContainer())
+}
+```
+
+### AppContainer (Deep Link Handling)
+
+```swift
+// App/Sources/AppContainer.swift
+func handle(url: URL, navigator: any NavigatorContract) {
+    for feature in features {
+        if let navigation = feature.deepLinkHandler.resolve(url) {
+            navigator.navigate(to: navigation)
+            return
+        }
+    }
+}
+```
+
+---
+
 ## Navigator Pattern
 
-ViewModels use **Navigators** instead of Router directly. This:
+ViewModels use **Navigators** instead of NavigatorContract directly. This:
 1. Decouples ViewModels from navigation implementation details
 2. Makes testing easier with focused mocks
-3. Separates internal vs external navigation concerns
+3. Provides semantic navigation methods
 
 ### Navigator Contract
 
 ```swift
 // Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift
 protocol {Screen}NavigatorContract {
-    func navigateToDetail(id: Int)  // INTERNAL navigation
+    func navigateToDetail(id: Int)  // Internal navigation
     func goBack()
 }
 ```
 
-### Navigator Implementation
+### Navigator Implementation (Internal Navigation)
 
 ```swift
 // Features/{Feature}/Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift
-import {AppName}Core
+import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let router: RouterContract
+    private let navigator: NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
     }
 
     func navigateToDetail(id: Int) {
-        // INTERNAL: uses Navigation directly
-        router.navigate(to: {Feature}Navigation.detail(identifier: id))
+        // Uses IncomingNavigation (same feature)
+        navigator.navigate(to: {Feature}IncomingNavigation.detail(identifier: id))
     }
 
     func goBack() {
-        router.goBack()
+        navigator.goBack()
     }
 }
 ```
 
-### Navigator for External Navigation (Cross-Feature)
+### Navigator Implementation (External Navigation)
 
 ```swift
-// Features/Home/Sources/Presentation/Home/Navigator/HomeNavigatorContract.swift
-protocol HomeNavigatorContract {
-    func navigateToCharacters()  // EXTERNAL navigation
-}
-
 // Features/Home/Sources/Presentation/Home/Navigator/HomeNavigator.swift
-import {AppName}Core
-import Foundation
+import ChallengeCore
 
 struct HomeNavigator: HomeNavigatorContract {
-    private let router: RouterContract
+    private let navigator: NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
     }
 
     func navigateToCharacters() {
-        // EXTERNAL: URL hardcoded (no import of Character feature)
-        router.navigate(to: URL(string: "challenge://character/list"))
+        // Uses OutgoingNavigation (different feature)
+        // AppNavigationRedirect will convert to CharacterIncomingNavigation.list
+        navigator.navigate(to: HomeOutgoingNavigation.characters)
     }
 }
 ```
 
 **Key Difference:**
-- **INTERNAL:** `router.navigate(to: {Feature}Navigation.detail(...))`
-- **EXTERNAL:** `router.navigate(to: URL(string: "challenge://..."))`
+- **Internal:** Uses `{Feature}IncomingNavigation` directly
+- **External:** Uses `{Feature}OutgoingNavigation` (redirected by App layer)
 
 ---
 
-## App Setup
+## Feature Implementation
 
-### ChallengeApp (Centralized Features)
+### Feature Struct
 
 ```swift
-// App/Sources/ChallengeApp.swift
-import {AppName}Character
-import {AppName}Core
-import {AppName}Home
+// Features/{Feature}/Sources/{Feature}Feature.swift
+import ChallengeCore
+import ChallengeNetworking
 import SwiftUI
 
-@main
-struct ChallengeApp: App {
-    let features: [any Feature] = [
-        CharacterFeature(),
-        HomeFeature()
-    ]
+public struct {Feature}Feature: Feature {
+    private let container: {Feature}Container
 
-    init() {
-        features.forEach { $0.registerDeepLinks() }
+    public init(httpClient: any HTTPClientContract) {
+        self.container = {Feature}Container(httpClient: httpClient)
     }
 
-    var body: some Scene {
-        WindowGroup {
-            RootView(features: features)
+    // MARK: - Feature Protocol
+
+    public var deepLinkHandler: any DeepLinkHandler {
+        {Feature}DeepLinkHandler()
+    }
+
+    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
+        AnyView(
+            view.navigationDestination(for: {Feature}IncomingNavigation.self) { navigation in
+                self.view(for: navigation, navigator: navigator)
+            }
+        )
+    }
+}
+
+extension {Feature}Feature {
+    @ViewBuilder
+    func view(for navigation: {Feature}IncomingNavigation, navigator: any NavigatorContract) -> some View {
+        switch navigation {
+        case .list:
+            {Name}ListView(viewModel: container.make{Name}ListViewModel(navigator: navigator))
+        case .detail(let identifier):
+            {Name}DetailView(
+                viewModel: container.make{Name}DetailViewModel(
+                    identifier: identifier,
+                    navigator: navigator
+                )
+            )
         }
     }
 }
 ```
-
-### RootView (Navigation Stack with Features)
-
-```swift
-// App/Sources/RootView.swift
-import {AppName}Character
-import {AppName}Core
-import {AppName}Home
-import SwiftUI
-
-struct RootView: View {
-    let features: [any Feature]
-    @State private var router = Router()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            HomeFeature()
-                .makeHomeView(router: router)
-                .withNavigationDestinations(features: features, router: router)
-        }
-        .onOpenURL { url in
-            router.navigate(to: url)
-        }
-    }
-}
-
-#Preview {
-    RootView(features: [CharacterFeature(), HomeFeature()])
-}
-```
-
-**Rules:**
-- Define features in `ChallengeApp` as instance property
-- Register deep links in `ChallengeApp.init()` by iterating features
-- Pass features to RootView
-- Create Router with `@State` in RootView
-- Bind path with `$router.path`
-- Use `.withNavigationDestinations(features:router:)` to register all navigation destinations
-- Use `.onOpenURL` to handle external URLs (from Safari, other apps, push notifications)
 
 ---
 
 ## ViewModel with Navigator
-
-ViewModels receive **NavigatorContract**, not RouterContract:
 
 ```swift
 // Features/{Feature}/Sources/Presentation/ViewModels/{Name}ViewModel.swift
@@ -466,52 +458,12 @@ final class {Name}ViewModel {
         self.navigator = navigator
     }
 
-    func load() async {
-        // ...
-    }
-
     func didSelectItem(_ item: Item) {
         navigator.navigateToDetail(id: item.id)
     }
 
     func didTapOnBack() {
         navigator.goBack()
-    }
-}
-```
-
-**Rules:**
-- Inject **NavigatorContract** (not RouterContract)
-- Use semantic method names: `didTapOn...`, `didSelect...`
-- Navigator handles the routing details
-
----
-
-## Feature Wiring
-
-Feature creates Navigator and injects into ViewModel:
-
-```swift
-// Features/{Feature}/Sources/{Feature}Feature.swift
-import {AppName}Core
-import SwiftUI
-
-public struct {Feature}Feature: Feature {
-    // ...
-
-    func makeListViewModel(router: any RouterContract) -> {Name}ListViewModel {
-        {Name}ListViewModel(
-            get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
-            navigator: {Name}ListNavigator(router: router)
-        )
-    }
-
-    func makeDetailViewModel(identifier: Int, router: any RouterContract) -> {Name}DetailViewModel {
-        {Name}DetailViewModel(
-            identifier: identifier,
-            get{Name}UseCase: Get{Name}UseCase(repository: repository),
-            navigator: {Name}DetailNavigator(router: router)
-        )
     }
 }
 ```
@@ -524,7 +476,7 @@ public struct {Feature}Feature: Feature {
 
 ```swift
 // Features/{Feature}/Tests/Mocks/{Screen}NavigatorMock.swift
-@testable import {AppName}{Feature}
+@testable import Challenge{Feature}
 
 final class {Screen}NavigatorMock: {Screen}NavigatorContract {
     private(set) var navigateToDetailIds: [Int] = []
@@ -540,70 +492,66 @@ final class {Screen}NavigatorMock: {Screen}NavigatorContract {
 }
 ```
 
-### ViewModel Tests
-
-```swift
-import Testing
-
-@testable import {AppName}{Feature}
-
-struct {Name}ViewModelTests {
-    @Test
-    func didSelectItemNavigatesToDetail() {
-        // Given
-        let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(
-            get{Name}UseCase: Get{Name}UseCaseMock(),
-            navigator: navigatorMock
-        )
-
-        // When
-        sut.didSelectItem(Item(id: 42))
-
-        // Then
-        #expect(navigatorMock.navigateToDetailIds == [42])
-    }
-
-    @Test
-    func didTapOnBackCallsNavigator() {
-        // Given
-        let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(
-            get{Name}UseCase: Get{Name}UseCaseMock(),
-            navigator: navigatorMock
-        )
-
-        // When
-        sut.didTapOnBack()
-
-        // Then
-        #expect(navigatorMock.goBackCallCount == 1)
-    }
-}
-```
-
 ### Navigator Tests
 
 ```swift
 // Features/{Feature}/Tests/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift
-import {AppName}CoreMocks
+import ChallengeCoreMocks
 import Testing
 
-@testable import {AppName}{Feature}
+@testable import Challenge{Feature}
 
 struct {Screen}NavigatorTests {
     @Test
     func navigateToDetailUsesCorrectNavigation() {
         // Given
-        let routerMock = RouterMock()
-        let sut = {Screen}Navigator(router: routerMock)
+        let navigatorMock = NavigatorMock()
+        let sut = {Screen}Navigator(navigator: navigatorMock)
 
         // When
         sut.navigateToDetail(id: 42)
 
         // Then
-        let destination = routerMock.navigatedDestinations.first as? {Feature}Navigation
+        let destination = navigatorMock.navigatedDestinations.first as? {Feature}IncomingNavigation
         #expect(destination == .detail(identifier: 42))
+    }
+}
+```
+
+### AppNavigationRedirect Tests
+
+```swift
+// App/Tests/Navigation/AppNavigationRedirectTests.swift
+import ChallengeCharacter
+import ChallengeHome
+import Testing
+
+@testable import Challenge
+
+struct AppNavigationRedirectTests {
+    @Test
+    func redirectHomeOutgoingCharactersToCharacterList() throws {
+        // Given
+        let sut = AppNavigationRedirect()
+
+        // When
+        let result = sut.redirect(HomeOutgoingNavigation.characters)
+
+        // Then
+        let characterNavigation = try #require(result as? CharacterIncomingNavigation)
+        #expect(characterNavigation == .list)
+    }
+
+    @Test
+    func redirectUnknownNavigationReturnsNil() {
+        // Given
+        let sut = AppNavigationRedirect()
+
+        // When
+        let result = sut.redirect(CharacterIncomingNavigation.list)
+
+        // Then
+        #expect(result == nil)
     }
 }
 ```
@@ -611,11 +559,11 @@ struct {Screen}NavigatorTests {
 ### DeepLinkHandler Tests
 
 ```swift
-import {AppName}Core
+import ChallengeCore
 import Foundation
 import Testing
 
-@testable import {AppName}{Feature}
+@testable import Challenge{Feature}
 
 struct {Feature}DeepLinkHandlerTests {
     @Test
@@ -628,7 +576,7 @@ struct {Feature}DeepLinkHandlerTests {
         let value = sut.resolve(url)
 
         // Then
-        #expect(value as? {Feature}Navigation == .list)
+        #expect(value as? {Feature}IncomingNavigation == .list)
     }
 
     @Test
@@ -641,20 +589,7 @@ struct {Feature}DeepLinkHandlerTests {
         let value = sut.resolve(url)
 
         // Then
-        #expect(value as? {Feature}Navigation == .detail(identifier: 42))
-    }
-
-    @Test
-    func returnsNilForUnknownPath() throws {
-        // Given
-        let sut = {Feature}DeepLinkHandler()
-        let url = try #require(URL(string: "challenge://{feature}/unknown"))
-
-        // When
-        let value = sut.resolve(url)
-
-        // Then
-        #expect(value == nil)
+        #expect(value as? {Feature}IncomingNavigation == .detail(identifier: 42))
     }
 }
 ```
@@ -667,87 +602,77 @@ struct {Feature}DeepLinkHandlerTests {
 Libraries/Core/
 ├── Sources/
 │   ├── Feature/
-│   │   ├── Feature.swift                    # Feature protocol
-│   │   └── View+FeatureNavigation.swift     # withNavigationDestinations extension
+│   │   └── Feature.swift                    # Feature protocol + View extension
 │   └── Navigation/
-│       ├── Router.swift
-│       ├── RouterContract.swift
-│       ├── Navigation.swift
-│       ├── DeepLinkHandler.swift
-│       └── DeepLinkRegistry.swift
+│       ├── NavigationCoordinator.swift      # @Observable, manages path + redirects
+│       ├── NavigatorContract.swift          # Protocol for navigation
+│       ├── NavigationRedirectContract.swift # Protocol for redirects
+│       ├── Navigation.swift                 # Base protocol
+│       └── DeepLinkHandler.swift            # Protocol for deep links
 └── Mocks/
-    └── RouterMock.swift
+    └── NavigatorMock.swift
+
+App/Sources/
+├── Navigation/
+│   └── AppNavigationRedirect.swift          # Connects features via redirects
+└── Presentation/Views/
+    └── RootContainerView.swift              # Creates NavigationCoordinator
 
 Features/{Feature}/
 ├── Sources/
-│   ├── {Feature}Feature.swift               # Feature struct implementing Feature protocol
+│   ├── {Feature}Feature.swift
+│   ├── {Feature}Container.swift
 │   ├── Navigation/
-│   │   ├── {Feature}Navigation.swift        # Navigation destinations
-│   │   └── {Feature}DeepLinkHandler.swift   # Feature-level (handles deep links)
-│   ├── Domain/
-│   ├── Data/
+│   │   ├── {Feature}IncomingNavigation.swift  # Destinations this feature handles
+│   │   ├── {Feature}OutgoingNavigation.swift  # Destinations to other features (optional)
+│   │   └── {Feature}DeepLinkHandler.swift
 │   └── Presentation/
-│       ├── {Screen}List/
-│       │   ├── Navigator/                    # Screen-level navigators
-│       │   │   ├── {Screen}ListNavigatorContract.swift
-│       │   │   └── {Screen}ListNavigator.swift
-│       │   ├── Views/
-│       │   └── ViewModels/
-│       └── {Screen}Detail/
-│           ├── Navigator/
-│           │   ├── {Screen}DetailNavigatorContract.swift
-│           │   └── {Screen}DetailNavigator.swift
-│           ├── Views/
-│           └── ViewModels/
+│       └── {Screen}/
+│           └── Navigator/
+│               ├── {Screen}NavigatorContract.swift
+│               └── {Screen}Navigator.swift
 └── Tests/
     ├── Mocks/
     │   └── {Screen}NavigatorMock.swift
-    ├── Navigation/
-    │   └── {Feature}DeepLinkHandlerTests.swift
-    └── Presentation/
-        ├── {Screen}List/
-        │   └── Navigator/
-        │       └── {Screen}ListNavigatorTests.swift
-        └── {Screen}Detail/
-            └── Navigator/
-                └── {Screen}DetailNavigatorTests.swift
+    └── Navigation/
+        ├── {Feature}DeepLinkHandlerTests.swift
+        └── {Screen}NavigatorTests.swift
 ```
-
-**Notes:**
-- **Feature protocol** is in Core module (`Sources/Feature/`)
-- **DeepLinkHandler** stays at feature level (`Sources/Navigation/`) - handles external URLs for the whole feature
-- **Navigators** are inside screen folders (`Presentation/{Screen}/Navigator/`) - each screen has its own navigator
 
 ---
 
 ## Checklist
 
 ### Core Setup
-- [ ] Core has `Feature` protocol and `View+FeatureNavigation` extension
-- [ ] Core has `RouterContract`, `Navigation`, `Router`, `RouterMock`
-- [ ] Core has `DeepLinkHandler`, `DeepLinkRegistry`, `URL+QueryParameter`
+- [ ] Core has `NavigatorContract` protocol
+- [ ] Core has `NavigationRedirectContract` protocol
+- [ ] Core has `NavigationCoordinator` (@Observable, manages path + redirects)
+- [ ] Core has `Navigation` protocol
+- [ ] Core has `DeepLinkHandler` protocol
+- [ ] Core has `Feature` protocol with `deepLinkHandler` property
+- [ ] Core has `NavigatorMock` for testing
 
 ### App Configuration
 - [ ] `Project.swift` has `CFBundleURLTypes` with URL scheme (e.g., `challenge`)
-- [ ] `ChallengeApp` has `let features: [any Feature]` property
-- [ ] `ChallengeApp.init` iterates features to call `registerDeepLinks()`
-- [ ] `ChallengeApp` passes features to `RootView(features:)`
-- [ ] `RootView` creates `@State private var router = Router()`
-- [ ] `RootView` uses `NavigationStack(path: $router.path)`
-- [ ] `RootView` uses `.withNavigationDestinations(features:router:)`
-- [ ] `RootView` uses `.onOpenURL { url in router.navigate(to: url) }` for external URLs
+- [ ] `AppNavigationRedirect` connects Outgoing → Incoming navigation
+- [ ] `RootContainerView` creates `NavigationCoordinator(redirector: AppNavigationRedirect())`
+- [ ] `RootContainerView` uses `NavigationStack(path: $coordinator.path)`
+- [ ] `RootContainerView` uses `.withNavigationDestinations(features:navigator:)`
+- [ ] `AppContainer.handle(url:navigator:)` resolves deep links via feature handlers
 
 ### Feature Implementation
-- [ ] Feature struct implements `Feature` protocol
-- [ ] Feature has internal `{Feature}Navigation` conforming to `Navigation`
-- [ ] Feature has `{Feature}DeepLinkHandler` in `Sources/Navigation/` with `register()` method
-- [ ] Feature implements `registerDeepLinks()` method
-- [ ] Feature implements `applyNavigationDestination()` method
-- [ ] Each screen has `NavigatorContract` and `Navigator` in `Presentation/{Screen}/Navigator/`
-- [ ] Feature creates Navigator and injects into ViewModel
-- [ ] ViewModel injects `NavigatorContract` (not RouterContract)
+- [ ] Feature has `{Feature}IncomingNavigation` for destinations it handles
+- [ ] Feature has `{Feature}OutgoingNavigation` for cross-feature navigation (if needed)
+- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigation`
+- [ ] Feature implements `deepLinkHandler` property
+- [ ] Feature implements `applyNavigationDestination(to:navigator:)` for `IncomingNavigation`
+- [ ] Each screen has `NavigatorContract` and `Navigator`
+- [ ] Navigator uses `IncomingNavigation` for internal, `OutgoingNavigation` for external
+- [ ] Container factories receive `navigator: any NavigatorContract`
+- [ ] ViewModel receives specific `NavigatorContract` (not generic)
 
 ### Testing
 - [ ] Tests use `NavigatorMock` to verify navigation
-- [ ] Tests for Navigator in `Tests/Presentation/{Screen}/Navigator/` verify Router calls
-- [ ] Tests for DeepLinkHandler in `Tests/Navigation/` verify URL resolution
+- [ ] Navigator tests verify correct Navigation enum is used
+- [ ] AppNavigationRedirect tests verify Outgoing → Incoming mapping
+- [ ] DeepLinkHandler tests verify URL → IncomingNavigation resolution
