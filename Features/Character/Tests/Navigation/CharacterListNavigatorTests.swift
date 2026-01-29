@@ -7,28 +7,28 @@ struct CharacterListNavigatorTests {
     @Test
     func navigateToDetailUsesCorrectNavigation() {
         // Given
-        let routerMock = RouterMock()
-        let sut = CharacterListNavigator(router: routerMock)
-        let expected = CharacterNavigation.detail(identifier: 42)
+        let navigatorMock = NavigatorMock()
+        let sut = CharacterListNavigator(navigator: navigatorMock)
+        let expected = CharacterIncomingNavigation.detail(identifier: 42)
 
         // When
         sut.navigateToDetail(id: 42)
 
         // Then
-        let destination = routerMock.navigatedDestinations.first as? CharacterNavigation
+        let destination = navigatorMock.navigatedDestinations.first as? CharacterIncomingNavigation
         #expect(destination == expected)
     }
 
     @Test
-    func navigateToDetailCallsRouterOnce() {
+    func navigateToDetailCallsNavigatorOnce() {
         // Given
-        let routerMock = RouterMock()
-        let sut = CharacterListNavigator(router: routerMock)
+        let navigatorMock = NavigatorMock()
+        let sut = CharacterListNavigator(navigator: navigatorMock)
 
         // When
         sut.navigateToDetail(id: 1)
 
         // Then
-        #expect(routerMock.navigatedDestinations.count == 1)
+        #expect(navigatorMock.navigatedDestinations.count == 1)
     }
 }

@@ -17,16 +17,15 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    /// Registers deep link handlers for the Character feature.
-    public func registerDeepLinks() {
-        CharacterDeepLinkHandler.register()
+    public var deepLinkHandler: any DeepLinkHandler {
+        CharacterDeepLinkHandler()
     }
 
     /// Applies navigation destinations for Character screens to the given view.
-    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
         AnyView(
-            view.navigationDestination(for: CharacterNavigation.self) { navigation in
-                self.view(for: navigation, router: router)
+            view.navigationDestination(for: CharacterIncomingNavigation.self) { navigation in
+                self.view(for: navigation, navigator: navigator)
             }
         )
     }
@@ -36,15 +35,15 @@ public struct CharacterFeature: Feature {
 
 extension CharacterFeature {
     @ViewBuilder
-    func view(for navigation: CharacterNavigation, router: any RouterContract) -> some View {
+    func view(for navigation: CharacterIncomingNavigation, navigator: any NavigatorContract) -> some View {
         switch navigation {
         case .list:
-            CharacterListView(viewModel: container.makeCharacterListViewModel(router: router))
+            CharacterListView(viewModel: container.makeCharacterListViewModel(navigator: navigator))
         case .detail(let identifier):
             CharacterDetailView(
                 viewModel: container.makeCharacterDetailViewModel(
                     identifier: identifier,
-                    router: router
+                    navigator: navigator
                 )
             )
         }

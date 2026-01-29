@@ -6,29 +6,30 @@ import Testing
 
 struct HomeNavigatorTests {
     @Test
-    func navigateToCharactersUsesCorrectURL() {
+    func navigateToCharactersUsesCorrectNavigation() {
         // Given
-        let routerMock = RouterMock()
-        let sut = HomeNavigator(router: routerMock)
-        let expected = URL(string: "challenge://character/list")
+        let navigatorMock = NavigatorMock()
+        let sut = HomeNavigator(navigator: navigatorMock)
+        let expected = HomeOutgoingNavigation.characters
 
         // When
         sut.navigateToCharacters()
 
         // Then
-        #expect(routerMock.navigatedURLs.first == expected)
+        let destination = navigatorMock.navigatedDestinations.first as? HomeOutgoingNavigation
+        #expect(destination == expected)
     }
 
     @Test
-    func navigateToCharactersCallsRouterOnce() {
+    func navigateToCharactersCallsNavigatorOnce() {
         // Given
-        let routerMock = RouterMock()
-        let sut = HomeNavigator(router: routerMock)
+        let navigatorMock = NavigatorMock()
+        let sut = HomeNavigator(navigator: navigatorMock)
 
         // When
         sut.navigateToCharacters()
 
         // Then
-        #expect(routerMock.navigatedURLs.count == 1)
+        #expect(navigatorMock.navigatedDestinations.count == 1)
     }
 }

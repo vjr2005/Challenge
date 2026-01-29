@@ -2,13 +2,13 @@ import ChallengeCore
 import Foundation
 
 struct HomeNavigator: HomeNavigatorContract {
-    private let router: RouterContract
+    private let navigator: NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
     }
 
     func navigateToCharacters() {
-        router.navigate(to: URL(string: "challenge://character/list"))
+        navigator.navigate(to: HomeOutgoingNavigation.characters)
     }
 }

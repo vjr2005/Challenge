@@ -14,7 +14,7 @@ struct HomeDeepLinkHandlerTests {
         let result = sut.resolve(url)
 
         // Then
-        #expect(result is HomeNavigation)
+        #expect(result is HomeIncomingNavigation)
     }
 
     @Test
@@ -27,7 +27,7 @@ struct HomeDeepLinkHandlerTests {
         let result = sut.resolve(url)
 
         // Then
-        #expect(result is HomeNavigation)
+        #expect(result is HomeIncomingNavigation)
     }
 
     @Test

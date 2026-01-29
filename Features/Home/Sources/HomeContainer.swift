@@ -9,7 +9,7 @@ public final class HomeContainer: Sendable {
 
     // MARK: - Factories
 
-    func makeHomeViewModel(router: any RouterContract) -> HomeViewModel {
-        HomeViewModel(navigator: HomeNavigator(router: router))
+    func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
+        HomeViewModel(navigator: HomeNavigator(navigator: navigator))
     }
 }

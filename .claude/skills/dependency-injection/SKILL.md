@@ -44,19 +44,22 @@ ChallengeApp
 ```
 App/
 ├── Sources/
-│   ├── {AppName}App.swift           # Minimal entry point
-│   ├── AppContainer.swift           # Composition Root (centralized DI)
+│   ├── {AppName}App.swift              # Minimal entry point
+│   ├── AppContainer.swift              # Composition Root (centralized DI)
+│   ├── Navigation/
+│   │   └── AppNavigationRedirect.swift # Connects features via redirects
 │   └── Presentation/
 │       └── Views/
-│           └── RootView.swift       # Root navigation view
+│           └── RootContainerView.swift # Root navigation view
 
 Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift       # Public entry point (navigation + deep links)
 │   ├── {Feature}Container.swift     # Dependency composition (factories)
 │   ├── Navigation/
-│   │   ├── {Feature}Navigation.swift       # Navigation destinations
-│   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler (feature-level)
+│   │   ├── {Feature}IncomingNavigation.swift  # Destinations this feature handles
+│   │   ├── {Feature}OutgoingNavigation.swift  # Destinations to other features
+│   │   └── {Feature}DeepLinkHandler.swift     # Deep link handler
 │   ├── Domain/
 │   ├── Data/
 │   └── Presentation/
@@ -82,7 +85,7 @@ Features/{Feature}/
 - **{Feature}Container**: Handles dependency composition (repositories, factories)
 - **{Feature}Feature**: Handles navigation and deep links, delegates DI to Container
 - Views receive **only ViewModel** via init
-- Navigation is handled by App using `NavigationPath`
+- Navigation is handled by App using `NavigationCoordinator`
 
 ---
 
@@ -90,10 +93,10 @@ Features/{Feature}/
 
 ```swift
 // App/Sources/AppContainer.swift
-import {AppName}Character
-import {AppName}Core
-import {AppName}Home
-import {AppName}Networking
+import ChallengeCharacter
+import ChallengeCore
+import ChallengeHome
+import ChallengeNetworking
 import SwiftUI
 
 struct AppContainer: Sendable {
@@ -116,14 +119,21 @@ struct AppContainer: Sendable {
             CharacterFeature(httpClient: self.httpClient),
             HomeFeature()
         ]
+    }
 
-        features.forEach { $0.registerDeepLinks() }
+    func handle(url: URL, navigator: any NavigatorContract) {
+        for feature in features {
+            if let navigation = feature.deepLinkHandler.resolve(url) {
+                navigator.navigate(to: navigation)
+                return
+            }
+        }
     }
 
     // MARK: - Factory Methods
 
-    func makeRootView() -> some View {
-        RootView(features: features)
+    func makeRootView(navigator: any NavigatorContract) -> some View {
+        HomeFeature().makeHomeView(navigator: navigator)
     }
 }
 ```
@@ -132,8 +142,8 @@ struct AppContainer: Sendable {
 - Centralizes ALL dependency injection in one place
 - Creates shared dependencies (HTTPClient, analytics, logger, etc.)
 - Injects shared dependencies into features
-- Registers deep links automatically
-- `features` is stored property (not computed) to avoid duplicate registrations
+- Handles deep links via feature handlers
+- `features` is stored property (not computed) to maintain consistency
 
 ---
 
@@ -141,8 +151,8 @@ struct AppContainer: Sendable {
 
 ```swift
 // Features/{Feature}/Sources/{Feature}Container.swift
-import {AppName}Core
-import {AppName}Networking
+import ChallengeCore
+import ChallengeNetworking
 
 public final class {Feature}Container: Sendable {
     // MARK: - Dependencies
@@ -167,21 +177,21 @@ public final class {Feature}Container: Sendable {
 
     // MARK: - Factories
 
-    func make{Name}ListViewModel(router: any RouterContract) -> {Name}ListViewModel {
+    func make{Name}ListViewModel(navigator: any NavigatorContract) -> {Name}ListViewModel {
         {Name}ListViewModel(
             get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
-            navigator: {Name}ListNavigator(router: router)
+            navigator: {Name}ListNavigator(navigator: navigator)
         )
     }
 
     func make{Name}DetailViewModel(
         identifier: Int,
-        router: any RouterContract
+        navigator: any NavigatorContract
     ) -> {Name}DetailViewModel {
         {Name}DetailViewModel(
             identifier: identifier,
             get{Name}UseCase: Get{Name}UseCase(repository: repository),
-            navigator: {Name}DetailNavigator(router: router)
+            navigator: {Name}DetailNavigator(navigator: navigator)
         )
     }
 }
@@ -193,6 +203,7 @@ public final class {Feature}Container: Sendable {
 - Owns **stored memoryDataSource** (source of truth for caching)
 - Has **computed repository** (uses shared memoryDataSource)
 - Contains all **factory methods** for ViewModels
+- Factory methods receive `navigator: any NavigatorContract`
 
 ---
 
@@ -203,19 +214,14 @@ public final class {Feature}Container: Sendable {
 import SwiftUI
 
 public protocol Feature {
-    func registerDeepLinks()
-    func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView
+    var deepLinkHandler: any DeepLinkHandler { get }
+    func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView
 }
-```
-
-```swift
-// Libraries/Core/Sources/Feature/View+FeatureNavigation.swift
-import SwiftUI
 
 public extension View {
-    func withNavigationDestinations(features: [any Feature], router: any RouterContract) -> some View {
+    func withNavigationDestinations(features: [any Feature], navigator: any NavigatorContract) -> some View {
         features.reduce(AnyView(self)) { view, feature in
-            feature.applyNavigationDestination(to: view, router: router)
+            feature.applyNavigationDestination(to: view, navigator: navigator)
         }
     }
 }
@@ -226,12 +232,21 @@ public extension View {
 ## Navigation Destinations
 
 ```swift
-// Sources/Navigation/{Feature}Navigation.swift
-import {AppName}Core
+// Sources/Navigation/{Feature}IncomingNavigation.swift
+import ChallengeCore
 
-public enum {Feature}Navigation: Navigation {
+public enum {Feature}IncomingNavigation: Navigation {
     case list
     case detail(identifier: Int)
+}
+```
+
+```swift
+// Sources/Navigation/{Feature}OutgoingNavigation.swift
+import ChallengeCore
+
+public enum {Feature}OutgoingNavigation: Navigation {
+    case settings  // Navigates to Settings feature
 }
 ```
 
@@ -239,35 +254,32 @@ public enum {Feature}Navigation: Navigation {
 - Conform to `Navigation` protocol (from Core module)
 - Use primitive types for parameters (Int, String, Bool, UUID)
 - Never pass domain objects - only identifiers
+- **IncomingNavigation**: Destinations this feature handles
+- **OutgoingNavigation**: Destinations to other features (connected via AppNavigationRedirect)
 
 ---
 
-## Deep Link Handler (Internal)
+## Deep Link Handler
 
 ```swift
 // Sources/Navigation/{Feature}DeepLinkHandler.swift
-import {AppName}Core
+import ChallengeCore
 import Foundation
 
 struct {Feature}DeepLinkHandler: DeepLinkHandler {
     let scheme = "challenge"
     let host = "{feature}"
 
-    @MainActor
-    static func register() {
-        DeepLinkRegistry.shared.register(Self())
-    }
-
     func resolve(_ url: URL) -> (any Navigation)? {
         switch url.path {
         case "/list":
-            return {Feature}Navigation.list
+            return {Feature}IncomingNavigation.list
 
         case "/detail":
             guard let id = url.queryParameter("id").flatMap(Int.init) else {
                 return nil
             }
-            return {Feature}Navigation.detail(identifier: id)
+            return {Feature}IncomingNavigation.detail(identifier: id)
 
         default:
             return nil
@@ -276,7 +288,7 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
 }
 ```
 
-**Note:** DeepLinkHandler is `internal` - external access is through `{Feature}Feature.registerDeepLinks()`.
+**Note:** DeepLinkHandler returns `IncomingNavigation` only.
 
 ---
 
@@ -284,8 +296,8 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
 
 ```swift
 // Sources/{Feature}Feature.swift
-import {AppName}Core
-import {AppName}Networking
+import ChallengeCore
+import ChallengeNetworking
 import SwiftUI
 
 public struct {Feature}Feature: Feature {
@@ -301,14 +313,14 @@ public struct {Feature}Feature: Feature {
 
     // MARK: - Feature Protocol
 
-    public func registerDeepLinks() {
-        {Feature}DeepLinkHandler.register()
+    public var deepLinkHandler: any DeepLinkHandler {
+        {Feature}DeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
+    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
         AnyView(
-            view.navigationDestination(for: {Feature}Navigation.self) { navigation in
-                self.view(for: navigation, router: router)
+            view.navigationDestination(for: {Feature}IncomingNavigation.self) { navigation in
+                self.view(for: navigation, navigator: navigator)
             }
         )
     }
@@ -316,17 +328,17 @@ public struct {Feature}Feature: Feature {
 
 // MARK: - Private
 
-private extension {Feature}Feature {
+extension {Feature}Feature {
     @ViewBuilder
-    func view(for navigation: {Feature}Navigation, router: any RouterContract) -> some View {
+    func view(for navigation: {Feature}IncomingNavigation, navigator: any NavigatorContract) -> some View {
         switch navigation {
         case .list:
-            {Name}ListView(viewModel: container.make{Name}ListViewModel(router: router))
+            {Name}ListView(viewModel: container.make{Name}ListViewModel(navigator: navigator))
         case .detail(let identifier):
             {Name}DetailView(
                 viewModel: container.make{Name}DetailViewModel(
                     identifier: identifier,
-                    router: router
+                    navigator: navigator
                 )
             )
         }
@@ -338,9 +350,9 @@ private extension {Feature}Feature {
 - **public struct** implementing `Feature` protocol
 - **Required httpClient** in init (injected by AppContainer)
 - Creates and owns its **Container**
-- **registerDeepLinks()** - Public method to register deep links
-- **applyNavigationDestination()** - Public method to register navigation destinations
-- **view(for:router:)** - Private method, delegates to Container factories
+- **deepLinkHandler** property - Returns handler instance
+- **applyNavigationDestination()** - Registers navigation for `IncomingNavigation`
+- **view(for:navigator:)** - Internal method, delegates to Container factories
 
 ---
 
@@ -348,7 +360,7 @@ private extension {Feature}Feature {
 
 ```swift
 // Sources/HomeFeature.swift
-import {AppName}Core
+import ChallengeCore
 import SwiftUI
 
 public struct HomeFeature: Feature {
@@ -364,25 +376,39 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public func registerDeepLinks() {
-        // Home has no deep links
+    public var deepLinkHandler: any DeepLinkHandler {
+        HomeDeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView {
-        AnyView(view)
+    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
+        AnyView(
+            view.navigationDestination(for: HomeIncomingNavigation.self) { navigation in
+                self.view(for: navigation, navigator: navigator)
+            }
+        )
     }
 
     // MARK: - Factory
 
-    public func makeHomeView(router: any RouterContract) -> some View {
-        HomeView(viewModel: container.makeHomeViewModel(router: router))
+    public func makeHomeView(navigator: any NavigatorContract) -> some View {
+        HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
+    }
+}
+
+extension HomeFeature {
+    @ViewBuilder
+    func view(for navigation: HomeIncomingNavigation, navigator: any NavigatorContract) -> some View {
+        switch navigation {
+        case .main:
+            HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
+        }
     }
 }
 ```
 
 ```swift
 // Sources/HomeContainer.swift
-import {AppName}Core
+import ChallengeCore
 
 public final class HomeContainer: Sendable {
     // MARK: - Init
@@ -391,8 +417,8 @@ public final class HomeContainer: Sendable {
 
     // MARK: - Factories
 
-    func makeHomeViewModel(router: any RouterContract) -> HomeViewModel {
-        HomeViewModel(navigator: HomeNavigator(router: router))
+    func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
+        HomeViewModel(navigator: HomeNavigator(navigator: navigator))
     }
 }
 ```
@@ -423,11 +449,12 @@ public final class HomeContainer: Sendable {
 | Implementation (Class) | **public** / **open** | Direct instantiation allowed |
 | {Feature}Feature | **public** | Entry point struct |
 | {Feature}Container | **public** | Created by Feature |
-| Feature.registerDeepLinks() | **public** | Called from AppContainer |
+| Feature.deepLinkHandler | **public** | Used by AppContainer |
 | Feature.applyNavigationDestination() | **public** | Called via withNavigationDestinations |
 | Container factory methods | **internal** | Called by Feature |
-| {Feature}Navigation | internal | Not exposed to App layer |
-| {Feature}DeepLinkHandler | internal | Accessed via Feature.registerDeepLinks() |
+| {Feature}IncomingNavigation | **public** | Used by AppNavigationRedirect |
+| {Feature}OutgoingNavigation | **public** | Used by AppNavigationRedirect |
+| {Feature}DeepLinkHandler | internal | Accessed via Feature.deepLinkHandler |
 | NavigatorContract | internal | Internal to feature |
 | Navigator | internal | Internal implementation |
 | Views | internal | Internal UI |
@@ -448,40 +475,39 @@ struct ChallengeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            container.makeRootView()
+            RootContainerView(appContainer: container)
         }
     }
 }
 ```
 
-**Note:** ChallengeApp is minimal - just creates AppContainer and uses `makeRootView()` factory method.
+**Note:** ChallengeApp is minimal - just creates AppContainer and uses RootContainerView.
 
-### RootView (Using Features)
+### RootContainerView (Using Features)
 
 ```swift
-// App/Sources/Presentation/Views/RootView.swift
-import {AppName}Core
-import {AppName}Home
+// App/Sources/Presentation/Views/RootContainerView.swift
+import ChallengeCore
+import ChallengeHome
 import SwiftUI
 
-struct RootView: View {
-    let features: [any Feature]
-    @State private var router = Router()
+struct RootContainerView: View {
+    let appContainer: AppContainer
+    @State private var coordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
 
     var body: some View {
-        NavigationStack(path: $router.path) {
-            HomeFeature()
-                .makeHomeView(router: router)
-                .withNavigationDestinations(features: features, router: router)
+        NavigationStack(path: $coordinator.path) {
+            appContainer.makeRootView(navigator: coordinator)
+                .withNavigationDestinations(features: appContainer.features, navigator: coordinator)
         }
         .onOpenURL { url in
-            router.navigate(to: url)
+            appContainer.handle(url: url, navigator: coordinator)
         }
     }
 }
 
 #Preview {
-    AppContainer().makeRootView()
+    RootContainerView(appContainer: AppContainer())
 }
 ```
 
@@ -505,7 +531,8 @@ Features/{Feature}/
 | Test | Purpose |
 |------|---------|
 | Init with HTTPClient | Verify feature initializes without crashing |
-| registerDeepLinks() | Verify deep links are registered correctly |
+| applyNavigationDestination | Verify navigation destinations are registered |
+| deepLinkHandler | Verify deep links are resolved correctly |
 
 **Note:** Factory methods are internal to Container. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.
 
@@ -526,44 +553,46 @@ protocol HomeNavigatorContract {
 
 ```swift
 // Sources/Presentation/Home/Navigator/HomeNavigator.swift
-import {AppName}Core
-import Foundation
+import ChallengeCore
 
 struct HomeNavigator: HomeNavigatorContract {
-    private let router: RouterContract
+    private let navigator: NavigatorContract
 
-    init(router: RouterContract) {
-        self.router = router
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
     }
 
     func navigateToCharacters() {
-        // EXTERNAL: uses URL (doesn't import Character feature)
-        router.navigate(to: URL(string: "challenge://character/list"))
+        // Uses OutgoingNavigation - redirected by AppNavigationRedirect
+        navigator.navigate(to: HomeOutgoingNavigation.characters)
     }
 }
 ```
 
-**Key Point:** HomeNavigator uses URL for external navigation, so Home feature doesn't need to import Character feature.
+**Key Point:** HomeNavigator uses `OutgoingNavigation`, which is connected to `CharacterIncomingNavigation.list` via `AppNavigationRedirect`.
 
 ---
 
 ## Checklist
 
 - [ ] Create `AppContainer.swift` in App/Sources/ as Composition Root
+- [ ] Create `AppNavigationRedirect.swift` to connect features
 - [ ] Create `{Feature}Container.swift` for dependency composition
 - [ ] Create `{Feature}Feature.swift` as struct implementing `Feature` protocol
 - [ ] Feature requires `httpClient` in init (no optional default)
 - [ ] Feature creates Container in init
 - [ ] Container has stored `memoryDataSource` property (source of truth)
 - [ ] Container has computed `repository` property
-- [ ] Container has factory methods for ViewModels
-- [ ] Create internal `Navigation/{Feature}Navigation.swift` conforming to `Navigation` protocol
-- [ ] Create internal `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/`
+- [ ] Container has factory methods receiving `navigator: any NavigatorContract`
+- [ ] Create `{Feature}IncomingNavigation.swift` conforming to `Navigation` protocol
+- [ ] Create `{Feature}OutgoingNavigation.swift` for cross-feature navigation (if needed)
+- [ ] Create `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/`
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
 - [ ] Views only receive ViewModel
 - [ ] Add feature to `AppContainer.features` array
-- [ ] `AppContainer.init` registers deep links automatically
-- [ ] `AppContainer` has `makeRootView()` factory method
-- [ ] `ChallengeApp` only creates AppContainer and uses `makeRootView()`
-- [ ] `RootView` in `App/Sources/Presentation/Views/` receives features and uses `.withNavigationDestinations(features:router:)`
-- [ ] **Create feature tests with HTTPClientMock**
+- [ ] `AppContainer` has `handle(url:navigator:)` for deep links
+- [ ] `AppContainer` has `makeRootView(navigator:)` factory method
+- [ ] `ChallengeApp` only creates AppContainer and uses `RootContainerView`
+- [ ] `RootContainerView` creates `NavigationCoordinator(redirector: AppNavigationRedirect())`
+- [ ] `RootContainerView` uses `.withNavigationDestinations(features:navigator:)`
+- [ ] **Create feature tests**

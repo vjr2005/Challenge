@@ -10,13 +10,13 @@ struct CharacterDeepLinkHandlerTests {
         // Given
         let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/list"))
-        let expected = CharacterNavigation.list
+        let expected = CharacterIncomingNavigation.list
 
         // When
         let value = sut.resolve(url)
 
         // Then
-        #expect(value as? CharacterNavigation == expected)
+        #expect(value as? CharacterIncomingNavigation == expected)
     }
 
     @Test
@@ -24,13 +24,13 @@ struct CharacterDeepLinkHandlerTests {
         // Given
         let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/detail?id=42"))
-        let expected = CharacterNavigation.detail(identifier: 42)
+        let expected = CharacterIncomingNavigation.detail(identifier: 42)
 
         // When
         let value = sut.resolve(url)
 
         // Then
-        #expect(value as? CharacterNavigation == expected)
+        #expect(value as? CharacterIncomingNavigation == expected)
     }
 
     @Test

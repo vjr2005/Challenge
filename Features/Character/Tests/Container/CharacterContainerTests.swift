@@ -21,11 +21,11 @@ struct CharacterContainerTests {
     func makeCharacterListViewModelReturnsConfiguredInstance() {
         // Given
         let httpClientMock = HTTPClientMock()
-        let routerMock = RouterMock()
+        let navigatorMock = NavigatorMock()
         let sut = CharacterContainer(httpClient: httpClientMock)
 
         // When
-        let viewModel = sut.makeCharacterListViewModel(router: routerMock)
+        let viewModel = sut.makeCharacterListViewModel(navigator: navigatorMock)
 
         // Then
         #expect(viewModel.state == .idle)
@@ -35,11 +35,11 @@ struct CharacterContainerTests {
     func makeCharacterDetailViewModelReturnsConfiguredInstance() {
         // Given
         let httpClientMock = HTTPClientMock()
-        let routerMock = RouterMock()
+        let navigatorMock = NavigatorMock()
         let sut = CharacterContainer(httpClient: httpClientMock)
 
         // When
-        let viewModel = sut.makeCharacterDetailViewModel(identifier: 42, router: routerMock)
+        let viewModel = sut.makeCharacterDetailViewModel(identifier: 42, navigator: navigatorMock)
 
         // Then
         #expect(viewModel.state == .idle)

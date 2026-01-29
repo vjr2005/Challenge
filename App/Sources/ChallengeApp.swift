@@ -2,11 +2,11 @@ import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    private let container = AppContainer()
+    private let appContainer = AppContainer()
 
     var body: some Scene {
         WindowGroup {
-            container.makeRootView()
+            RootContainerView(appContainer: appContainer)
         }
     }
 }
