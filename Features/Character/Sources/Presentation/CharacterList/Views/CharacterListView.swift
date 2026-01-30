@@ -13,7 +13,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 	var body: some View {
 		content
 			.task {
-				await viewModel.load()
+				await viewModel.loadIfNeeded()
 			}
 			.navigationTitle(LocalizedStrings.title)
 			.navigationBarTitleDisplayMode(.large)
@@ -25,27 +25,27 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 				prompt: LocalizedStrings.searchPlaceholder
 			)
 	}
-
-	@ViewBuilder
-	private var content: some View {
-		switch viewModel.state {
-		case .idle:
-			Color.clear
-		case .loading:
-			loadingView
-		case .loaded(let page):
-			characterList(page: page)
-		case .empty:
-			emptyView
-		case .error(let error):
-			errorView(error: error)
-		}
-	}
 }
 
 // MARK: - Subviews
 
 private extension CharacterListView {
+    @ViewBuilder
+    var content: some View {
+        switch viewModel.state {
+            case .idle:
+                Color.clear
+            case .loading:
+                loadingView
+            case .loaded(let page):
+                characterList(page: page)
+            case .empty:
+                emptyView
+            case .error(let error):
+                errorView(error: error)
+        }
+    }
+
 	var loadingView: some View {
 		DSLoadingView(message: LocalizedStrings.loading)
 	}
@@ -125,7 +125,7 @@ private extension CharacterListView {
 			retryTitle: LocalizedStrings.Common.tryAgain
 		) {
 			Task {
-				await viewModel.load()
+				await viewModel.loadIfNeeded()
 			}
 		}
 	}
@@ -267,7 +267,7 @@ private final class CharacterListViewModelPreviewStub: CharacterListViewModelCon
 		self.state = state
 	}
 
-	func load() async {}
+	func loadIfNeeded() async {}
 	func loadMore() async {}
 	func didSelect(_ character: Character) {}
 }

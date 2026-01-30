@@ -30,7 +30,7 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(sut.state == .loaded(expected))
@@ -46,7 +46,7 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(sut.state == .empty)
@@ -61,7 +61,7 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(sut.state == .error(.loadFailed))
@@ -76,11 +76,67 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(useCaseMock.executeCallCount == 1)
         #expect(useCaseMock.lastRequestedPage == 1)
+    }
+
+    @Test
+    func loadIfNeededDoesNothingWhenLoaded() async {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        await sut.loadIfNeeded()
+        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+
+        // When
+        await sut.loadIfNeeded()
+
+        // Then
+        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+    }
+
+    @Test
+    func loadIfNeededDoesNothingWhenEmpty() async {
+        // Given
+        let emptyPage = CharactersPage.stub(characters: [])
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(emptyPage)
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        await sut.loadIfNeeded()
+        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+
+        // When
+        await sut.loadIfNeeded()
+
+        // Then
+        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+    }
+
+    @Test
+    func loadIfNeededLoadsWhenError() async {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .failure(.loadFailed)
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        await sut.loadIfNeeded()
+        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+
+        // When
+        useCaseMock.result = .success(.stub())
+        await sut.loadIfNeeded()
+
+        // Then
+        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
     }
 
     // MARK: - Load More
@@ -98,7 +154,7 @@ struct CharacterListViewModelTests {
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
-        await sut.load()
+        await sut.loadIfNeeded()
         useCaseMock.result = .success(secondPage)
 
         // When
@@ -123,7 +179,7 @@ struct CharacterListViewModelTests {
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // When
         await sut.loadMore()
@@ -141,7 +197,7 @@ struct CharacterListViewModelTests {
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
-        await sut.load()
+        await sut.loadIfNeeded()
         let callCountAfterLoad = useCaseMock.executeCallCount
 
         // When
@@ -160,7 +216,7 @@ struct CharacterListViewModelTests {
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
-        await sut.load()
+        await sut.loadIfNeeded()
         useCaseMock.result = .failure(.loadFailed)
 
         // When
@@ -179,7 +235,7 @@ struct CharacterListViewModelTests {
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
-        await sut.load()
+        await sut.loadIfNeeded()
         useCaseMock.result = .failure(.loadFailed)
         await sut.loadMore()
 
@@ -268,7 +324,7 @@ struct CharacterListViewModelTests {
         sut.searchQuery = "Morty"
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(useCaseMock.lastRequestedQuery == "Morty")
@@ -284,7 +340,7 @@ struct CharacterListViewModelTests {
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
         sut.searchQuery = "Summer"
 
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // When
         await sut.loadMore()
@@ -303,7 +359,7 @@ struct CharacterListViewModelTests {
         sut.searchQuery = ""
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(useCaseMock.lastRequestedQuery == nil)
@@ -319,7 +375,7 @@ struct CharacterListViewModelTests {
         sut.searchQuery = "   "
 
         // When
-        await sut.load()
+        await sut.loadIfNeeded()
 
         // Then
         #expect(useCaseMock.lastRequestedQuery == nil)
@@ -335,7 +391,7 @@ struct CharacterListViewModelTests {
         let navigatorMock = CharacterListNavigatorMock()
         let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
 
-        await sut.load()
+        await sut.loadIfNeeded()
         useCaseMock.result = .success(secondPage)
         await sut.loadMore()
 

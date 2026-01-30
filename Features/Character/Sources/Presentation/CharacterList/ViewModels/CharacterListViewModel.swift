@@ -6,7 +6,11 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 
     private(set) var state: CharacterListViewState = .idle
     var searchQuery: String = "" {
-        didSet { searchQueryDidChange() }
+        didSet {
+            if searchQuery != oldValue {
+                searchQueryDidChange()
+            }
+        }
     }
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
@@ -20,10 +24,13 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         self.navigator = navigator
     }
 
-    func load() async {
-        state = .loading
-        currentPage = 1
-        await fetchCharacters()
+    func loadIfNeeded() async {
+        switch state {
+        case .idle, .error:
+            await load()
+        case .loading, .loaded, .empty:
+            break
+        }
     }
 
     func loadMore() async {
@@ -60,6 +67,12 @@ private extension CharacterListViewModel {
                 await load()
             }
         }
+    }
+
+    func load() async {
+        state = .loading
+        currentPage = 1
+        await fetchCharacters()
     }
 
     func fetchCharacters() async {
