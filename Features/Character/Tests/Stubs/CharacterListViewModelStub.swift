@@ -7,6 +7,7 @@ import Foundation
 @Observable
 final class CharacterListViewModelStub: CharacterListViewModelContract {
 	var state: CharacterListViewState
+	var searchQuery: String = ""
 
 	init(state: CharacterListViewState) {
 		self.state = state

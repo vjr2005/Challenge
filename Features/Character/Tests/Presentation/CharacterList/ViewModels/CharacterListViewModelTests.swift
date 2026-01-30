@@ -207,4 +207,162 @@ struct CharacterListViewModelTests {
         // Then
         #expect(navigatorMock.navigateToDetailIds == [42])
     }
+
+    // MARK: - Search
+
+    @Test
+    func initialSearchQueryIsEmpty() {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        // Then
+        #expect(sut.searchQuery == "")
+    }
+
+    @Test
+    func searchQueryChangeTriggersLoadAfterDebounce() async throws {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(useCaseMock.lastRequestedQuery == "Rick")
+    }
+
+    @Test
+    func rapidSearchQueryChangesOnlyTriggersOneLoad() async throws {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        // When
+        sut.searchQuery = "R"
+        try await Task.sleep(for: .milliseconds(100))
+        sut.searchQuery = "Ri"
+        try await Task.sleep(for: .milliseconds(100))
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(useCaseMock.executeCallCount == 1)
+        #expect(useCaseMock.lastRequestedQuery == "Rick")
+    }
+
+    @Test
+    func loadUsesCurrentSearchQuery() async {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+        sut.searchQuery = "Morty"
+
+        // When
+        await sut.load()
+
+        // Then
+        #expect(useCaseMock.lastRequestedQuery == "Morty")
+    }
+
+    @Test
+    func loadMoreUsesCurrentSearchQuery() async {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(firstPage)
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+        sut.searchQuery = "Summer"
+
+        await sut.load()
+
+        // When
+        await sut.loadMore()
+
+        // Then
+        #expect(useCaseMock.lastRequestedQuery == "Summer")
+    }
+
+    @Test
+    func emptySearchQueryPassesNilToUseCase() async {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+        sut.searchQuery = ""
+
+        // When
+        await sut.load()
+
+        // Then
+        #expect(useCaseMock.lastRequestedQuery == nil)
+    }
+
+    @Test
+    func whitespaceOnlySearchQueryPassesNilToUseCase() async {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+        sut.searchQuery = "   "
+
+        // When
+        await sut.load()
+
+        // Then
+        #expect(useCaseMock.lastRequestedQuery == nil)
+    }
+
+    @Test
+    func searchQueryChangeResetsToPageOne() async throws {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        let secondPage = CharactersPage.stub(currentPage: 2, hasNextPage: false)
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(firstPage)
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        await sut.load()
+        useCaseMock.result = .success(secondPage)
+        await sut.loadMore()
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(useCaseMock.lastRequestedPage == 1)
+    }
+
+    @Test
+    func clearingSearchQueryBeforeDebounceOnlyTriggersOneLoad() async throws {
+        // Given
+        let useCaseMock = GetCharactersUseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = CharacterListNavigatorMock()
+        let sut = CharacterListViewModel(getCharactersUseCase: useCaseMock, navigator: navigatorMock)
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(100))
+        sut.searchQuery = ""
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(useCaseMock.executeCallCount == 1)
+        #expect(useCaseMock.lastRequestedQuery == nil)
+    }
 }

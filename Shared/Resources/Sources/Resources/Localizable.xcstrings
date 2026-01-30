@@ -69,6 +69,23 @@
         }
       }
     },
+    "characterList.searchPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search characters..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar personajes..."
+          }
+        }
+      }
+    },
     "characterList.headerTitle" : {
       "extractionState" : "manual",
       "localizations" : {

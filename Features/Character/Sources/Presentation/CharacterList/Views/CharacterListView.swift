@@ -17,6 +17,13 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 			}
 			.navigationTitle(LocalizedStrings.title)
 			.navigationBarTitleDisplayMode(.large)
+			.searchable(
+				text: Binding(
+					get: { viewModel.searchQuery },
+					set: { viewModel.searchQuery = $0 }
+				),
+				prompt: LocalizedStrings.searchPlaceholder
+			)
 	}
 
 	@ViewBuilder
@@ -186,6 +193,7 @@ private struct CharacterRowView: View {
 private enum LocalizedStrings {
 	static var title: String { "characterList.title".localized() }
 	static var loading: String { "characterList.loading".localized() }
+	static var searchPlaceholder: String { "characterList.searchPlaceholder".localized() }
 	static var headerTitle: String { "characterList.headerTitle".localized() }
 	static func headerSubtitle(_ count: Int) -> String { "characterList.headerSubtitle %lld".localized(count) }
 	static var loadMore: String { "characterList.loadMore".localized() }
@@ -253,6 +261,7 @@ private enum AccessibilityIdentifier {
 @Observable
 private final class CharacterListViewModelPreviewStub: CharacterListViewModelContract {
 	var state: CharacterListViewState
+	var searchQuery: String = ""
 
 	init(state: CharacterListViewState) {
 		self.state = state
