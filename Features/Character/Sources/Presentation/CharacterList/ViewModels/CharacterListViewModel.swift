@@ -14,13 +14,19 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
+    private let clearCacheUseCase: ClearCharactersCacheUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private var currentPage = 1
     private var isLoadingMore = false
     private var searchTask: Task<Void, Never>?
 
-    init(getCharactersUseCase: GetCharactersUseCaseContract, navigator: CharacterListNavigatorContract) {
+    init(
+        getCharactersUseCase: GetCharactersUseCaseContract,
+        clearCacheUseCase: ClearCharactersCacheUseCaseContract,
+        navigator: CharacterListNavigatorContract
+    ) {
         self.getCharactersUseCase = getCharactersUseCase
+        self.clearCacheUseCase = clearCacheUseCase
         self.navigator = navigator
     }
 
@@ -31,6 +37,11 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         case .loading, .loaded, .empty:
             break
         }
+    }
+
+    func refresh() async {
+        await clearCacheUseCase.execute()
+        await load()
     }
 
     func loadMore() async {

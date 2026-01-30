@@ -101,6 +101,9 @@ private extension CharacterListView {
 			}
 			.padding(.horizontal, SpacingToken.lg)
 		}
+		.refreshable {
+			await viewModel.refresh()
+		}
 		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
 		.background(ColorToken.backgroundSecondary)
 	}
@@ -268,6 +271,7 @@ private final class CharacterListViewModelPreviewStub: CharacterListViewModelCon
 	}
 
 	func loadIfNeeded() async {}
+	func refresh() async {}
 	func loadMore() async {}
 	func didSelect(_ character: Character) {}
 }

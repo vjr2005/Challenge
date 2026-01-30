@@ -85,6 +85,9 @@ private extension CharacterDetailView {
 			.padding(.top, SpacingToken.sm)
 			.padding(.bottom, SpacingToken.xxl)
 		}
+		.refreshable {
+			await viewModel.refresh()
+		}
 	}
 
 	func headerSection(_ character: Character) -> some View {
@@ -217,6 +220,7 @@ private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewMode
 	}
 
 	func load() async {}
+	func refresh() async {}
 	func didTapOnBack() {}
 }
 

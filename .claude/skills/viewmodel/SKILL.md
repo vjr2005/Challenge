@@ -421,6 +421,115 @@ func loadIfNeededLoadsWhenError() async {
 
 ---
 
+## Pull-to-Refresh Pattern
+
+Pull-to-refresh requires different strategies for lists vs details:
+
+### List Refresh (Clear Cache + Reload)
+
+For lists, clear the page cache and reload:
+
+```swift
+@Observable
+final class {Name}ListViewModel {
+    private let get{Name}sUseCase: Get{Name}sUseCaseContract
+    private let clearCacheUseCase: Clear{Name}sCacheUseCaseContract  // plural!
+
+    func refresh() async {
+        await clearCacheUseCase.execute()
+        await load()
+    }
+}
+```
+
+### Detail Refresh (Update Cache)
+
+For details, fetch fresh data and update the cache (don't clear list cache):
+
+```swift
+@Observable
+final class {Name}DetailViewModel {
+    private let get{Name}UseCase: Get{Name}UseCaseContract
+    private let refresh{Name}UseCase: Refresh{Name}UseCaseContract  // singular!
+
+    func refresh() async {
+        do {
+            let item = try await refresh{Name}UseCase.execute(identifier: identifier)
+            state = .loaded(item)
+        } catch {
+            state = .error(error)
+        }
+    }
+}
+```
+
+> **IMPORTANT:**
+> - List refresh uses `Clear{Name}sCacheUseCase` (clears page cache only)
+> - Detail refresh uses `Refresh{Name}UseCase` (fetches fresh data, updates cache)
+> - Never add `clearCache()` or `refresh()` to existing Get UseCases
+> - See `/usecase` skill for naming conventions
+
+### View Integration
+
+```swift
+ScrollView {
+    // content...
+}
+.refreshable {
+    await viewModel.refresh()
+}
+```
+
+### Testing List Refresh
+
+```swift
+@Test
+func refreshClearsCacheAndReloads() async {
+    // Given
+    let useCaseMock = Get{Name}sUseCaseMock()
+    useCaseMock.result = .success(.stub())
+    let clearCacheMock = Clear{Name}sCacheUseCaseMock()
+    let sut = {Name}ListViewModel(
+        get{Name}sUseCase: useCaseMock,
+        clearCacheUseCase: clearCacheMock,
+        navigator: {Name}NavigatorMock()
+    )
+
+    await sut.loadIfNeeded()
+
+    // When
+    await sut.refresh()
+
+    // Then
+    #expect(clearCacheMock.executeCallCount == 1)
+}
+```
+
+### Testing Detail Refresh
+
+```swift
+@Test
+func refreshUpdatesCharacterFromAPI() async {
+    // Given
+    let refreshMock = Refresh{Name}UseCaseMock()
+    refreshMock.result = .success(.stub(name: "Refreshed"))
+    let sut = {Name}DetailViewModel(
+        identifier: 1,
+        get{Name}UseCase: Get{Name}UseCaseMock(),
+        refresh{Name}UseCase: refreshMock,
+        navigator: {Name}NavigatorMock()
+    )
+
+    // When
+    await sut.refresh()
+
+    // Then
+    #expect(refreshMock.executeCallCount == 1)
+}
+```
+
+---
+
 ## Testing
 
 ### ViewModel Tests

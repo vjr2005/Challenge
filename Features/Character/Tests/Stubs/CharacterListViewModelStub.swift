@@ -17,6 +17,10 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 		// No-op: state is fixed for snapshots
 	}
 
+	func refresh() async {
+		// No-op: state is fixed for snapshots
+	}
+
 	func loadMore() async {
 		// No-op: state is fixed for snapshots
 	}

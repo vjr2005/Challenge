@@ -637,6 +637,140 @@ struct CharacterRepositoryTests {
             _ = try await sut.searchCharacters(page: 1, query: "Rick")
         }
     }
+
+    // MARK: - Refresh Character
+
+    @Test
+    func refreshCharacterAlwaysFetchesFromRemote() async throws {
+        // Given
+        let cachedDTO: CharacterDTO = try loadJSON("character")
+        let freshDTO: CharacterDTO = try loadJSON("character_dead")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(freshDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        memoryDataSourceMock.characterToReturn = cachedDTO
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        let value = try await sut.refreshCharacter(identifier: 1)
+
+        // Then
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
+        #expect(value.status == .dead)
+    }
+
+    @Test
+    func refreshCharacterUpdatesCharacterInPages() async throws {
+        // Given
+        let freshDTO: CharacterDTO = try loadJSON("character_dead")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(freshDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.refreshCharacter(identifier: 1)
+
+        // Then
+        #expect(memoryDataSourceMock.updateCharacterInPagesCallCount == 1)
+        #expect(memoryDataSourceMock.lastUpdatedCharacter == freshDTO)
+    }
+
+    @Test
+    func refreshCharacterCallsRemoteWithCorrectIdentifier() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(characterDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.refreshCharacter(identifier: 42)
+
+        // Then
+        #expect(remoteDataSourceMock.lastFetchedIdentifier == 42)
+    }
+
+    @Test
+    func refreshCharacterMapsHTTPNotFoundToCharacterNotFound() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.characterNotFound(id: 42)) {
+            _ = try await sut.refreshCharacter(identifier: 42)
+        }
+    }
+
+    @Test
+    func refreshCharacterMapsGenericErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(GenericTestError.unknown)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.refreshCharacter(identifier: 1)
+        }
+    }
+
+    @Test
+    func refreshCharacterDoesNotUpdateCacheOnError() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try? await sut.refreshCharacter(identifier: 1)
+
+        // Then
+        #expect(memoryDataSourceMock.updateCharacterInPagesCallCount == 0)
+    }
+
+    // MARK: - Clear Pages Cache
+
+    @Test
+    func clearPagesCacheClearsMemoryDataSource() async {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        await sut.clearPagesCache()
+
+        // Then
+        #expect(memoryDataSourceMock.clearPagesCallCount == 1)
+    }
 }
 
 // MARK: - Private

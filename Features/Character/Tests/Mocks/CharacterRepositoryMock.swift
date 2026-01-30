@@ -10,6 +10,10 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 	private(set) var getCharacterCallCount = 0
 	private(set) var getCharactersCallCount = 0
 	private(set) var searchCharactersCallCount = 0
+	private(set) var refreshCharacterCallCount = 0
+	private(set) var lastRefreshedIdentifier: Int?
+	var refreshResult: Result<Character, CharacterError> = .failure(.loadFailed)
+	private(set) var clearPagesCacheCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
 	private(set) var lastRequestedPage: Int?
 	private(set) var lastSearchedPage: Int?
@@ -32,5 +36,15 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 		lastSearchedPage = page
 		lastSearchedQuery = query
 		return try searchResult.get()
+	}
+
+	func refreshCharacter(identifier: Int) async throws(CharacterError) -> Character {
+		refreshCharacterCallCount += 1
+		lastRefreshedIdentifier = identifier
+		return try refreshResult.get()
+	}
+
+	func clearPagesCache() async {
+		clearPagesCacheCallCount += 1
 	}
 }

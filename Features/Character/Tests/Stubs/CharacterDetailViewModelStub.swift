@@ -16,6 +16,10 @@ final class CharacterDetailViewModelStub: CharacterDetailViewModelContract {
 		// No-op: state is fixed for snapshots
 	}
 
+	func refresh() async {
+		// No-op: state is fixed for snapshots
+	}
+
 	func didTapOnBack() {
 		// No-op: navigation not tested in snapshots
 	}

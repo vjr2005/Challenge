@@ -39,7 +39,16 @@ Features/{Feature}/
 
 Each UseCase encapsulates **one business operation** with **exactly one public method: `execute`**.
 
-> **CRITICAL:** A UseCase must have only the `execute` method. If you need multiple operations, create separate UseCases. For example, instead of adding `search` method to `GetCharactersUseCase`, create a separate `SearchCharactersUseCase`.
+> **CRITICAL:** A UseCase must have only the `execute` method. If you need multiple operations, create separate UseCases. For example:
+> - Instead of adding `search` method to `GetCharactersUseCase`, create a separate `SearchCharactersUseCase`
+> - Instead of adding `clearCache` method to `GetCharactersUseCase`, create a separate `ClearCharactersCacheUseCase`
+> - Instead of adding `refresh` method to `GetCharacterUseCase`, create a separate `RefreshCharacterUseCase`
+>
+> **Never add auxiliary methods** like `clearCache()`, `refresh()`, or `validate()` to existing UseCases. Each operation deserves its own UseCase.
+>
+> **Naming must match the related UseCase:**
+> - `GetCharactersUseCase` (plural) → `ClearCharactersCacheUseCase` (plural)
+> - `GetCharacterUseCase` (singular) → `RefreshCharacterUseCase` (singular)
 
 Naming convention:
 
@@ -50,6 +59,8 @@ Naming convention:
 | Create | `Create{Name}UseCase` | `execute({name}:)` |
 | Update | `Update{Name}UseCase` | `execute({name}:)` |
 | Delete | `Delete{Name}UseCase` | `execute(id:)` |
+| Clear list cache | `Clear{Name}sCacheUseCase` | `execute()` |
+| Refresh single item | `Refresh{Name}UseCase` | `execute(id:)` |
 | Custom action | `{Action}{Name}UseCase` | `execute(...)` |
 
 ### 1. Contract (Protocol)

@@ -55,6 +55,22 @@ struct CharacterRepository: CharacterRepositoryContract {
 			throw .loadFailed
 		}
 	}
+
+	func refreshCharacter(identifier: Int) async throws(CharacterError) -> Character {
+		do {
+			let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
+			await memoryDataSource.updateCharacterInPages(dto)
+			return dto.toDomain()
+		} catch let error as HTTPError {
+			throw mapHTTPError(error, identifier: identifier)
+		} catch {
+			throw .loadFailed
+		}
+	}
+
+	func clearPagesCache() async {
+		await memoryDataSource.clearPages()
+	}
 }
 
 // MARK: - Error Mapping

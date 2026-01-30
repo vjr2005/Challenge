@@ -21,6 +21,10 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
     private(set) var savePageLastResponse: CharactersResponseDTO?
     private(set) var savePageLastPage: Int?
 
+    private(set) var clearPagesCallCount = 0
+    private(set) var updateCharacterInPagesCallCount = 0
+    private(set) var lastUpdatedCharacter: CharacterDTO?
+
     // MARK: - CharacterMemoryDataSourceContract
 
     func getCharacter(identifier: Int) -> CharacterDTO? {
@@ -42,5 +46,14 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
         savePageCallCount += 1
         savePageLastResponse = response
         savePageLastPage = page
+    }
+
+    func clearPages() {
+        clearPagesCallCount += 1
+    }
+
+    func updateCharacterInPages(_ character: CharacterDTO) {
+        updateCharacterInPagesCallCount += 1
+        lastUpdatedCharacter = character
     }
 }
