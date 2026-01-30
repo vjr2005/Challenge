@@ -4,6 +4,34 @@ import Testing
 @testable import ChallengeHome
 
 struct HomeDeepLinkHandlerTests {
+    // MARK: - Properties
+
+    @Test
+    func schemeReturnsChallenge() {
+        // Given
+        let sut = HomeDeepLinkHandler()
+
+        // When
+        let result = sut.scheme
+
+        // Then
+        #expect(result == "challenge")
+    }
+
+    @Test
+    func hostReturnsHome() {
+        // Given
+        let sut = HomeDeepLinkHandler()
+
+        // When
+        let result = sut.host
+
+        // Then
+        #expect(result == "home")
+    }
+
+    // MARK: - Resolve
+
     @Test
     func resolvesMainURL() throws {
         // Given

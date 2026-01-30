@@ -6,6 +6,20 @@ import Testing
 @testable import ChallengeHome
 
 struct HomeFeatureTests {
+    // MARK: - Deep Link Handler
+
+    @Test
+    func deepLinkHandlerReturnsHomeDeepLinkHandler() {
+        // Given
+        let sut = HomeFeature()
+
+        // When
+        let result = sut.deepLinkHandler
+
+        // Then
+        #expect(result is HomeDeepLinkHandler)
+    }
+
     // MARK: - Factory
 
     @Test

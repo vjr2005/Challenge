@@ -1,4 +1,5 @@
 import ChallengeCore
+import ChallengeCoreMocks
 import Testing
 
 @testable import ChallengeSystem
