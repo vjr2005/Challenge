@@ -186,7 +186,7 @@ Each feature defines Incoming and optionally Outgoing navigation:
 ### Incoming Navigation (Destinations the feature handles)
 
 ```swift
-// Features/{Feature}/Sources/Navigation/{Feature}IncomingNavigation.swift
+// Features/{Feature}/Sources/Presentation/Navigation/{Feature}IncomingNavigation.swift
 import ChallengeCore
 
 public enum {Feature}IncomingNavigation: Navigation {
@@ -198,7 +198,7 @@ public enum {Feature}IncomingNavigation: Navigation {
 ### Outgoing Navigation (Destinations to other features)
 
 ```swift
-// Features/{Feature}/Sources/Navigation/{Feature}OutgoingNavigation.swift
+// Features/{Feature}/Sources/Presentation/Navigation/{Feature}OutgoingNavigation.swift
 import ChallengeCore
 
 public enum {Feature}OutgoingNavigation: Navigation {
@@ -212,7 +212,7 @@ public enum {Feature}OutgoingNavigation: Navigation {
 ### DeepLinkHandler
 
 ```swift
-// Features/{Feature}/Sources/Navigation/{Feature}DeepLinkHandler.swift
+// Features/{Feature}/Sources/Presentation/Navigation/{Feature}DeepLinkHandler.swift
 import ChallengeCore
 import Foundation
 
@@ -628,11 +628,11 @@ Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift
 │   ├── {Feature}Container.swift
-│   ├── Navigation/
-│   │   ├── {Feature}IncomingNavigation.swift  # Destinations this feature handles
-│   │   ├── {Feature}OutgoingNavigation.swift  # Destinations to other features (optional)
-│   │   └── {Feature}DeepLinkHandler.swift
 │   └── Presentation/
+│       ├── Navigation/
+│       │   ├── {Feature}IncomingNavigation.swift  # Destinations this feature handles
+│       │   ├── {Feature}OutgoingNavigation.swift  # Destinations to other features (optional)
+│       │   └── {Feature}DeepLinkHandler.swift
 │       └── {Screen}/
 │           └── Navigator/
 │               ├── {Screen}NavigatorContract.swift
@@ -640,9 +640,10 @@ Features/{Feature}/
 └── Tests/
     ├── Mocks/
     │   └── {Screen}NavigatorMock.swift
-    └── Navigation/
-        ├── {Feature}DeepLinkHandlerTests.swift
-        └── {Screen}NavigatorTests.swift
+    └── Presentation/
+        └── Navigation/
+            ├── {Feature}DeepLinkHandlerTests.swift
+            └── {Screen}NavigatorTests.swift
 ```
 
 ---

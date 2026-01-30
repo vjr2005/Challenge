@@ -77,9 +77,6 @@ FeatureName/
 ├── Sources/
 │   ├── {Feature}Feature.swift              # Public entry point (navigation + deep links)
 │   ├── {Feature}Container.swift            # Dependency composition (factories)
-│   ├── Navigation/
-│   │   ├── {Feature}Navigation.swift       # Navigation destinations
-│   │   └── {Feature}DeepLinkHandler.swift  # Deep link handler
 │   ├── Domain/
 │   │   ├── Models/
 │   │   │   └── {Name}.swift                # Domain models
@@ -96,6 +93,10 @@ FeatureName/
 │   │   └── Repositories/
 │   │       └── {Name}Repository.swift
 │   └── Presentation/
+│       ├── Navigation/
+│       │   ├── {Feature}IncomingNavigation.swift   # Navigation destinations
+│       │   ├── {Feature}OutgoingNavigation.swift   # Cross-feature navigation (optional)
+│       │   └── {Feature}DeepLinkHandler.swift      # Deep link handler
 │       ├── {Name}List/
 │       │   ├── Navigator/
 │       │   │   ├── {Name}ListNavigatorContract.swift
@@ -121,6 +122,8 @@ FeatureName/
 │   ├── Data/
 │   │   └── {Name}RepositoryTests.swift
 │   ├── Presentation/
+│   │   ├── Navigation/
+│   │   │   └── {Feature}DeepLinkHandlerTests.swift
 │   │   └── {Name}List/
 │   │       ├── ViewModels/
 │   │       │   └── {Name}ListViewModelTests.swift
@@ -403,7 +406,7 @@ App/
 | Feature folder | `{Name}/` | `Character/` |
 | Public entry | `{Feature}Feature.swift` | `CharacterFeature.swift` |
 | Container | `{Feature}Container.swift` | `CharacterContainer.swift` |
-| Navigation | `Navigation/{Feature}Navigation.swift` | `Navigation/CharacterNavigation.swift` |
+| Navigation | `Presentation/Navigation/{Feature}IncomingNavigation.swift` | `Presentation/Navigation/CharacterIncomingNavigation.swift` |
 | Domain model | `{Name}.swift` | `Character.swift` |
 | DTO | `{Name}DTO.swift` | `CharacterDTO.swift` |
 | UseCase | `{Action}{Name}UseCase.swift` | `GetCharacterUseCase.swift` |
