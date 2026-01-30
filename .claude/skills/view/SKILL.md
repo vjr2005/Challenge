@@ -54,7 +54,7 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
     var body: some View {
         content
-            .task { await viewModel.load() }
+            .task { await viewModel.loadIfNeeded() }
     }
 
     @ViewBuilder
@@ -210,7 +210,7 @@ private final class {Name}ViewModelPreviewStub: {Name}ViewModelContract {
         self.state = state
     }
 
-    func load() async {}
+    func loadIfNeeded() async {}
     // Add other protocol methods as no-ops
 }
 
@@ -316,7 +316,7 @@ private enum AccessibilityIdentifier {
 - [ ] Create new DesignSystem components if needed for complex UI
 - [ ] Add private `LocalizedStrings` enum with all strings
 - [ ] Delegate user actions to ViewModel methods
-- [ ] Implement `body` with `.task` modifier for loading
+- [ ] Implement `body` with `.task { await viewModel.loadIfNeeded() }`
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases
 - [ ] Add private `AccessibilityIdentifier` enum

@@ -150,6 +150,19 @@ final class {Name}ListViewModel {
         self.get{Name}sUseCase = get{Name}sUseCase
     }
 
+    func loadIfNeeded() async {
+        switch state {
+        case .idle, .error:
+            await load()
+        case .loading, .loaded, .empty:
+            break
+        }
+    }
+}
+
+// MARK: - Private
+
+private extension {Name}ListViewModel {
     func load() async {
         state = .loading
         do {
@@ -169,6 +182,7 @@ final class {Name}ListViewModel {
 - Inject UseCases via **protocol (contract)**
 - State is `private(set)` - only ViewModel mutates it
 - Inject `NavigatorContract` for navigation (see `/router` skill)
+- Use `loadIfNeeded()` public, `load()` private (see "Preventing Unnecessary Reloads")
 
 ---
 
@@ -274,6 +288,134 @@ struct HomeView: View {
             viewModel.didTapOnCharacterButton()
         }
     }
+}
+```
+
+---
+
+## Preventing Unnecessary Reloads
+
+SwiftUI's `.task` modifier executes every time the view appears, including when returning from navigation. To prevent unnecessary data reloads:
+
+### Pattern: loadIfNeeded() + private load()
+
+```swift
+@Observable
+final class {Name}ListViewModel {
+    private(set) var state: {Name}ListViewState = .idle
+
+    // Public: View calls this from .task
+    func loadIfNeeded() async {
+        switch state {
+        case .idle, .error:
+            await load()
+        case .loading, .loaded, .empty:
+            break
+        }
+    }
+}
+
+private extension {Name}ListViewModel {
+    // Private: Only called internally
+    func load() async {
+        state = .loading
+        // fetch data...
+    }
+}
+```
+
+**Rules:**
+- `loadIfNeeded()` is **public** - called by View in `.task`
+- `load()` is **private** - encapsulates loading logic
+- Only load from `.idle` (initial) or `.error` (retry)
+- Skip loading from `.loading`, `.loaded`, `.empty`
+
+### View Integration
+
+```swift
+struct {Name}ListView: View {
+    @State private var viewModel: {Name}ListViewModel
+
+    var body: some View {
+        content
+            .task {
+                await viewModel.loadIfNeeded()
+            }
+    }
+}
+```
+
+### Observable Properties with Guards
+
+When using observable properties that trigger actions (like search), guard against unchanged values:
+
+```swift
+var searchQuery: String = "" {
+    didSet {
+        if searchQuery != oldValue {
+            searchQueryDidChange()
+        }
+    }
+}
+```
+
+**Why:** SwiftUI may re-set binding values during navigation transitions, triggering `didSet` even when the value hasn't changed. The guard prevents unnecessary reloads.
+
+### Testing loadIfNeeded()
+
+Test all state transitions:
+
+```swift
+@Test
+func loadIfNeededDoesNothingWhenLoaded() async {
+    // Given
+    let useCaseMock = Get{Name}sUseCaseMock()
+    useCaseMock.result = .success(.stub())
+    let sut = {Name}ListViewModel(get{Name}sUseCase: useCaseMock)
+
+    await sut.loadIfNeeded()
+    let callCountAfterFirstLoad = useCaseMock.executeCallCount
+
+    // When
+    await sut.loadIfNeeded()
+
+    // Then
+    #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+}
+
+@Test
+func loadIfNeededDoesNothingWhenEmpty() async {
+    // Given
+    let useCaseMock = Get{Name}sUseCaseMock()
+    useCaseMock.result = .success([])
+    let sut = {Name}ListViewModel(get{Name}sUseCase: useCaseMock)
+
+    await sut.loadIfNeeded()
+    let callCountAfterFirstLoad = useCaseMock.executeCallCount
+
+    // When
+    await sut.loadIfNeeded()
+
+    // Then
+    #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+}
+
+@Test
+func loadIfNeededLoadsWhenError() async {
+    // Given
+    let useCaseMock = Get{Name}sUseCaseMock()
+    useCaseMock.result = .failure(TestError.network)
+    let sut = {Name}ListViewModel(get{Name}sUseCase: useCaseMock)
+
+    await sut.loadIfNeeded()
+    let callCountAfterFirstLoad = useCaseMock.executeCallCount
+
+    // When
+    useCaseMock.result = .success(.stub())
+    await sut.loadIfNeeded()
+
+    // Then
+    #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
 }
 ```
 
@@ -438,6 +580,23 @@ final class CharacterListViewModel {
         self.navigator = navigator
     }
 
+    func loadIfNeeded() async {
+        switch state {
+        case .idle, .error:
+            await load()
+        case .loading, .loaded, .empty:
+            break
+        }
+    }
+
+    func didSelect(_ character: Character) {
+        navigator.navigateToDetail(id: character.id)
+    }
+}
+
+// MARK: - Private
+
+private extension CharacterListViewModel {
     func load() async {
         state = .loading
         do {
@@ -446,10 +605,6 @@ final class CharacterListViewModel {
         } catch {
             state = .error(error)
         }
-    }
-
-    func didSelect(_ character: Character) {
-        navigator.navigateToDetail(id: character.id)
     }
 }
 ```
@@ -473,7 +628,9 @@ final class CharacterListViewModel {
 - [ ] Create ViewModel class with @Observable
 - [ ] Inject UseCase via protocol (contract)
 - [ ] Inject NavigatorContract for navigation (not RouterContract)
-- [ ] Implement load/fetch method with state transitions
+- [ ] Implement `loadIfNeeded()` (public) and `load()` (private) pattern
+- [ ] Guard observable properties with `oldValue` check in `didSet`
 - [ ] Create tests for initial state, success, error, and call verification
+- [ ] Create tests for `loadIfNeeded()` state transitions (loaded, empty, error)
 - [ ] Create NavigatorMock for testing navigation
 - [ ] Run tests
