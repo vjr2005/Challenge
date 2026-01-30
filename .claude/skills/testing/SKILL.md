@@ -254,22 +254,27 @@ struct CharacterStatusTests {
 
 Use the **stub pattern** to create test data for **Domain Models only**.
 
-**Location:** `Tests/Stubs/`
+**Location:** `Tests/Shared/Stubs/`
 
 ```
 FeatureName/
 └── Tests/
-    ├── Stubs/                    # Test data factories for Domain Models
-    │   ├── Character+Stub.swift
-    │   └── Location+Stub.swift
-    ├── Mocks/
-    └── Data/
+    ├── Unit/                     # Unit tests
+    ├── Snapshots/                # Snapshot tests
+    └── Shared/                   # Shared resources (used by both Unit and Snapshots)
+        ├── Stubs/                # Test data factories for Domain Models
+        │   ├── Character+Stub.swift
+        │   └── Location+Stub.swift
+        ├── Mocks/                # Internal test mocks
+        ├── Fixtures/             # JSON files for DTOs
+        ├── Extensions/           # Equatable conformances, etc.
+        └── Resources/            # Test images
 ```
 
 **Stub extension pattern:**
 
 ```swift
-// Tests/Stubs/User+Stub.swift
+// Tests/Shared/Stubs/User+Stub.swift
 extension User {
     static func stub(
         id: Int = 1,
@@ -290,7 +295,7 @@ extension User {
 - Method name: `static func stub(...)`
 - All parameters must have default values
 - Defaults should be valid, realistic values
-- Located in `Tests/Stubs/` (internal to test target)
+- Located in `Tests/Shared/Stubs/` (shared between Unit and Snapshot tests)
 - **Only for Domain Models** (not DTOs - use JSON fixtures instead)
 
 **Usage in tests:**
@@ -322,7 +327,7 @@ func processesUserCorrectly() {
 | Location | Visibility | Usage |
 |----------|------------|-------|
 | `Mocks/` (framework) | Public | Mocks used by other modules |
-| `Tests/Mocks/` | Internal | Mocks only used within the test target |
+| `Tests/Shared/Mocks/` | Internal | Mocks shared between Unit and Snapshot tests |
 
 ### Mock vs Fake
 
@@ -385,25 +390,28 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
 
 ## Equatable Extensions for Tests
 
-When a type doesn't conform to `Equatable` in production code (e.g., contains `Error`), but tests need to compare it with `#expect(value == expected)`, create an **Equatable extension in the test target**.
+When a type doesn't conform to `Equatable` in production code (e.g., contains `Error`), but tests need to compare it with `#expect(value == expected)`, create an **Equatable extension in the shared test folder**.
 
-**Location:** `Tests/Extensions/`
+**Location:** `Tests/Shared/Extensions/`
 
 ```
 FeatureName/
 └── Tests/
-    ├── Extensions/                    # Equatable conformances for testing
-    │   ├── SomeViewState+Equatable.swift
-    │   └── AnotherType+Equatable.swift
-    ├── Stubs/
-    ├── Mocks/
-    └── ...
+    ├── Unit/
+    ├── Snapshots/
+    └── Shared/
+        ├── Extensions/                # Equatable conformances for testing
+        │   ├── SomeViewState+Equatable.swift
+        │   └── AnotherType+Equatable.swift
+        ├── Stubs/
+        ├── Mocks/
+        └── ...
 ```
 
 **Extension pattern:**
 
 ```swift
-// Tests/Extensions/CharacterDetailViewState+Equatable.swift
+// Tests/Shared/Extensions/CharacterDetailViewState+Equatable.swift
 import Foundation
 
 @testable import {AppName}Character
@@ -426,7 +434,7 @@ extension CharacterDetailViewState: @retroactive Equatable {
 
 **Rules:**
 - File naming: `{TypeName}+Equatable.swift`
-- Located in `Tests/Extensions/` (internal to test target)
+- Located in `Tests/Shared/Extensions/` (shared between Unit and Snapshot tests)
 - **Use `@retroactive`** to silence the "conformance of imported type" warning
 - Use for types that can't be Equatable in production (contain `Error`, closures, etc.)
 - Compare `Error` cases by `localizedDescription` for simplicity
@@ -500,12 +508,14 @@ private enum TestError: Error {
 
 ## Checklist
 
-- [ ] Test file named `{ComponentName}Tests.swift`
+- [ ] Test file named `{ComponentName}Tests.swift` in `Tests/Unit/`
 - [ ] SUT variable named `sut`
 - [ ] All tests use Given/When/Then comments
 - [ ] No `test` prefix in method names
 - [ ] Full object comparison (not individual properties)
 - [ ] Parameterized tests for multiple cases
-- [ ] Stubs created for Domain Models in `Tests/Stubs/`
-- [ ] Mocks placed in appropriate location (Tests/Mocks/ or Mocks/)
-- [ ] Equatable extensions in `Tests/Extensions/` for types with `Error`
+- [ ] Stubs created for Domain Models in `Tests/Shared/Stubs/`
+- [ ] Mocks placed in appropriate location (`Tests/Shared/Mocks/` or `Mocks/`)
+- [ ] Equatable extensions in `Tests/Shared/Extensions/` for types with `Error`
+- [ ] JSON fixtures in `Tests/Shared/Fixtures/`
+- [ ] Test resources (images) in `Tests/Shared/Resources/`

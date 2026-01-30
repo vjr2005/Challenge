@@ -19,23 +19,25 @@ Guide for creating Snapshot Tests using Point-Free's SnapshotTesting library.
 
 ## Prerequisites
 
-1. `SnapshotTesting` dependency in test targets
+1. `SnapshotTesting` dependency in snapshot test targets
 2. `DSAsyncImage` component (replaces `AsyncImage`)
 3. `ImageLoaderMock` in CoreMocks
-4. Test image in `Tests/Resources/`
+4. Test image in `Tests/Shared/Resources/`
 
 ## File structure
 
 ```
 Tests/
-└── Presentation/
-    ├── Helpers/
-    │   ├── {Name}ViewModelStub.swift
-    │   └── SnapshotStubs.swift
-    └── {Name}/
-        └── Snapshots/
-            ├── {Name}ViewSnapshotTests.swift
-            └── __Snapshots__/
+├── Snapshots/                        # Snapshot tests
+│   └── Presentation/
+│       └── {Name}/
+│           ├── {Name}ViewSnapshotTests.swift
+│           └── __Snapshots__/
+└── Shared/                           # Shared resources
+    ├── Stubs/
+    │   └── {Name}ViewModelStub.swift
+    └── Resources/
+        └── test-avatar.jpg
 ```
 
 ---
@@ -175,7 +177,7 @@ tuist test {Module}
 ### Regenerate Snapshots
 
 ```bash
-rm -rf Tests/Presentation/{Name}/Snapshots/__Snapshots__
+rm -rf Tests/Snapshots/Presentation/{Name}/__Snapshots__
 tuist test {Module}  # Run twice
 ```
 
@@ -185,16 +187,15 @@ tuist test {Module}  # Run twice
 
 ### Setup (once per feature)
 
-- [ ] Add `SnapshotTesting` to testDependencies
-- [ ] Create test image in `Tests/Resources/`
-- [ ] Create `SnapshotStubs.swift`
+- [ ] Add `SnapshotTesting` to snapshotTestDependencies
+- [ ] Create test image in `Tests/Shared/Resources/`
+- [ ] Create ViewModel stub in `Tests/Shared/Stubs/`
 - [ ] Create ViewModel protocol
-- [ ] Create ViewModel stub
 
 ### Per View
 
 - [ ] Use `DSAsyncImage` in View
-- [ ] Create snapshot tests file
+- [ ] Create snapshot tests file in `Tests/Snapshots/`
 - [ ] Initialize `ImageLoaderMock`
 - [ ] Test each state
 - [ ] Use `.iPhone13ProMax` config

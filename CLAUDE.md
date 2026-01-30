@@ -113,17 +113,35 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 ## Testing Quick Reference
 
+### Test Directory Structure
+
+```
+Module/Tests/
+├── Unit/           → Unit tests (Swift Testing)
+├── Snapshots/      → Snapshot tests (SnapshotTesting)
+├── E2E/            → E2E tests (XCTest, App only)
+└── Shared/         → Shared resources
+    ├── Stubs/      → Domain model test data
+    ├── Mocks/      → Internal test mocks
+    ├── Fixtures/   → JSON files for DTOs
+    ├── Extensions/ → Test helpers (Equatable, etc.)
+    └── Resources/  → Test images
+```
+
+### Testing Rules
+
 | Rule | Description |
 |------|-------------|
 | SUT naming | Always name object under test as `sut` |
 | Structure | Use `// Given`, `// When`, `// Then` comments |
 | Assertions | Use `#expect`, `#require` for unwrapping |
 | Comparison | Compare full objects, not individual properties |
-| Mocks location | `Tests/Mocks/` (internal) or `Mocks/` (public) |
-| Stubs location | `Tests/Stubs/` for Domain models |
-| Fixtures location | `Tests/Fixtures/` for JSON (DTOs) |
+| Mocks location | `Tests/Shared/Mocks/` (internal) or `Mocks/` (public) |
+| Stubs location | `Tests/Shared/Stubs/` for Domain models |
+| Fixtures location | `Tests/Shared/Fixtures/` for JSON (DTOs) |
 | Coverage scope | Only source targets (never mocks or external libraries) |
 | Unit tests | Use Swift Testing (`@Test`, `#expect`) |
+| Snapshot tests | Use SnapshotTesting library |
 | E2E/UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
 
 For details, see `/testing` skill.

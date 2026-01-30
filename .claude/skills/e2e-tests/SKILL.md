@@ -19,7 +19,7 @@ Guide for creating End-to-End UI tests using XCTest with the Robot pattern.
 ## File Structure
 
 ```
-App/E2ETests/
+App/Tests/E2E/
 ├── Robots/
 │   ├── Robot.swift              # Base protocol and DSL
 │   ├── HomeRobot.swift

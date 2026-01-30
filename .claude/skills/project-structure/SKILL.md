@@ -29,8 +29,11 @@ Guide for project organization and directory structure.
 │   │   │       └── RootView.swift    # Root navigation view
 │   │   └── Resources/
 │   │       └── Assets.xcassets/
-│   ├── Tests/
-│   └── E2ETests/
+│   └── Tests/
+│       ├── Unit/                     # Unit tests
+│       ├── Snapshots/                # Snapshot tests
+│       ├── E2E/                      # End-to-end tests
+│       └── Shared/                   # Shared resources
 ├── Features/
 │   ├── {Feature}/
 │   └── Home/
@@ -116,28 +119,37 @@ FeatureName/
 │               ├── {Name}DetailViewModel.swift
 │               └── {Name}DetailViewState.swift
 ├── Tests/
-│   ├── Domain/
-│   │   └── UseCases/
-│   │       └── Get{Name}UseCaseTests.swift
-│   ├── Data/
-│   │   └── {Name}RepositoryTests.swift
-│   ├── Presentation/
-│   │   ├── Navigation/
-│   │   │   └── {Feature}DeepLinkHandlerTests.swift
-│   │   └── {Name}List/
-│   │       ├── ViewModels/
-│   │       │   └── {Name}ListViewModelTests.swift
-│   │       └── Snapshots/
-│   │           └── {Name}ListViewSnapshotTests.swift
-│   ├── Feature/
-│   │   └── {Feature}FeatureTests.swift     # Feature factory tests
-│   ├── Stubs/
-│   │   └── {Name}+Stub.swift
-│   ├── Fixtures/
-│   │   └── {name}.json
-│   └── Mocks/
-│       ├── Get{Name}UseCaseMock.swift
-│       └── {Name}RepositoryMock.swift
+│   ├── Unit/                                # Unit tests (Swift Testing)
+│   │   ├── Domain/
+│   │   │   └── UseCases/
+│   │   │       └── Get{Name}UseCaseTests.swift
+│   │   ├── Data/
+│   │   │   └── {Name}RepositoryTests.swift
+│   │   ├── Presentation/
+│   │   │   ├── Navigation/
+│   │   │   │   └── {Feature}DeepLinkHandlerTests.swift
+│   │   │   └── {Name}List/
+│   │   │       └── ViewModels/
+│   │   │           └── {Name}ListViewModelTests.swift
+│   │   └── Feature/
+│   │       └── {Feature}FeatureTests.swift
+│   ├── Snapshots/                           # Snapshot tests (SnapshotTesting)
+│   │   └── Presentation/
+│   │       └── {Name}List/
+│   │           ├── {Name}ListViewSnapshotTests.swift
+│   │           └── __Snapshots__/
+│   └── Shared/                              # Shared resources
+│       ├── Stubs/
+│       │   └── {Name}+Stub.swift
+│       ├── Mocks/
+│       │   ├── Get{Name}UseCaseMock.swift
+│       │   └── {Name}RepositoryMock.swift
+│       ├── Fixtures/
+│       │   └── {name}.json
+│       ├── Extensions/
+│       │   └── {Name}ViewState+Equatable.swift
+│       └── Resources/
+│           └── test-avatar.jpg
 └── Mocks/                                   # Public mocks (if needed)
     └── {Name}RepositoryMock.swift
 ```
@@ -229,31 +241,41 @@ extension Date {
 
 ```
 Tests/
-├── Domain/
-│   └── UseCases/
-│       └── Get{Name}UseCaseTests.swift
-├── Data/
-│   ├── {Name}RepositoryTests.swift
-│   └── {Name}RemoteDataSourceTests.swift
-├── Presentation/
-│   └── {ScreenName}/
-│       ├── ViewModels/
-│       │   └── {ScreenName}ViewModelTests.swift
-│       └── Snapshots/
-│           └── {ScreenName}ViewSnapshotTests.swift
-├── Feature/
-│   └── {Feature}FeatureTests.swift
-├── Stubs/                        # Domain model test data
-│   ├── Character+Stub.swift
-│   └── Location+Stub.swift
-├── Fixtures/                     # JSON fixtures for DTOs
-│   ├── character.json
-│   └── character_list.json
-├── Mocks/                        # Internal test mocks
-│   ├── Get{Name}UseCaseMock.swift
-│   └── {Name}RepositoryMock.swift
-└── Helpers/                      # Test utilities
-    └── SnapshotStubs.swift
+├── Unit/                         # Unit tests (Swift Testing)
+│   ├── Domain/
+│   │   └── UseCases/
+│   │       └── Get{Name}UseCaseTests.swift
+│   ├── Data/
+│   │   ├── {Name}RepositoryTests.swift
+│   │   └── {Name}RemoteDataSourceTests.swift
+│   ├── Presentation/
+│   │   └── {ScreenName}/
+│   │       └── ViewModels/
+│   │           └── {ScreenName}ViewModelTests.swift
+│   └── Feature/
+│       └── {Feature}FeatureTests.swift
+├── Snapshots/                    # Snapshot tests (SnapshotTesting)
+│   └── Presentation/
+│       └── {ScreenName}/
+│           ├── {ScreenName}ViewSnapshotTests.swift
+│           └── __Snapshots__/
+├── E2E/                          # E2E tests (XCTest, App only)
+│   ├── Robots/
+│   └── Tests/
+└── Shared/                       # Shared resources (used by Unit and Snapshots)
+    ├── Stubs/                    # Domain model test data
+    │   ├── Character+Stub.swift
+    │   └── Location+Stub.swift
+    ├── Mocks/                    # Internal test mocks
+    │   ├── Get{Name}UseCaseMock.swift
+    │   └── {Name}RepositoryMock.swift
+    ├── Fixtures/                 # JSON fixtures for DTOs
+    │   ├── character.json
+    │   └── character_list.json
+    ├── Extensions/               # Test helpers (Equatable, etc.)
+    │   └── {Name}ViewState+Equatable.swift
+    └── Resources/                # Test images
+        └── test-avatar.jpg
 ```
 
 ---
@@ -263,15 +285,16 @@ Tests/
 | Location | Visibility | Usage |
 |----------|------------|-------|
 | `Mocks/` (framework) | Public | Mocks used by other modules |
-| `Tests/Mocks/` | Internal | Mocks only used within the test target |
+| `Tests/Shared/Mocks/` | Internal | Mocks shared between Unit and Snapshot tests |
 
 ```
 FeatureName/
 ├── Mocks/                    # Public mocks ({AppName}FeatureNameMocks framework)
 │   └── {Name}RepositoryMock.swift
 └── Tests/
-    └── Mocks/                # Internal test-only mocks
-        └── {Name}DataSourceMock.swift
+    └── Shared/
+        └── Mocks/            # Internal test-only mocks
+            └── {Name}DataSourceMock.swift
 ```
 
 ---
@@ -389,12 +412,17 @@ App/
 │           ├── AppIcon.appiconset/        # Production icon
 │           ├── AppIconDev.appiconset/     # Development icon
 │           └── AppIconStaging.appiconset/ # Staging icon
-├── Tests/                        # Unit tests for App target
-│   └── Data/
-│       └── AppEnvironment+APITests.swift
-└── E2ETests/                     # End-to-end UI tests
-    ├── Robots/
-    └── Tests/
+└── Tests/
+    ├── Unit/                     # Unit tests (Swift Testing)
+    │   └── Data/
+    │       └── AppEnvironment+APITests.swift
+    ├── Snapshots/                # Snapshot tests
+    │   └── Presentation/
+    ├── E2E/                      # End-to-end UI tests (XCTest)
+    │   ├── Robots/
+    │   └── Tests/
+    └── Shared/                   # Shared resources
+        └── Stubs/
 ```
 
 ---
@@ -436,11 +464,13 @@ App/
 - [ ] {Feature}Feature.swift as public entry point
 - [ ] Sources organized by layer: Domain, Data, Presentation
 - [ ] Presentation organized by screen: {ScreenName}/Navigator/, {ScreenName}/Views/, {ScreenName}/ViewModels/
-- [ ] Tests mirror Sources structure
-- [ ] Feature tests in Tests/Feature/
+- [ ] Unit tests in `Tests/Unit/` mirroring Sources structure
+- [ ] Snapshot tests in `Tests/Snapshots/`
+- [ ] Feature tests in `Tests/Unit/Feature/`
 - [ ] Extensions in dedicated `Extensions/` folder
 - [ ] Extension files named `{Type}+{Purpose}.swift`
-- [ ] Mocks in correct location (Tests/Mocks/ vs Mocks/)
-- [ ] Stubs in Tests/Stubs/
-- [ ] JSON fixtures in Tests/Fixtures/
+- [ ] Public mocks in `Mocks/`, internal mocks in `Tests/Shared/Mocks/`
+- [ ] Stubs in `Tests/Shared/Stubs/`
+- [ ] JSON fixtures in `Tests/Shared/Fixtures/`
+- [ ] Test resources in `Tests/Shared/Resources/`
 - [ ] If module needs `Bundle.module`, include `Bundle+Module.swift`
