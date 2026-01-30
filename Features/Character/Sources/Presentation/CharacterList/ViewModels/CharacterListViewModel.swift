@@ -2,22 +2,35 @@ import Foundation
 
 @Observable
 final class CharacterListViewModel: CharacterListViewModelContract {
+    private let debounceMilliseconds = 300
+
     private(set) var state: CharacterListViewState = .idle
+    var searchQuery: String = "" {
+        didSet {
+            if searchQuery != oldValue {
+                searchQueryDidChange()
+            }
+        }
+    }
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private var currentPage = 1
     private var isLoadingMore = false
+    private var searchTask: Task<Void, Never>?
 
     init(getCharactersUseCase: GetCharactersUseCaseContract, navigator: CharacterListNavigatorContract) {
         self.getCharactersUseCase = getCharactersUseCase
         self.navigator = navigator
     }
 
-    func load() async {
-        state = .loading
-        currentPage = 1
-        await fetchCharacters(page: currentPage)
+    func loadIfNeeded() async {
+        switch state {
+        case .idle, .error:
+            await load()
+        case .loading, .loaded, .empty:
+            break
+        }
     }
 
     func loadMore() async {
@@ -29,7 +42,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 
         isLoadingMore = true
         currentPage += 1
-        await fetchMoreCharacters(page: currentPage, existingPage: page)
+        await fetchMoreCharacters(existingPage: page)
         isLoadingMore = false
     }
 
@@ -41,9 +54,30 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 // MARK: - Private
 
 private extension CharacterListViewModel {
-    func fetchCharacters(page: Int) async {
+    var normalizedQuery: String? {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    func searchQueryDidChange() {
+        searchTask?.cancel()
+        searchTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(debounceMilliseconds))
+            if !Task.isCancelled {
+                await load()
+            }
+        }
+    }
+
+    func load() async {
+        state = .loading
+        currentPage = 1
+        await fetchCharacters()
+    }
+
+    func fetchCharacters() async {
         do {
-            let result = try await getCharactersUseCase.execute(page: page)
+            let result = try await getCharactersUseCase.execute(page: currentPage, query: normalizedQuery)
             if result.characters.isEmpty {
                 state = .empty
             } else {
@@ -54,9 +88,9 @@ private extension CharacterListViewModel {
         }
     }
 
-    func fetchMoreCharacters(page: Int, existingPage: CharactersPage) async {
+    func fetchMoreCharacters(existingPage: CharactersPage) async {
         do {
-            let result = try await getCharactersUseCase.execute(page: page)
+            let result = try await getCharactersUseCase.execute(page: currentPage, query: normalizedQuery)
             let combinedCharacters = existingPage.characters + result.characters
             let updatedPage = CharactersPage(
                 characters: combinedCharacters,

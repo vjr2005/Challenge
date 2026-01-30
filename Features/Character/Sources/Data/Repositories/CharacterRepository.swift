@@ -35,8 +35,19 @@ struct CharacterRepository: CharacterRepositoryContract {
 		}
 
 		do {
-			let response = try await remoteDataSource.fetchCharacters(page: page)
+			let response = try await remoteDataSource.fetchCharacters(page: page, query: nil)
 			await memoryDataSource.savePage(response, page: page)
+			return response.toDomain(currentPage: page)
+		} catch let error as HTTPError {
+			throw mapHTTPError(error, page: page)
+		} catch {
+			throw .loadFailed
+		}
+	}
+
+	func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+		do {
+			let response = try await remoteDataSource.fetchCharacters(page: page, query: query)
 			return response.toDomain(currentPage: page)
 		} catch let error as HTTPError {
 			throw mapHTTPError(error, page: page)

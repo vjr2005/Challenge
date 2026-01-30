@@ -35,4 +35,20 @@ nonisolated final class CharacterFlowE2ETests: XCTestCase {
 			robot.verifyIsVisible()
 		}
 	}
+
+	@MainActor
+	func testCharacterSearchFlow() throws {
+		let app = launch()
+
+		home(app: app) { robot in
+			robot.verifyIsVisible()
+			robot.tapCharacterButton()
+		}
+
+		characterList(app: app) { robot in
+			robot.verifyIsVisible()
+			robot.typeSearch(text: "Rick")
+			robot.verifyIsVisible()
+		}
+	}
 }

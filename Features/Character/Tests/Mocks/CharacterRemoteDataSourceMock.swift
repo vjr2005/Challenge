@@ -10,6 +10,7 @@ final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @u
 	private(set) var fetchCharactersCallCount = 0
 	private(set) var lastFetchedIdentifier: Int?
 	private(set) var lastFetchedPage: Int?
+	private(set) var lastFetchedQuery: String?
 
 	func fetchCharacter(identifier: Int) async throws -> CharacterDTO {
 		fetchCharacterCallCount += 1
@@ -17,9 +18,10 @@ final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @u
 		return try result.get()
 	}
 
-	func fetchCharacters(page: Int) async throws -> CharactersResponseDTO {
+	func fetchCharacters(page: Int, query: String?) async throws -> CharactersResponseDTO {
 		fetchCharactersCallCount += 1
 		lastFetchedPage = page
+		lastFetchedQuery = query
 		return try charactersResult.get()
 	}
 }

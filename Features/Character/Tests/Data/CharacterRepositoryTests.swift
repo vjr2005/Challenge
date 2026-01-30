@@ -288,6 +288,23 @@ struct CharacterRepositoryTests {
     }
 
     @Test
+    func mapsGenericErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(GenericTestError.unknown)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.getCharacter(identifier: 1)
+        }
+    }
+
+    @Test
     func doesNotSaveToCacheOnRemoteError() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
@@ -490,6 +507,136 @@ struct CharacterRepositoryTests {
         let saveCount = memoryDataSourceMock.savePageCallCount
         #expect(saveCount == 0)
     }
+
+    @Test
+    func getCharactersMapsGenericErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.getCharacters(page: 1)
+        }
+    }
+
+    // MARK: - Search Characters (Always Remote, No Cache)
+
+    @Test
+    func searchCharactersAlwaysCallsRemote() async throws {
+        // Given
+        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .success(responseDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        memoryDataSourceMock.pageToReturn = responseDTO
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.searchCharacters(page: 1, query: "Rick")
+
+        // Then
+        #expect(remoteDataSourceMock.fetchCharactersCallCount == 1)
+    }
+
+    @Test
+    func searchCharactersDoesNotSaveToCache() async throws {
+        // Given
+        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .success(responseDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.searchCharacters(page: 1, query: "Rick")
+
+        // Then
+        #expect(memoryDataSourceMock.savePageCallCount == 0)
+    }
+
+    @Test
+    func searchCharactersPassesQueryToRemoteDataSource() async throws {
+        // Given
+        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .success(responseDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.searchCharacters(page: 1, query: "Morty")
+
+        // Then
+        #expect(remoteDataSourceMock.lastFetchedQuery == "Morty")
+    }
+
+    @Test
+    func searchCharactersPassesPageToRemoteDataSource() async throws {
+        // Given
+        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .success(responseDTO)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.searchCharacters(page: 3, query: "Rick")
+
+        // Then
+        #expect(remoteDataSourceMock.lastFetchedPage == 3)
+    }
+
+    @Test
+    func searchCharactersMapsHTTPNotFoundToInvalidPage() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.invalidPage(page: 5)) {
+            _ = try await sut.searchCharacters(page: 5, query: "Rick")
+        }
+    }
+
+    @Test
+    func searchCharactersMapsGenericErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.searchCharacters(page: 1, query: "Rick")
+        }
+    }
 }
 
 // MARK: - Private
@@ -498,4 +645,8 @@ private extension CharacterRepositoryTests {
     func loadJSON<T: Decodable>(_ filename: String) throws -> T {
         try Bundle.module.loadJSON(filename)
     }
+}
+
+private enum GenericTestError: Error {
+    case unknown
 }

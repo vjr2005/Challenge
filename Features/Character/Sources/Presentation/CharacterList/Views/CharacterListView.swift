@@ -13,32 +13,39 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 	var body: some View {
 		content
 			.task {
-				await viewModel.load()
+				await viewModel.loadIfNeeded()
 			}
 			.navigationTitle(LocalizedStrings.title)
 			.navigationBarTitleDisplayMode(.large)
-	}
-
-	@ViewBuilder
-	private var content: some View {
-		switch viewModel.state {
-		case .idle:
-			Color.clear
-		case .loading:
-			loadingView
-		case .loaded(let page):
-			characterList(page: page)
-		case .empty:
-			emptyView
-		case .error(let error):
-			errorView(error: error)
-		}
+			.searchable(
+				text: Binding(
+					get: { viewModel.searchQuery },
+					set: { viewModel.searchQuery = $0 }
+				),
+				prompt: LocalizedStrings.searchPlaceholder
+			)
 	}
 }
 
 // MARK: - Subviews
 
 private extension CharacterListView {
+    @ViewBuilder
+    var content: some View {
+        switch viewModel.state {
+            case .idle:
+                Color.clear
+            case .loading:
+                loadingView
+            case .loaded(let page):
+                characterList(page: page)
+            case .empty:
+                emptyView
+            case .error(let error):
+                errorView(error: error)
+        }
+    }
+
 	var loadingView: some View {
 		DSLoadingView(message: LocalizedStrings.loading)
 	}
@@ -118,7 +125,7 @@ private extension CharacterListView {
 			retryTitle: LocalizedStrings.Common.tryAgain
 		) {
 			Task {
-				await viewModel.load()
+				await viewModel.loadIfNeeded()
 			}
 		}
 	}
@@ -186,6 +193,7 @@ private struct CharacterRowView: View {
 private enum LocalizedStrings {
 	static var title: String { "characterList.title".localized() }
 	static var loading: String { "characterList.loading".localized() }
+	static var searchPlaceholder: String { "characterList.searchPlaceholder".localized() }
 	static var headerTitle: String { "characterList.headerTitle".localized() }
 	static func headerSubtitle(_ count: Int) -> String { "characterList.headerSubtitle %lld".localized(count) }
 	static var loadMore: String { "characterList.loadMore".localized() }
@@ -253,12 +261,13 @@ private enum AccessibilityIdentifier {
 @Observable
 private final class CharacterListViewModelPreviewStub: CharacterListViewModelContract {
 	var state: CharacterListViewState
+	var searchQuery: String = ""
 
 	init(state: CharacterListViewState) {
 		self.state = state
 	}
 
-	func load() async {}
+	func loadIfNeeded() async {}
 	func loadMore() async {}
 	func didSelect(_ character: Character) {}
 }

@@ -77,7 +77,7 @@ struct CharacterRemoteDataSourceTests {
 		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1)
+		_ = try await sut.fetchCharacters(page: 1, query: nil)
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -88,17 +88,65 @@ struct CharacterRemoteDataSourceTests {
 	@Test
 	func fetchCharactersIncludesPageQueryParameter() async throws {
 		// Given
-        let jsonData = try loadJSONData("characters_response")
+		let jsonData = try loadJSONData("characters_response")
 		let httpClientMock = HTTPClientMock(result: .success(jsonData))
 		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 5)
+		_ = try await sut.fetchCharacters(page: 5, query: nil)
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
 		let pageItem = try #require(endpoint.queryItems?.first { $0.name == "page" })
 		#expect(pageItem.value == "5")
+	}
+
+	@Test
+	func fetchCharactersIncludesNameQueryParameterWhenProvided() async throws {
+		// Given
+		let jsonData = try loadJSONData("characters_response")
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
+
+		// When
+		_ = try await sut.fetchCharacters(page: 1, query: "Rick")
+
+		// Then
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+		let nameItem = try #require(endpoint.queryItems?.first { $0.name == "name" })
+		#expect(nameItem.value == "Rick")
+	}
+
+	@Test
+	func fetchCharactersOmitsNameQueryParameterWhenNil() async throws {
+		// Given
+		let jsonData = try loadJSONData("characters_response")
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
+
+		// When
+		_ = try await sut.fetchCharacters(page: 1, query: nil)
+
+		// Then
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+		let nameItem = endpoint.queryItems?.first { $0.name == "name" }
+		#expect(nameItem == nil)
+	}
+
+	@Test
+	func fetchCharactersOmitsNameQueryParameterWhenEmpty() async throws {
+		// Given
+		let jsonData = try loadJSONData("characters_response")
+		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
+
+		// When
+		_ = try await sut.fetchCharacters(page: 1, query: "")
+
+		// Then
+		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+		let nameItem = endpoint.queryItems?.first { $0.name == "name" }
+		#expect(nameItem == nil)
 	}
 
 	@Test
@@ -109,7 +157,7 @@ struct CharacterRemoteDataSourceTests {
 		let sut = CharacterRemoteDataSource(httpClient: httpClientMock)
 
 		// When
-		let value = try await sut.fetchCharacters(page: 1)
+		let value = try await sut.fetchCharacters(page: 1, query: nil)
 
 		// Then
 		#expect(value.info.count == 826)
@@ -126,7 +174,7 @@ struct CharacterRemoteDataSourceTests {
 
 		// When / Then
 		await #expect(throws: TestError.network) {
-			_ = try await sut.fetchCharacters(page: 1)
+			_ = try await sut.fetchCharacters(page: 1, query: nil)
 		}
 	}
 }

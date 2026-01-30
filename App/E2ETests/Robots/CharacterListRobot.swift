@@ -23,6 +23,24 @@ extension CharacterListRobot {
 		backButton.tap()
 		return self
 	}
+
+	@discardableResult
+	func typeSearch(text: String, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let searchField = app.searchFields.firstMatch
+		XCTAssertTrue(searchField.waitForExistence(timeout: 5), file: file, line: line)
+		searchField.tap()
+		searchField.typeText(text)
+		return self
+	}
+
+	@discardableResult
+	func clearSearch(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let searchField = app.searchFields.firstMatch
+		XCTAssertTrue(searchField.waitForExistence(timeout: 5), file: file, line: line)
+		searchField.tap()
+		searchField.buttons["Clear text"].tap()
+		return self
+	}
 }
 
 // MARK: - Verifications
