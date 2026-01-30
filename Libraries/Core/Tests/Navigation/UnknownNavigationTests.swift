@@ -4,15 +4,6 @@ import Testing
 
 struct UnknownNavigationTests {
     @Test
-    func conformsToIncomingNavigation() {
-        // Given
-        let sut = UnknownNavigation.notFound
-
-        // Then
-        #expect(sut is any IncomingNavigation)
-    }
-
-    @Test
     func twoInstancesAreEqual() {
         // Given
         let first = UnknownNavigation.notFound

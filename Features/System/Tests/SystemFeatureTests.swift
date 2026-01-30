@@ -6,17 +6,18 @@ import Testing
 
 struct SystemFeatureTests {
     @Test
-    func applyNavigationDestinationReturnsAnyView() {
+    func applyNavigationDestinationReturnsView() {
         // Given
         let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
-        let testView = TestView()
+        let baseView = EmptyView()
 
         // When
-        let result = sut.applyNavigationDestination(to: testView, navigator: navigatorMock)
+        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
 
         // Then
-        #expect(result != nil)
+        let typeName = String(describing: type(of: result))
+        #expect(typeName == "AnyView")
     }
 
     // MARK: - View Factory
@@ -33,11 +34,5 @@ struct SystemFeatureTests {
         // Then
         let viewName = String(describing: type(of: result))
         #expect(viewName.contains("NotFoundView"))
-    }
-}
-
-private struct TestView: View {
-    var body: some View {
-        Text("Test")
     }
 }

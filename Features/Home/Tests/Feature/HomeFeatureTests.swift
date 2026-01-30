@@ -6,30 +6,20 @@ import Testing
 @testable import ChallengeHome
 
 struct HomeFeatureTests {
-    // MARK: - Init
-
-    @Test
-    func initDoesNotCrash() {
-        // When
-        let sut = HomeFeature()
-
-        // Then
-        _ = sut
-    }
-
     // MARK: - Factory
 
     @Test
-    func makeHomeViewReturnsConfiguredInstance() {
+    func makeHomeViewReturnsHomeView() {
         // Given
         let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
 
         // When
-        let view = sut.makeHomeView(navigator: navigatorMock)
+        let result = sut.makeHomeView(navigator: navigatorMock)
 
         // Then
-        _ = view
+        let viewName = String(describing: type(of: result))
+        #expect(viewName.contains("HomeView"))
     }
 
     // MARK: - Navigation Destination
@@ -45,7 +35,8 @@ struct HomeFeatureTests {
         let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
 
         // Then
-        _ = result
+        let typeName = String(describing: type(of: result))
+        #expect(typeName == "AnyView")
     }
 
     // MARK: - View Factory

@@ -6,18 +6,6 @@ import Testing
 
 struct CharacterContainerTests {
     @Test
-    func initWithHTTPClientDoesNotCrash() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-
-        // When
-        let sut = CharacterContainer(httpClient: httpClientMock)
-
-        // Then
-        _ = sut
-    }
-
-    @Test
     func makeCharacterListViewModelReturnsConfiguredInstance() {
         // Given
         let httpClientMock = HTTPClientMock()

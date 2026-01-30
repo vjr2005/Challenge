@@ -8,20 +8,6 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterFeatureTests {
-    // MARK: - Init
-
-    @Test
-    func initWithHTTPClientDoesNotCrash() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-
-        // When
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
-        // Then - Feature initializes without crashing
-        _ = sut
-    }
-
     // MARK: - Feature Protocol
 
     @Test
@@ -35,8 +21,9 @@ struct CharacterFeatureTests {
         // When
         let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
 
-        // Then - Method completes without crashing and returns a view
-        _ = result
+        // Then
+        let typeName = String(describing: type(of: result))
+        #expect(typeName == "AnyView")
     }
 
     // MARK: - View Factory
