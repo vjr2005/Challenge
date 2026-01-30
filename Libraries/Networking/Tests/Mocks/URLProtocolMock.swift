@@ -2,22 +2,19 @@ import Foundation
 
 final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	nonisolated(unsafe) private static var handlers: [String: (URLRequest) throws -> (URLResponse, Data?)] = [:]
-	nonisolated(unsafe) private static let lock = NSLock()
+	nonisolated private static let lock = NSLock()
 
-	/// Legacy support - default handler for tests that don't use host-specific handlers.
-	nonisolated static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))? {
-		get { handler(forHost: "default") }
-		set { setHandler(newValue, forHost: "default") }
-	}
-
-	/// Registers a handler for a specific host.
+	/// Registers a handler for requests matching the host of the given URL.
 	/// - Parameters:
 	///   - handler: The handler to invoke for requests to this host. Pass nil to remove.
-	///   - host: The host string (e.g., "api.example.com").
+	///   - url: The URL whose host will be used to match requests.
 	nonisolated static func setHandler(
 		_ handler: ((URLRequest) throws -> (URLResponse, Data?))?,
-		forHost host: String
+		forURL url: URL
 	) {
+        guard let host = url.host else {
+            return
+        }
 		lock.lock()
 		defer { lock.unlock() }
 		if let handler {
@@ -25,15 +22,6 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 		} else {
 			handlers.removeValue(forKey: host)
 		}
-	}
-
-	/// Returns the handler registered for a specific host.
-	/// - Parameter host: The host string.
-	/// - Returns: The registered handler, or nil if none.
-	nonisolated static func handler(forHost host: String) -> ((URLRequest) throws -> (URLResponse, Data?))? {
-		lock.lock()
-		defer { lock.unlock() }
-		return handlers[host]
 	}
 
 	/// Removes all registered handlers.
@@ -48,13 +36,10 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	) -> ((URLRequest) throws -> (URLResponse, Data?))? {
 		lock.lock()
 		defer { lock.unlock() }
-
-		// Try host-specific handler first
-		if let host = request.url?.host, let handler = handlers[host] {
-			return handler
-		}
-		// Fall back to default
-		return handlers["default"]
+        guard let host = request.url?.host else {
+            return nil
+        }
+		return handlers[host]
 	}
 
 	// MARK: - URLProtocol

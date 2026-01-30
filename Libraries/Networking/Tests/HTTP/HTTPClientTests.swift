@@ -15,10 +15,10 @@ struct HTTPClientTests {
 
 		URLProtocolMock.setHandler({ request in
 			// Then
-			#expect(request.url?.absoluteString == "https://test-builds-url.example.com/users")
+			#expect(request.url?.absoluteString == "\(baseURL)/users")
 			#expect(request.httpMethod == "GET")
 			return (mockResponse(url: request.url), Data())
-		}, forHost: "test-builds-url.example.com")
+		}, forURL: baseURL)
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -44,7 +44,7 @@ struct HTTPClientTests {
 			#expect(urlString.contains("page=1"))
 			#expect(urlString.contains("limit=20"))
 			return (mockResponse(url: request.url), Data())
-		}, forHost: "test-query-items.example.com")
+		}, forURL: baseURL)
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -69,7 +69,7 @@ struct HTTPClientTests {
 			#expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer token123")
 			#expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
 			return (mockResponse(url: request.url), Data())
-		}, forHost: "test-headers.example.com")
+		}, forURL: baseURL)
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -93,7 +93,7 @@ struct HTTPClientTests {
 			#expect(request.httpMethod == "POST")
 			#expect(request.bodyData == body)
 			return (mockResponse(url: request.url), Data())
-		}, forHost: "test-body.example.com")
+		}, forURL: baseURL)
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -109,7 +109,7 @@ struct HTTPClientTests {
 
 		URLProtocolMock.setHandler({ request in
 			(mockResponse(url: request.url ?? baseURL), expectedData)
-		}, forHost: "test-returns-data.example.com")
+		}, forURL: baseURL)
 
 		// When
 		let data = try await sut.request(Endpoint(path: "/users"))
@@ -128,7 +128,7 @@ struct HTTPClientTests {
 
 		URLProtocolMock.setHandler({ request in
 			(mockResponse(url: request.url ?? baseURL), responseData)
-		}, forHost: "test-decodes-response.example.com")
+		}, forURL: baseURL)
 
 		// When
 		let user: TestUser = try await sut.request(Endpoint(path: "/users/1"))
@@ -148,7 +148,7 @@ struct HTTPClientTests {
 
 		URLProtocolMock.setHandler({ request in
 			(mockResponse(url: request.url ?? baseURL, statusCode: statusCode), errorData)
-		}, forHost: "test-status-\(statusCode).example.com")
+		}, forURL: baseURL)
 
 		// When / Then
 		await #expect(throws: HTTPError.statusCode(statusCode, errorData)) {
@@ -172,7 +172,7 @@ struct HTTPClientTests {
 				textEncodingName: nil
 			)
 			return (response, Data())
-		}, forHost: "test-invalid-response.example.com")
+		}, forURL: baseURL)
 
 		// When / Then
 		await #expect(throws: HTTPError.invalidResponse) {

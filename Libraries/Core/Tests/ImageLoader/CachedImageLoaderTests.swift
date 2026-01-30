@@ -11,8 +11,8 @@ struct CachedImageLoaderTests {
 	@Test
 	func cachedImageForURLReturnsNilWhenNotCached() throws {
 		// Given
-		let sut = CachedImageLoader(session: .mockSession())
 		let url = try #require(URL(string: "https://test-cached-nil.example.com/image.png"))
+		let sut = CachedImageLoader(session: .mockSession())
 
 		// When
 		let result = sut.cachedImage(for: url)
@@ -24,8 +24,8 @@ struct CachedImageLoaderTests {
 	@Test
 	func cachedImageForURLReturnsImageAfterLoading() async throws {
 		// Given
-		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://test-cached-after-load.example.com/image.png"))
+		let testImageData = UIImage.checkmark.pngData()
 
 		URLProtocolMock.setHandler({ request in
 			guard let requestURL = request.url else {
@@ -38,7 +38,7 @@ struct CachedImageLoaderTests {
 				headerFields: nil
 			)
 			return (try #require(response), testImageData)
-		}, forHost: "test-cached-after-load.example.com")
+		}, forURL: url)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -55,8 +55,8 @@ struct CachedImageLoaderTests {
 	@Test
 	func imageForURLReturnsImageOnSuccess() async throws {
 		// Given
-		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://test-image-success.example.com/image.png"))
+		let testImageData = UIImage.checkmark.pngData()
 
 		URLProtocolMock.setHandler({ request in
 			guard let requestURL = request.url else {
@@ -69,7 +69,7 @@ struct CachedImageLoaderTests {
 				headerFields: nil
 			)
 			return (try #require(response), testImageData)
-		}, forHost: "test-image-success.example.com")
+		}, forURL: url)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -87,7 +87,7 @@ struct CachedImageLoaderTests {
 
 		URLProtocolMock.setHandler({ _ in
 			throw URLError(.notConnectedToInternet)
-		}, forHost: "test-network-error.example.com")
+		}, forURL: url)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -115,7 +115,7 @@ struct CachedImageLoaderTests {
 				headerFields: nil
 			)
 			return (try #require(response), invalidData)
-		}, forHost: "test-invalid-data.example.com")
+		}, forURL: url)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -129,8 +129,8 @@ struct CachedImageLoaderTests {
 	@Test
 	func imageForURLReturnsCachedImageOnSecondRequest() async throws {
 		// Given
-		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://test-cached-second.example.com/image.png"))
+		let testImageData = UIImage.checkmark.pngData()
 		let requestCount = RequestCounter()
 
 		URLProtocolMock.setHandler({ request in
@@ -145,7 +145,7 @@ struct CachedImageLoaderTests {
 				headerFields: nil
 			)
 			return (try #require(response), testImageData)
-		}, forHost: "test-cached-second.example.com")
+		}, forURL: url)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -164,8 +164,8 @@ struct CachedImageLoaderTests {
 	@Test
 	func concurrentRequestsForSameURLAreDeduplicated() async throws {
 		// Given
-		let testImageData = UIImage.checkmark.pngData()
 		let url = try #require(URL(string: "https://test-dedup-same.example.com/image.png"))
+		let testImageData = UIImage.checkmark.pngData()
 		let requestCount = RequestCounter()
 
 		URLProtocolMock.setHandler({ request in
@@ -182,7 +182,7 @@ struct CachedImageLoaderTests {
 				headerFields: nil
 			)
 			return (try #require(response), testImageData)
-		}, forHost: "test-dedup-same.example.com")
+		}, forURL: url)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -202,9 +202,9 @@ struct CachedImageLoaderTests {
 	@Test
 	func concurrentRequestsForDifferentURLsAreNotDeduplicated() async throws {
 		// Given
-		let testImageData = UIImage.checkmark.pngData()
 		let url1 = try #require(URL(string: "https://test-dedup-different.example.com/image1.png"))
 		let url2 = try #require(URL(string: "https://test-dedup-different.example.com/image2.png"))
+		let testImageData = UIImage.checkmark.pngData()
 		let requestCount = RequestCounter()
 
 		URLProtocolMock.setHandler({ request in
@@ -220,7 +220,7 @@ struct CachedImageLoaderTests {
 				headerFields: nil
 			)
 			return (try #require(response), testImageData)
-		}, forHost: "test-dedup-different.example.com")
+		}, forURL: url1)
 
 		let sut = CachedImageLoader(session: .mockSession())
 
@@ -252,12 +252,15 @@ private actor RequestCounter {
 
 private final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	nonisolated(unsafe) private static var handlers: [String: (URLRequest) throws -> (URLResponse, Data?)] = [:]
-	nonisolated(unsafe) private static let lock = NSLock()
+	nonisolated private static let lock = NSLock()
 
 	nonisolated static func setHandler(
 		_ handler: ((URLRequest) throws -> (URLResponse, Data?))?,
-		forHost host: String
+		forURL url: URL
 	) {
+        guard let host = url.host else {
+            return
+        }
 		lock.lock()
 		defer { lock.unlock() }
 		if let handler {
@@ -272,7 +275,10 @@ private final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	) -> ((URLRequest) throws -> (URLResponse, Data?))? {
 		lock.lock()
 		defer { lock.unlock() }
-		return request.url?.host.flatMap { handlers[$0] }
+        guard let host = request.url?.host else {
+            return nil
+        }
+		return handlers[host]
 	}
 
 	override nonisolated init(
