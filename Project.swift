@@ -88,10 +88,5 @@ let project = Project(
 		configurations: BuildConfiguration.all
 	),
 	targets: [appTarget, appTestsTarget, appE2ETestsTarget] + Modules.targets,
-	schemes: AppScheme.allSchemes(testPlans: [
-		"App/TestPlans/AllTests.xctestplan",
-		"App/TestPlans/UnitTests.xctestplan",
-		"App/TestPlans/SnapshotTests.xctestplan",
-		"App/TestPlans/E2ETests.xctestplan",
-	]) + Modules.schemes
+	schemes: AppScheme.allSchemes() + Modules.schemes
 )
