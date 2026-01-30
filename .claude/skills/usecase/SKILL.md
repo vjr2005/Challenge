@@ -37,7 +37,11 @@ Features/{Feature}/
 
 ### Single Responsibility
 
-Each UseCase encapsulates **one business operation**. Naming convention:
+Each UseCase encapsulates **one business operation** with **exactly one public method: `execute`**.
+
+> **CRITICAL:** A UseCase must have only the `execute` method. If you need multiple operations, create separate UseCases. For example, instead of adding `search` method to `GetCharactersUseCase`, create a separate `SearchCharactersUseCase`.
+
+Naming convention:
 
 | Operation | UseCase Name | Method |
 |-----------|--------------|--------|
@@ -61,7 +65,7 @@ protocol Get{Name}UseCaseContract: Sendable {
 - **Internal visibility** (not public)
 - Conform to `Sendable`
 - Method is `async throws`
-- Method name is always `execute` with appropriate parameters
+- **Only one method: `execute`** with appropriate parameters
 - **Return Domain models, NOT DTOs**
 
 ### 2. Implementation

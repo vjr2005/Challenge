@@ -43,7 +43,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 private extension CharacterListViewModel {
     func fetchCharacters(page: Int) async {
         do {
-            let result = try await getCharactersUseCase.execute(page: page)
+            let result = try await getCharactersUseCase.execute(page: page, query: nil)
             if result.characters.isEmpty {
                 state = .empty
             } else {
@@ -56,7 +56,7 @@ private extension CharacterListViewModel {
 
     func fetchMoreCharacters(page: Int, existingPage: CharactersPage) async {
         do {
-            let result = try await getCharactersUseCase.execute(page: page)
+            let result = try await getCharactersUseCase.execute(page: page, query: nil)
             let combinedCharacters = existingPage.characters + result.characters
             let updatedPage = CharactersPage(
                 characters: combinedCharacters,
