@@ -1,29 +1,23 @@
-import ChallengeCore
 import ChallengeCoreMocks
 import ChallengeNetworkingMocks
-import Foundation
-import SwiftUI
 import Testing
 
 @testable import ChallengeCharacter
 
 struct CharacterFeatureTests {
-    // MARK: - Feature Protocol
+    // MARK: - Deep Link Handler
 
     @Test
-    func applyNavigationDestinationReturnsView() {
+    func deepLinkHandlerReturnsCharacterDeepLinkHandler() {
         // Given
         let httpClientMock = HTTPClientMock()
-        let navigatorMock = NavigatorMock()
         let sut = CharacterFeature(httpClient: httpClientMock)
-        let baseView = EmptyView()
 
         // When
-        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
+        let result = sut.deepLinkHandler
 
         // Then
-        let typeName = String(describing: type(of: result))
-        #expect(typeName == "AnyView")
+        #expect(result is CharacterDeepLinkHandler)
     }
 
     // MARK: - View Factory

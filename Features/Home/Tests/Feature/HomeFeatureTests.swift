@@ -1,6 +1,4 @@
-import ChallengeCore
 import ChallengeCoreMocks
-import SwiftUI
 import Testing
 
 @testable import ChallengeHome
@@ -34,23 +32,6 @@ struct HomeFeatureTests {
         // Then
         let viewName = String(describing: type(of: result))
         #expect(viewName.contains("HomeView"))
-    }
-
-    // MARK: - Navigation Destination
-
-    @Test
-    func applyNavigationDestinationReturnsView() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
-        let baseView = EmptyView()
-
-        // When
-        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
-
-        // Then
-        let typeName = String(describing: type(of: result))
-        #expect(typeName == "AnyView")
     }
 
     // MARK: - View Factory
