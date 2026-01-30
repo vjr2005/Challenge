@@ -91,6 +91,7 @@ let project = Project(
 	schemes: AppScheme.allSchemes(testPlans: [
 		"App/TestPlans/AllTests.xctestplan",
 		"App/TestPlans/UnitTests.xctestplan",
+		"App/TestPlans/SnapshotTests.xctestplan",
 		"App/TestPlans/E2ETests.xctestplan",
 	]) + Modules.schemes
 )

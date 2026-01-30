@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "9A1B2C3D-4E5F-6789-ABCD-EF0123456789",
+      "id" : "A2B3C4D5-E6F7-8901-2345-678901234567",
       "name" : "Configuration 1",
       "options" : {
 
@@ -18,7 +18,7 @@
   },
   "testTargets" : [
     {
-      "skippedTests" : [
+      "selectedTests" : [
         "RootViewSnapshotTests"
       ],
       "target" : {
@@ -28,21 +28,7 @@
       }
     },
     {
-      "target" : {
-        "containerPath" : "container:Challenge.xcodeproj",
-        "identifier" : "ChallengeCoreTests",
-        "name" : "ChallengeCoreTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Challenge.xcodeproj",
-        "identifier" : "ChallengeNetworkingTests",
-        "name" : "ChallengeNetworkingTests"
-      }
-    },
-    {
-      "skippedTests" : [
+      "selectedTests" : [
         "ColorTokenSnapshotTests",
         "CornerRadiusTokenSnapshotTests",
         "DSAsyncImageSnapshotTests",
@@ -66,7 +52,7 @@
       }
     },
     {
-      "skippedTests" : [
+      "selectedTests" : [
         "CharacterDetailViewSnapshotTests",
         "CharacterListViewSnapshotTests"
       ],
@@ -77,20 +63,13 @@
       }
     },
     {
-      "skippedTests" : [
+      "selectedTests" : [
         "HomeViewSnapshotTests"
       ],
       "target" : {
         "containerPath" : "container:Challenge.xcodeproj",
         "identifier" : "ChallengeHomeTests",
         "name" : "ChallengeHomeTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Challenge.xcodeproj",
-        "identifier" : "ChallengeSystemTests",
-        "name" : "ChallengeSystemTests"
       }
     }
   ],

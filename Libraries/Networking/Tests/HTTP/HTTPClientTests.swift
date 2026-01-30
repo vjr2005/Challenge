@@ -8,17 +8,17 @@ struct HTTPClientTests {
 	@Test
 	func buildsCorrectURLFromEndpoint() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-builds-url.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let endpoint = Endpoint(path: "/users")
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			// Then
-			#expect(request.url?.absoluteString == "https://api.example.com/users")
+			#expect(request.url?.absoluteString == "https://test-builds-url.example.com/users")
 			#expect(request.httpMethod == "GET")
 			return (mockResponse(url: request.url), Data())
-		}
+		}, forHost: "test-builds-url.example.com")
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -27,7 +27,7 @@ struct HTTPClientTests {
 	@Test
 	func includesQueryItemsInURL() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-query-items.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let endpoint = Endpoint(
@@ -35,16 +35,16 @@ struct HTTPClientTests {
 			queryItems: [
 				URLQueryItem(name: "page", value: "1"),
 				URLQueryItem(name: "limit", value: "20")
-			],
+			]
 		)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			// Then
 			let urlString = request.url?.absoluteString ?? ""
 			#expect(urlString.contains("page=1"))
 			#expect(urlString.contains("limit=20"))
 			return (mockResponse(url: request.url), Data())
-		}
+		}, forHost: "test-query-items.example.com")
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -53,7 +53,7 @@ struct HTTPClientTests {
 	@Test
 	func includesHeadersInRequest() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-headers.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let endpoint = Endpoint(
@@ -61,15 +61,15 @@ struct HTTPClientTests {
 			headers: [
 				"Authorization": "Bearer token123",
 				"Content-Type": "application/json"
-			],
+			]
 		)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			// Then
 			#expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer token123")
 			#expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
 			return (mockResponse(url: request.url), Data())
-		}
+		}, forHost: "test-headers.example.com")
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -78,22 +78,22 @@ struct HTTPClientTests {
 	@Test
 	func includesBodyInRequest() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-body.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let body = Data("{\"name\":\"test\"}".utf8)
 		let endpoint = Endpoint(
 			path: "/users",
 			method: .post,
-			body: body,
+			body: body
 		)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			// Then
 			#expect(request.httpMethod == "POST")
 			#expect(request.bodyData == body)
 			return (mockResponse(url: request.url), Data())
-		}
+		}, forHost: "test-body.example.com")
 
 		// When
 		_ = try await sut.request(endpoint)
@@ -102,14 +102,14 @@ struct HTTPClientTests {
 	@Test
 	func returnsDataOnSuccess() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-returns-data.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let expectedData = Data("{\"id\":1}".utf8)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			(mockResponse(url: request.url ?? baseURL), expectedData)
-		}
+		}, forHost: "test-returns-data.example.com")
 
 		// When
 		let data = try await sut.request(Endpoint(path: "/users"))
@@ -121,14 +121,14 @@ struct HTTPClientTests {
 	@Test
 	func decodesResponseToType() async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-decodes-response.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let responseData = Data("{\"id\":1,\"name\":\"John\"}".utf8)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			(mockResponse(url: request.url ?? baseURL), responseData)
-		}
+		}, forHost: "test-decodes-response.example.com")
 
 		// When
 		let user: TestUser = try await sut.request(Endpoint(path: "/users/1"))
@@ -141,14 +141,14 @@ struct HTTPClientTests {
 	@Test(arguments: [400, 401, 403, 404, 500, 502, 503])
 	func throwsStatusCodeErrorForHTTPErrors(_ statusCode: Int) async throws {
 		// Given
-		let baseURL = try #require(URL(string: "https://api.example.com"))
+		let baseURL = try #require(URL(string: "https://test-status-\(statusCode).example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 		let errorData = Data("Error".utf8)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			(mockResponse(url: request.url ?? baseURL, statusCode: statusCode), errorData)
-		}
+		}, forHost: "test-status-\(statusCode).example.com")
 
 		// When / Then
 		await #expect(throws: HTTPError.statusCode(statusCode, errorData)) {
@@ -160,11 +160,11 @@ struct HTTPClientTests {
 	func throwsInvalidResponseWhenResponseIsNotHTTPURLResponse() async throws {
 		// Given
 		// Use custom URL scheme to prevent URLSession from auto-converting to HTTPURLResponse
-		let baseURL = try #require(URL(string: "custom://api.example.com"))
+		let baseURL = try #require(URL(string: "custom://test-invalid-response.example.com"))
 		let session = URLSession.mockSession()
 		let sut = HTTPClient(baseURL: baseURL, session: session)
 
-		URLProtocolMock.requestHandler = { request in
+		URLProtocolMock.setHandler({ request in
 			let response = URLResponse(
 				url: request.url ?? baseURL,
 				mimeType: nil,
@@ -172,7 +172,7 @@ struct HTTPClientTests {
 				textEncodingName: nil
 			)
 			return (response, Data())
-		}
+		}, forHost: "test-invalid-response.example.com")
 
 		// When / Then
 		await #expect(throws: HTTPError.invalidResponse) {

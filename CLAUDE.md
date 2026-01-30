@@ -2,6 +2,8 @@
 
 This document defines the coding standards, architecture patterns, and development practices for this iOS project. All code and documentation must be written in **English**.
 
+> **CRITICAL:** Never create git commits without explicit user permission. Always wait for the user to request a commit.
+>
 > **CRITICAL:** All generated code must compile without errors or warnings. Before writing code, carefully analyze for:
 > - Unused variables, parameters, or imports
 > - Missing protocol conformances
