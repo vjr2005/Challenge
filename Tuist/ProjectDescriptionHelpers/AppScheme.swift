@@ -5,22 +5,18 @@ public enum AppScheme {
 	/// Creates a scheme for the given environment.
 	/// - Parameters:
 	///   - environment: The target environment.
-	///   - testTargets: Test targets to include (only for Dev environment by default).
+	///   - testPlans: Test plan paths to include (only for Dev environment by default).
 	/// - Returns: A configured Scheme.
 	public static func create(
 		environment: Environment,
-		testTargets: [TestableTarget] = []
+		testPlans: [Path] = []
 	) -> Scheme {
 		var testAction: TestAction?
 
-		if !testTargets.isEmpty {
-			testAction = .targets(
-				testTargets,
-				configuration: environment.debugConfigurationName,
-				options: .options(
-					coverage: true,
-					codeCoverageTargets: Modules.codeCoverageTargets
-				)
+		if !testPlans.isEmpty {
+			testAction = TestAction.testPlans(
+				testPlans,
+				configuration: environment.debugConfigurationName
 			)
 		}
 
@@ -43,13 +39,13 @@ public enum AppScheme {
 
 	/// Creates all app schemes for all environments.
 	/// - Parameters:
-	///   - testTargets: Test targets to include in the Dev scheme.
+	///   - testPlans: Test plan paths to include in the Dev scheme.
 	/// - Returns: Array of schemes for all environments.
-	public static func allSchemes(testTargets: [TestableTarget] = []) -> [Scheme] {
+	public static func allSchemes(testPlans: [Path] = []) -> [Scheme] {
 		Environment.allCases.map { environment in
 			create(
 				environment: environment,
-				testTargets: environment == .dev ? testTargets : []
+				testPlans: environment == .dev ? testPlans : []
 			)
 		}
 	}
