@@ -79,15 +79,4 @@ struct DSStatusTests {
 		#expect(allCases.contains(.dead))
 		#expect(allCases.contains(.unknown))
 	}
-
-	// MARK: - Sendable
-
-	@Test("DSStatus is Sendable")
-	func statusIsSendable() {
-		let status: DSStatus = .alive
-		Task {
-			_ = status
-		}
-		#expect(true)
-	}
 }

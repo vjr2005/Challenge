@@ -16,6 +16,7 @@ public enum AppScheme {
 		if includeTests {
 			testAction = .targets(
 				[
+					// Unit Tests
 					"\(appName)Tests",
 					"\(appName)CoreTests",
 					"\(appName)NetworkingTests",
@@ -23,6 +24,12 @@ public enum AppScheme {
 					"\(appName)CharacterTests",
 					"\(appName)HomeTests",
 					"\(appName)SystemTests",
+					// Snapshot Tests
+					"\(appName)SnapshotTests",
+					"\(appName)DesignSystemSnapshotTests",
+					"\(appName)CharacterSnapshotTests",
+					"\(appName)HomeSnapshotTests",
+					"\(appName)SystemSnapshotTests",
 				],
 				configuration: environment.debugConfigurationName,
 				options: .options(

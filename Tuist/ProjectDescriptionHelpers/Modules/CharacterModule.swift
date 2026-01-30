@@ -14,7 +14,10 @@ public enum CharacterModule {
 		testDependencies: [
 			.target(name: "\(appName)CoreMocks"),
 			.target(name: "\(appName)NetworkingMocks"),
-			.external(name: "SnapshotTesting"),
+		],
+		snapshotTestDependencies: [
+			.target(name: "\(appName)CoreMocks"),
+			.target(name: "\(appName)NetworkingMocks"),
 		]
 	)
 

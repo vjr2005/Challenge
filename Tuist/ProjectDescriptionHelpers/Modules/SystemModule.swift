@@ -12,6 +12,9 @@ public enum SystemModule {
         ],
         testDependencies: [
             .target(name: "\(appName)CoreMocks"),
+        ],
+        snapshotTestDependencies: [
+            .target(name: "\(appName)CoreMocks"),
         ]
     )
 

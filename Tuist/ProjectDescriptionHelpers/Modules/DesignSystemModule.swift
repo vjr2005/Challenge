@@ -8,7 +8,9 @@ public enum DesignSystemModule {
 		],
 		testDependencies: [
 			.target(name: "\(appName)CoreMocks"),
-			.external(name: "SnapshotTesting"),
+		],
+		snapshotTestDependencies: [
+			.target(name: "\(appName)CoreMocks"),
 		]
 	)
 
