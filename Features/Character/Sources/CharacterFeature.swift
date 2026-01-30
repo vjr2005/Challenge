@@ -17,7 +17,7 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         CharacterDeepLinkHandler()
     }
 

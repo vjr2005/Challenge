@@ -123,7 +123,7 @@ struct AppContainer: Sendable {
 
     func handle(url: URL, navigator: any NavigatorContract) {
         for feature in features {
-            if let navigation = feature.deepLinkHandler.resolve(url) {
+            if let navigation = feature.deepLinkHandler?.resolve(url) {
                 navigator.navigate(to: navigation)
                 return
             }
@@ -214,8 +214,12 @@ public final class {Feature}Container: Sendable {
 import SwiftUI
 
 public protocol Feature {
-    var deepLinkHandler: any DeepLinkHandler { get }
+    var deepLinkHandler: (any DeepLinkHandler)? { get }
     func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView
+}
+
+public extension Feature {
+    var deepLinkHandler: (any DeepLinkHandler)? { nil }
 }
 
 public extension View {
@@ -226,6 +230,8 @@ public extension View {
     }
 }
 ```
+
+**Note:** `deepLinkHandler` is optional with a default `nil` implementation. Only implement it if the feature handles deep links.
 
 ---
 
@@ -259,7 +265,9 @@ public enum {Feature}OutgoingNavigation: Navigation {
 
 ---
 
-## Deep Link Handler
+## Deep Link Handler (Optional)
+
+Only create a DeepLinkHandler if the feature needs to handle deep links. Features without deep link handling can omit this entirely.
 
 ```swift
 // Sources/Navigation/{Feature}DeepLinkHandler.swift
@@ -288,7 +296,7 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
 }
 ```
 
-**Note:** DeepLinkHandler returns `IncomingNavigation` only.
+**Note:** DeepLinkHandler returns `IncomingNavigation` only. If a feature doesn't handle deep links, don't implement `deepLinkHandler` - the default `nil` implementation will be used.
 
 ---
 
@@ -350,7 +358,7 @@ extension {Feature}Feature {
 - **public struct** implementing `Feature` protocol
 - **Required httpClient** in init (injected by AppContainer)
 - Creates and owns its **Container**
-- **deepLinkHandler** property - Returns handler instance
+- **deepLinkHandler** property (optional) - Returns handler instance if feature handles deep links
 - **applyNavigationDestination()** - Registers navigation for `IncomingNavigation`
 - **view(for:navigator:)** - Internal method, delegates to Container factories
 
@@ -449,7 +457,7 @@ public final class HomeContainer: Sendable {
 | Implementation (Class) | **public** / **open** | Direct instantiation allowed |
 | {Feature}Feature | **public** | Entry point struct |
 | {Feature}Container | **public** | Created by Feature |
-| Feature.deepLinkHandler | **public** | Used by AppContainer |
+| Feature.deepLinkHandler | **public** (optional) | Used by AppContainer if feature handles deep links |
 | Feature.applyNavigationDestination() | **public** | Called via withNavigationDestinations |
 | Container factory methods | **internal** | Called by Feature |
 | {Feature}IncomingNavigation | **public** | Used by AppNavigationRedirect |
@@ -586,7 +594,7 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Container has factory methods receiving `navigator: any NavigatorContract`
 - [ ] Create `{Feature}IncomingNavigation.swift` conforming to `Navigation` protocol
 - [ ] Create `{Feature}OutgoingNavigation.swift` for cross-feature navigation (if needed)
-- [ ] Create `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/`
+- [ ] Create `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` (only if feature handles deep links)
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
 - [ ] Views only receive ViewModel
 - [ ] Add feature to `AppContainer.features` array

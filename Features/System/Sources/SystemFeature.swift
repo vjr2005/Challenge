@@ -16,10 +16,6 @@ public struct SystemFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
-        SystemDeepLinkHandler()
-    }
-
     /// Applies navigation destinations for System screens to the given view.
     public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
         AnyView(

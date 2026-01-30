@@ -16,7 +16,7 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         HomeDeepLinkHandler()
     }
 

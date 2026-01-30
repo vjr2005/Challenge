@@ -122,8 +122,12 @@ public protocol NavigationRedirectContract: Sendable {
 import SwiftUI
 
 public protocol Feature {
-    var deepLinkHandler: any DeepLinkHandler { get }
+    var deepLinkHandler: (any DeepLinkHandler)? { get }
     func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView
+}
+
+public extension Feature {
+    var deepLinkHandler: (any DeepLinkHandler)? { nil }
 }
 
 public extension View {
@@ -134,6 +138,8 @@ public extension View {
     }
 }
 ```
+
+**Note:** `deepLinkHandler` is optional. Only implement it if the feature handles deep links.
 
 ### DeepLinkHandler (Protocol)
 
@@ -310,7 +316,7 @@ struct RootContainerView: View {
 // App/Sources/AppContainer.swift
 func handle(url: URL, navigator: any NavigatorContract) {
     for feature in features {
-        if let navigation = feature.deepLinkHandler.resolve(url) {
+        if let navigation = feature.deepLinkHandler?.resolve(url) {
             navigator.navigate(to: navigation)
             return
         }
@@ -649,7 +655,7 @@ Features/{Feature}/
 - [ ] Core has `NavigationCoordinator` (@Observable, manages path + redirects)
 - [ ] Core has `Navigation` protocol
 - [ ] Core has `DeepLinkHandler` protocol
-- [ ] Core has `Feature` protocol with `deepLinkHandler` property
+- [ ] Core has `Feature` protocol with optional `deepLinkHandler` property (default `nil`)
 - [ ] Core has `NavigatorMock` for testing
 
 ### App Configuration
@@ -663,8 +669,8 @@ Features/{Feature}/
 ### Feature Implementation
 - [ ] Feature has `{Feature}IncomingNavigation` for destinations it handles
 - [ ] Feature has `{Feature}OutgoingNavigation` for cross-feature navigation (if needed)
-- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigation`
-- [ ] Feature implements `deepLinkHandler` property
+- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigation` (only if feature handles deep links)
+- [ ] Feature implements `deepLinkHandler` property (only if feature handles deep links)
 - [ ] Feature implements `applyNavigationDestination(to:navigator:)` for `IncomingNavigation`
 - [ ] Each screen has `NavigatorContract` and `Navigator`
 - [ ] Navigator uses `IncomingNavigation` for internal, `OutgoingNavigation` for external

@@ -38,7 +38,7 @@ struct AppContainer: Sendable {
 
     func handle(url: URL, navigator: any NavigatorContract) {
         for feature in features {
-            if let navigation = feature.deepLinkHandler.resolve(url) {
+            if let navigation = feature.deepLinkHandler?.resolve(url) {
                 navigator.navigate(to: navigation)
                 return
             }

@@ -79,10 +79,6 @@ private final class FeatureMock: Feature {
     private(set) var lastNavigator: (any NavigatorContract)?
     private let onApply: (() -> Void)?
 
-    var deepLinkHandler: any DeepLinkHandler {
-        TestDeepLinkHandler()
-    }
-
     init(onApply: (() -> Void)? = nil) {
         self.onApply = onApply
     }
@@ -92,14 +88,5 @@ private final class FeatureMock: Feature {
         lastNavigator = navigator
         onApply?()
         return AnyView(view)
-    }
-}
-
-private struct TestDeepLinkHandler: DeepLinkHandler {
-    let scheme = "test"
-    let host = "test"
-
-    func resolve(_ url: URL) -> (any Navigation)? {
-        nil
     }
 }
