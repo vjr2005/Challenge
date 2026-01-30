@@ -185,6 +185,7 @@ private enum AccessibilityIdentifier {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview("Idle") {
     NavigationStack {
         CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .idle))
@@ -208,10 +209,6 @@ private enum AccessibilityIdentifier {
 		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(.loadFailed)))
 	}
 }
-
-// MARK: - Preview Stubs
-
-#if DEBUG
 private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {
 	var state: CharacterDetailViewState
 

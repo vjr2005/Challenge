@@ -35,13 +35,11 @@ private enum AccessibilityIdentifier {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview {
 	HomeView(viewModel: HomeViewModelPreviewStub())
 }
 
-// MARK: - Preview Stubs
-
-#if DEBUG
 private final class HomeViewModelPreviewStub: HomeViewModelContract {
 	func didTapOnCharacterButton() {}
 }

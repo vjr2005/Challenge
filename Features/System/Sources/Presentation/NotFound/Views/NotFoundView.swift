@@ -34,13 +34,11 @@ private enum AccessibilityIdentifier {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview {
     NotFoundView(viewModel: NotFoundViewModelPreviewStub())
 }
 
-// MARK: - Preview Stubs
-
-#if DEBUG
 private final class NotFoundViewModelPreviewStub: NotFoundViewModelContract {
     func didTapGoBack() {}
 }

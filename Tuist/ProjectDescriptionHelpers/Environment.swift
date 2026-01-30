@@ -75,10 +75,24 @@ public enum Environment: String, CaseIterable {
 
 	/// Release target settings for this environment.
 	public var releaseTargetSettings: Configuration {
+		// Code Signing Configuration
+		// --------------------------
+		// Current: Disabled for building without Apple Developer account.
+		// With Apple ID: Replace with these values:
+		//   "CODE_SIGN_IDENTITY": .string("Apple Development"),
+		//   "CODE_SIGNING_REQUIRED": .string("YES"),
+		//   "CODE_SIGNING_ALLOWED": .string("YES"),
+		//   "DEVELOPMENT_TEAM": .string("YOUR_TEAM_ID"),
+		let codeSigningSettings: SettingsDictionary = [
+			"CODE_SIGN_IDENTITY": .string(""),
+			"CODE_SIGNING_REQUIRED": .string("NO"),
+			"CODE_SIGNING_ALLOWED": .string("NO"),
+		]
+
 		let settings: SettingsDictionary = [
 			"PRODUCT_BUNDLE_IDENTIFIER": .string(bundleId),
 			"ASSETCATALOG_COMPILER_APPICON_NAME": .string(appIconName),
-		]
+		].merging(codeSigningSettings) { _, new in new }
 
 		switch self {
 		case .dev:
