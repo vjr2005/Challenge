@@ -99,6 +99,33 @@ struct CachedImageLoaderTests {
 	}
 
 	@Test
+	func imageForURLReturnsNilOnErrorStatusCode() async throws {
+		// Given
+		let url = try #require(URL(string: "https://test-error-status.example.com/image.png"))
+
+		URLProtocolMock.setHandler({ request in
+			guard let requestURL = request.url else {
+				throw URLError(.badURL)
+			}
+			let response = HTTPURLResponse(
+				url: requestURL,
+				statusCode: 404,
+				httpVersion: nil,
+				headerFields: nil
+			)
+			return (try #require(response), nil)
+		}, forURL: url)
+
+		let sut = CachedImageLoader(session: .mockSession())
+
+		// When
+		let result = await sut.image(for: url)
+
+		// Then
+		#expect(result == nil)
+	}
+
+	@Test
 	func imageForURLReturnsNilForInvalidImageData() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-invalid-data.example.com/image.png"))

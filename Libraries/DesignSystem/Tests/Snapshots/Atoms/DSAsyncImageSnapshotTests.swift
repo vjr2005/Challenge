@@ -10,272 +10,129 @@ struct DSAsyncImageSnapshotTests {
 	private let emptyImageLoader: ImageLoaderMock
 	private let loadedImageLoader: ImageLoaderMock
 
+    private let testURL = URL(string: "https://example.com/test-image.jpg")
+
 	init() {
 		UIView.setAnimationsEnabled(false)
-		emptyImageLoader = ImageLoaderMock(image: nil)
-		loadedImageLoader = ImageLoaderMock(image: .stub)
+		emptyImageLoader = ImageLoaderMock(cachedImage: nil, asyncImage: nil)
+		loadedImageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
 	}
 
-	// MARK: - Placeholder State (nil URL)
+	// MARK: - Default Content Initializer
 
 	@Test
-	func placeholderWithNilURL() {
-		let view = DSAsyncImage(url: nil) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
+	func defaultContentWithLoadedImage() async {
+		let controller = makeHostedView(imageLoader: loadedImageLoader) {
+			DSAsyncImage(url: testURL)
 		}
-		.frame(width: 100, height: 100)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(emptyImageLoader)
 
-		assertSnapshot(of: view, as: .image)
+		assertSnapshot(of: controller, as: .image)
 	}
 
 	@Test
-	func placeholderWithCustomView() {
-		let view = DSAsyncImage(url: nil) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ZStack {
-					ColorToken.surfaceSecondary
-					Image(systemName: "hourglass")
-						.font(.title)
-						.foregroundStyle(ColorToken.textTertiary)
+	func defaultContentWithNilURL() async {
+		let controller = makeHostedView(imageLoader: emptyImageLoader) {
+			DSAsyncImage(url: nil)
+		}
+
+		assertSnapshot(of: controller, as: .image)
+	}
+
+	@Test
+	func defaultContentWithAsyncLoadedImage() async {
+		let signal = LoadSignal()
+		let imageLoader = ImageLoaderMock(cachedImage: nil, asyncImage: .stub) {
+			Task { await signal.complete() }
+		}
+
+		let controller = makeHostedView(imageLoader: imageLoader) {
+			DSAsyncImage(url: testURL)
+		}
+
+		await signal.wait()
+
+		assertSnapshot(of: controller, as: .image)
+	}
+
+	@Test
+	func defaultContentWithFailedImage() async {
+		let signal = LoadSignal()
+		let imageLoader = ImageLoaderMock(cachedImage: nil, asyncImage: nil) {
+			Task { await signal.complete() }
+		}
+
+		let controller = makeHostedView(imageLoader: imageLoader) {
+			DSAsyncImage(url: testURL)
+		}
+
+		await signal.wait()
+
+		assertSnapshot(of: controller, as: .image)
+	}
+
+	// MARK: - ViewBuilder Content Initializer
+
+	@Test
+	func customContentWithNilURL() async {
+		let controller = makeHostedView(imageLoader: emptyImageLoader) {
+			DSAsyncImage(url: nil) { phase in
+				switch phase {
+				case .success(let image):
+					image.resizable().scaledToFill()
+				case .empty:
+					ProgressView()
+				case .failure:
+					errorView
+				@unknown default:
+					ProgressView()
 				}
-			case .failure:
-				Self.errorView
-			@unknown default:
-				EmptyView()
 			}
 		}
-		.frame(width: 100, height: 100)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(emptyImageLoader)
 
-		assertSnapshot(of: view, as: .image)
+		assertSnapshot(of: controller, as: .image)
 	}
 
-	// MARK: - Loaded State (with image)
-
 	@Test
-	func loadedStateSmall() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
+	func customContentWithLoadedImage() async {
+		let controller = makeHostedView(imageLoader: loadedImageLoader) {
+			DSAsyncImage(url: testURL) { phase in
+				switch phase {
+				case .success(let image):
+					image.resizable().scaledToFill()
+				case .empty:
+					ProgressView()
+				case .failure:
+					errorView
+				@unknown default:
+					ProgressView()
+				}
 			}
 		}
-		.frame(width: 50, height: 50)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.sm))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
 
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func loadedStateMedium() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 100, height: 100)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func loadedStateLarge() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 150, height: 150)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.lg))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	// MARK: - Content Modes
-
-	@Test
-	func scaledToFit() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFit()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 150, height: 100)
-		.background(ColorToken.surfaceSecondary)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func scaledToFill() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 150, height: 100)
-		.clipped()
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	// MARK: - Shapes
-
-	@Test
-	func circleShape() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 100, height: 100)
-		.clipShape(Circle())
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func roundedRectangleShape() {
-		let view = DSAsyncImage(url: Self.testURL) { phase in
-			switch phase {
-			case .success(let image):
-				image.resizable().scaledToFill()
-			case .empty:
-				ProgressView()
-			case .failure:
-				Self.errorView
-			@unknown default:
-				ProgressView()
-			}
-		}
-		.frame(width: 120, height: 80)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.xl))
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	// MARK: - Gallery
-
-	@Test
-	func statesGallery() {
-		let view = HStack(spacing: SpacingToken.lg) {
-			stateItem(url: nil, label: "Placeholder")
-			stateItem(url: Self.testURL, label: "Loaded")
-			circleStateItem(url: Self.testURL, label: "Circle")
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
-	}
-
-	@Test
-	func sizesGallery() {
-		let view = HStack(alignment: .bottom, spacing: SpacingToken.lg) {
-			sizeItem(size: 40, cornerRadius: CornerRadiusToken.xs, label: "40pt")
-			sizeItem(size: 64, cornerRadius: CornerRadiusToken.sm, label: "64pt")
-			sizeItem(size: 100, cornerRadius: CornerRadiusToken.md, label: "100pt")
-			sizeItem(size: 120, cornerRadius: CornerRadiusToken.lg, label: "120pt")
-		}
-		.padding()
-		.background(ColorToken.backgroundSecondary)
-		.imageLoader(loadedImageLoader)
-
-		assertSnapshot(of: view, as: .image)
+		assertSnapshot(of: controller, as: .image)
 	}
 }
 
-// MARK: - Private
+// MARK: - Test Helpers
 
 private extension DSAsyncImageSnapshotTests {
-	static let testURL = URL(string: "https://example.com/test-image.jpg")
+	/// Hosts a SwiftUI view in a window to trigger the view lifecycle.
+	/// This is necessary because SwiftUI's `.task` modifier only executes
+	/// when the view appears in a real view hierarchy.
+	func makeHostedView<Content: View>(
+		imageLoader: ImageLoaderMock,
+		@ViewBuilder content: () -> Content
+	) -> UIHostingController<some View> {
+		let view = content().imageLoader(imageLoader)
+		let controller = UIHostingController(rootView: view)
+		controller.view.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+		let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+		window.rootViewController = controller
+		window.makeKeyAndVisible()
+		return controller
+	}
 
-	static var errorView: some View {
+	var errorView: some View {
 		ZStack {
 			ColorToken.surfaceSecondary
 			Image(systemName: "photo")
@@ -283,70 +140,26 @@ private extension DSAsyncImageSnapshotTests {
 				.foregroundStyle(ColorToken.textTertiary)
 		}
 	}
+}
 
-	func stateItem(url: URL?, label: String) -> some View {
-		VStack(spacing: SpacingToken.sm) {
-			DSAsyncImage(url: url) { phase in
-				switch phase {
-				case .success(let image):
-					image.resizable().scaledToFill()
-				case .empty:
-					ZStack {
-						ColorToken.surfaceSecondary
-						ProgressView()
-					}
-				case .failure:
-					Self.errorView
-				@unknown default:
-					ProgressView()
-				}
-			}
-			.frame(width: 80, height: 80)
-			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+// MARK: - Load Signal
 
-			DSText(label, style: .caption)
+private actor LoadSignal {
+	private var continuation: CheckedContinuation<Void, Never>?
+	private var isCompleted = false
+
+	func wait() async {
+		if isCompleted {
+			return
+		}
+		await withCheckedContinuation { continuation in
+			self.continuation = continuation
 		}
 	}
 
-	func circleStateItem(url: URL?, label: String) -> some View {
-		VStack(spacing: SpacingToken.sm) {
-			DSAsyncImage(url: url) { phase in
-				switch phase {
-				case .success(let image):
-					image.resizable().scaledToFill()
-				case .empty:
-					ProgressView()
-				case .failure:
-					Self.errorView
-				@unknown default:
-					ProgressView()
-				}
-			}
-			.frame(width: 80, height: 80)
-			.clipShape(Circle())
-
-			DSText(label, style: .caption)
-		}
-	}
-
-	func sizeItem(size: CGFloat, cornerRadius: CGFloat, label: String) -> some View {
-		VStack(spacing: SpacingToken.sm) {
-			DSAsyncImage(url: Self.testURL) { phase in
-				switch phase {
-				case .success(let image):
-					image.resizable().scaledToFill()
-				case .empty:
-					ProgressView()
-				case .failure:
-					Self.errorView
-				@unknown default:
-					ProgressView()
-				}
-			}
-			.frame(width: size, height: size)
-			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-
-			DSText(label, style: .caption)
-		}
+	func complete() {
+		isCompleted = true
+		continuation?.resume()
+		continuation = nil
 	}
 }

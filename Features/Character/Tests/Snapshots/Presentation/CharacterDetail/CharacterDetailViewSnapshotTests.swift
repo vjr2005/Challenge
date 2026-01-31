@@ -10,7 +10,7 @@ struct CharacterDetailViewSnapshotTests {
 
 	init() {
 		UIView.setAnimationsEnabled(false)
-		imageLoader = ImageLoaderMock(image: .stub)
+		imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
 	}
 
 	// MARK: - Idle State
@@ -115,7 +115,7 @@ struct CharacterDetailViewSnapshotTests {
 		// Given
 		let character = Character.stub()
 		let viewModel = CharacterDetailViewModelStub(state: .loaded(character))
-		let imageLoaderWithoutImage = ImageLoaderMock(image: nil)
+		let imageLoaderWithoutImage = ImageLoaderMock(cachedImage: nil, asyncImage: nil)
 
 		// When
 		let view = NavigationStack {

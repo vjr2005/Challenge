@@ -21,7 +21,7 @@ struct ImageLoaderEnvironmentTests {
     func imageLoaderCanBeSetAndRetrieved() {
         // Given
         var sut = EnvironmentValues()
-        let customLoader = ImageLoaderMock(image: nil)
+        let customLoader = ImageLoaderMock(cachedImage: nil, asyncImage: nil)
 
         // When
         sut.imageLoader = customLoader
@@ -33,7 +33,7 @@ struct ImageLoaderEnvironmentTests {
     @Test
     func imageLoaderViewModifierReturnsModifiedView() {
         // Given
-        let customLoader = ImageLoaderMock(image: nil)
+        let customLoader = ImageLoaderMock(cachedImage: nil, asyncImage: nil)
         let baseView = Text("Test")
 
         // When

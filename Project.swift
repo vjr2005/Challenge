@@ -76,6 +76,7 @@ let appSnapshotTestsTarget = Target.target(
 		.target(name: appName),
 		.target(name: "\(appName)Core"),
 		.target(name: "\(appName)CoreMocks"),
+		.target(name: "\(appName)NetworkingMocks"),
 		.external(name: "SnapshotTesting"),
 	]
 )
