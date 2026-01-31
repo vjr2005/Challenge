@@ -399,3 +399,17 @@ Each module has its own README with detailed documentation:
 ## CLAUDE.md
 
 See [CLAUDE.md](CLAUDE.md) for detailed coding standards, architecture patterns, and development practices.
+
+## Credits
+
+### Assets
+
+| Asset | Source | License |
+|-------|--------|---------|
+| Rick and Morty Logo | [Wikimedia Commons](https://upload.wikimedia.org/wikipedia/commons/b/b1/Rick_and_Morty.svg) | Fair use (fan project) |
+
+### Tools
+
+| Tool | Purpose |
+|------|---------|
+| [LottieFiles](https://app.lottiefiles.com/) | Logo animation creation |

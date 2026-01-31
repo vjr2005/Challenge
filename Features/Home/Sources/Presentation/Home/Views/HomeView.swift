@@ -1,4 +1,5 @@
 import ChallengeResources
+import Lottie
 import SwiftUI
 
 struct HomeView<ViewModel: HomeViewModelContract>: View {
@@ -6,6 +7,13 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 
 	var body: some View {
 		VStack(spacing: 20) {
+			LottieView {
+				try await DotLottieFile.named("home", bundle: .home)
+			}
+			.playing(loopMode: .loop)
+			.frame(height: 200)
+			.accessibilityIdentifier(AccessibilityIdentifier.logoAnimation)
+
 			Text(LocalizedStrings.title)
 				.font(.largeTitle)
 
@@ -30,6 +38,7 @@ private enum LocalizedStrings {
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
+    static let logoAnimation = "home.logoAnimation"
     static let characterButton = "home.characterButton"
 }
 
