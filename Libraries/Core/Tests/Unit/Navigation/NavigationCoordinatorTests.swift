@@ -165,6 +165,20 @@ struct NavigationCoordinatorTests {
         // Then
         #expect(sut.path.count == 1)
     }
+
+    // MARK: - AnyIncomingNavigation Wrapping
+
+    @Test
+    func navigateWrapsIncomingNavigationInAnyIncomingNavigation() {
+        // Given
+        let sut = NavigationCoordinator()
+
+        // When
+        sut.navigate(to: TestIncomingNavigation.screen1)
+
+        // Then - Path should contain AnyIncomingNavigation
+        #expect(sut.path.count == 1)
+    }
 }
 
 // MARK: - Test Helpers

@@ -1,3 +1,4 @@
+import ChallengeCore
 import ChallengeCoreMocks
 import ChallengeNetworkingMocks
 import Testing
@@ -20,35 +21,69 @@ struct CharacterFeatureTests {
         #expect(result is CharacterDeepLinkHandler)
     }
 
-    // MARK: - View Factory
+    // MARK: - Resolve
 
     @Test
-    func viewForListNavigationReturnsCharacterListView() {
+    func resolveListNavigationReturnsCharacterListView() {
         // Given
         let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
         let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
-        let result = sut.view(for: .list, navigator: navigatorMock)
+        let result = sut.resolve(.list, navigator: navigatorMock)
 
         // Then
-        let viewName = String(describing: type(of: result))
+        let viewName = String(describing: result)
         #expect(viewName.contains("CharacterListView"))
     }
 
     @Test
-    func viewForDetailNavigationReturnsCharacterDetailView() {
+    func resolveDetailNavigationReturnsCharacterDetailView() {
         // Given
         let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
         let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
-        let result = sut.view(for: .detail(identifier: 42), navigator: navigatorMock)
+        let result = sut.resolve(.detail(identifier: 42), navigator: navigatorMock)
 
         // Then
-        let viewName = String(describing: type(of: result))
+        let viewName = String(describing: result)
         #expect(viewName.contains("CharacterDetailView"))
     }
+
+    @Test
+    func tryResolveReturnsViewForCharacterNavigation() {
+        // Given
+        let httpClientMock = HTTPClientMock()
+        let navigatorMock = NavigatorMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
+
+        // When
+        let result = sut.tryResolve(CharacterIncomingNavigation.list, navigator: navigatorMock)
+
+        // Then
+        #expect(result != nil)
+    }
+
+    @Test
+    func tryResolveReturnsNilForOtherNavigation() {
+        // Given
+        let httpClientMock = HTTPClientMock()
+        let navigatorMock = NavigatorMock()
+        let sut = CharacterFeature(httpClient: httpClientMock)
+
+        // When
+        let result = sut.tryResolve(TestIncomingNavigation.other, navigator: navigatorMock)
+
+        // Then
+        #expect(result == nil)
+    }
+}
+
+// MARK: - Test Helpers
+
+private enum TestIncomingNavigation: IncomingNavigation {
+    case other
 }

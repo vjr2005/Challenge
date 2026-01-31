@@ -3,15 +3,17 @@ import SwiftUI
 
 struct RootContainerView: View {
     let appContainer: AppContainer
-    @State private var navigatorCoordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
+    @State private var navigationCoordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
 
     var body: some View {
-        NavigationStack(path: $navigatorCoordinator.path) {
-            appContainer.makeRootView(navigator: navigatorCoordinator)
-                .withNavigationDestinations(features: appContainer.features, navigator: navigatorCoordinator)
+        NavigationStack(path: $navigationCoordinator.path) {
+            appContainer.makeRootView(navigator: navigationCoordinator)
+                .navigationDestination(for: AnyIncomingNavigation.self) { navigation in
+                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+                }
         }
         .onOpenURL { url in
-            appContainer.handle(url: url, navigator: navigatorCoordinator)
+            appContainer.handle(url: url, navigator: navigationCoordinator)
         }
     }
 }
