@@ -5,12 +5,23 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterContainerTests {
+    // MARK: - Properties
+
+    private let httpClientMock = HTTPClientMock()
+    private let sut: CharacterContainer
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterContainer(httpClient: httpClientMock)
+    }
+
+    // MARK: - Tests
+
     @Test
     func makeCharacterListViewModelReturnsConfiguredInstance() {
         // Given
-        let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
-        let sut = CharacterContainer(httpClient: httpClientMock)
 
         // When
         let viewModel = sut.makeCharacterListViewModel(navigator: navigatorMock)
@@ -22,9 +33,7 @@ struct CharacterContainerTests {
     @Test
     func makeCharacterDetailViewModelReturnsConfiguredInstance() {
         // Given
-        let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
-        let sut = CharacterContainer(httpClient: httpClientMock)
 
         // When
         let viewModel = sut.makeCharacterDetailViewModel(identifier: 42, navigator: navigatorMock)

@@ -5,12 +5,21 @@ import Testing
 @testable import ChallengeSystem
 
 struct NotFoundNavigatorTests {
+    // MARK: - Properties
+
+    private let navigatorMock = NavigatorMock()
+    private let sut: NotFoundNavigator
+
+    // MARK: - Initialization
+
+    init() {
+        sut = NotFoundNavigator(navigator: navigatorMock)
+    }
+
+    // MARK: - Tests
+
     @Test
     func goBackCallsNavigator() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = NotFoundNavigator(navigator: navigatorMock)
-
         // When
         sut.goBack()
 

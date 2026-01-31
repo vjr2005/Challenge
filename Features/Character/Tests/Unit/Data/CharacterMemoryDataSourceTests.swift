@@ -6,219 +6,208 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct CharacterMemoryDataSourceTests {
-	@Test
-	func savesAndRetrievesCharacter() async throws {
-		// Given
+    // MARK: - Properties
+
+    private let sut = CharacterMemoryDataSource()
+
+    // MARK: - Character Tests
+
+    @Test
+    func savesAndRetrievesCharacter() async throws {
+        // Given
         let expected: CharacterDTO = try loadJSON("character")
-		let sut = CharacterMemoryDataSource()
 
-		// When
-		await sut.saveCharacter(expected)
-		let value = await sut.getCharacter(identifier: expected.id)
+        // When
+        await sut.saveCharacter(expected)
+        let value = await sut.getCharacter(identifier: expected.id)
 
-		// Then
-		#expect(value == expected)
-	}
+        // Then
+        #expect(value == expected)
+    }
 
-	@Test
-	func returnsNilForNonExistentCharacter() async {
-		// Given
-		let sut = CharacterMemoryDataSource()
+    @Test
+    func returnsNilForNonExistentCharacter() async {
+        // When
+        let value = await sut.getCharacter(identifier: 999)
 
-		// When
-		let value = await sut.getCharacter(identifier: 999)
+        // Then
+        #expect(value == nil)
+    }
 
-		// Then
-		#expect(value == nil)
-	}
+    @Test
+    func updatesExistingCharacter() async throws {
+        // Given
+        let original: CharacterDTO = try loadJSON("character")
+        let updated: CharacterDTO = try loadJSON("character_dead")
+        await sut.saveCharacter(original)
 
-	@Test
-	func updatesExistingCharacter() async throws {
-		// Given
-		let original: CharacterDTO = try loadJSON("character")
-		let updated: CharacterDTO = try loadJSON("character_dead")
-		let sut = CharacterMemoryDataSource()
-		await sut.saveCharacter(original)
+        // When
+        await sut.saveCharacter(updated)
+        let value = await sut.getCharacter(identifier: 1)
 
-		// When
-		await sut.saveCharacter(updated)
-		let value = await sut.getCharacter(identifier: 1)
+        // Then
+        #expect(value == updated)
+    }
 
-		// Then
-		#expect(value == updated)
-	}
+    // MARK: - Page Caching Tests
 
-	// MARK: - Page Caching Tests
+    @Test
+    func savesAndRetrievesPage() async throws {
+        // Given
+        let expected: CharactersResponseDTO = try loadJSON("characters_response")
 
-	@Test
-	func savesAndRetrievesPage() async throws {
-		// Given
-		let expected: CharactersResponseDTO = try loadJSON("characters_response")
-		let sut = CharacterMemoryDataSource()
+        // When
+        await sut.savePage(expected, page: 1)
+        let value = await sut.getPage(1)
 
-		// When
-		await sut.savePage(expected, page: 1)
-		let value = await sut.getPage(1)
+        // Then
+        #expect(value == expected)
+    }
 
-		// Then
-		#expect(value == expected)
-	}
+    @Test
+    func returnsNilForNonExistentPage() async {
+        // When
+        let value = await sut.getPage(999)
 
-	@Test
-	func returnsNilForNonExistentPage() async {
-		// Given
-		let sut = CharacterMemoryDataSource()
+        // Then
+        #expect(value == nil)
+    }
 
-		// When
-		let value = await sut.getPage(999)
+    @Test
+    func savePageAlsoSavesIndividualCharacters() async throws {
+        // Given
+        let response: CharactersResponseDTO = try loadJSON("characters_response_two_results")
 
-		// Then
-		#expect(value == nil)
-	}
+        // When
+        await sut.savePage(response, page: 1)
+        let character1 = await sut.getCharacter(identifier: 1)
+        let character2 = await sut.getCharacter(identifier: 2)
 
-	@Test
-	func savePageAlsoSavesIndividualCharacters() async throws {
-		// Given
-		let response: CharactersResponseDTO = try loadJSON("characters_response_two_results")
-		let sut = CharacterMemoryDataSource()
+        // Then
+        #expect(character1 == response.results[0])
+        #expect(character2 == response.results[1])
+    }
 
-		// When
-		await sut.savePage(response, page: 1)
-		let character1 = await sut.getCharacter(identifier: 1)
-		let character2 = await sut.getCharacter(identifier: 2)
+    @Test
+    func differentPagesAreCachedSeparately() async throws {
+        // Given
+        let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
+        let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
 
-		// Then
-		#expect(character1 == response.results[0])
-		#expect(character2 == response.results[1])
-	}
+        // When
+        await sut.savePage(page1Response, page: 1)
+        await sut.savePage(page2Response, page: 2)
+        let cachedPage1 = await sut.getPage(1)
+        let cachedPage2 = await sut.getPage(2)
 
-	@Test
-	func differentPagesAreCachedSeparately() async throws {
-		// Given
-		let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
-		let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
-		let sut = CharacterMemoryDataSource()
+        // Then
+        #expect(cachedPage1 == page1Response)
+        #expect(cachedPage2 == page2Response)
+    }
 
-		// When
-		await sut.savePage(page1Response, page: 1)
-		await sut.savePage(page2Response, page: 2)
-		let cachedPage1 = await sut.getPage(1)
-		let cachedPage2 = await sut.getPage(2)
+    // MARK: - Clear Pages Tests
 
-		// Then
-		#expect(cachedPage1 == page1Response)
-		#expect(cachedPage2 == page2Response)
-	}
+    @Test
+    func clearPagesRemovesAllCachedPages() async throws {
+        // Given
+        let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
+        let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
+        await sut.savePage(page1Response, page: 1)
+        await sut.savePage(page2Response, page: 2)
 
-	// MARK: - Clear Pages Tests
+        // When
+        await sut.clearPages()
 
-	@Test
-	func clearPagesRemovesAllCachedPages() async throws {
-		// Given
-		let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
-		let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
-		let sut = CharacterMemoryDataSource()
-		await sut.savePage(page1Response, page: 1)
-		await sut.savePage(page2Response, page: 2)
+        // Then
+        let cachedPage1 = await sut.getPage(1)
+        let cachedPage2 = await sut.getPage(2)
+        #expect(cachedPage1 == nil)
+        #expect(cachedPage2 == nil)
+    }
 
-		// When
-		await sut.clearPages()
+    @Test
+    func clearPagesKeepsIndividualCharacters() async throws {
+        // Given
+        let character: CharacterDTO = try loadJSON("character")
+        let pageResponse: CharactersResponseDTO = try loadJSON("characters_response")
+        await sut.saveCharacter(character)
+        await sut.savePage(pageResponse, page: 1)
 
-		// Then
-		let cachedPage1 = await sut.getPage(1)
-		let cachedPage2 = await sut.getPage(2)
-		#expect(cachedPage1 == nil)
-		#expect(cachedPage2 == nil)
-	}
+        // When
+        await sut.clearPages()
 
-	@Test
-	func clearPagesKeepsIndividualCharacters() async throws {
-		// Given
-		let character: CharacterDTO = try loadJSON("character")
-		let pageResponse: CharactersResponseDTO = try loadJSON("characters_response")
-		let sut = CharacterMemoryDataSource()
-		await sut.saveCharacter(character)
-		await sut.savePage(pageResponse, page: 1)
+        // Then
+        let cachedCharacter = await sut.getCharacter(identifier: character.id)
+        #expect(cachedCharacter == character)
+    }
 
-		// When
-		await sut.clearPages()
+    // MARK: - Update Character In Pages Tests
 
-		// Then
-		let cachedCharacter = await sut.getCharacter(identifier: character.id)
-		#expect(cachedCharacter == character)
-	}
+    @Test
+    func updateCharacterInPagesUpdatesCharacterStorage() async throws {
+        // Given
+        let original: CharacterDTO = try loadJSON("character")
+        let updated: CharacterDTO = try loadJSON("character_dead")
+        await sut.saveCharacter(original)
 
-	// MARK: - Update Character In Pages Tests
+        // When
+        await sut.updateCharacterInPages(updated)
 
-	@Test
-	func updateCharacterInPagesUpdatesCharacterStorage() async throws {
-		// Given
-		let original: CharacterDTO = try loadJSON("character")
-		let updated: CharacterDTO = try loadJSON("character_dead")
-		let sut = CharacterMemoryDataSource()
-		await sut.saveCharacter(original)
+        // Then
+        let cachedCharacter = await sut.getCharacter(identifier: updated.id)
+        #expect(cachedCharacter == updated)
+    }
 
-		// When
-		await sut.updateCharacterInPages(updated)
+    @Test
+    func updateCharacterInPagesUpdatesCharacterInCachedPage() async throws {
+        // Given
+        let pageResponse: CharactersResponseDTO = try loadJSON("characters_response")
+        let updatedCharacter: CharacterDTO = try loadJSON("character_dead")
+        await sut.savePage(pageResponse, page: 1)
 
-		// Then
-		let cachedCharacter = await sut.getCharacter(identifier: updated.id)
-		#expect(cachedCharacter == updated)
-	}
+        // When
+        await sut.updateCharacterInPages(updatedCharacter)
 
-	@Test
-	func updateCharacterInPagesUpdatesCharacterInCachedPage() async throws {
-		// Given
-		let pageResponse: CharactersResponseDTO = try loadJSON("characters_response")
-		let updatedCharacter: CharacterDTO = try loadJSON("character_dead")
-		let sut = CharacterMemoryDataSource()
-		await sut.savePage(pageResponse, page: 1)
+        // Then
+        let cachedPage = await sut.getPage(1)
+        let characterInPage = cachedPage?.results.first { $0.id == updatedCharacter.id }
+        #expect(characterInPage == updatedCharacter)
+    }
 
-		// When
-		await sut.updateCharacterInPages(updatedCharacter)
+    @Test
+    func updateCharacterInPagesUpdatesCharacterInMultiplePages() async throws {
+        // Given
+        let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
+        let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
+        let updatedCharacter: CharacterDTO = try loadJSON("character_dead")
+        await sut.savePage(page1Response, page: 1)
+        await sut.savePage(page2Response, page: 2)
 
-		// Then
-		let cachedPage = await sut.getPage(1)
-		let characterInPage = cachedPage?.results.first { $0.id == updatedCharacter.id }
-		#expect(characterInPage == updatedCharacter)
-	}
+        // When
+        await sut.updateCharacterInPages(updatedCharacter)
 
-	@Test
-	func updateCharacterInPagesUpdatesCharacterInMultiplePages() async throws {
-		// Given
-		let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
-		let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
-		let updatedCharacter: CharacterDTO = try loadJSON("character_dead")
-		let sut = CharacterMemoryDataSource()
-		await sut.savePage(page1Response, page: 1)
-		await sut.savePage(page2Response, page: 2)
+        // Then
+        let cachedPage1 = await sut.getPage(1)
+        let characterInPage1 = cachedPage1?.results.first { $0.id == updatedCharacter.id }
+        #expect(characterInPage1 == updatedCharacter)
+    }
 
-		// When
-		await sut.updateCharacterInPages(updatedCharacter)
+    @Test
+    func updateCharacterInPagesDoesNotAffectOtherCharacters() async throws {
+        // Given
+        let pageResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")
+        let updatedCharacter: CharacterDTO = try loadJSON("character_dead")
+        await sut.savePage(pageResponse, page: 1)
+        let otherCharacterId = pageResponse.results[1].id
 
-		// Then
-		let cachedPage1 = await sut.getPage(1)
-		let characterInPage1 = cachedPage1?.results.first { $0.id == updatedCharacter.id }
-		#expect(characterInPage1 == updatedCharacter)
-	}
+        // When
+        await sut.updateCharacterInPages(updatedCharacter)
 
-	@Test
-	func updateCharacterInPagesDoesNotAffectOtherCharacters() async throws {
-		// Given
-		let pageResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")
-		let updatedCharacter: CharacterDTO = try loadJSON("character_dead")
-		let sut = CharacterMemoryDataSource()
-		await sut.savePage(pageResponse, page: 1)
-		let otherCharacterId = pageResponse.results[1].id
-
-		// When
-		await sut.updateCharacterInPages(updatedCharacter)
-
-		// Then
-		let cachedPage = await sut.getPage(1)
-		let otherCharacter = cachedPage?.results.first { $0.id == otherCharacterId }
-		#expect(otherCharacter == pageResponse.results[1])
-	}
+        // Then
+        let cachedPage = await sut.getPage(1)
+        let otherCharacter = cachedPage?.results.first { $0.id == otherCharacterId }
+        #expect(otherCharacter == pageResponse.results[1])
+    }
 }
 
 // MARK: - Private

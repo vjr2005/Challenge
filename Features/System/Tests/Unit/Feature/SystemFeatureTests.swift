@@ -5,13 +5,14 @@ import Testing
 @testable import ChallengeSystem
 
 struct SystemFeatureTests {
+    // MARK: - Properties
+
+    private let sut = SystemFeature()
+
     // MARK: - Deep Link Handler
 
     @Test
     func deepLinkHandlerReturnsNil() {
-        // Given
-        let sut = SystemFeature()
-
         // When
         let result = sut.deepLinkHandler
 
@@ -24,7 +25,6 @@ struct SystemFeatureTests {
     @Test
     func makeMainViewReturnsNotFoundView() {
         // Given
-        let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
 
         // When
@@ -40,7 +40,6 @@ struct SystemFeatureTests {
     @Test
     func resolveReturnsViewForUnknownNavigation() {
         // Given
-        let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
 
         // When
@@ -55,7 +54,6 @@ struct SystemFeatureTests {
     @Test
     func resolveReturnsNilForOtherNavigation() {
         // Given
-        let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
 
         // When

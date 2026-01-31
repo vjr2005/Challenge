@@ -6,11 +6,12 @@ import Testing
 struct HomeDeepLinkHandlerTests {
     // MARK: - Properties
 
+    private let sut = HomeDeepLinkHandler()
+
+    // MARK: - Scheme and Host
+
     @Test
     func schemeReturnsChallenge() {
-        // Given
-        let sut = HomeDeepLinkHandler()
-
         // When
         let result = sut.scheme
 
@@ -20,9 +21,6 @@ struct HomeDeepLinkHandlerTests {
 
     @Test
     func hostReturnsHome() {
-        // Given
-        let sut = HomeDeepLinkHandler()
-
         // When
         let result = sut.host
 
@@ -35,7 +33,6 @@ struct HomeDeepLinkHandlerTests {
     @Test
     func resolvesMainURL() throws {
         // Given
-        let sut = HomeDeepLinkHandler()
         let url = try #require(URL(string: "challenge://home/main"))
 
         // When
@@ -48,7 +45,6 @@ struct HomeDeepLinkHandlerTests {
     @Test
     func resolvesRootURL() throws {
         // Given
-        let sut = HomeDeepLinkHandler()
         let url = try #require(URL(string: "challenge://home/"))
 
         // When
@@ -61,7 +57,6 @@ struct HomeDeepLinkHandlerTests {
     @Test
     func returnsNilForUnknownPath() throws {
         // Given
-        let sut = HomeDeepLinkHandler()
         let url = try #require(URL(string: "challenge://home/unknown"))
 
         // When

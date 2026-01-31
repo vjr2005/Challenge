@@ -5,46 +5,53 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct RefreshCharacterUseCaseTests {
-	@Test
-	func executeRefreshesCharacterFromRepository() async throws {
-		// Given
-		let expected = Character.stub()
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.refreshResult = .success(expected)
-		let sut = RefreshCharacterUseCase(repository: repositoryMock)
+    // MARK: - Properties
 
-		// When
-		let result = try await sut.execute(identifier: 1)
+    private let repositoryMock = CharacterRepositoryMock()
+    private let sut: RefreshCharacterUseCase
 
-		// Then
-		#expect(result == expected)
-		#expect(repositoryMock.refreshCharacterCallCount == 1)
-	}
+    // MARK: - Initialization
 
-	@Test
-	func executeCallsRepositoryWithCorrectIdentifier() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.refreshResult = .success(.stub())
-		let sut = RefreshCharacterUseCase(repository: repositoryMock)
+    init() {
+        sut = RefreshCharacterUseCase(repository: repositoryMock)
+    }
 
-		// When
-		_ = try await sut.execute(identifier: 42)
+    // MARK: - Tests
 
-		// Then
-		#expect(repositoryMock.lastRefreshedIdentifier == 42)
-	}
+    @Test
+    func executeRefreshesCharacterFromRepository() async throws {
+        // Given
+        let expected = Character.stub()
+        repositoryMock.refreshResult = .success(expected)
 
-	@Test
-	func executePropagatesRepositoryError() async {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.refreshResult = .failure(.loadFailed)
-		let sut = RefreshCharacterUseCase(repository: repositoryMock)
+        // When
+        let result = try await sut.execute(identifier: 1)
 
-		// When / Then
-		await #expect(throws: CharacterError.loadFailed) {
-			_ = try await sut.execute(identifier: 1)
-		}
-	}
+        // Then
+        #expect(result == expected)
+        #expect(repositoryMock.refreshCharacterCallCount == 1)
+    }
+
+    @Test
+    func executeCallsRepositoryWithCorrectIdentifier() async throws {
+        // Given
+        repositoryMock.refreshResult = .success(.stub())
+
+        // When
+        _ = try await sut.execute(identifier: 42)
+
+        // Then
+        #expect(repositoryMock.lastRefreshedIdentifier == 42)
+    }
+
+    @Test
+    func executePropagatesRepositoryError() async {
+        // Given
+        repositoryMock.refreshResult = .failure(.loadFailed)
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.execute(identifier: 1)
+        }
+    }
 }

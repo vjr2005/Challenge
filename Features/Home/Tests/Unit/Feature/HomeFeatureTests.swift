@@ -5,13 +5,14 @@ import Testing
 @testable import ChallengeHome
 
 struct HomeFeatureTests {
+    // MARK: - Properties
+
+    private let sut = HomeFeature()
+
     // MARK: - Deep Link Handler
 
     @Test
     func deepLinkHandlerReturnsHomeDeepLinkHandler() {
-        // Given
-        let sut = HomeFeature()
-
         // When
         let result = sut.deepLinkHandler
 
@@ -25,7 +26,6 @@ struct HomeFeatureTests {
     func makeMainViewReturnsHomeView() {
         // Given
         let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
 
         // When
         let result = sut.makeMainView(navigator: navigatorMock)
@@ -41,7 +41,6 @@ struct HomeFeatureTests {
     func resolveReturnsViewForHomeNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
 
         // When
         let result = sut.resolve(HomeIncomingNavigation.main, navigator: navigatorMock)
@@ -56,7 +55,6 @@ struct HomeFeatureTests {
     func resolveReturnsNilForOtherNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
 
         // When
         let result = sut.resolve(TestNavigation.other, navigator: navigatorMock)

@@ -5,11 +5,14 @@ import Testing
 @testable import Challenge
 
 struct AppNavigationRedirectTests {
+    // MARK: - Properties
+
+    private let sut = AppNavigationRedirect()
+
+    // MARK: - Tests
+
     @Test
     func redirectHomeOutgoingCharactersToCharacterList() throws {
-        // Given
-        let sut = AppNavigationRedirect()
-
         // When
         let result = sut.redirect(HomeOutgoingNavigation.characters)
 
@@ -20,9 +23,6 @@ struct AppNavigationRedirectTests {
 
     @Test
     func redirectUnknownNavigationReturnsNil() {
-        // Given
-        let sut = AppNavigationRedirect()
-
         // When
         let result = sut.redirect(CharacterIncomingNavigation.list)
 
@@ -32,9 +32,6 @@ struct AppNavigationRedirectTests {
 
     @Test
     func redirectCharacterDetailReturnsNil() {
-        // Given
-        let sut = AppNavigationRedirect()
-
         // When
         let result = sut.redirect(CharacterIncomingNavigation.detail(identifier: 1))
 

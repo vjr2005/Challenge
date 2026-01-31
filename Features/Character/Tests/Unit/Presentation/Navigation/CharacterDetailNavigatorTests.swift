@@ -4,12 +4,21 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterDetailNavigatorTests {
+    // MARK: - Properties
+
+    private let navigatorMock = NavigatorMock()
+    private let sut: CharacterDetailNavigator
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterDetailNavigator(navigator: navigatorMock)
+    }
+
+    // MARK: - Tests
+
     @Test
     func goBackCallsNavigator() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = CharacterDetailNavigator(navigator: navigatorMock)
-
         // When
         sut.goBack()
 

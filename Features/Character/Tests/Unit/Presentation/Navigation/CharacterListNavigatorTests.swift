@@ -4,11 +4,22 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterListNavigatorTests {
+    // MARK: - Properties
+
+    private let navigatorMock = NavigatorMock()
+    private let sut: CharacterListNavigator
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterListNavigator(navigator: navigatorMock)
+    }
+
+    // MARK: - Tests
+
     @Test
     func navigateToDetailUsesCorrectNavigation() {
         // Given
-        let navigatorMock = NavigatorMock()
-        let sut = CharacterListNavigator(navigator: navigatorMock)
         let expected = CharacterIncomingNavigation.detail(identifier: 42)
 
         // When
@@ -21,10 +32,6 @@ struct CharacterListNavigatorTests {
 
     @Test
     func navigateToDetailCallsNavigatorOnce() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = CharacterListNavigator(navigator: navigatorMock)
-
         // When
         sut.navigateToDetail(id: 1)
 

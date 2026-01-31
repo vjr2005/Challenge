@@ -5,16 +5,25 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct ClearCharactersCacheUseCaseTests {
-	@Test
-	func executeClearsRepositoryPageCache() async {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		let sut = ClearCharactersCacheUseCase(repository: repositoryMock)
+    // MARK: - Properties
 
-		// When
-		await sut.execute()
+    private let repositoryMock = CharacterRepositoryMock()
+    private let sut: ClearCharactersCacheUseCase
 
-		// Then
-		#expect(repositoryMock.clearPagesCacheCallCount == 1)
-	}
+    // MARK: - Initialization
+
+    init() {
+        sut = ClearCharactersCacheUseCase(repository: repositoryMock)
+    }
+
+    // MARK: - Tests
+
+    @Test
+    func executeClearsRepositoryPageCache() async {
+        // When
+        await sut.execute()
+
+        // Then
+        #expect(repositoryMock.clearPagesCacheCallCount == 1)
+    }
 }

@@ -5,18 +5,29 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct CharacterDetailViewModelTests {
-    @Test
-    func initialStateIsIdle() {
-        // Given
-        let useCaseMock = GetCharacterUseCaseMock()
-        let navigatorMock = CharacterDetailNavigatorMock()
-        let sut = CharacterDetailViewModel(
-            identifier: 1,
+    // MARK: - Properties
+
+    private let identifier = 1
+    private let useCaseMock = GetCharacterUseCaseMock()
+    private let refreshMock = RefreshCharacterUseCaseMock()
+    private let navigatorMock = CharacterDetailNavigatorMock()
+    private let sut: CharacterDetailViewModel
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterDetailViewModel(
+            identifier: identifier,
             getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: RefreshCharacterUseCaseMock(),
+            refreshCharacterUseCase: refreshMock,
             navigator: navigatorMock
         )
+    }
 
+    // MARK: - Tests
+
+    @Test
+    func initialStateIsIdle() {
         // Then
         #expect(sut.state == .idle)
     }
@@ -25,15 +36,7 @@ struct CharacterDetailViewModelTests {
     func loadSetsLoadedStateOnSuccess() async {
         // Given
         let expected = Character.stub()
-        let useCaseMock = GetCharacterUseCaseMock()
         useCaseMock.result = .success(expected)
-        let navigatorMock = CharacterDetailNavigatorMock()
-        let sut = CharacterDetailViewModel(
-            identifier: 1,
-            getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: RefreshCharacterUseCaseMock(),
-            navigator: navigatorMock
-        )
 
         // When
         await sut.load()
@@ -45,15 +48,7 @@ struct CharacterDetailViewModelTests {
     @Test
     func loadSetsErrorStateOnFailure() async {
         // Given
-        let useCaseMock = GetCharacterUseCaseMock()
         useCaseMock.result = .failure(.loadFailed)
-        let navigatorMock = CharacterDetailNavigatorMock()
-        let sut = CharacterDetailViewModel(
-            identifier: 1,
-            getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: RefreshCharacterUseCaseMock(),
-            navigator: navigatorMock
-        )
 
         // When
         await sut.load()
@@ -65,16 +60,7 @@ struct CharacterDetailViewModelTests {
     @Test
     func loadCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        let identifier = 42
-        let useCaseMock = GetCharacterUseCaseMock()
         useCaseMock.result = .success(.stub())
-        let navigatorMock = CharacterDetailNavigatorMock()
-        let sut = CharacterDetailViewModel(
-            identifier: identifier,
-            getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: RefreshCharacterUseCaseMock(),
-            navigator: navigatorMock
-        )
 
         // When
         await sut.load()
@@ -86,16 +72,6 @@ struct CharacterDetailViewModelTests {
 
     @Test
     func didTapOnBackCallsNavigatorGoBack() {
-        // Given
-        let useCaseMock = GetCharacterUseCaseMock()
-        let navigatorMock = CharacterDetailNavigatorMock()
-        let sut = CharacterDetailViewModel(
-            identifier: 1,
-            getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: RefreshCharacterUseCaseMock(),
-            navigator: navigatorMock
-        )
-
         // When
         sut.didTapOnBack()
 
@@ -110,18 +86,8 @@ struct CharacterDetailViewModelTests {
         // Given
         let initialCharacter = Character.stub(name: "Initial")
         let refreshedCharacter = Character.stub(name: "Refreshed")
-        let useCaseMock = GetCharacterUseCaseMock()
         useCaseMock.result = .success(initialCharacter)
-        let refreshMock = RefreshCharacterUseCaseMock()
         refreshMock.result = .success(refreshedCharacter)
-        let navigatorMock = CharacterDetailNavigatorMock()
-        let sut = CharacterDetailViewModel(
-            identifier: 1,
-            getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: refreshMock,
-            navigator: navigatorMock
-        )
-
         await sut.load()
 
         // When
@@ -135,15 +101,7 @@ struct CharacterDetailViewModelTests {
     @Test
     func refreshCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        let identifier = 42
-        let refreshMock = RefreshCharacterUseCaseMock()
         refreshMock.result = .success(.stub())
-        let sut = CharacterDetailViewModel(
-            identifier: identifier,
-            getCharacterUseCase: GetCharacterUseCaseMock(),
-            refreshCharacterUseCase: refreshMock,
-            navigator: CharacterDetailNavigatorMock()
-        )
 
         // When
         await sut.refresh()
@@ -155,14 +113,7 @@ struct CharacterDetailViewModelTests {
     @Test
     func refreshSetsErrorStateOnFailure() async {
         // Given
-        let refreshMock = RefreshCharacterUseCaseMock()
         refreshMock.result = .failure(.loadFailed)
-        let sut = CharacterDetailViewModel(
-            identifier: 1,
-            getCharacterUseCase: GetCharacterUseCaseMock(),
-            refreshCharacterUseCase: refreshMock,
-            navigator: CharacterDetailNavigatorMock()
-        )
 
         // When
         await sut.refresh()

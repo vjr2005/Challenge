@@ -17,13 +17,15 @@ struct ColorTokenTests {
 
 	// MARK: - Accent Colors
 
-	@Test("Accent color matches system accent")
-	func accentColorMatchesSystem() {
-		#expect(ColorToken.accent == .accentColor)
+	@Test("Accent color matches expected value")
+	func accentColorMatchesExpected() {
+		let expected = Color(red: 0x33 / 255.0, green: 0x38 / 255.0, blue: 0x44 / 255.0)
+		#expect(ColorToken.accent == expected)
 	}
 
 	@Test("Accent subtle has reduced opacity")
 	func accentSubtleHasReducedOpacity() {
-		#expect(ColorToken.accentSubtle == .accentColor.opacity(0.1))
+		let expected = Color(red: 0x33 / 255.0, green: 0x38 / 255.0, blue: 0x44 / 255.0).opacity(0.1)
+		#expect(ColorToken.accentSubtle == expected)
 	}
 }

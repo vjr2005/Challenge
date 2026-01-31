@@ -6,14 +6,21 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterFeatureTests {
+    // MARK: - Properties
+
+    private let httpClientMock = HTTPClientMock()
+    private let sut: CharacterFeature
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterFeature(httpClient: httpClientMock)
+    }
+
     // MARK: - Deep Link Handler
 
     @Test
     func deepLinkHandlerReturnsCharacterDeepLinkHandler() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
         // When
         let result = sut.deepLinkHandler
 
@@ -26,9 +33,7 @@ struct CharacterFeatureTests {
     @Test
     func makeMainViewReturnsCharacterListView() {
         // Given
-        let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         let result = sut.makeMainView(navigator: navigatorMock)
@@ -43,9 +48,7 @@ struct CharacterFeatureTests {
     @Test
     func resolveReturnsViewForListNavigation() {
         // Given
-        let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         let result = sut.resolve(CharacterIncomingNavigation.list, navigator: navigatorMock)
@@ -59,9 +62,7 @@ struct CharacterFeatureTests {
     @Test
     func resolveReturnsViewForDetailNavigation() {
         // Given
-        let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         let result = sut.resolve(CharacterIncomingNavigation.detail(identifier: 42), navigator: navigatorMock)
@@ -75,9 +76,7 @@ struct CharacterFeatureTests {
     @Test
     func resolveReturnsNilForOtherNavigation() {
         // Given
-        let httpClientMock = HTTPClientMock()
         let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
 
         // When
         let result = sut.resolve(TestNavigation.other, navigator: navigatorMock)

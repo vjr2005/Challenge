@@ -5,10 +5,15 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterDeepLinkHandlerTests {
+    // MARK: - Properties
+
+    private let sut = CharacterDeepLinkHandler()
+
+    // MARK: - Tests
+
     @Test
     func resolvesListURL() throws {
         // Given
-        let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/list"))
         let expected = CharacterIncomingNavigation.list
 
@@ -22,7 +27,6 @@ struct CharacterDeepLinkHandlerTests {
     @Test
     func resolvesDetailURL() throws {
         // Given
-        let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/detail?id=42"))
         let expected = CharacterIncomingNavigation.detail(identifier: 42)
 
@@ -36,7 +40,6 @@ struct CharacterDeepLinkHandlerTests {
     @Test
     func returnsNilForUnknownPath() throws {
         // Given
-        let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/unknown"))
 
         // When
@@ -49,7 +52,6 @@ struct CharacterDeepLinkHandlerTests {
     @Test
     func returnsNilForDetailWithoutId() throws {
         // Given
-        let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/detail"))
 
         // When
@@ -62,7 +64,6 @@ struct CharacterDeepLinkHandlerTests {
     @Test
     func returnsNilForDetailWithInvalidId() throws {
         // Given
-        let sut = CharacterDeepLinkHandler()
         let url = try #require(URL(string: "challenge://character/detail?id=abc"))
 
         // When

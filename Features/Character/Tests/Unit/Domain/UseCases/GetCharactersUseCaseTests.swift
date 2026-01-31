@@ -5,111 +5,108 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct GetCharactersUseCaseTests {
-	// MARK: - Without Query (uses getCharacters)
+    // MARK: - Properties
 
-	@Test
-	func executeWithoutQueryReturnsCharactersPage() async throws {
-		// Given
-		let expected = CharactersPage.stub()
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.charactersResult = .success(expected)
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+    private let repositoryMock = CharacterRepositoryMock()
+    private let sut: GetCharactersUseCase
 
-		// When
-		let value = try await sut.execute(page: 1, query: nil)
+    // MARK: - Initialization
 
-		// Then
-		#expect(value == expected)
-	}
+    init() {
+        sut = GetCharactersUseCase(repository: repositoryMock)
+    }
 
-	@Test
-	func executeWithoutQueryCallsGetCharacters() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.charactersResult = .success(.stub())
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+    // MARK: - Without Query (uses getCharacters)
 
-		// When
-		_ = try await sut.execute(page: 5, query: nil)
+    @Test
+    func executeWithoutQueryReturnsCharactersPage() async throws {
+        // Given
+        let expected = CharactersPage.stub()
+        repositoryMock.charactersResult = .success(expected)
 
-		// Then
-		#expect(repositoryMock.getCharactersCallCount == 1)
-		#expect(repositoryMock.lastRequestedPage == 5)
-		#expect(repositoryMock.searchCharactersCallCount == 0)
-	}
+        // When
+        let value = try await sut.execute(page: 1, query: nil)
 
-	@Test
-	func executeWithEmptyQueryCallsGetCharacters() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.charactersResult = .success(.stub())
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+        // Then
+        #expect(value == expected)
+    }
 
-		// When
-		_ = try await sut.execute(page: 1, query: "")
+    @Test
+    func executeWithoutQueryCallsGetCharacters() async throws {
+        // Given
+        repositoryMock.charactersResult = .success(.stub())
 
-		// Then
-		#expect(repositoryMock.getCharactersCallCount == 1)
-		#expect(repositoryMock.searchCharactersCallCount == 0)
-	}
+        // When
+        _ = try await sut.execute(page: 5, query: nil)
 
-	@Test
-	func executeWithoutQueryPropagatesError() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.charactersResult = .failure(.loadFailed)
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+        // Then
+        #expect(repositoryMock.getCharactersCallCount == 1)
+        #expect(repositoryMock.lastRequestedPage == 5)
+        #expect(repositoryMock.searchCharactersCallCount == 0)
+    }
 
-		// When / Then
-		await #expect(throws: CharacterError.loadFailed) {
-			_ = try await sut.execute(page: 1, query: nil)
-		}
-	}
+    @Test
+    func executeWithEmptyQueryCallsGetCharacters() async throws {
+        // Given
+        repositoryMock.charactersResult = .success(.stub())
 
-	// MARK: - With Query (uses searchCharacters)
+        // When
+        _ = try await sut.execute(page: 1, query: "")
 
-	@Test
-	func executeWithQueryReturnsCharactersPage() async throws {
-		// Given
-		let expected = CharactersPage.stub()
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.searchResult = .success(expected)
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+        // Then
+        #expect(repositoryMock.getCharactersCallCount == 1)
+        #expect(repositoryMock.searchCharactersCallCount == 0)
+    }
 
-		// When
-		let value = try await sut.execute(page: 1, query: "Rick")
+    @Test
+    func executeWithoutQueryPropagatesError() async throws {
+        // Given
+        repositoryMock.charactersResult = .failure(.loadFailed)
 
-		// Then
-		#expect(value == expected)
-	}
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.execute(page: 1, query: nil)
+        }
+    }
 
-	@Test
-	func executeWithQueryCallsSearchCharacters() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.searchResult = .success(.stub())
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+    // MARK: - With Query (uses searchCharacters)
 
-		// When
-		_ = try await sut.execute(page: 3, query: "Morty")
+    @Test
+    func executeWithQueryReturnsCharactersPage() async throws {
+        // Given
+        let expected = CharactersPage.stub()
+        repositoryMock.searchResult = .success(expected)
 
-		// Then
-		#expect(repositoryMock.searchCharactersCallCount == 1)
-		#expect(repositoryMock.lastSearchedPage == 3)
-		#expect(repositoryMock.lastSearchedQuery == "Morty")
-		#expect(repositoryMock.getCharactersCallCount == 0)
-	}
+        // When
+        let value = try await sut.execute(page: 1, query: "Rick")
 
-	@Test
-	func executeWithQueryPropagatesError() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.searchResult = .failure(.loadFailed)
-		let sut = GetCharactersUseCase(repository: repositoryMock)
+        // Then
+        #expect(value == expected)
+    }
 
-		// When / Then
-		await #expect(throws: CharacterError.loadFailed) {
-			_ = try await sut.execute(page: 1, query: "Rick")
-		}
-	}
+    @Test
+    func executeWithQueryCallsSearchCharacters() async throws {
+        // Given
+        repositoryMock.searchResult = .success(.stub())
+
+        // When
+        _ = try await sut.execute(page: 3, query: "Morty")
+
+        // Then
+        #expect(repositoryMock.searchCharactersCallCount == 1)
+        #expect(repositoryMock.lastSearchedPage == 3)
+        #expect(repositoryMock.lastSearchedQuery == "Morty")
+        #expect(repositoryMock.getCharactersCallCount == 0)
+    }
+
+    @Test
+    func executeWithQueryPropagatesError() async throws {
+        // Given
+        repositoryMock.searchResult = .failure(.loadFailed)
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.execute(page: 1, query: "Rick")
+        }
+    }
 }
