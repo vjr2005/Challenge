@@ -17,7 +17,7 @@ public enum AppScheme {
 			testAction = .targets(
 				[
 					// Unit Tests
-					"\(appName)Tests",
+					"\(appName)AppKitTests",
 					"\(appName)CoreTests",
 					"\(appName)NetworkingTests",
 					"\(appName)DesignSystemTests",
@@ -25,7 +25,7 @@ public enum AppScheme {
 					"\(appName)HomeTests",
 					"\(appName)SystemTests",
 					// Snapshot Tests
-					"\(appName)SnapshotTests",
+					"\(appName)AppKitSnapshotTests",
 					"\(appName)DesignSystemSnapshotTests",
 					"\(appName)CharacterSnapshotTests",
 					"\(appName)HomeSnapshotTests",

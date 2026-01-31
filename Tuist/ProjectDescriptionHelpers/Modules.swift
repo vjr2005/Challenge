@@ -12,6 +12,7 @@ public enum Modules {
 		CharacterModule.module,
 		HomeModule.module,
 		SystemModule.module,
+		AppKitModule.module,
 	]
 
 	/// All targets from all modules.
@@ -36,15 +37,13 @@ public enum Modules {
 			+ CharacterModule.targetReferences
 			+ HomeModule.targetReferences
 			+ SystemModule.targetReferences
+			+ AppKitModule.targetReferences
 	}
 
 	/// App dependencies (modules that the app target depends on).
 	public static var appDependencies: [TargetDependency] {
 		[
-			.target(name: "\(appName)Core"),
-			.target(name: "\(appName)Character"),
-			.target(name: "\(appName)Home"),
-			.target(name: "\(appName)System"),
+			.target(name: "\(appName)AppKit"),
 		]
 	}
 }

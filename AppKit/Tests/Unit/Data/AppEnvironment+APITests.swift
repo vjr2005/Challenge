@@ -1,7 +1,7 @@
 import ChallengeCore
 import Testing
 
-@testable import Challenge
+@testable import ChallengeAppKit
 
 struct AppEnvironmentAPITests {
 	// MARK: - rickAndMorty API

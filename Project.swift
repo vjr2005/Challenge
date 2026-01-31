@@ -42,45 +42,6 @@ let appTarget = Target.target(
 	)
 )
 
-let appTestsTarget = Target.target(
-	name: "\(appName)Tests",
-	destinations: destinations,
-	product: .unitTests,
-	bundleId: "com.app.\(appName)Tests",
-	deploymentTargets: developmentTarget,
-	infoPlist: .default,
-	sources: [
-		"App/Tests/Unit/**",
-		"App/Tests/Shared/**",
-	],
-	dependencies: [
-		.target(name: appName),
-		.target(name: "\(appName)Core"),
-		.target(name: "\(appName)CoreMocks"),
-		.target(name: "\(appName)NetworkingMocks"),
-	]
-)
-
-let appSnapshotTestsTarget = Target.target(
-	name: "\(appName)SnapshotTests",
-	destinations: destinations,
-	product: .unitTests,
-	bundleId: "com.app.\(appName)SnapshotTests",
-	deploymentTargets: developmentTarget,
-	infoPlist: .default,
-	sources: [
-		"App/Tests/Snapshots/**",
-		"App/Tests/Shared/**",
-	],
-	dependencies: [
-		.target(name: appName),
-		.target(name: "\(appName)Core"),
-		.target(name: "\(appName)CoreMocks"),
-		.target(name: "\(appName)NetworkingMocks"),
-		.external(name: "SnapshotTesting"),
-	]
-)
-
 let appE2ETestsTarget = Target.target(
 	name: "\(appName)E2ETests",
 	destinations: destinations,
@@ -110,6 +71,6 @@ let project = Project(
 		],
 		configurations: BuildConfiguration.all
 	),
-	targets: [appTarget, appTestsTarget, appSnapshotTestsTarget, appE2ETestsTarget] + Modules.targets,
+	targets: [appTarget, appE2ETestsTarget] + Modules.targets,
 	schemes: AppScheme.allSchemes() + Modules.schemes
 )
