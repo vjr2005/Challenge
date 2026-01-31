@@ -1,6 +1,8 @@
 import Foundation
 
-final class URLProtocolMock: URLProtocol, @unchecked Sendable {
+/// Mock URLProtocol for testing network requests without hitting the network.
+/// Allows registering handlers per URL host to return custom responses.
+public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	nonisolated(unsafe) private static var handlers: [String: (URLRequest) throws -> (URLResponse, Data?)] = [:]
 	nonisolated private static let lock = NSLock()
 
@@ -8,13 +10,13 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	/// - Parameters:
 	///   - handler: The handler to invoke for requests to this host. Pass nil to remove.
 	///   - url: The URL whose host will be used to match requests.
-	nonisolated static func setHandler(
+	nonisolated public static func setHandler(
 		_ handler: ((URLRequest) throws -> (URLResponse, Data?))?,
 		forURL url: URL
 	) {
-        guard let host = url.host else {
-            return
-        }
+		guard let host = url.host else {
+			return
+		}
 		lock.lock()
 		defer { lock.unlock() }
 		if let handler {
@@ -25,7 +27,7 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	}
 
 	/// Removes all registered handlers.
-	nonisolated static func reset() {
+	nonisolated public static func reset() {
 		lock.lock()
 		defer { lock.unlock() }
 		handlers.removeAll()
@@ -36,15 +38,15 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	) -> ((URLRequest) throws -> (URLResponse, Data?))? {
 		lock.lock()
 		defer { lock.unlock() }
-        guard let host = request.url?.host else {
-            return nil
-        }
+		guard let host = request.url?.host else {
+			return nil
+		}
 		return handlers[host]
 	}
 
 	// MARK: - URLProtocol
 
-	override nonisolated init(
+	override nonisolated public init(
 		request: URLRequest,
 		cachedResponse: CachedURLResponse?,
 		client: (any URLProtocolClient)?
@@ -52,15 +54,15 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 		super.init(request: request, cachedResponse: cachedResponse, client: client)
 	}
 
-	override nonisolated static func canInit(with request: URLRequest) -> Bool {
+	override nonisolated public static func canInit(with request: URLRequest) -> Bool {
 		true
 	}
 
-	override nonisolated static func canonicalRequest(for request: URLRequest) -> URLRequest {
+	override nonisolated public static func canonicalRequest(for request: URLRequest) -> URLRequest {
 		request
 	}
 
-	override nonisolated func startLoading() {
+	override nonisolated public func startLoading() {
 		guard let handler = Self.resolveHandler(for: request) else {
 			client?.urlProtocol(self, didFailWithError: URLError(.badURL))
 			return
@@ -78,5 +80,5 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 		}
 	}
 
-	override nonisolated func stopLoading() {}
+	override nonisolated public func stopLoading() {}
 }
