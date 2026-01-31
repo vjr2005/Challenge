@@ -1,3 +1,4 @@
+import ChallengeDesignSystem
 import ChallengeResources
 import Lottie
 import SwiftUI
@@ -30,7 +31,7 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 
 private extension HomeView {
 	var lottieAnimation: some View {
-		LottieView(animation: .named("home", bundle: .module))
+		LottieView(animation: .named("home", bundle: .home))
 			.playbackMode(playbackMode)
 			.animationDidFinish { _ in
 				withAnimation(.spring(duration: 0.5, bounce: 0.3)) {
@@ -48,6 +49,7 @@ private extension HomeView {
 			Text(LocalizedStrings.goToCharacters)
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(ColorToken.accent)
 		.accessibilityIdentifier(AccessibilityIdentifier.characterButton)
 		.opacity(showButton ? 1 : 0)
 		.scaleEffect(showButton ? 1 : 0.8)

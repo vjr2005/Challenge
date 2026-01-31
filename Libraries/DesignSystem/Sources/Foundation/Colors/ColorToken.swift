@@ -52,10 +52,10 @@ public enum ColorToken {
 	// MARK: - Interactive Colors
 
 	/// Accent color for interactive elements
-	public static var accent: Color { .accentColor }
+	public static var accent: Color { Color(red: 0x33 / 255.0, green: 0x38 / 255.0, blue: 0x44 / 255.0) }
 
 	/// Subtle accent color for backgrounds
-	public static var accentSubtle: Color { .accentColor.opacity(0.1) }
+	public static var accentSubtle: Color { accent.opacity(0.1) }
 
 	/// Disabled state color
 	public static var disabled: Color { Color(.systemGray3) }

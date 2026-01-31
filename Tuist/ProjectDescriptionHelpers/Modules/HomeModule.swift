@@ -7,6 +7,7 @@ public enum HomeModule {
         path: "Home",
         dependencies: [
             .target(name: "\(appName)Core"),
+            .target(name: "\(appName)DesignSystem"),
             .target(name: "\(appName)Resources"),
             .external(name: "Lottie"),
         ],
