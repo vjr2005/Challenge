@@ -5,43 +5,61 @@ import Testing
 @testable import ChallengeSystem
 
 struct SystemFeatureTests {
-    // MARK: - Resolve
+    // MARK: - Deep Link Handler
 
     @Test
-    func resolveNotFoundNavigationReturnsNotFoundView() {
+    func deepLinkHandlerReturnsNil() {
+        // Given
+        let sut = SystemFeature()
+
+        // When
+        let result = sut.deepLinkHandler
+
+        // Then
+        #expect(result == nil)
+    }
+
+    // MARK: - Main View
+
+    @Test
+    func makeMainViewReturnsNotFoundView() {
         // Given
         let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
 
         // When
-        let result = sut.resolve(.notFound, navigator: navigatorMock)
+        let result = sut.makeMainView(navigator: navigatorMock)
 
         // Then
         let viewName = String(describing: result)
         #expect(viewName.contains("NotFoundView"))
     }
 
+    // MARK: - Resolve
+
     @Test
-    func tryResolveReturnsViewForUnknownNavigation() {
+    func resolveReturnsViewForUnknownNavigation() {
         // Given
         let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
 
         // When
-        let result = sut.tryResolve(UnknownNavigation.notFound, navigator: navigatorMock)
+        let result = sut.resolve(UnknownNavigation.notFound, navigator: navigatorMock)
 
         // Then
         #expect(result != nil)
+        let viewName = String(describing: result)
+        #expect(viewName.contains("NotFoundView"))
     }
 
     @Test
-    func tryResolveReturnsNilForOtherNavigation() {
+    func resolveReturnsNilForOtherNavigation() {
         // Given
         let sut = SystemFeature()
         let navigatorMock = NavigatorMock()
 
         // When
-        let result = sut.tryResolve(TestIncomingNavigation.other, navigator: navigatorMock)
+        let result = sut.resolve(TestNavigation.other, navigator: navigatorMock)
 
         // Then
         #expect(result == nil)
@@ -50,6 +68,6 @@ struct SystemFeatureTests {
 
 // MARK: - Test Helpers
 
-private enum TestIncomingNavigation: IncomingNavigation {
+private enum TestNavigation: Navigation {
     case other
 }

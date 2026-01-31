@@ -4,10 +4,6 @@ import SwiftUI
 
 /// Feature entry point for the Character module.
 public struct CharacterFeature: Feature {
-    // MARK: - Types
-
-    public typealias NavigationType = CharacterIncomingNavigation
-
     // MARK: - Dependencies
 
     private let container: CharacterContainer
@@ -25,17 +21,24 @@ public struct CharacterFeature: Feature {
         CharacterDeepLinkHandler()
     }
 
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView(CharacterListView(
+            viewModel: container.makeCharacterListViewModel(navigator: navigator)
+        ))
+    }
+
     public func resolve(
-        _ navigation: CharacterIncomingNavigation,
+        _ navigation: any Navigation,
         navigator: any NavigatorContract
-    ) -> AnyView {
+    ) -> AnyView? {
+        guard let navigation = navigation as? CharacterIncomingNavigation else {
+            return nil
+        }
         switch navigation {
         case .list:
-            AnyView(CharacterListView(
-                viewModel: container.makeCharacterListViewModel(navigator: navigator)
-            ))
+            return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            AnyView(CharacterDetailView(
+            return AnyView(CharacterDetailView(
                 viewModel: container.makeCharacterDetailViewModel(
                     identifier: identifier,
                     navigator: navigator

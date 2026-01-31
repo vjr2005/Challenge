@@ -3,10 +3,6 @@ import SwiftUI
 
 /// Feature entry point for the Home module.
 public struct HomeFeature: Feature {
-    // MARK: - Types
-
-    public typealias NavigationType = HomeIncomingNavigation
-
     // MARK: - Dependencies
 
     private let container: HomeContainer
@@ -24,20 +20,20 @@ public struct HomeFeature: Feature {
         HomeDeepLinkHandler()
     }
 
-    public func resolve(
-        _ navigation: HomeIncomingNavigation,
-        navigator: any NavigatorContract
-    ) -> AnyView {
-        switch navigation {
-        case .main:
-            AnyView(HomeView(viewModel: container.makeHomeViewModel(navigator: navigator)))
-        }
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView(HomeView(viewModel: container.makeHomeViewModel(navigator: navigator)))
     }
 
-    // MARK: - Factory
-
-    /// Creates the root Home view with the given navigator.
-    public func makeHomeView(navigator: any NavigatorContract) -> some View {
-        HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView? {
+        guard let navigation = navigation as? HomeIncomingNavigation else {
+            return nil
+        }
+        switch navigation {
+        case .main:
+            return makeMainView(navigator: navigator)
+        }
     }
 }

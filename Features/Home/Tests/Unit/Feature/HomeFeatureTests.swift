@@ -19,59 +19,47 @@ struct HomeFeatureTests {
         #expect(result is HomeDeepLinkHandler)
     }
 
-    // MARK: - Factory
+    // MARK: - Main View
 
     @Test
-    func makeHomeViewReturnsHomeView() {
+    func makeMainViewReturnsHomeView() {
         // Given
         let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
 
         // When
-        let result = sut.makeHomeView(navigator: navigatorMock)
-
-        // Then
-        let viewName = String(describing: type(of: result))
-        #expect(viewName.contains("HomeView"))
-    }
-
-    // MARK: - Resolve
-
-    @Test
-    func resolveMainNavigationReturnsHomeView() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
-
-        // When
-        let result = sut.resolve(.main, navigator: navigatorMock)
+        let result = sut.makeMainView(navigator: navigatorMock)
 
         // Then
         let viewName = String(describing: result)
         #expect(viewName.contains("HomeView"))
     }
 
+    // MARK: - Resolve
+
     @Test
-    func tryResolveReturnsViewForHomeNavigation() {
+    func resolveReturnsViewForHomeNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
 
         // When
-        let result = sut.tryResolve(HomeIncomingNavigation.main, navigator: navigatorMock)
+        let result = sut.resolve(HomeIncomingNavigation.main, navigator: navigatorMock)
 
         // Then
         #expect(result != nil)
+        let viewName = String(describing: result)
+        #expect(viewName.contains("HomeView"))
     }
 
     @Test
-    func tryResolveReturnsNilForOtherNavigation() {
+    func resolveReturnsNilForOtherNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
         let sut = HomeFeature()
 
         // When
-        let result = sut.tryResolve(TestIncomingNavigation.other, navigator: navigatorMock)
+        let result = sut.resolve(TestNavigation.other, navigator: navigatorMock)
 
         // Then
         #expect(result == nil)
@@ -80,6 +68,6 @@ struct HomeFeatureTests {
 
 // MARK: - Test Helpers
 
-private enum TestIncomingNavigation: IncomingNavigation {
+private enum TestNavigation: Navigation {
     case other
 }

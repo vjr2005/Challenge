@@ -21,21 +21,19 @@ public final class NavigationCoordinator: NavigatorContract {
     /// - For `OutgoingNavigation`: Requires a redirect; falls back to `UnknownNavigation` if none.
     /// - For other `Navigation`: Appends directly to the path.
     public func navigate(to destination: any Navigation) {
-        let resolved: any IncomingNavigation
+        let resolved: any Navigation
 
-        if let incoming = destination as? any IncomingNavigation {
-            resolved = incoming
-        } else if destination is any OutgoingNavigation {
-            if let redirected = redirector?.redirect(destination) as? any IncomingNavigation {
+        if destination is any OutgoingNavigation {
+            if let redirected = redirector?.redirect(destination) {
                 resolved = redirected
             } else {
                 resolved = UnknownNavigation.notFound
             }
         } else {
-            resolved = UnknownNavigation.notFound
+            resolved = destination
         }
 
-        path.append(AnyIncomingNavigation(resolved))
+        path.append(AnyNavigation(resolved))
     }
 
     /// Navigates back to the previous screen.

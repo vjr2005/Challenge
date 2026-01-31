@@ -2,7 +2,7 @@ import Testing
 
 @testable import ChallengeCore
 
-struct AnyIncomingNavigationTests {
+struct AnyNavigationTests {
     // MARK: - Initialization
 
     @Test
@@ -11,7 +11,7 @@ struct AnyIncomingNavigationTests {
         let navigation = TestNavigation.screen1
 
         // When
-        let sut = AnyIncomingNavigation(navigation)
+        let sut = AnyNavigation(navigation)
 
         // Then
         #expect(sut.wrapped as? TestNavigation == .screen1)
@@ -22,8 +22,8 @@ struct AnyIncomingNavigationTests {
     @Test
     func equalityReturnsTrueForSameNavigation() {
         // Given
-        let navigation1 = AnyIncomingNavigation(TestNavigation.screen1)
-        let navigation2 = AnyIncomingNavigation(TestNavigation.screen1)
+        let navigation1 = AnyNavigation(TestNavigation.screen1)
+        let navigation2 = AnyNavigation(TestNavigation.screen1)
 
         // Then
         #expect(navigation1 == navigation2)
@@ -32,8 +32,8 @@ struct AnyIncomingNavigationTests {
     @Test
     func equalityReturnsFalseForDifferentNavigationValues() {
         // Given
-        let navigation1 = AnyIncomingNavigation(TestNavigation.screen1)
-        let navigation2 = AnyIncomingNavigation(TestNavigation.screen2)
+        let navigation1 = AnyNavigation(TestNavigation.screen1)
+        let navigation2 = AnyNavigation(TestNavigation.screen2)
 
         // Then
         #expect(navigation1 != navigation2)
@@ -42,8 +42,8 @@ struct AnyIncomingNavigationTests {
     @Test
     func equalityReturnsFalseForDifferentNavigationTypes() {
         // Given
-        let navigation1 = AnyIncomingNavigation(TestNavigation.screen1)
-        let navigation2 = AnyIncomingNavigation(OtherNavigation.other)
+        let navigation1 = AnyNavigation(TestNavigation.screen1)
+        let navigation2 = AnyNavigation(OtherNavigation.other)
 
         // Then
         #expect(navigation1 != navigation2)
@@ -52,9 +52,9 @@ struct AnyIncomingNavigationTests {
     @Test
     func equalityWorksWithAssociatedValues() {
         // Given
-        let navigation1 = AnyIncomingNavigation(TestNavigationWithValue.detail(id: 42))
-        let navigation2 = AnyIncomingNavigation(TestNavigationWithValue.detail(id: 42))
-        let navigation3 = AnyIncomingNavigation(TestNavigationWithValue.detail(id: 99))
+        let navigation1 = AnyNavigation(TestNavigationWithValue.detail(id: 42))
+        let navigation2 = AnyNavigation(TestNavigationWithValue.detail(id: 42))
+        let navigation3 = AnyNavigation(TestNavigationWithValue.detail(id: 99))
 
         // Then
         #expect(navigation1 == navigation2)
@@ -66,8 +66,8 @@ struct AnyIncomingNavigationTests {
     @Test
     func hashingProducesSameHashForEqualNavigations() {
         // Given
-        let navigation1 = AnyIncomingNavigation(TestNavigation.screen1)
-        let navigation2 = AnyIncomingNavigation(TestNavigation.screen1)
+        let navigation1 = AnyNavigation(TestNavigation.screen1)
+        let navigation2 = AnyNavigation(TestNavigation.screen1)
 
         // Then
         #expect(navigation1.hashValue == navigation2.hashValue)
@@ -76,12 +76,12 @@ struct AnyIncomingNavigationTests {
     @Test
     func hashingWorksInSets() {
         // Given
-        let navigation1 = AnyIncomingNavigation(TestNavigation.screen1)
-        let navigation2 = AnyIncomingNavigation(TestNavigation.screen1)
-        let navigation3 = AnyIncomingNavigation(TestNavigation.screen2)
+        let navigation1 = AnyNavigation(TestNavigation.screen1)
+        let navigation2 = AnyNavigation(TestNavigation.screen1)
+        let navigation3 = AnyNavigation(TestNavigation.screen2)
 
         // When
-        let set: Set<AnyIncomingNavigation> = [navigation1, navigation2, navigation3]
+        let set: Set<AnyNavigation> = [navigation1, navigation2, navigation3]
 
         // Then
         #expect(set.count == 2)

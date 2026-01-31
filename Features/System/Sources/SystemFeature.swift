@@ -4,10 +4,6 @@ import SwiftUI
 /// Feature entry point for the System module.
 /// Handles system-level navigation like unknown routes.
 public struct SystemFeature: Feature {
-    // MARK: - Types
-
-    public typealias NavigationType = UnknownNavigation
-
     // MARK: - Dependencies
 
     private let container: SystemContainer
@@ -20,13 +16,20 @@ public struct SystemFeature: Feature {
 
     // MARK: - Feature Protocol
 
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView(NotFoundView(viewModel: container.makeNotFoundViewModel(navigator: navigator)))
+    }
+
     public func resolve(
-        _ navigation: UnknownNavigation,
+        _ navigation: any Navigation,
         navigator: any NavigatorContract
-    ) -> AnyView {
+    ) -> AnyView? {
+        guard let navigation = navigation as? UnknownNavigation else {
+            return nil
+        }
         switch navigation {
         case .notFound:
-            AnyView(NotFoundView(viewModel: container.makeNotFoundViewModel(navigator: navigator)))
+            return makeMainView(navigator: navigator)
         }
     }
 }

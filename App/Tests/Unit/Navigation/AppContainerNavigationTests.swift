@@ -80,7 +80,7 @@ struct AppContainerNavigationTests {
         let navigator = NavigatorMock()
 
         // When
-        let result = sut.resolve(TestUnknownNavigation.unknown, navigator: navigator)
+        let result = sut.resolve(TestNavigation.unknown, navigator: navigator)
 
         // Then
         let viewName = String(describing: result)
@@ -90,6 +90,6 @@ struct AppContainerNavigationTests {
 
 // MARK: - Test Helpers
 
-private enum TestUnknownNavigation: IncomingNavigation {
+private enum TestNavigation: Navigation {
     case unknown
 }

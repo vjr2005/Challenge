@@ -8,7 +8,7 @@ struct RootContainerView: View {
     var body: some View {
         NavigationStack(path: $navigationCoordinator.path) {
             appContainer.makeRootView(navigator: navigationCoordinator)
-                .navigationDestination(for: AnyIncomingNavigation.self) { navigation in
+                .navigationDestination(for: AnyNavigation.self) { navigation in
                     appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
                 }
         }
