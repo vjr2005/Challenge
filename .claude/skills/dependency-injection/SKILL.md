@@ -214,24 +214,26 @@ public final class {Feature}Container: Sendable {
 import SwiftUI
 
 public protocol Feature {
+    /// The deep link handler for this feature (optional).
     var deepLinkHandler: (any DeepLinkHandler)? { get }
-    func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView
+
+    /// Creates the main view for this feature.
+    func makeMainView(navigator: any NavigatorContract) -> AnyView
+
+    /// Resolves a navigation destination to a view.
+    /// Returns nil if this feature doesn't handle the given navigation.
+    func resolve(_ navigation: any Navigation, navigator: any NavigatorContract) -> AnyView?
 }
 
 public extension Feature {
     var deepLinkHandler: (any DeepLinkHandler)? { nil }
 }
-
-public extension View {
-    func withNavigationDestinations(features: [any Feature], navigator: any NavigatorContract) -> some View {
-        features.reduce(AnyView(self)) { view, feature in
-            feature.applyNavigationDestination(to: view, navigator: navigator)
-        }
-    }
-}
 ```
 
-**Note:** `deepLinkHandler` is optional with a default `nil` implementation. Only implement it if the feature handles deep links.
+**Notes:**
+- `deepLinkHandler` is optional with default `nil` implementation
+- `makeMainView()` creates the feature's default entry point view
+- `resolve()` returns a view for the navigation or `nil` if not handled
 
 ---
 
@@ -321,34 +323,33 @@ public struct {Feature}Feature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         {Feature}DeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
-        AnyView(
-            view.navigationDestination(for: {Feature}IncomingNavigation.self) { navigation in
-                self.view(for: navigation, navigator: navigator)
-            }
-        )
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView({Name}ListView(
+            viewModel: container.make{Name}ListViewModel(navigator: navigator)
+        ))
     }
-}
 
-// MARK: - Private
-
-extension {Feature}Feature {
-    @ViewBuilder
-    func view(for navigation: {Feature}IncomingNavigation, navigator: any NavigatorContract) -> some View {
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView? {
+        guard let navigation = navigation as? {Feature}IncomingNavigation else {
+            return nil
+        }
         switch navigation {
         case .list:
-            {Name}ListView(viewModel: container.make{Name}ListViewModel(navigator: navigator))
+            return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            {Name}DetailView(
+            return AnyView({Name}DetailView(
                 viewModel: container.make{Name}DetailViewModel(
                     identifier: identifier,
                     navigator: navigator
                 )
-            )
+            ))
         }
     }
 }
@@ -359,8 +360,8 @@ extension {Feature}Feature {
 - **Required httpClient** in init (injected by AppContainer)
 - Creates and owns its **Container**
 - **deepLinkHandler** property (optional) - Returns handler instance if feature handles deep links
-- **applyNavigationDestination()** - Registers navigation for `IncomingNavigation`
-- **view(for:navigator:)** - Internal method, delegates to Container factories
+- **makeMainView()** - Returns the default entry point view
+- **resolve()** - Returns view for navigation or `nil` if not handled
 
 ---
 
@@ -384,31 +385,24 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         HomeDeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
-        AnyView(
-            view.navigationDestination(for: HomeIncomingNavigation.self) { navigation in
-                self.view(for: navigation, navigator: navigator)
-            }
-        )
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView(HomeView(viewModel: container.makeHomeViewModel(navigator: navigator)))
     }
 
-    // MARK: - Factory
-
-    public func makeHomeView(navigator: any NavigatorContract) -> some View {
-        HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
-    }
-}
-
-extension HomeFeature {
-    @ViewBuilder
-    func view(for navigation: HomeIncomingNavigation, navigator: any NavigatorContract) -> some View {
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView? {
+        guard let navigation = navigation as? HomeIncomingNavigation else {
+            return nil
+        }
         switch navigation {
         case .main:
-            HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
+            return makeMainView(navigator: navigator)
         }
     }
 }
@@ -475,41 +469,49 @@ public final class HomeContainer: Sendable {
 
 ```swift
 // App/Sources/ChallengeApp.swift
+import ChallengeAppKit
 import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    private let container = AppContainer()
+    private let appContainer = AppContainer()
 
     var body: some Scene {
         WindowGroup {
-            RootContainerView(appContainer: container)
+            RootContainerView(appContainer: appContainer)
         }
     }
 }
 ```
 
-**Note:** ChallengeApp is minimal - just creates AppContainer and uses RootContainerView.
+**Note:** ChallengeApp is minimal - just creates AppContainer and uses RootContainerView from `ChallengeAppKit`.
 
 ### RootContainerView (Using Features)
 
 ```swift
-// App/Sources/Presentation/Views/RootContainerView.swift
+// AppKit/Sources/Presentation/Views/RootContainerView.swift
 import ChallengeCore
-import ChallengeHome
 import SwiftUI
 
-struct RootContainerView: View {
-    let appContainer: AppContainer
-    @State private var coordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
+public struct RootContainerView: View {
+    public let appContainer: AppContainer
 
-    var body: some View {
-        NavigationStack(path: $coordinator.path) {
-            appContainer.makeRootView(navigator: coordinator)
-                .withNavigationDestinations(features: appContainer.features, navigator: coordinator)
+    @State private var navigationCoordinator: NavigationCoordinator
+
+    public init(appContainer: AppContainer) {
+        self.appContainer = appContainer
+        _navigationCoordinator = State(initialValue: NavigationCoordinator(redirector: AppNavigationRedirect()))
+    }
+
+    public var body: some View {
+        NavigationStack(path: $navigationCoordinator.path) {
+            appContainer.makeRootView(navigator: navigationCoordinator)
+                .navigationDestination(for: AnyNavigation.self) { navigation in
+                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+                }
         }
         .onOpenURL { url in
-            appContainer.handle(url: url, navigator: coordinator)
+            appContainer.handle(url: url, navigator: navigationCoordinator)
         }
     }
 }
@@ -518,6 +520,11 @@ struct RootContainerView: View {
     RootContainerView(appContainer: AppContainer())
 }
 ```
+
+**Key Changes:**
+- Located in `AppKit` module (not `App`) for testability without TEST_HOST
+- Uses `AnyNavigation` wrapper for type-erased navigation
+- `appContainer.resolve()` iterates features to find handler
 
 ---
 
@@ -583,24 +590,27 @@ struct HomeNavigator: HomeNavigatorContract {
 
 ## Checklist
 
-- [ ] Create `AppContainer.swift` in App/Sources/ as Composition Root
-- [ ] Create `AppNavigationRedirect.swift` to connect features
+- [ ] Create `AppContainer.swift` in `AppKit/Sources/` as Composition Root
+- [ ] Create `AppNavigationRedirect.swift` in `AppKit/Sources/Presentation/Navigation/`
+- [ ] Create `RootContainerView.swift` in `AppKit/Sources/Presentation/Views/`
 - [ ] Create `{Feature}Container.swift` for dependency composition
 - [ ] Create `{Feature}Feature.swift` as struct implementing `Feature` protocol
 - [ ] Feature requires `httpClient` in init (no optional default)
 - [ ] Feature creates Container in init
+- [ ] Feature implements `makeMainView(navigator:)` returning default entry point
+- [ ] Feature implements `resolve(_:navigator:)` returning view or `nil`
 - [ ] Container has stored `memoryDataSource` property (source of truth)
 - [ ] Container has computed `repository` property
 - [ ] Container has factory methods receiving `navigator: any NavigatorContract`
-- [ ] Create `{Feature}IncomingNavigation.swift` conforming to `Navigation` protocol
+- [ ] Create `{Feature}IncomingNavigation.swift` in `Presentation/Navigation/`
 - [ ] Create `{Feature}OutgoingNavigation.swift` for cross-feature navigation (if needed)
-- [ ] Create `{Feature}DeepLinkHandler.swift` in `Sources/Navigation/` (only if feature handles deep links)
+- [ ] Create `{Feature}DeepLinkHandler.swift` (only if feature handles deep links)
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
 - [ ] Views only receive ViewModel
 - [ ] Add feature to `AppContainer.features` array
+- [ ] `AppContainer` has `resolve(_:navigator:)` iterating features
 - [ ] `AppContainer` has `handle(url:navigator:)` for deep links
 - [ ] `AppContainer` has `makeRootView(navigator:)` factory method
-- [ ] `ChallengeApp` only creates AppContainer and uses `RootContainerView`
-- [ ] `RootContainerView` creates `NavigationCoordinator(redirector: AppNavigationRedirect())`
-- [ ] `RootContainerView` uses `.withNavigationDestinations(features:navigator:)`
+- [ ] `ChallengeApp` imports `ChallengeAppKit` and uses `RootContainerView`
+- [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`
 - [ ] **Create feature tests**

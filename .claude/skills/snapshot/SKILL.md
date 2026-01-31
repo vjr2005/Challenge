@@ -108,14 +108,22 @@ enum SnapshotStubs {
 
 ## Test Structure
 
+Uses instance variables pattern for cleaner tests:
+
 ```swift
 struct {Name}ViewSnapshotTests {
+    // MARK: - Properties
+
     private let imageLoader: ImageLoaderMock
+
+    // MARK: - Initialization
 
     init() {
         UIView.setAnimationsEnabled(false)
         imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
     }
+
+    // MARK: - Tests
 
     @Test
     func loadingState() {
@@ -131,8 +139,28 @@ struct {Name}ViewSnapshotTests {
         // Then
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
+
+    @Test
+    func loadedState() {
+        // Given
+        let viewModel = {Name}ViewModelStub(state: .loaded({Name}.stub()))
+
+        // When
+        let view = NavigationStack {
+            {Name}View(viewModel: viewModel)
+        }
+        .imageLoader(imageLoader)
+
+        // Then
+        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+    }
 }
 ```
+
+**Benefits of instance variables:**
+- `imageLoader` created once in `init()`
+- Each test only sets up test-specific state (viewModel)
+- Cleaner `// Given` section
 
 ---
 

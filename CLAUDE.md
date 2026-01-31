@@ -98,6 +98,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 | Package | Purpose |
 |---------|---------|
 | SnapshotTesting | Snapshot tests (Point-Free) |
+| lottie-ios | Lottie animations (Airbnb) |
 
 ### Tools (via mise)
 

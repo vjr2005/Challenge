@@ -7,36 +7,61 @@ Complete implementation examples for dependency injection with Composition Root 
 ## AppContainer Example (Composition Root)
 
 ```swift
-// App/Sources/AppContainer.swift
+// AppKit/Sources/AppContainer.swift
 import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
 import ChallengeNetworking
+import ChallengeSystem
 import SwiftUI
 
-struct AppContainer: Sendable {
+public struct AppContainer: Sendable {
     // MARK: - Shared Dependencies
 
-    let httpClient: any HTTPClientContract
+    public let httpClient: any HTTPClientContract
 
     // MARK: - Features
 
-    let features: [any Feature]
+    private let homeFeature: HomeFeature
+    private let characterFeature: CharacterFeature
+    private let systemFeature: SystemFeature
+
+    public var features: [any Feature] {
+        [homeFeature, characterFeature, systemFeature]
+    }
 
     // MARK: - Init
 
-    init(httpClient: (any HTTPClientContract)? = nil) {
+    public init(httpClient: (any HTTPClientContract)? = nil) {
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
 
-        self.features = [
-            CharacterFeature(httpClient: self.httpClient),
-            HomeFeature()
-        ]
+        homeFeature = HomeFeature()
+        characterFeature = CharacterFeature(httpClient: self.httpClient)
+        systemFeature = SystemFeature()
     }
 
-    func handle(url: URL, navigator: any NavigatorContract) {
+    // MARK: - Navigation Resolution
+
+    /// Resolves any navigation to a view by iterating through features.
+    /// Falls back to NotFoundView if no feature can handle the navigation.
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView {
+        for feature in features {
+            if let view = feature.resolve(navigation, navigator: navigator) {
+                return view
+            }
+        }
+        // Fallback to SystemFeature's main view (NotFoundView)
+        return systemFeature.makeMainView(navigator: navigator)
+    }
+
+    // MARK: - Deep Link Handling
+
+    public func handle(url: URL, navigator: any NavigatorContract) {
         for feature in features {
             if let navigation = feature.deepLinkHandler?.resolve(url) {
                 navigator.navigate(to: navigation)
@@ -47,8 +72,8 @@ struct AppContainer: Sendable {
 
     // MARK: - Factory Methods
 
-    func makeRootView(navigator: any NavigatorContract) -> some View {
-        HomeFeature().makeHomeView(navigator: navigator)
+    public func makeRootView(navigator: any NavigatorContract) -> AnyView {
+        homeFeature.makeMainView(navigator: navigator)
     }
 }
 ```
@@ -171,34 +196,33 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         CharacterDeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
-        AnyView(
-            view.navigationDestination(for: CharacterIncomingNavigation.self) { navigation in
-                self.view(for: navigation, navigator: navigator)
-            }
-        )
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView(CharacterListView(
+            viewModel: container.makeCharacterListViewModel(navigator: navigator)
+        ))
     }
-}
 
-// MARK: - Private
-
-extension CharacterFeature {
-    @ViewBuilder
-    func view(for navigation: CharacterIncomingNavigation, navigator: any NavigatorContract) -> some View {
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView? {
+        guard let navigation = navigation as? CharacterIncomingNavigation else {
+            return nil
+        }
         switch navigation {
         case .list:
-            CharacterListView(viewModel: container.makeCharacterListViewModel(navigator: navigator))
+            return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            CharacterDetailView(
+            return AnyView(CharacterDetailView(
                 viewModel: container.makeCharacterDetailViewModel(
                     identifier: identifier,
                     navigator: navigator
                 )
-            )
+            ))
         }
     }
 }
@@ -208,37 +232,45 @@ extension CharacterFeature {
 
 ```swift
 // App/Sources/ChallengeApp.swift
+import ChallengeAppKit
 import SwiftUI
 
 @main
 struct ChallengeApp: App {
-    private let container = AppContainer()
+    private let appContainer = AppContainer()
 
     var body: some Scene {
         WindowGroup {
-            RootContainerView(appContainer: container)
+            RootContainerView(appContainer: appContainer)
         }
     }
 }
 ```
 
 ```swift
-// App/Sources/Presentation/Views/RootContainerView.swift
+// AppKit/Sources/Presentation/Views/RootContainerView.swift
 import ChallengeCore
-import ChallengeHome
 import SwiftUI
 
-struct RootContainerView: View {
-    let appContainer: AppContainer
-    @State private var coordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
+public struct RootContainerView: View {
+    public let appContainer: AppContainer
 
-    var body: some View {
-        NavigationStack(path: $coordinator.path) {
-            appContainer.makeRootView(navigator: coordinator)
-                .withNavigationDestinations(features: appContainer.features, navigator: coordinator)
+    @State private var navigationCoordinator: NavigationCoordinator
+
+    public init(appContainer: AppContainer) {
+        self.appContainer = appContainer
+        _navigationCoordinator = State(initialValue: NavigationCoordinator(redirector: AppNavigationRedirect()))
+    }
+
+    public var body: some View {
+        NavigationStack(path: $navigationCoordinator.path) {
+            appContainer.makeRootView(navigator: navigationCoordinator)
+                .navigationDestination(for: AnyNavigation.self) { navigation in
+                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+                }
         }
         .onOpenURL { url in
-            appContainer.handle(url: url, navigator: coordinator)
+            appContainer.handle(url: url, navigator: navigationCoordinator)
         }
     }
 }
@@ -330,31 +362,24 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         HomeDeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
-        AnyView(
-            view.navigationDestination(for: HomeIncomingNavigation.self) { navigation in
-                self.view(for: navigation, navigator: navigator)
-            }
-        )
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView(HomeView(viewModel: container.makeHomeViewModel(navigator: navigator)))
     }
 
-    // MARK: - Factory
-
-    public func makeHomeView(navigator: any NavigatorContract) -> some View {
-        HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
-    }
-}
-
-extension HomeFeature {
-    @ViewBuilder
-    func view(for navigation: HomeIncomingNavigation, navigator: any NavigatorContract) -> some View {
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView? {
+        guard let navigation = navigation as? HomeIncomingNavigation else {
+            return nil
+        }
         switch navigation {
         case .main:
-            HomeView(viewModel: container.makeHomeViewModel(navigator: navigator))
+            return makeMainView(navigator: navigator)
         }
     }
 }
@@ -379,16 +404,22 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterFeatureTests {
+    // MARK: - Properties
+
+    private let httpClientMock = HTTPClientMock()
+    private let navigatorMock = NavigatorMock()
+    private let sut: CharacterFeature
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterFeature(httpClient: httpClientMock)
+    }
+
     // MARK: - Init
 
     @Test
     func initWithHTTPClientDoesNotCrash() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-
-        // When
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
         // Then - Feature initializes without crashing
         _ = sut
     }
@@ -396,50 +427,42 @@ struct CharacterFeatureTests {
     // MARK: - Feature Protocol
 
     @Test
-    func applyNavigationDestinationReturnsView() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-        let baseView = EmptyView()
-
+    func makeMainViewReturnsCharacterListView() {
         // When
-        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
+        let result = sut.makeMainView(navigator: navigatorMock)
 
-        // Then - Method completes without crashing and returns a view
+        // Then
         _ = result
     }
 
-    // MARK: - View Factory
-
     @Test
-    func viewForListNavigationReturnsCharacterListView() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
+    func resolveListNavigationReturnsView() {
         // When
-        let result = sut.view(for: .list, navigator: navigatorMock)
+        let result = sut.resolve(CharacterIncomingNavigation.list, navigator: navigatorMock)
 
         // Then
-        let viewName = String(describing: type(of: result))
-        #expect(viewName.contains("CharacterListView"))
+        #expect(result != nil)
     }
 
     @Test
-    func viewForDetailNavigationReturnsCharacterDetailView() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let navigatorMock = NavigatorMock()
-        let sut = CharacterFeature(httpClient: httpClientMock)
-
+    func resolveDetailNavigationReturnsView() {
         // When
-        let result = sut.view(for: .detail(identifier: 42), navigator: navigatorMock)
+        let result = sut.resolve(CharacterIncomingNavigation.detail(identifier: 42), navigator: navigatorMock)
 
         // Then
-        let viewName = String(describing: type(of: result))
-        #expect(viewName.contains("CharacterDetailView"))
+        #expect(result != nil)
+    }
+
+    @Test
+    func resolveUnknownNavigationReturnsNil() {
+        // Given
+        struct UnknownNavigation: Navigation {}
+
+        // When
+        let result = sut.resolve(UnknownNavigation(), navigator: navigatorMock)
+
+        // Then
+        #expect(result == nil)
     }
 }
 ```
@@ -455,62 +478,49 @@ import Testing
 @testable import ChallengeHome
 
 struct HomeFeatureTests {
+    // MARK: - Properties
+
+    private let navigatorMock = NavigatorMock()
+    private let sut = HomeFeature()
+
     // MARK: - Init
 
     @Test
     func initDoesNotCrash() {
-        // When
-        let sut = HomeFeature()
-
         // Then
         _ = sut
     }
 
-    // MARK: - Factory
+    // MARK: - Feature Protocol
 
     @Test
-    func makeHomeViewReturnsConfiguredInstance() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
-
+    func makeMainViewReturnsHomeView() {
         // When
-        let view = sut.makeHomeView(navigator: navigatorMock)
+        let view = sut.makeMainView(navigator: navigatorMock)
 
         // Then
         _ = view
     }
 
-    // MARK: - Navigation Destination
-
     @Test
-    func applyNavigationDestinationReturnsView() {
-        // Given
-        let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
-        let baseView = EmptyView()
-
+    func resolveMainNavigationReturnsView() {
         // When
-        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
+        let result = sut.resolve(HomeIncomingNavigation.main, navigator: navigatorMock)
 
         // Then
-        _ = result
+        #expect(result != nil)
     }
 
-    // MARK: - View Factory
-
     @Test
-    func viewForMainNavigationReturnsHomeView() {
+    func resolveUnknownNavigationReturnsNil() {
         // Given
-        let navigatorMock = NavigatorMock()
-        let sut = HomeFeature()
+        struct UnknownNavigation: Navigation {}
 
         // When
-        let result = sut.view(for: .main, navigator: navigatorMock)
+        let result = sut.resolve(UnknownNavigation(), navigator: navigatorMock)
 
         // Then
-        let viewName = String(describing: type(of: result))
-        #expect(viewName.contains("HomeView"))
+        #expect(result == nil)
     }
 }
 ```
@@ -530,16 +540,22 @@ import Testing
 @testable import Challenge{Feature}
 
 struct {Feature}FeatureTests {
+    // MARK: - Properties
+
+    private let httpClientMock = HTTPClientMock()
+    private let navigatorMock = NavigatorMock()
+    private let sut: {Feature}Feature
+
+    // MARK: - Initialization
+
+    init() {
+        sut = {Feature}Feature(httpClient: httpClientMock)
+    }
+
     // MARK: - Init
 
     @Test
     func initWithHTTPClientDoesNotCrash() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-
-        // When
-        let sut = {Feature}Feature(httpClient: httpClientMock)
-
         // Then
         _ = sut
     }
@@ -547,35 +563,33 @@ struct {Feature}FeatureTests {
     // MARK: - Feature Protocol
 
     @Test
-    func applyNavigationDestinationReturnsView() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let navigatorMock = NavigatorMock()
-        let sut = {Feature}Feature(httpClient: httpClientMock)
-        let baseView = EmptyView()
-
+    func makeMainViewReturnsView() {
         // When
-        let result = sut.applyNavigationDestination(to: baseView, navigator: navigatorMock)
+        let result = sut.makeMainView(navigator: navigatorMock)
 
         // Then
         _ = result
     }
 
-    // MARK: - View Factory
-
     @Test
-    func viewForListNavigationReturnsListView() {
-        // Given
-        let httpClientMock = HTTPClientMock()
-        let navigatorMock = NavigatorMock()
-        let sut = {Feature}Feature(httpClient: httpClientMock)
-
+    func resolveListNavigationReturnsView() {
         // When
-        let result = sut.view(for: .list, navigator: navigatorMock)
+        let result = sut.resolve({Feature}IncomingNavigation.list, navigator: navigatorMock)
 
         // Then
-        let viewName = String(describing: type(of: result))
-        #expect(viewName.contains("{Name}ListView"))
+        #expect(result != nil)
+    }
+
+    @Test
+    func resolveUnknownNavigationReturnsNil() {
+        // Given
+        struct UnknownNavigation: Navigation {}
+
+        // When
+        let result = sut.resolve(UnknownNavigation(), navigator: navigatorMock)
+
+        // Then
+        #expect(result == nil)
     }
 }
 ```
@@ -585,7 +599,8 @@ struct {Feature}FeatureTests {
 | Test | Purpose |
 |------|---------|
 | Init with HTTPClient | Verify feature initializes without crashing |
-| applyNavigationDestination | Verify navigation destinations are registered |
-| view(for:navigator:) | Verify correct view is returned for each navigation case |
+| makeMainView() | Verify default entry point view is created |
+| resolve() with valid navigation | Verify correct view is returned for each navigation case |
+| resolve() with unknown navigation | Verify nil is returned for unhandled navigation |
 
 **Note:** Factory methods are internal to Container. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.

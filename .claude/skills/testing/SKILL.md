@@ -446,7 +446,11 @@ extension CharacterDetailViewState: @retroactive Equatable {
 
 ---
 
-## Example Test File
+## Test File Patterns
+
+### Simple Tests (no shared state)
+
+For tests without shared dependencies, use inline setup:
 
 ```swift
 import Foundation
@@ -469,40 +473,76 @@ struct GetCharacterUseCaseTests {
         // Then
         #expect(value == expected)
     }
-
-    @Test
-    func callsRepositoryWithCorrectId() async throws {
-        // Given
-        let repositoryMock = CharacterRepositoryMock()
-        repositoryMock.result = .success(.stub())
-        let sut = GetCharacterUseCase(repository: repositoryMock)
-
-        // When
-        _ = try await sut.execute(id: 42)
-
-        // Then
-        #expect(repositoryMock.getCallCount == 1)
-        #expect(repositoryMock.lastRequestedId == 42)
-    }
-
-    @Test
-    func propagatesRepositoryError() async throws {
-        // Given
-        let repositoryMock = CharacterRepositoryMock()
-        repositoryMock.result = .failure(TestError.network)
-        let sut = GetCharacterUseCase(repository: repositoryMock)
-
-        // When / Then
-        await #expect(throws: TestError.network) {
-            _ = try await sut.execute(id: 1)
-        }
-    }
-}
-
-private enum TestError: Error {
-    case network
 }
 ```
+
+### Tests with Instance Variables (preferred for ViewModels)
+
+For tests that share mocks and SUT across multiple tests, use instance variables with `init()`:
+
+```swift
+import Foundation
+import Testing
+
+@testable import {AppName}Character
+
+@Suite(.timeLimit(.minutes(1)))
+struct CharacterListViewModelTests {
+    // MARK: - Properties
+
+    private let useCaseMock = GetCharactersUseCaseMock()
+    private let navigatorMock = CharacterListNavigatorMock()
+    private let sut: CharacterListViewModel
+
+    // MARK: - Initialization
+
+    init() {
+        sut = CharacterListViewModel(
+            getCharactersUseCase: useCaseMock,
+            navigator: navigatorMock
+        )
+    }
+
+    // MARK: - Tests
+
+    @Test
+    func initialStateIsIdle() {
+        // Then
+        #expect(sut.state == .idle)
+    }
+
+    @Test
+    func loadSetsLoadedStateOnSuccess() async {
+        // Given
+        let expected = CharactersPage.stub()
+        useCaseMock.result = .success(expected)
+
+        // When
+        await sut.loadIfNeeded()
+
+        // Then
+        #expect(sut.state == .loaded(expected))
+    }
+
+    @Test
+    func didSelectNavigatesToCharacterDetail() {
+        // Given
+        let character = Character.stub(id: 42)
+
+        // When
+        sut.didSelect(character)
+
+        // Then
+        #expect(navigatorMock.navigateToDetailIds == [42])
+    }
+}
+```
+
+**Benefits of instance variables pattern:**
+- Cleaner tests without repeated setup
+- `// Given` section only contains test-specific configuration
+- Mocks configured on the instance, SUT created in `init()`
+- Each test method gets a fresh instance (Swift Testing creates new struct per test)
 
 ---
 

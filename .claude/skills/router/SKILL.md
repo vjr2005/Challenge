@@ -122,24 +122,26 @@ public protocol NavigationRedirectContract: Sendable {
 import SwiftUI
 
 public protocol Feature {
+    /// The deep link handler for this feature (optional).
     var deepLinkHandler: (any DeepLinkHandler)? { get }
-    func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView
+
+    /// Creates the main view for this feature.
+    func makeMainView(navigator: any NavigatorContract) -> AnyView
+
+    /// Resolves a navigation destination to a view.
+    /// Returns nil if this feature doesn't handle the given navigation.
+    func resolve(_ navigation: any Navigation, navigator: any NavigatorContract) -> AnyView?
 }
 
 public extension Feature {
     var deepLinkHandler: (any DeepLinkHandler)? { nil }
 }
-
-public extension View {
-    func withNavigationDestinations(features: [any Feature], navigator: any NavigatorContract) -> some View {
-        features.reduce(AnyView(self)) { view, feature in
-            feature.applyNavigationDestination(to: view, navigator: navigator)
-        }
-    }
-}
 ```
 
-**Note:** `deepLinkHandler` is optional. Only implement it if the feature handles deep links.
+**Notes:**
+- `deepLinkHandler` is optional with default `nil` implementation
+- `makeMainView()` creates the feature's default entry point view
+- `resolve()` handles navigation destinations (returns `nil` if not handled)
 
 ### DeepLinkHandler (Protocol)
 
@@ -285,22 +287,29 @@ struct AppNavigationRedirect: NavigationRedirectContract {
 ### RootContainerView
 
 ```swift
-// App/Sources/Presentation/Views/RootContainerView.swift
+// AppKit/Sources/Presentation/Views/RootContainerView.swift
 import ChallengeCore
-import ChallengeHome
 import SwiftUI
 
-struct RootContainerView: View {
-    let appContainer: AppContainer
-    @State private var coordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
+public struct RootContainerView: View {
+    public let appContainer: AppContainer
 
-    var body: some View {
-        NavigationStack(path: $coordinator.path) {
-            appContainer.makeRootView(navigator: coordinator)
-                .withNavigationDestinations(features: appContainer.features, navigator: coordinator)
+    @State private var navigationCoordinator: NavigationCoordinator
+
+    public init(appContainer: AppContainer) {
+        self.appContainer = appContainer
+        _navigationCoordinator = State(initialValue: NavigationCoordinator(redirector: AppNavigationRedirect()))
+    }
+
+    public var body: some View {
+        NavigationStack(path: $navigationCoordinator.path) {
+            appContainer.makeRootView(navigator: navigationCoordinator)
+                .navigationDestination(for: AnyNavigation.self) { navigation in
+                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+                }
         }
         .onOpenURL { url in
-            appContainer.handle(url: url, navigator: coordinator)
+            appContainer.handle(url: url, navigator: navigationCoordinator)
         }
     }
 }
@@ -310,11 +319,33 @@ struct RootContainerView: View {
 }
 ```
 
-### AppContainer (Deep Link Handling)
+**Key Changes:**
+- Uses `AnyNavigation` wrapper for type-erased navigation in `NavigationPath`
+- `appContainer.resolve()` iterates through features to find the handler
+- Located in `AppKit` module (not `App`) for testability
+
+### AppContainer (Navigation Resolution)
 
 ```swift
-// App/Sources/AppContainer.swift
-func handle(url: URL, navigator: any NavigatorContract) {
+// AppKit/Sources/AppContainer.swift
+
+/// Resolves any navigation to a view by iterating through features.
+/// Falls back to NotFoundView if no feature can handle the navigation.
+public func resolve(
+    _ navigation: any Navigation,
+    navigator: any NavigatorContract
+) -> AnyView {
+    for feature in features {
+        if let view = feature.resolve(navigation, navigator: navigator) {
+            return view
+        }
+    }
+    // Fallback to NotFoundView
+    return systemFeature.makeMainView(navigator: navigator)
+}
+
+/// Handles deep links by resolving URLs to navigation.
+public func handle(url: URL, navigator: any NavigatorContract) {
     for feature in features {
         if let navigation = feature.deepLinkHandler?.resolve(url) {
             navigator.navigate(to: navigation)
@@ -413,32 +444,33 @@ public struct {Feature}Feature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: any DeepLinkHandler {
+    public var deepLinkHandler: (any DeepLinkHandler)? {
         {Feature}DeepLinkHandler()
     }
 
-    public func applyNavigationDestination<V: View>(to view: V, navigator: any NavigatorContract) -> AnyView {
-        AnyView(
-            view.navigationDestination(for: {Feature}IncomingNavigation.self) { navigation in
-                self.view(for: navigation, navigator: navigator)
-            }
-        )
+    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+        AnyView({Name}ListView(
+            viewModel: container.make{Name}ListViewModel(navigator: navigator)
+        ))
     }
-}
 
-extension {Feature}Feature {
-    @ViewBuilder
-    func view(for navigation: {Feature}IncomingNavigation, navigator: any NavigatorContract) -> some View {
+    public func resolve(
+        _ navigation: any Navigation,
+        navigator: any NavigatorContract
+    ) -> AnyView? {
+        guard let navigation = navigation as? {Feature}IncomingNavigation else {
+            return nil
+        }
         switch navigation {
         case .list:
-            {Name}ListView(viewModel: container.make{Name}ListViewModel(navigator: navigator))
+            return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            {Name}DetailView(
+            return AnyView({Name}DetailView(
                 viewModel: container.make{Name}DetailViewModel(
                     identifier: identifier,
                     navigator: navigator
                 )
-            )
+            ))
         }
     }
 }
@@ -608,28 +640,31 @@ struct {Feature}DeepLinkHandlerTests {
 Libraries/Core/
 ├── Sources/
 │   ├── Feature/
-│   │   └── Feature.swift                    # Feature protocol + View extension
+│   │   └── Feature.swift                    # Feature protocol
 │   └── Navigation/
 │       ├── NavigationCoordinator.swift      # @Observable, manages path + redirects
 │       ├── NavigatorContract.swift          # Protocol for navigation
 │       ├── NavigationRedirectContract.swift # Protocol for redirects
 │       ├── Navigation.swift                 # Base protocol
+│       ├── AnyNavigation.swift              # Type-erased wrapper for NavigationPath
 │       └── DeepLinkHandler.swift            # Protocol for deep links
 └── Mocks/
     └── NavigatorMock.swift
 
-App/Sources/
-├── Navigation/
-│   └── AppNavigationRedirect.swift          # Connects features via redirects
-└── Presentation/Views/
-    └── RootContainerView.swift              # Creates NavigationCoordinator
+AppKit/Sources/                              # Note: AppKit, not App (for testability)
+├── AppContainer.swift                       # resolve() and handle(url:)
+└── Presentation/
+    ├── Navigation/
+    │   └── AppNavigationRedirect.swift      # Connects features via redirects
+    └── Views/
+        └── RootContainerView.swift          # Creates NavigationCoordinator
 
 Features/{Feature}/
 ├── Sources/
 │   ├── {Feature}Feature.swift
 │   ├── {Feature}Container.swift
 │   └── Presentation/
-│       ├── Navigation/
+│       ├── Navigation/                      # Inside Presentation folder
 │       │   ├── {Feature}IncomingNavigation.swift  # Destinations this feature handles
 │       │   ├── {Feature}OutgoingNavigation.swift  # Destinations to other features (optional)
 │       │   └── {Feature}DeepLinkHandler.swift
@@ -638,12 +673,11 @@ Features/{Feature}/
 │               ├── {Screen}NavigatorContract.swift
 │               └── {Screen}Navigator.swift
 └── Tests/
-    ├── Mocks/
-    │   └── {Screen}NavigatorMock.swift
-    └── Presentation/
-        └── Navigation/
-            ├── {Feature}DeepLinkHandlerTests.swift
-            └── {Screen}NavigatorTests.swift
+    └── Unit/
+        └── Presentation/
+            └── Navigation/
+                ├── {Feature}DeepLinkHandlerTests.swift
+                └── {Screen}NavigatorTests.swift
 ```
 
 ---
@@ -655,24 +689,25 @@ Features/{Feature}/
 - [ ] Core has `NavigationRedirectContract` protocol
 - [ ] Core has `NavigationCoordinator` (@Observable, manages path + redirects)
 - [ ] Core has `Navigation` protocol
+- [ ] Core has `AnyNavigation` type-erased wrapper
 - [ ] Core has `DeepLinkHandler` protocol
-- [ ] Core has `Feature` protocol with optional `deepLinkHandler` property (default `nil`)
+- [ ] Core has `Feature` protocol with `makeMainView()` and `resolve()` methods
 - [ ] Core has `NavigatorMock` for testing
 
-### App Configuration
+### AppKit Configuration
 - [ ] `Project.swift` has `CFBundleURLTypes` with URL scheme (e.g., `challenge`)
-- [ ] `AppNavigationRedirect` connects Outgoing → Incoming navigation
-- [ ] `RootContainerView` creates `NavigationCoordinator(redirector: AppNavigationRedirect())`
-- [ ] `RootContainerView` uses `NavigationStack(path: $coordinator.path)`
-- [ ] `RootContainerView` uses `.withNavigationDestinations(features:navigator:)`
+- [ ] `AppNavigationRedirect` in `AppKit/Sources/Presentation/Navigation/`
+- [ ] `RootContainerView` in `AppKit/Sources/Presentation/Views/`
+- [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`
+- [ ] `AppContainer.resolve()` iterates features and falls back to NotFoundView
 - [ ] `AppContainer.handle(url:navigator:)` resolves deep links via feature handlers
 
 ### Feature Implementation
-- [ ] Feature has `{Feature}IncomingNavigation` for destinations it handles
+- [ ] Feature has `{Feature}IncomingNavigation` in `Presentation/Navigation/`
 - [ ] Feature has `{Feature}OutgoingNavigation` for cross-feature navigation (if needed)
-- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigation` (only if feature handles deep links)
-- [ ] Feature implements `deepLinkHandler` property (only if feature handles deep links)
-- [ ] Feature implements `applyNavigationDestination(to:navigator:)` for `IncomingNavigation`
+- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigation` (if deep links needed)
+- [ ] Feature implements `makeMainView(navigator:)` returning default entry point
+- [ ] Feature implements `resolve(_:navigator:)` returning view or nil
 - [ ] Each screen has `NavigatorContract` and `Navigator`
 - [ ] Navigator uses `IncomingNavigation` for internal, `OutgoingNavigation` for external
 - [ ] Container factories receive `navigator: any NavigatorContract`
