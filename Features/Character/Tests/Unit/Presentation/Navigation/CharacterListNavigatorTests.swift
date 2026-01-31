@@ -26,16 +26,8 @@ struct CharacterListNavigatorTests {
         sut.navigateToDetail(id: 42)
 
         // Then
+        #expect(navigatorMock.navigatedDestinations.count == 1)
         let destination = navigatorMock.navigatedDestinations.first as? CharacterIncomingNavigation
         #expect(destination == expected)
-    }
-
-    @Test
-    func navigateToDetailCallsNavigatorOnce() {
-        // When
-        sut.navigateToDetail(id: 1)
-
-        // Then
-        #expect(navigatorMock.navigatedDestinations.count == 1)
     }
 }

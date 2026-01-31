@@ -1,5 +1,4 @@
 import ChallengeCoreMocks
-import Foundation
 import Testing
 
 @testable import ChallengeHome
@@ -27,16 +26,8 @@ struct HomeNavigatorTests {
         sut.navigateToCharacters()
 
         // Then
+        #expect(navigatorMock.navigatedDestinations.count == 1)
         let destination = navigatorMock.navigatedDestinations.first as? HomeOutgoingNavigation
         #expect(destination == expected)
-    }
-
-    @Test
-    func navigateToCharactersCallsNavigatorOnce() {
-        // When
-        sut.navigateToCharacters()
-
-        // Then
-        #expect(navigatorMock.navigatedDestinations.count == 1)
     }
 }

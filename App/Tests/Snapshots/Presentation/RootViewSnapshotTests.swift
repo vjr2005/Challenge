@@ -16,11 +16,10 @@ struct RootViewSnapshotTests {
     func initialState() {
         // Given
         let httpClient = HTTPClientMock()
-        let navigator = NavigatorMock()
         let appContainer = AppContainer(httpClient: httpClient)
 
         // When
-        let view = appContainer.makeRootView(navigator: navigator)
+        let view = RootContainerView(appContainer: appContainer)
 
         // Then
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
