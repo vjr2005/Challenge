@@ -1,4 +1,3 @@
-/*
 import XCTest
 
 struct NotFoundRobot: RobotContract {
@@ -10,9 +9,7 @@ struct NotFoundRobot: RobotContract {
 extension NotFoundRobot {
 	@discardableResult
 	func tapGoBack(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let container = app.descendants(matching: .any)[AccessibilityIdentifier.container]
-		XCTAssertTrue(container.waitForExistence(timeout: 5), file: file, line: line)
-		let button = container.buttons.firstMatch
+		let button = app.buttons[AccessibilityIdentifier.goBackButton]
 		XCTAssertTrue(button.waitForExistence(timeout: 5), file: file, line: line)
 		button.tap()
 		return self
@@ -34,5 +31,5 @@ extension NotFoundRobot {
 
 private enum AccessibilityIdentifier {
 	static let container = "system.notFound.container"
+	static let goBackButton = "system.notFound.container.button"
 }
-*/

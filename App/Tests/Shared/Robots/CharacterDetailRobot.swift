@@ -1,4 +1,3 @@
-/*
 import XCTest
 
 struct CharacterDetailRobot: RobotContract {
@@ -34,4 +33,3 @@ private enum AccessibilityIdentifier {
 	static let view = "characterDetail.view"
 	static let backButton = "characterDetail.backButton"
 }
-*/

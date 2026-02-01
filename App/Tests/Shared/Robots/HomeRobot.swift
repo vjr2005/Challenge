@@ -1,4 +1,3 @@
-/*
 import XCTest
 
 struct HomeRobot: RobotContract {
@@ -33,4 +32,3 @@ extension HomeRobot {
 private enum AccessibilityIdentifier {
 	static let characterButton = "home.characterButton"
 }
-*/

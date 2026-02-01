@@ -1,4 +1,3 @@
-/*
 import XCTest
 
 struct CharacterListRobot: RobotContract {
@@ -164,11 +163,10 @@ extension CharacterListRobot {
 
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
-	static let loadMoreButton = "characterList.loadMoreButton"
+	static let loadMoreButton = "characterList.loadMoreButton.button"
 	static let emptyState = "characterList.emptyState"
 
 	static func row(id: Int) -> String {
 		"characterList.row.\(id)"
 	}
 }
-*/
