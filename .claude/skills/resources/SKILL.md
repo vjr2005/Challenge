@@ -64,6 +64,20 @@ public extension String {
 }
 ```
 
+### Expected Xcode Warnings
+
+When building, Xcode may show these warnings:
+
+```
+Skipping extraction of localizable string with non-literal key
+```
+
+**These warnings are expected and safe to ignore.** They occur because Xcode's automatic string extraction cannot analyze dynamic keys like `LocalizationValue(self)`. The localization system works correctly—these warnings only indicate that Xcode won't auto-extract keys from `localized()` calls.
+
+**Why this pattern?** It allows type-safe, reusable localization without repeating bundle references. Translations are managed manually in `.xcstrings` files.
+
+---
+
 ### Usage in Views
 
 Each View defines a private `LocalizedStrings` enum that uses `localized()`:
