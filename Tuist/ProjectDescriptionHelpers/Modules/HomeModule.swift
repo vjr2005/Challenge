@@ -16,7 +16,6 @@ public enum HomeModule {
         ],
         snapshotTestDependencies: [
             .target(name: "\(appName)CoreMocks"),
-            .external(name: "Lottie"),
         ]
     )
 

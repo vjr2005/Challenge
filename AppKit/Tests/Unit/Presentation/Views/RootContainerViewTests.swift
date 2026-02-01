@@ -4,23 +4,16 @@ import Testing
 @testable import ChallengeAppKit
 
 struct RootContainerViewTests {
-	// MARK: - Properties
+	@Test("Initializes with app container and retains http client")
+	func initializesWithAppContainer() {
+		// Given
+		let httpClient = HTTPClientMock()
+		let appContainer = AppContainer(httpClient: httpClient)
 
-	private let sut: RootContainerView
+		// When
+		let sut = RootContainerView(appContainer: appContainer)
 
-	// MARK: - Initialization
-
-	init() {
-		let appContainer = AppContainer(httpClient: HTTPClientMock())
-		sut = RootContainerView(appContainer: appContainer)
-	}
-
-	// MARK: - Tests
-
-	@Test("Initializes with NavigationStack coordinator")
-	func initializesWithNavigationCoordinator() {
 		// Then
-		let viewName = String(describing: sut.body)
-		#expect(viewName.contains("NavigationStack"))
+		#expect(sut.appContainer.httpClient as AnyObject === httpClient)
 	}
 }

@@ -4,11 +4,10 @@ import SwiftUI
 public struct RootContainerView: View {
 	public let appContainer: AppContainer
 
-	@State private var navigationCoordinator: NavigationCoordinator
+	@State private var navigationCoordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
 
 	public init(appContainer: AppContainer) {
 		self.appContainer = appContainer
-		_navigationCoordinator = State(initialValue: NavigationCoordinator(redirector: AppNavigationRedirect()))
 	}
 
 	public var body: some View {
