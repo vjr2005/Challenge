@@ -42,15 +42,28 @@ let appTarget = Target.target(
 	)
 )
 
-let appE2ETestsTarget = Target.target(
-	name: "\(appName)E2ETests",
+let appUITestsTarget = Target.target(
+	name: "\(appName)UITests",
 	destinations: destinations,
 	product: .uiTests,
-	bundleId: "com.app.\(appName)E2ETests",
+	bundleId: "com.app.\(appName)UITests",
 	deploymentTargets: developmentTarget,
 	infoPlist: .default,
-	sources: ["App/Tests/E2E/**"],
+	sources: [
+		"App/Tests/UI/**",
+		"App/Tests/Shared/**",
+	],
+	resources: [
+		"App/Tests/Shared/Fixtures/**",
+		"App/Tests/Shared/Resources/**",
+	],
 	dependencies: [.target(name: appName)]
+)
+
+let appUITestsScheme = Scheme.scheme(
+	name: "\(appName)UITests",
+	buildAction: .buildAction(targets: [.target(appName), .target("\(appName)UITests")]),
+	testAction: .targets(["\(appName)UITests"])
 )
 
 // MARK: - Project
@@ -75,6 +88,6 @@ let project = Project(
 		],
 		configurations: BuildConfiguration.all
 	),
-	targets: [appTarget, appE2ETestsTarget] + Modules.targets,
-	schemes: AppScheme.allSchemes() + Modules.schemes
+	targets: [appTarget, appUITestsTarget] + Modules.targets,
+	schemes: AppScheme.allSchemes() + [appUITestsScheme] + Modules.schemes
 )
