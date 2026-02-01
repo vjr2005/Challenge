@@ -70,20 +70,31 @@ struct {Name}RemoteDataSource: {Name}RemoteDataSourceContract {
 }
 ```
 
-### DTO
+### DTO (Data Transfer Object)
+
+> *"A Data Transfer Object is one of those objects our mothers told us never to write. It's often little more than a bunch of fields and the getters and setters for them."*
+> — Martin Fowler, [PoEAA](https://martinfowler.com/eaaCatalog/dataTransferObject.html)
+
+DTOs are **intentionally anemic** - they exist purely to transfer data between systems.
 
 ```swift
-nonisolated struct {Name}DTO: Decodable, Equatable {
+struct {Name}DTO: Decodable, Equatable, Sendable {
     let id: Int
     let name: String
 }
 ```
 
 **Rules:**
-- `nonisolated` for actor usage
-- `Decodable`, `Equatable`
+- `Decodable`, `Equatable`, `Sendable`
 - Internal visibility
 - Properties match JSON keys
+- **NO behavior** - only data (anemic by design)
+- **NO `toDomain()` methods** - mapping belongs in the Repository
+
+**Why anemic?**
+- DTOs represent the structure of an **external system** (the API)
+- If we add logic, it couples to the external API structure
+- The Repository is responsible for translating DTOs to Domain models
 
 ---
 

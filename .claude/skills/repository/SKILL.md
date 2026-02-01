@@ -60,20 +60,56 @@ Features/{Feature}/
 
 ## Patterns
 
-### Domain Model
+### Domain Model (Rich, not Anemic)
+
+> *"The basic symptom of an Anemic Domain Model is that at first blush it looks like the real thing... but there is hardly any behavior on these objects, making them little more than bags of getters and setters."*
+> — Martin Fowler, [Anemic Domain Model](https://martinfowler.com/bliki/AnemicDomainModel.html)
+
+Domain models **should have behavior** that is intrinsic to the concept they represent. Unlike DTOs (which are intentionally anemic), domain models can include:
+
+- Factory methods (e.g., `.empty()`)
+- Computed properties
+- Business rules and validations
 
 ```swift
 struct {Name}: Equatable {
     let id: Int
     let name: String
+    let items: [Item]
+
+    // ✓ Factory method - valid domain concept
+    static func empty() -> {Name} {
+        {Name}(id: 0, name: "", items: [])
+    }
+
+    // ✓ Computed property - business logic
+    var totalValue: Decimal {
+        items.reduce(0) { $0 + $1.price }
+    }
+
+    // ✓ Business rule
+    func canBeProcessed() -> Bool {
+        !items.isEmpty && totalValue > 0
+    }
 }
 ```
+
+**What belongs in Domain Model:**
+- Factory methods for valid domain states
+- Computed properties derived from its data
+- Business rules intrinsic to the concept
+
+**What does NOT belong in Domain Model:**
+- Persistence logic (`save()`, `fetch()`) → Repository
+- Presentation logic (`displayName()`) → ViewModel
+- Serialization (`toJSON()`) → DTO
 
 **Rules:**
 - Located in `Domain/Models/`
 - **Internal visibility**
 - Conform to `Equatable`
 - Use `let` properties (immutable)
+- **May include behavior** that is intrinsic to the domain concept
 
 ### Contract (Protocol)
 
@@ -93,13 +129,27 @@ protocol {Name}RepositoryContract: Sendable {
 
 ### DTO to Domain Mapping
 
+Mapping extensions are defined in the **Repository file** as **private extensions**. This ensures:
+- DTOs remain anemic (no knowledge of Domain models)
+- Mapping is the Repository's responsibility (Anti-Corruption Layer)
+- No leakage of transformation logic outside the Repository
+
 ```swift
-extension {Name}DTO {
+// In {Name}Repository.swift
+
+// MARK: - DTO to Domain Mapping
+
+private extension {Name}DTO {
     func toDomain() -> {Name} {
         {Name}(id: id, name: name)
     }
 }
 ```
+
+**Why private?**
+- Only the Repository should call `toDomain()`
+- Encapsulates transformation logic
+- Prevents other layers from depending on DTOs
 
 ### Mock
 
@@ -297,7 +347,7 @@ private extension {Name}Repository {
 | Domain Model | internal | `Sources/Domain/Models/` |
 | Contract | internal | `Sources/Domain/Repositories/` |
 | Implementation | internal | `Sources/Data/Repositories/` |
-| DTO Mapping | internal | `Sources/Data/Repositories/` |
+| DTO Mapping | **private** | `Sources/Data/Repositories/` (private extension) |
 | Mock | internal | `Tests/Mocks/` |
 
 ---

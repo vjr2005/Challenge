@@ -36,8 +36,17 @@ struct CharacterRepository: CharacterRepositoryContract {
 	}
 
 	func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
-		let response = try await fetchCharactersFromRemote(page: page, query: query)
-		return response.toDomain(currentPage: page)
+		do {
+			let response = try await remoteDataSource.fetchCharacters(page: page, query: query)
+			return response.toDomain(currentPage: page)
+		} catch let error as HTTPError {
+			if case .statusCode(404, _) = error {
+				return .empty(currentPage: page)
+			}
+			throw mapHTTPError(error, page: page)
+		} catch {
+			throw .loadFailed
+		}
 	}
 }
 
@@ -63,6 +72,7 @@ private extension CharacterRepository {
 			throw .loadFailed
 		}
 	}
+
 }
 
 // MARK: - Character Cache Strategies
@@ -151,7 +161,7 @@ private extension CharacterRepository {
 
 // MARK: - DTO to Domain Mapping
 
-extension CharacterDTO {
+private extension CharacterDTO {
 	func toDomain() -> Character {
 		Character(
 			id: id,
@@ -166,7 +176,7 @@ extension CharacterDTO {
 	}
 }
 
-extension LocationDTO {
+private extension LocationDTO {
 	func toDomain() -> Location {
 		Location(
 			name: name,
@@ -175,7 +185,7 @@ extension LocationDTO {
 	}
 }
 
-extension CharactersResponseDTO {
+private extension CharactersResponseDTO {
 	func toDomain(currentPage: Int) -> CharactersPage {
 		CharactersPage(
 			characters: results.map { $0.toDomain() },

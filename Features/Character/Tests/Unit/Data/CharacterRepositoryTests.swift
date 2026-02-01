@@ -619,15 +619,16 @@ struct CharacterRepositoryTests {
         #expect(remoteDataSourceMock.lastFetchedPage == 3)
     }
 
-    @Test("Search characters maps HTTP 404 to invalid page error")
-    func searchCharactersMapsHTTPNotFoundToInvalidPage() async throws {
+    @Test("Search characters returns empty page when HTTP 404")
+    func searchCharactersReturnsEmptyPageWhenNotFound() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
 
-        // When / Then
-        await #expect(throws: CharacterError.invalidPage(page: 5)) {
-            _ = try await sut.searchCharacters(page: 5, query: "Rick")
-        }
+        // When
+        let result = try await sut.searchCharacters(page: 1, query: "NonExistentCharacter")
+
+        // Then
+        #expect(result == .empty(currentPage: 1))
     }
 
     @Test("Search characters maps generic error to load failed error")
