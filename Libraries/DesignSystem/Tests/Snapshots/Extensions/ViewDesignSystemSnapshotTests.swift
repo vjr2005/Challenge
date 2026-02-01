@@ -84,8 +84,12 @@ struct ViewDesignSystemSnapshotTests {
 	@Test("Renders dsCard extension with complex nested content")
 	func dsCardWithComplexContent() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.sm) {
-			DSText("Card Title", style: .headline)
-			DSText("This is a description inside the card.", style: .body)
+			Text("Card Title")
+				.font(TextStyle.headline.font)
+				.foregroundStyle(ColorToken.textPrimary)
+			Text("This is a description inside the card.")
+				.font(TextStyle.body.font)
+				.foregroundStyle(ColorToken.textPrimary)
 			DSButton("Action") {}
 		}
 		.dsCard()

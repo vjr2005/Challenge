@@ -68,7 +68,9 @@ public struct DSStatusIndicator: View {
 				DSStatusIndicator(status: status)
 				DSStatusIndicator(status: status, size: IconSizeToken.xs)
 				DSStatusIndicator(status: status, size: IconSizeToken.md)
-				DSText(status.rawValue.capitalized, style: .caption)
+				Text(status.rawValue.capitalized)
+					.font(TextStyle.caption.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 		}
 	}

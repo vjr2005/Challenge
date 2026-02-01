@@ -439,5 +439,5 @@ This creates the following accessibility identifiers:
 - `characterList.scrollView`
 - `characterList.row.1` (container)
 - `characterList.row.1.image` (DSAsyncImage)
-- `characterList.row.1.title` (DSText)
+- `characterList.row.1.title` (title text)
 - `characterList.row.1.status` (DSStatusIndicator)

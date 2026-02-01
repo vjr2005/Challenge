@@ -65,11 +65,10 @@ private extension CharacterListView {
     }
 
     func footerView(page: CharactersPage) -> some View {
-        DSText(
-            LocalizedStrings.pageIndicator(page.currentPage, page.totalPages),
-            style: .caption2
-        )
-        .padding(.bottom, SpacingToken.lg)
+        Text(LocalizedStrings.pageIndicator(page.currentPage, page.totalPages))
+            .font(TextStyle.caption2.font)
+            .foregroundStyle(ColorToken.textPrimary)
+            .padding(.bottom, SpacingToken.lg)
     }
 
     var emptyView: some View {
@@ -119,7 +118,9 @@ private extension CharacterListView {
 
 	func headerView(totalCount: Int) -> some View {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
-			DSText(LocalizedStrings.headerTitle, style: .largeTitle)
+			Text(LocalizedStrings.headerTitle)
+				.font(TextStyle.largeTitle.font)
+				.foregroundStyle(ColorToken.textPrimary)
 
 			Text(LocalizedStrings.headerSubtitle(totalCount))
 				.font(TextStyle.subheadline.font)

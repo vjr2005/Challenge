@@ -24,12 +24,10 @@ public struct DSLoadingView: View {
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).indicator" } ?? "")
 
 			if let message {
-				DSText(
-					message,
-					style: .body,
-					color: ColorToken.textSecondary,
-					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).message" }
-				)
+				Text(message)
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textSecondary)
+					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
 			}
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)

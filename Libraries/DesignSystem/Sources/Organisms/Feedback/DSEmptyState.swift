@@ -42,20 +42,17 @@ public struct DSEmptyState: View {
 				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
-				DSText(
-					title,
-					style: .headline,
-					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).title" }
-				)
+				Text(title)
+					.font(TextStyle.headline.font)
+					.foregroundStyle(ColorToken.textPrimary)
+					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
 
 				if let message {
-					DSText(
-						message,
-						style: .body,
-						color: ColorToken.textSecondary,
-						accessibilityIdentifier: accessibilityIdentifier.map { "\($0).message" }
-					)
-					.multilineTextAlignment(.center)
+					Text(message)
+						.font(TextStyle.body.font)
+						.foregroundStyle(ColorToken.textSecondary)
+						.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
+						.multilineTextAlignment(.center)
 				}
 			}
 

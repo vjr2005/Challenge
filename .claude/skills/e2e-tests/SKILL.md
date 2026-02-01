@@ -228,7 +228,7 @@ private enum AccessibilityIdentifier {
 When using `accessibilityIdentifier: "characterList.row.1"`:
 - Container: `characterList.row.1`
 - `DSAsyncImage`: `characterList.row.1.image`
-- `DSText` (title): `characterList.row.1.title`
+- Title text: `characterList.row.1.title`
 - `DSStatusIndicator`: `characterList.row.1.status`
 
 ### Rules

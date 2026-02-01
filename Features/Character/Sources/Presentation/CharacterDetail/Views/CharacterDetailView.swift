@@ -109,7 +109,9 @@ private extension CharacterDetailView {
 
 	func nameAndStatus(_ character: Character) -> some View {
 		VStack(spacing: SpacingToken.sm) {
-			DSText(character.name, style: .title)
+			Text(character.name)
+				.font(TextStyle.title.font)
+				.foregroundStyle(ColorToken.textPrimary)
 				.multilineTextAlignment(.center)
 
 			HStack(spacing: SpacingToken.sm) {
@@ -133,7 +135,9 @@ private extension CharacterDetailView {
 	func infoCard(_ character: Character) -> some View {
 		DSCard(padding: SpacingToken.xl) {
 			VStack(alignment: .leading, spacing: SpacingToken.lg) {
-				DSText(LocalizedStrings.information, style: .headline)
+				Text(LocalizedStrings.information)
+					.font(TextStyle.headline.font)
+					.foregroundStyle(ColorToken.textPrimary)
 
 				VStack(spacing: SpacingToken.md) {
 					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
@@ -148,7 +152,9 @@ private extension CharacterDetailView {
 	func locationCard(_ character: Character) -> some View {
 		DSCard(padding: SpacingToken.xl) {
 			VStack(alignment: .leading, spacing: SpacingToken.lg) {
-				DSText(LocalizedStrings.locations, style: .headline)
+				Text(LocalizedStrings.locations)
+					.font(TextStyle.headline.font)
+					.foregroundStyle(ColorToken.textPrimary)
 
 				VStack(spacing: SpacingToken.md) {
 					DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)

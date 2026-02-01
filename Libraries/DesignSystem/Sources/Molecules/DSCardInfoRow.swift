@@ -72,12 +72,11 @@ private extension DSCardInfoRow {
 
 	var textContent: some View {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
-			DSText(
-				title,
-				style: .headline,
-				accessibilityIdentifier: accessibilityIdentifier.map { "\($0).title" }
-			)
-			.lineLimit(1)
+			Text(title)
+				.font(TextStyle.headline.font)
+				.foregroundStyle(ColorToken.textPrimary)
+				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
+				.lineLimit(1)
 
 			if let subtitle {
 				Text(subtitle)

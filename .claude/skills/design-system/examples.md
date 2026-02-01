@@ -83,8 +83,12 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 
     func headerView(totalCount: Int) -> some View {
         VStack(alignment: .leading, spacing: SpacingToken.xs) {
-            DSText(LocalizedStrings.headerTitle, style: .largeTitle)
-            DSText(LocalizedStrings.headerSubtitle(totalCount), style: .subheadline)
+            Text(LocalizedStrings.headerTitle)
+                .font(TextStyle.largeTitle.font)
+                .foregroundStyle(ColorToken.textPrimary)
+            Text(LocalizedStrings.headerSubtitle(totalCount))
+                .font(TextStyle.subheadline.font)
+                .foregroundStyle(ColorToken.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -111,7 +115,9 @@ private enum AccessibilityIdentifier {
 func infoCard(_ character: Character) -> some View {
     DSCard(padding: SpacingToken.xl) {
         VStack(alignment: .leading, spacing: SpacingToken.lg) {
-            DSText(LocalizedStrings.information, style: .headline)
+            Text(LocalizedStrings.information)
+                .font(TextStyle.headline.font)
+                .foregroundStyle(ColorToken.textPrimary)
 
             VStack(spacing: SpacingToken.md) {
                 DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
@@ -126,7 +132,9 @@ func infoCard(_ character: Character) -> some View {
 func locationCard(_ character: Character) -> some View {
     DSCard(padding: SpacingToken.xl) {
         VStack(alignment: .leading, spacing: SpacingToken.lg) {
-            DSText(LocalizedStrings.locations, style: .headline)
+            Text(LocalizedStrings.locations)
+                .font(TextStyle.headline.font)
+                .foregroundStyle(ColorToken.textPrimary)
 
             VStack(spacing: SpacingToken.md) {
                 DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)
@@ -156,7 +164,9 @@ func headerSection(_ character: Character) -> some View {
 
 func nameAndStatus(_ character: Character) -> some View {
     VStack(spacing: SpacingToken.sm) {
-        DSText(character.name, style: .title)
+        Text(character.name)
+            .font(TextStyle.title.font)
+            .foregroundStyle(ColorToken.textPrimary)
             .multilineTextAlignment(.center)
 
         HStack(spacing: SpacingToken.sm) {
@@ -224,13 +234,21 @@ HStack(spacing: SpacingToken.sm) { }
 ### Typography
 
 ```swift
-DSText("Title", style: .largeTitle)
-DSText("Heading", style: .headline)
-DSText("Body text", style: .body)
-DSText("Caption", style: .caption)
+Text("Title")
+    .font(TextStyle.largeTitle.font)
+    .foregroundStyle(ColorToken.textPrimary)
 
-// Or use the font directly
-.font(TextStyle.headline.font)
+Text("Heading")
+    .font(TextStyle.headline.font)
+    .foregroundStyle(ColorToken.textPrimary)
+
+Text("Body text")
+    .font(TextStyle.body.font)
+    .foregroundStyle(ColorToken.textPrimary)
+
+Text("Caption")
+    .font(TextStyle.caption.font)
+    .foregroundStyle(ColorToken.textSecondary)
 ```
 
 ### Corners

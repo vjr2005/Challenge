@@ -15,8 +15,12 @@ struct DSCardSnapshotTests {
 	func basicCard() {
 		let view = DSCard {
 			VStack(alignment: .leading, spacing: SpacingToken.sm) {
-				DSText("Card Title", style: .headline)
-				DSText("This is the card content with some description text.", style: .body)
+				Text("Card Title")
+					.font(TextStyle.headline.font)
+					.foregroundStyle(ColorToken.textPrimary)
+				Text("This is the card content with some description text.")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 		}
 		.padding()
@@ -31,7 +35,9 @@ struct DSCardSnapshotTests {
 	@Test("Renders card without shadow")
 	func noShadow() {
 		let view = DSCard(shadow: .zero) {
-			DSText("No Shadow Card", style: .body)
+			Text("No Shadow Card")
+				.font(TextStyle.body.font)
+				.foregroundStyle(ColorToken.textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
@@ -43,7 +49,9 @@ struct DSCardSnapshotTests {
 	@Test("Renders card with small shadow elevation")
 	func smallShadow() {
 		let view = DSCard(shadow: .small) {
-			DSText("Small Shadow Card", style: .body)
+			Text("Small Shadow Card")
+				.font(TextStyle.body.font)
+				.foregroundStyle(ColorToken.textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
@@ -55,7 +63,9 @@ struct DSCardSnapshotTests {
 	@Test("Renders card with medium shadow elevation")
 	func mediumShadow() {
 		let view = DSCard(shadow: .medium) {
-			DSText("Medium Shadow Card", style: .body)
+			Text("Medium Shadow Card")
+				.font(TextStyle.body.font)
+				.foregroundStyle(ColorToken.textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
@@ -67,7 +77,9 @@ struct DSCardSnapshotTests {
 	@Test("Renders card with large shadow elevation")
 	func largeShadow() {
 		let view = DSCard(shadow: .large) {
-			DSText("Large Shadow Card", style: .body)
+			Text("Large Shadow Card")
+				.font(TextStyle.body.font)
+				.foregroundStyle(ColorToken.textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
@@ -82,16 +94,24 @@ struct DSCardSnapshotTests {
 	func shadowGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			DSCard(shadow: .zero) {
-				DSText("Zero Shadow", style: .body)
+				Text("Zero Shadow")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 			DSCard(shadow: .small) {
-				DSText("Small Shadow", style: .body)
+				Text("Small Shadow")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 			DSCard(shadow: .medium) {
-				DSText("Medium Shadow", style: .body)
+				Text("Medium Shadow")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 			DSCard(shadow: .large) {
-				DSText("Large Shadow", style: .body)
+				Text("Large Shadow")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 		}
 		.padding()

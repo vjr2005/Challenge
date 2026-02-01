@@ -42,21 +42,29 @@ public struct DSCard<Content: View>: View {
 	VStack(spacing: SpacingToken.lg) {
 		DSCard {
 			VStack(alignment: .leading, spacing: SpacingToken.sm) {
-				DSText("Card Title", style: .headline)
-				DSText("This is the card content with some description text.", style: .body)
+				Text("Card Title")
+					.font(TextStyle.headline.font)
+					.foregroundStyle(ColorToken.textPrimary)
+				Text("This is the card content with some description text.")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 			}
 		}
 
 		DSCard(shadow: .medium) {
 			HStack {
-				DSText("Medium Shadow", style: .body)
+				Text("Medium Shadow")
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
 				Spacer()
 				Image(systemName: "arrow.right")
 			}
 		}
 
 		DSCard(shadow: .zero) {
-			DSText("No Shadow Card", style: .body)
+			Text("No Shadow Card")
+				.font(TextStyle.body.font)
+				.foregroundStyle(ColorToken.textPrimary)
 		}
 	}
 	.padding()

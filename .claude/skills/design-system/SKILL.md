@@ -42,8 +42,6 @@ Libraries/DesignSystem/
 │   │       └── BorderWidthToken.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
-│   │   ├── Text/
-│   │   │   └── DSText.swift
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
 │   │   ├── Images/
@@ -186,19 +184,26 @@ BorderWidthToken.thick     // 4pt
 
 ## Atoms
 
-### DSText
+### Typography with TextStyle
 
-Text component with design system styles:
+Use SwiftUI's native `Text` with `TextStyle` tokens for consistent typography:
 
 ```swift
 // Basic usage
-DSText("Hello World", style: .headline)
+Text("Hello World")
+    .font(TextStyle.headline.font)
+    .foregroundStyle(ColorToken.textPrimary)
 
 // With custom color
-DSText("Error message", style: .body, color: ColorToken.statusError)
+Text("Error message")
+    .font(TextStyle.body.font)
+    .foregroundStyle(ColorToken.statusError)
 
 // With accessibility identifier
-DSText("Title", style: .headline, accessibilityIdentifier: "screen.title")
+Text("Title")
+    .font(TextStyle.headline.font)
+    .foregroundStyle(ColorToken.textPrimary)
+    .accessibilityIdentifier("screen.title")
 ```
 
 ### DSButton
@@ -334,8 +339,12 @@ Generic card container:
 ```swift
 DSCard {
     VStack {
-        DSText("Card Title", style: .headline)
-        DSText("Card content", style: .body)
+        Text("Card Title")
+            .font(TextStyle.headline.font)
+            .foregroundStyle(ColorToken.textPrimary)
+        Text("Card content")
+            .font(TextStyle.body.font)
+            .foregroundStyle(ColorToken.textPrimary)
     }
 }
 
@@ -452,7 +461,9 @@ Text("Title")
 ### After (design system):
 
 ```swift
-DSText("Title", style: .headline)
+Text("Title")
+    .font(TextStyle.headline.font)
+    .foregroundStyle(ColorToken.textPrimary)
 
 DSCard {
     // content
@@ -477,7 +488,7 @@ import ChallengeDesignSystem
 - [ ] Replace icon sizes with `IconSizeToken`
 - [ ] Replace opacity values with `OpacityToken`
 - [ ] Replace border widths with `BorderWidthToken`
-- [ ] Replace fonts with `TextStyle` or `DSText`
+- [ ] Replace fonts with `TextStyle.{style}.font`
 - [ ] Replace card styling with `DSCard`
 - [ ] Replace loading views with `DSLoadingView`
 - [ ] Replace error views with `DSErrorView`

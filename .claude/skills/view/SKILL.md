@@ -314,7 +314,7 @@ ScrollView {
 
 When passing `accessibilityIdentifier:` to DS components, identifiers propagate to child components with suffixes:
 - `DSAsyncImage`: `.image`
-- `DSText` (title): `.title`
+- Title text: `.title`
 - `DSStatusIndicator`: `.status`
 
 **Rules:**

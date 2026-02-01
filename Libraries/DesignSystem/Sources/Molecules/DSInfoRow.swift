@@ -39,17 +39,14 @@ public struct DSInfoRow: View {
 				.accessibilityHidden(true)
 
 			VStack(alignment: .leading, spacing: SpacingToken.xxs) {
-				DSText(
-					label,
-					style: .caption,
-					color: ColorToken.textSecondary,
-					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).label" }
-				)
-				DSText(
-					value,
-					style: .body,
-					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).value" }
-				)
+				Text(label)
+					.font(TextStyle.caption.font)
+					.foregroundStyle(ColorToken.textSecondary)
+					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).label" } ?? "")
+				Text(value)
+					.font(TextStyle.body.font)
+					.foregroundStyle(ColorToken.textPrimary)
+					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).value" } ?? "")
 			}
 
 			Spacer()

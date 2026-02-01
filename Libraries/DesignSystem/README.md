@@ -29,8 +29,6 @@ DesignSystem/
 │   │   └── Borders/
 │   │       └── BorderWidthToken.swift
 │   ├── Atoms/                # Basic components
-│   │   ├── Text/
-│   │   │   └── DSText.swift
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
 │   │   ├── Images/
@@ -146,7 +144,6 @@ Basic building blocks:
 
 | Component | Description |
 |-----------|-------------|
-| `DSText` | Styled text with TextStyle support |
 | `DSButton` | Button with variants (primary, secondary, etc.) |
 | `DSAsyncImage` | Async image loading with placeholder |
 | `DSAvatar` | Circular avatar image |
@@ -179,9 +176,15 @@ Complex components:
 
 ### Text
 
+Use SwiftUI's native `Text` with `TextStyle` tokens:
+
 ```swift
-DSText("Hello World", style: .headline)
-DSText("Subtitle", style: .body)
+Text("Hello World")
+    .font(TextStyle.headline.font)
+    .foregroundStyle(ColorToken.textPrimary)
+
+Text("Subtitle")
+    .font(TextStyle.body.font)
     .foregroundStyle(ColorToken.textSecondary)
 ```
 
@@ -209,8 +212,12 @@ DSAvatar(url: nil, size: .large, placeholder: "JD")
 ```swift
 DSCard {
     VStack {
-        DSText("Card Title", style: .headline)
-        DSText("Card content", style: .body)
+        Text("Card Title")
+            .font(TextStyle.headline.font)
+            .foregroundStyle(ColorToken.textPrimary)
+        Text("Card content")
+            .font(TextStyle.body.font)
+            .foregroundStyle(ColorToken.textPrimary)
     }
 }
 
