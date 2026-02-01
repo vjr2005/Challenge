@@ -7,8 +7,7 @@ public struct DSEmptyState: View {
 	private let message: String?
 	private let actionTitle: String?
 	private let action: (() -> Void)?
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSEmptyState.
 	/// - Parameters:
@@ -17,18 +16,21 @@ public struct DSEmptyState: View {
 	///   - message: Optional description message
 	///   - actionTitle: Optional action button title
 	///   - action: Optional action to perform
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		icon: String,
 		title: String,
 		message: String? = nil,
 		actionTitle: String? = nil,
-		action: (() -> Void)? = nil
+		action: (() -> Void)? = nil,
+		accessibilityIdentifier: String? = nil
 	) {
 		self.icon = icon
 		self.title = title
 		self.message = message
 		self.actionTitle = actionTitle
 		self.action = action
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
@@ -36,20 +38,34 @@ public struct DSEmptyState: View {
 			Image(systemName: icon)
 				.font(.system(size: IconSizeToken.xxxl))
 				.foregroundStyle(ColorToken.textTertiary)
-				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "icon", traits: .isImage)
+				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
-				DSText(title, style: .headline, accessibilitySuffix: "title")
+				DSText(
+					title,
+					style: .headline,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).title" }
+				)
 
 				if let message {
-					DSText(message, style: .body, color: ColorToken.textSecondary, accessibilitySuffix: "message")
-						.multilineTextAlignment(.center)
+					DSText(
+						message,
+						style: .body,
+						color: ColorToken.textSecondary,
+						accessibilityIdentifier: accessibilityIdentifier.map { "\($0).message" }
+					)
+					.multilineTextAlignment(.center)
 				}
 			}
 
 			if let actionTitle, let action {
-				DSButton(actionTitle, variant: .secondary, accessibilitySuffix: "button", action: action)
+				DSButton(
+					actionTitle,
+					variant: .secondary,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).button" },
+					action: action
+				)
 			}
 		}
 		.padding(SpacingToken.xl)

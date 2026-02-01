@@ -6,8 +6,7 @@ public struct DSErrorView: View {
 	private let message: String?
 	private let retryTitle: String?
 	private let retryAction: (() -> Void)?
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSErrorView.
 	/// - Parameters:
@@ -15,16 +14,19 @@ public struct DSErrorView: View {
 	///   - message: Optional error message
 	///   - retryTitle: Optional retry button title
 	///   - retryAction: Optional retry action
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		title: String,
 		message: String? = nil,
 		retryTitle: String? = nil,
-		retryAction: (() -> Void)? = nil
+		retryAction: (() -> Void)? = nil,
+		accessibilityIdentifier: String? = nil
 	) {
 		self.title = title
 		self.message = message
 		self.retryTitle = retryTitle
 		self.retryAction = retryAction
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
@@ -32,15 +34,24 @@ public struct DSErrorView: View {
 			Image(systemName: "exclamationmark.triangle.fill")
 				.font(.system(size: IconSizeToken.xxl))
 				.foregroundStyle(ColorToken.statusError)
-				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "icon", traits: .isImage)
+				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
-				DSText(title, style: .headline, accessibilitySuffix: "title")
+				DSText(
+					title,
+					style: .headline,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).title" }
+				)
 
 				if let message {
-					DSText(message, style: .body, color: ColorToken.textSecondary, accessibilitySuffix: "message")
-						.multilineTextAlignment(.center)
+					DSText(
+						message,
+						style: .body,
+						color: ColorToken.textSecondary,
+						accessibilityIdentifier: accessibilityIdentifier.map { "\($0).message" }
+					)
+					.multilineTextAlignment(.center)
 				}
 			}
 
@@ -49,7 +60,7 @@ public struct DSErrorView: View {
 					retryTitle,
 					icon: "arrow.clockwise",
 					variant: .secondary,
-					accessibilitySuffix: "retryButton",
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).retryButton" },
 					action: retryAction
 				)
 			}

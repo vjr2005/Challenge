@@ -54,13 +54,13 @@ private extension CharacterListView {
         DSButton(
             LocalizedStrings.loadMore,
             icon: "arrow.down.circle.fill",
-            variant: .tertiary
+            variant: .tertiary,
+            accessibilityIdentifier: AccessibilityIdentifier.loadMoreButton
         ) {
             Task {
                 await viewModel.loadMore()
             }
         }
-        .dsAccessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
         .padding(.vertical, SpacingToken.sm)
     }
 
@@ -76,9 +76,9 @@ private extension CharacterListView {
         DSEmptyState(
             icon: "person.slash",
             title: LocalizedStrings.Empty.title,
-            message: LocalizedStrings.Empty.description
+            message: LocalizedStrings.Empty.description,
+            accessibilityIdentifier: AccessibilityIdentifier.emptyState
         )
-        .dsAccessibilityIdentifier(AccessibilityIdentifier.emptyState)
     }
 
 	func characterList(page: CharactersPage) -> some View {
@@ -94,9 +94,9 @@ private extension CharacterListView {
 						caption: character.location.name,
 						captionIcon: "mappin.circle.fill",
 						status: DSStatus.from(character.status.rawValue),
-						statusLabel: character.status.rawValue
+						statusLabel: character.status.rawValue,
+						accessibilityIdentifier: AccessibilityIdentifier.row(id: character.id)
 					)
-					.dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
 					.onTapGesture {
 						viewModel.didSelect(character)
 					}

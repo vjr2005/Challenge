@@ -10,11 +10,12 @@ struct NotFoundView<ViewModel: NotFoundViewModelContract>: View {
             icon: "questionmark.circle",
             title: LocalizedStrings.title,
             message: LocalizedStrings.message,
-            actionTitle: LocalizedStrings.goBack
-        ) {
-            viewModel.didTapGoBack()
-        }
-        .dsAccessibilityIdentifier(AccessibilityIdentifier.container)
+            actionTitle: LocalizedStrings.goBack,
+            action: {
+                viewModel.didTapGoBack()
+            },
+            accessibilityIdentifier: AccessibilityIdentifier.container
+        )
     }
 }
 

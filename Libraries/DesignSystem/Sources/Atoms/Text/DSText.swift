@@ -5,33 +5,31 @@ public struct DSText: View {
 	private let text: String
 	private let style: TextStyle
 	private let color: Color?
-	private let accessibilitySuffix: String
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSText with the specified style.
 	/// - Parameters:
 	///   - text: The text to display
 	///   - style: The text style to apply
 	///   - color: Optional custom color (defaults to style's default color)
-	///   - accessibilitySuffix: The suffix to append to the propagated accessibility identifier (default: "text")
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		_ text: String,
 		style: TextStyle,
 		color: Color? = nil,
-		accessibilitySuffix: String = "text"
+		accessibilityIdentifier: String? = nil
 	) {
 		self.text = text
 		self.style = style
 		self.color = color
-		self.accessibilitySuffix = accessibilitySuffix
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
 		Text(text)
 			.font(style.font)
 			.foregroundStyle(color ?? style.defaultColor)
-			.dsAccessibility(parentIdentifier: parentIdentifier, suffix: accessibilitySuffix, traits: .isStaticText)
+			.accessibilityIdentifier(accessibilityIdentifier ?? "")
 	}
 }
 

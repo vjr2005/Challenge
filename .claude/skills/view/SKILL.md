@@ -293,14 +293,17 @@ private enum AccessibilityIdentifier {
 
 ### Usage
 
-Use `.accessibilityIdentifier()` for standard SwiftUI elements and `.dsAccessibilityIdentifier()` for DS components:
+Use `.accessibilityIdentifier()` for standard SwiftUI elements and the `accessibilityIdentifier:` parameter for DS components:
 
 ```swift
 ScrollView {
     LazyVStack {
         ForEach(items) { item in
-            DSCardInfoRow(...)
-                .dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: item.id))
+            DSCardInfoRow(
+                imageURL: item.imageURL,
+                title: item.name,
+                accessibilityIdentifier: AccessibilityIdentifier.row(id: item.id)
+            )
         }
     }
 }
@@ -309,7 +312,7 @@ ScrollView {
 
 ### DS Propagation
 
-When using `.dsAccessibilityIdentifier()`, identifiers propagate to child DS components with suffixes:
+When passing `accessibilityIdentifier:` to DS components, identifiers propagate to child components with suffixes:
 - `DSAsyncImage`: `.image`
 - `DSText` (title): `.title`
 - `DSStatusIndicator`: `.status`
@@ -318,7 +321,7 @@ When using `.dsAccessibilityIdentifier()`, identifiers propagate to child DS com
 - Private to each View
 - Format: `{screenName}.{elementType}`
 - Use static functions for dynamic IDs
-- Use `.dsAccessibilityIdentifier()` for DS components to enable propagation
+- Pass `accessibilityIdentifier:` parameter to DS components for propagation
 
 ---
 
@@ -346,5 +349,5 @@ When using `.dsAccessibilityIdentifier()`, identifiers propagate to child DS com
 - [ ] Handle all ViewState cases
 - [ ] Add private `AccessibilityIdentifier` enum
 - [ ] Apply `.accessibilityIdentifier()` to standard SwiftUI elements
-- [ ] Apply `.dsAccessibilityIdentifier()` to DS components for propagation
+- [ ] Pass `accessibilityIdentifier:` parameter to DS components for propagation
 - [ ] Add Previews for each state (except idle)

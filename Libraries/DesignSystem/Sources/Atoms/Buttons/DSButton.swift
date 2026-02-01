@@ -18,10 +18,8 @@ public struct DSButton: View {
 	private let icon: String?
 	private let variant: DSButtonVariant
 	private let isLoading: Bool
-	private let accessibilitySuffix: String
+	private let accessibilityIdentifier: String?
 	private let action: () -> Void
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
 
 	/// Creates a DSButton.
 	/// - Parameters:
@@ -29,21 +27,21 @@ public struct DSButton: View {
 	///   - icon: Optional SF Symbol name
 	///   - variant: The button variant (default: .primary)
 	///   - isLoading: Whether to show loading state (default: false)
-	///   - accessibilitySuffix: The suffix to append to the propagated accessibility identifier (default: "button")
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	///   - action: The action to perform when tapped
 	public init(
 		_ title: String,
 		icon: String? = nil,
 		variant: DSButtonVariant = .primary,
 		isLoading: Bool = false,
-		accessibilitySuffix: String = "button",
+		accessibilityIdentifier: String? = nil,
 		action: @escaping () -> Void
 	) {
 		self.title = title
 		self.icon = icon
 		self.variant = variant
 		self.isLoading = isLoading
-		self.accessibilitySuffix = accessibilitySuffix
+		self.accessibilityIdentifier = accessibilityIdentifier
 		self.action = action
 	}
 
@@ -75,7 +73,7 @@ public struct DSButton: View {
 			}
 		}
 		.disabled(isLoading)
-		.dsAccessibility(parentIdentifier: parentIdentifier, suffix: accessibilitySuffix, traits: .isButton)
+		.accessibilityIdentifier(accessibilityIdentifier ?? "")
 	}
 
 	private var foregroundColor: Color {

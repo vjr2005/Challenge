@@ -6,8 +6,7 @@ public struct DSInfoRow: View {
 	private let label: String
 	private let value: String
 	private let iconColor: Color
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSInfoRow.
 	/// - Parameters:
@@ -15,16 +14,19 @@ public struct DSInfoRow: View {
 	///   - label: The label text
 	///   - value: The value text
 	///   - iconColor: The icon color (default: accent)
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		icon: String,
 		label: String,
 		value: String,
-		iconColor: Color = ColorToken.accent
+		iconColor: Color = ColorToken.accent,
+		accessibilityIdentifier: String? = nil
 	) {
 		self.icon = icon
 		self.label = label
 		self.value = value
 		self.iconColor = iconColor
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
@@ -33,12 +35,21 @@ public struct DSInfoRow: View {
 				.font(TextStyle.body.font)
 				.foregroundStyle(iconColor)
 				.frame(width: SpacingToken.xxl)
-				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "icon", traits: .isImage)
+				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
 			VStack(alignment: .leading, spacing: SpacingToken.xxs) {
-				DSText(label, style: .caption, color: ColorToken.textSecondary, accessibilitySuffix: "label")
-				DSText(value, style: .body, accessibilitySuffix: "value")
+				DSText(
+					label,
+					style: .caption,
+					color: ColorToken.textSecondary,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).label" }
+				)
+				DSText(
+					value,
+					style: .body,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).value" }
+				)
 			}
 
 			Spacer()

@@ -3,23 +3,33 @@ import SwiftUI
 /// A loading view component with progress indicator and optional message.
 public struct DSLoadingView: View {
 	private let message: String?
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSLoadingView.
-	/// - Parameter message: Optional loading message
-	public init(message: String? = nil) {
+	/// - Parameters:
+	///   - message: Optional loading message
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
+	public init(
+		message: String? = nil,
+		accessibilityIdentifier: String? = nil
+	) {
 		self.message = message
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
 		VStack(spacing: SpacingToken.lg) {
 			ProgressView()
 				.scaleEffect(1.5)
-				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "indicator")
+				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).indicator" } ?? "")
 
 			if let message {
-				DSText(message, style: .body, color: ColorToken.textSecondary, accessibilitySuffix: "message")
+				DSText(
+					message,
+					style: .body,
+					color: ColorToken.textSecondary,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).message" }
+				)
 			}
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)

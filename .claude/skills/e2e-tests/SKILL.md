@@ -181,11 +181,11 @@ nonisolated final class CharacterFlowE2ETests: XCTestCase {
 
 ## Accessibility Identifiers in Views
 
-Views must define **private accessibility identifiers** for E2E testing. Use `dsAccessibilityIdentifier(_:)` for Design System components to enable automatic propagation.
+Views must define **private accessibility identifiers** for E2E testing. Pass the `accessibilityIdentifier:` parameter to DS components for automatic propagation.
 
 ### Pattern with DS Components
 
-When using DS components (like `DSCardInfoRow`), the identifier propagates automatically to child DS atoms:
+When using DS components (like `DSCardInfoRow`), pass the identifier as a constructor parameter and it propagates automatically to child DS atoms:
 
 ```swift
 struct CharacterListView: View {
@@ -198,9 +198,9 @@ struct CharacterListView: View {
                     DSCardInfoRow(
                         imageURL: character.imageURL,
                         title: character.name,
-                        status: DSStatus.from(character.status.rawValue)
+                        status: DSStatus.from(character.status.rawValue),
+                        accessibilityIdentifier: AccessibilityIdentifier.row(id: character.id)
                     )
-                    .dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
                     .onTapGesture {
                         viewModel.didSelect(character)
                     }
@@ -225,7 +225,7 @@ private enum AccessibilityIdentifier {
 
 ### Propagated Identifiers
 
-When using `.dsAccessibilityIdentifier("characterList.row.1")`:
+When using `accessibilityIdentifier: "characterList.row.1"`:
 - Container: `characterList.row.1`
 - `DSAsyncImage`: `characterList.row.1.image`
 - `DSText` (title): `characterList.row.1.title`
@@ -237,7 +237,7 @@ When using `.dsAccessibilityIdentifier("characterList.row.1")`:
 - **Naming convention** - Use format `{screenName}.{elementType}` (e.g., `home.characterButton`)
 - **Dynamic identifiers** - Use static functions for elements with IDs (e.g., `row(id:)`)
 - **Place before Previews** - The AccessibilityIdentifier enum goes after the View implementation
-- **DS propagation** - Use `.dsAccessibilityIdentifier()` for DS components to propagate to children
+- **DS propagation** - Pass `accessibilityIdentifier:` parameter to DS components for child propagation
 
 ---
 
@@ -394,5 +394,5 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 - [ ] Add private `AccessibilityIdentifier` enum to View
 - [ ] Use format `{screenName}.{elementType}` for identifiers
 - [ ] Apply `.accessibilityIdentifier()` to standard SwiftUI elements
-- [ ] Apply `.dsAccessibilityIdentifier()` to DS components for propagation
+- [ ] Pass `accessibilityIdentifier:` parameter to DS components for propagation
 - [ ] Use static functions for dynamic identifiers (e.g., `row(id:)`)

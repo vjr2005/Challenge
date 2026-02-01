@@ -52,7 +52,8 @@ Libraries/DesignSystem/
 │   │       └── DSStatusIndicator.swift
 │   │
 │   ├── Molecules/            # Combinations of atoms
-│   │   └── DSInfoRow.swift
+│   │   ├── DSInfoRow.swift
+│   │   └── DSCardInfoRow.swift
 │   │
 │   ├── Organisms/            # Complex components
 │   │   ├── Cards/
@@ -195,6 +196,9 @@ DSText("Hello World", style: .headline)
 
 // With custom color
 DSText("Error message", style: .body, color: ColorToken.statusError)
+
+// With accessibility identifier
+DSText("Title", style: .headline, accessibilityIdentifier: "screen.title")
 ```
 
 ### DSButton
@@ -213,6 +217,9 @@ DSButton("Load More", icon: "arrow.down", variant: .tertiary) { /* action */ }
 
 // Loading state
 DSButton("Processing", isLoading: true) { /* action */ }
+
+// With accessibility identifier
+DSButton("Submit", accessibilityIdentifier: "form.submitButton") { /* action */ }
 ```
 
 ### DSStatusIndicator
@@ -223,6 +230,9 @@ Colored status circle:
 DSStatusIndicator(status: .alive)           // Green circle
 DSStatusIndicator(status: .dead, size: 8)   // Red circle, smaller
 DSStatusIndicator(status: .unknown)         // Gray circle
+
+// With accessibility identifier
+DSStatusIndicator(status: .alive, accessibilityIdentifier: "character.status")
 ```
 
 ### DSAsyncImage
@@ -275,7 +285,43 @@ Icon + label + value layout:
 ```swift
 DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
 DSInfoRow(icon: "heart.fill", label: "Status", value: "Alive", iconColor: ColorToken.statusSuccess)
+
+// With accessibility identifier (propagates to children with suffixes)
+DSInfoRow(
+    icon: "person.fill",
+    label: "Name",
+    value: "Rick Sanchez",
+    accessibilityIdentifier: "character.nameRow"
+)
+// Results in: .icon, .label, .value suffixes
 ```
+
+### DSCardInfoRow
+
+A row card component for displaying items with image, text content, and optional status:
+
+```swift
+DSCardInfoRow(
+    imageURL: character.imageURL,
+    title: character.name,
+    subtitle: character.species,
+    caption: character.location.name,
+    captionIcon: "mappin.circle.fill",
+    status: DSStatus.from(character.status.rawValue),
+    statusLabel: character.status.rawValue,
+    accessibilityIdentifier: "characterList.row.\(character.id)"
+)
+```
+
+Parameters:
+- `imageURL`: URL of the image to display
+- `title`: Main title text (required)
+- `subtitle`: Optional subtitle text
+- `caption`: Optional caption text below subtitle
+- `captionIcon`: Optional SF Symbol for caption
+- `status`: Optional `DSStatus` indicator
+- `statusLabel`: Optional label below status indicator
+- `accessibilityIdentifier`: Optional identifier (propagates to children)
 
 ---
 
@@ -306,6 +352,10 @@ Loading state with optional message:
 ```swift
 DSLoadingView()
 DSLoadingView(message: "Loading characters...")
+
+// With accessibility identifier
+DSLoadingView(message: "Loading...", accessibilityIdentifier: "screen.loading")
+// Results in: .indicator, .message suffixes
 ```
 
 ### DSErrorView
@@ -318,10 +368,12 @@ DSErrorView(title: "Something went wrong")
 DSErrorView(
     title: "Connection Error",
     message: "Please check your internet connection.",
-    retryTitle: "Retry"
+    retryTitle: "Retry",
+    accessibilityIdentifier: "screen.error"
 ) {
     // retry action
 }
+// Results in: .icon, .title, .message, .retryButton suffixes
 ```
 
 ### DSEmptyState
@@ -332,9 +384,53 @@ Empty state with icon and message:
 DSEmptyState(
     icon: "person.slash",
     title: "No Characters",
-    message: "There are no characters to display."
+    message: "There are no characters to display.",
+    accessibilityIdentifier: "characterList.emptyState"
 )
+// Results in: .icon, .title, .message, .button suffixes
 ```
+
+---
+
+## Accessibility Identifier Pattern
+
+All DS components accept an optional `accessibilityIdentifier: String?` parameter. Molecules and organisms propagate this identifier to their child components with descriptive suffixes.
+
+### Usage
+
+Pass the identifier directly in the constructor:
+
+```swift
+ForEach(characters, id: \.id) { character in
+    DSCardInfoRow(
+        imageURL: character.imageURL,
+        title: character.name,
+        status: DSStatus.from(character.status.rawValue),
+        accessibilityIdentifier: "characterList.row.\(character.id)"
+    )
+}
+```
+
+### Propagation Suffixes
+
+When you pass `accessibilityIdentifier: "characterList.row.1"`:
+
+| Component | Resulting Identifier |
+|-----------|---------------------|
+| Container | `characterList.row.1` |
+| Image | `characterList.row.1.image` |
+| Title | `characterList.row.1.title` |
+| Status | `characterList.row.1.status` |
+
+### Suffix Reference by Component
+
+| Component | Child Suffixes |
+|-----------|---------------|
+| `DSInfoRow` | `.icon`, `.label`, `.value` |
+| `DSCardInfoRow` | `.image`, `.title`, `.subtitle`, `.caption`, `.status`, `.statusLabel` |
+| `DSEmptyState` | `.icon`, `.title`, `.message`, `.button` |
+| `DSErrorView` | `.icon`, `.title`, `.message`, `.retryButton` |
+| `DSLoadingView` | `.indicator`, `.message` |
 
 ---
 
@@ -373,84 +469,6 @@ import ChallengeDesignSystem
 
 ---
 
-## Molecules
-
-### DSCardInfoRow
-
-A row card component for displaying items with image, text content, and optional status:
-
-```swift
-DSCardInfoRow(
-    imageURL: character.imageURL,
-    title: character.name,
-    subtitle: character.species,
-    caption: character.location.name,
-    captionIcon: "mappin.circle.fill",
-    status: DSStatus.from(character.status.rawValue),
-    statusLabel: character.status.rawValue
-)
-.dsAccessibilityIdentifier("characterList.row.\(character.id)")
-```
-
-Parameters:
-- `imageURL`: URL of the image to display
-- `title`: Main title text (required)
-- `subtitle`: Optional subtitle text
-- `caption`: Optional caption text below subtitle
-- `captionIcon`: Optional SF Symbol for caption
-- `status`: Optional `DSStatus` indicator
-- `statusLabel`: Optional label below status indicator
-
----
-
-## Accessibility Identifier Propagation
-
-DS components automatically propagate accessibility identifiers from parent views with descriptive suffixes.
-
-### Setting up propagation
-
-Use `dsAccessibilityIdentifier(_:)` on parent views:
-
-```swift
-ForEach(characters, id: \.id) { character in
-    DSCardInfoRow(
-        imageURL: character.imageURL,
-        title: character.name,
-        status: DSStatus.from(character.status.rawValue)
-    )
-    .dsAccessibilityIdentifier("characterList.row.\(character.id)")
-}
-```
-
-### Result
-
-The identifier propagates to child DS components with suffixes:
-- Container: `characterList.row.1`
-- `DSAsyncImage`: `characterList.row.1.image`
-- `DSText` (title): `characterList.row.1.title`
-- `DSStatusIndicator`: `characterList.row.1.status`
-
-### Custom suffixes
-
-DS components accept custom suffixes:
-
-```swift
-DSText("Name", style: .headline, accessibilitySuffix: "name")
-DSAsyncImage(url: url, accessibilitySuffix: "avatar")
-DSStatusIndicator(status: .alive, accessibilitySuffix: "healthStatus")
-```
-
-### Default suffixes
-
-| Component | Default Suffix |
-|-----------|---------------|
-| `DSText` | `text` |
-| `DSAsyncImage` | `image` |
-| `DSStatusIndicator` | `status` |
-| `DSButton` | `button` |
-
----
-
 ## Checklist
 
 - [ ] Import `ChallengeDesignSystem`
@@ -466,4 +484,4 @@ DSStatusIndicator(status: .alive, accessibilitySuffix: "healthStatus")
 - [ ] Replace empty views with `DSEmptyState`
 - [ ] Use semantic status colors (`DSStatus`)
 - [ ] Use `DSCardInfoRow` for list item cards
-- [ ] Apply `.dsAccessibilityIdentifier()` for E2E testing
+- [ ] Pass `accessibilityIdentifier:` parameter for E2E testing

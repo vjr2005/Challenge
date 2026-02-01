@@ -35,30 +35,28 @@ public enum DSStatus: String, CaseIterable, Sendable {
 public struct DSStatusIndicator: View {
 	private let status: DSStatus
 	private let size: CGFloat
-	private let accessibilitySuffix: String
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSStatusIndicator.
 	/// - Parameters:
 	///   - status: The status to display
 	///   - size: The size of the indicator (default: IconSizeToken.sm)
-	///   - accessibilitySuffix: The suffix to append to the propagated accessibility identifier (default: "status")
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		status: DSStatus,
 		size: CGFloat = IconSizeToken.sm,
-		accessibilitySuffix: String = "status"
+		accessibilityIdentifier: String? = nil
 	) {
 		self.status = status
 		self.size = size
-		self.accessibilitySuffix = accessibilitySuffix
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
 		Circle()
 			.fill(status.color)
 			.frame(width: size, height: size)
-			.dsAccessibility(parentIdentifier: parentIdentifier, suffix: accessibilitySuffix, traits: .isImage)
+			.accessibilityIdentifier(accessibilityIdentifier ?? "")
 			.accessibilityLabel(status.rawValue)
 	}
 }

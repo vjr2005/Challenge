@@ -2,8 +2,8 @@ import SwiftUI
 
 /// A row card component that displays an image, text content, and optional status indicator.
 ///
-/// This component automatically propagates accessibility identifiers to its subviews
-/// with descriptive suffixes (.image, .title, .subtitle, .caption, .status).
+/// This component propagates accessibility identifiers to its subviews
+/// with descriptive suffixes (.image, .title, .subtitle, .caption, .status, .statusLabel).
 public struct DSCardInfoRow: View {
 	private let imageURL: URL?
 	private let title: String
@@ -12,8 +12,7 @@ public struct DSCardInfoRow: View {
 	private let captionIcon: String?
 	private let status: DSStatus?
 	private let statusLabel: String?
-
-	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+	private let accessibilityIdentifier: String?
 
 	/// Creates a DSCardInfoRow.
 	/// - Parameters:
@@ -24,6 +23,7 @@ public struct DSCardInfoRow: View {
 	///   - captionIcon: Optional SF Symbol name for the caption icon.
 	///   - status: Optional status indicator to display.
 	///   - statusLabel: Optional label displayed below the status indicator.
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		imageURL: URL?,
 		title: String,
@@ -31,7 +31,8 @@ public struct DSCardInfoRow: View {
 		caption: String? = nil,
 		captionIcon: String? = nil,
 		status: DSStatus? = nil,
-		statusLabel: String? = nil
+		statusLabel: String? = nil,
+		accessibilityIdentifier: String? = nil
 	) {
 		self.imageURL = imageURL
 		self.title = title
@@ -40,6 +41,7 @@ public struct DSCardInfoRow: View {
 		self.captionIcon = captionIcon
 		self.status = status
 		self.statusLabel = statusLabel
+		self.accessibilityIdentifier = accessibilityIdentifier
 	}
 
 	public var body: some View {
@@ -60,20 +62,28 @@ public struct DSCardInfoRow: View {
 
 private extension DSCardInfoRow {
 	var imageView: some View {
-		DSAsyncImage(url: imageURL)
-			.frame(width: 70, height: 70)
-			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+		DSAsyncImage(
+			url: imageURL,
+			accessibilityIdentifier: accessibilityIdentifier.map { "\($0).image" }
+		)
+		.frame(width: 70, height: 70)
+		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 	}
 
 	var textContent: some View {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
-			DSText(title, style: .headline, accessibilitySuffix: "title")
-				.lineLimit(1)
+			DSText(
+				title,
+				style: .headline,
+				accessibilityIdentifier: accessibilityIdentifier.map { "\($0).title" }
+			)
+			.lineLimit(1)
 
 			if let subtitle {
 				Text(subtitle)
 					.font(TextStyle.subheadline.font)
 					.foregroundStyle(ColorToken.textSecondary)
+					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).subtitle" } ?? "")
 			}
 
 			if let caption {
@@ -91,6 +101,7 @@ private extension DSCardInfoRow {
 			}
 			Text(text)
 				.font(TextStyle.caption2.font)
+				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).caption" } ?? "")
 		}
 		.foregroundStyle(ColorToken.textTertiary)
 		.lineLimit(1)
@@ -99,13 +110,17 @@ private extension DSCardInfoRow {
 	var statusView: some View {
 		VStack(spacing: SpacingToken.xs) {
 			if let status {
-				DSStatusIndicator(status: status)
+				DSStatusIndicator(
+					status: status,
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).status" }
+				)
 			}
 
 			if let statusLabel {
 				Text(statusLabel)
 					.font(TextStyle.caption.font)
 					.foregroundStyle(ColorToken.textSecondary)
+					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).statusLabel" } ?? "")
 			}
 		}
 	}
