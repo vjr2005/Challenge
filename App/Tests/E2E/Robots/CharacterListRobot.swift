@@ -44,7 +44,15 @@ extension CharacterListRobot {
 
 	@discardableResult
 	func tapLoadMore(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
 		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
+		// Scroll down to find and tap the button
+		for _ in 0..<5 {
+			if button.exists && button.isHittable {
+				break
+			}
+			scrollView.swipeUp()
+		}
 		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
 		button.tap()
 		return self
@@ -71,9 +79,17 @@ extension CharacterListRobot {
 
 	@discardableResult
 	func verifyCharacterExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
 		let identifier = AccessibilityIdentifier.row(id: id)
 		let row = app.descendants(matching: .any)[identifier].firstMatch
 		XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
+		// Scroll to make the row visible if needed
+		var attempts = 0
+		while !row.isHittable && attempts < 10 {
+			scrollView.swipeUp()
+			attempts += 1
+		}
+		XCTAssertTrue(row.isHittable, "Character row \(id) should be visible", file: file, line: line)
 		return self
 	}
 
@@ -86,7 +102,15 @@ extension CharacterListRobot {
 
 	@discardableResult
 	func verifyLoadMoreButtonExists(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
 		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
+		// Scroll down to find the button (it's at the bottom of the list)
+		for _ in 0..<5 {
+			if button.exists && button.isHittable {
+				break
+			}
+			scrollView.swipeUp()
+		}
 		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
 		return self
 	}

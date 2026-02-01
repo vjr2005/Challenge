@@ -55,8 +55,8 @@ struct AppContainerNavigationTests {
 		#expect(navigatorMock.navigatedDestinations.count == 1)
 	}
 
-	@Test("Handle URL does not navigate when no feature can resolve deep link")
-	func handleURLDoesNotNavigateWhenNoFeatureCanResolve() throws {
+	@Test("Handle URL navigates to NotFound when no feature can resolve deep link")
+	func handleURLNavigatesToNotFoundWhenNoFeatureCanResolve() throws {
 		// Given
 		let url = try #require(URL(string: "challenge://unknown/path"))
 
@@ -64,7 +64,9 @@ struct AppContainerNavigationTests {
 		sut.handle(url: url, navigator: navigatorMock)
 
 		// Then
-		#expect(navigatorMock.navigatedDestinations.isEmpty)
+		#expect(navigatorMock.navigatedDestinations.count == 1)
+		let navigation = navigatorMock.navigatedDestinations.first as? UnknownNavigation
+		#expect(navigation == .notFound)
 	}
 }
 

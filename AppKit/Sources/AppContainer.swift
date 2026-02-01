@@ -58,6 +58,8 @@ public struct AppContainer: Sendable {
 				return
 			}
 		}
+		// If no feature can handle the URL, navigate to NotFound
+		navigator.navigate(to: UnknownNavigation.notFound)
 	}
 
 	// MARK: - Factory Methods
