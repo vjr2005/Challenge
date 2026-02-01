@@ -4,7 +4,7 @@ import ChallengeDesignSystem
 import SwiftUI
 
 struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
-	@State private var viewModel: CharacterListViewModelContract
+	@State private var viewModel: ViewModel
 
 	init(viewModel: ViewModel) {
 		_viewModel = State(initialValue: viewModel)
