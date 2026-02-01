@@ -11,7 +11,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	// MARK: - Corner Radius Gallery
 
-	@Test
+	@Test("Renders gallery of all corner radius tokens")
 	func cornerRadiusGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			cornerRadiusRow("zero", value: CornerRadiusToken.zero)
@@ -31,7 +31,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	// MARK: - Corner Radius Comparison
 
-	@Test
+	@Test("Renders visual comparison of small corner radius values")
 	func cornerRadiusComparison() {
 		let view = HStack(spacing: SpacingToken.md) {
 			cornerBox("zero", radius: CornerRadiusToken.zero)
@@ -46,7 +46,7 @@ struct CornerRadiusTokenSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders visual comparison of large corner radius values")
 	func cornerRadiusLargeComparison() {
 		let view = HStack(spacing: SpacingToken.md) {
 			cornerBox("lg", radius: CornerRadiusToken.lg)
@@ -62,7 +62,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	// MARK: - Button Context
 
-	@Test
+	@Test("Renders corner radius tokens applied to button context")
 	func cornerRadiusButtonContext() {
 		let view = VStack(spacing: SpacingToken.md) {
 			buttonExample("xs (4pt)", radius: CornerRadiusToken.xs)
@@ -79,7 +79,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	// MARK: - Card Context
 
-	@Test
+	@Test("Renders corner radius tokens applied to card context")
 	func cornerRadiusCardContext() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			cardExample("sm (8pt)", radius: CornerRadiusToken.sm)

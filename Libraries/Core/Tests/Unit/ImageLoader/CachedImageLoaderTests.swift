@@ -9,7 +9,7 @@ import UIKit
 struct CachedImageLoaderTests {
 	// MARK: - Cached Image
 
-	@Test
+	@Test("Cached image returns nil when URL is not in cache")
 	func cachedImageForURLReturnsNilWhenNotCached() throws {
 		// Given
 		let url = try #require(URL(string: "https://test-cached-nil.example.com/image.png"))
@@ -22,7 +22,7 @@ struct CachedImageLoaderTests {
 		#expect(result == nil)
 	}
 
-	@Test
+	@Test("Cached image returns image after successful load")
 	func cachedImageForURLReturnsImageAfterLoading() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-cached-after-load.example.com/image.png"))
@@ -53,7 +53,7 @@ struct CachedImageLoaderTests {
 
 	// MARK: - Image Loading
 
-	@Test
+	@Test("Image loading returns image on success")
 	func imageForURLReturnsImageOnSuccess() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-image-success.example.com/image.png"))
@@ -81,7 +81,7 @@ struct CachedImageLoaderTests {
 		#expect(result != nil)
 	}
 
-	@Test
+	@Test("Image loading returns nil on network error")
 	func imageForURLReturnsNilOnNetworkError() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-network-error.example.com/image.png"))
@@ -99,7 +99,7 @@ struct CachedImageLoaderTests {
 		#expect(result == nil)
 	}
 
-	@Test
+	@Test("Image loading returns nil on error status code")
 	func imageForURLReturnsNilOnErrorStatusCode() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-error-status.example.com/image.png"))
@@ -126,7 +126,7 @@ struct CachedImageLoaderTests {
 		#expect(result == nil)
 	}
 
-	@Test
+	@Test("Image loading returns nil for invalid image data")
 	func imageForURLReturnsNilForInvalidImageData() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-invalid-data.example.com/image.png"))
@@ -154,7 +154,7 @@ struct CachedImageLoaderTests {
 		#expect(result == nil)
 	}
 
-	@Test
+	@Test("Image loading uses cache on second request")
 	func imageForURLReturnsCachedImageOnSecondRequest() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-cached-second.example.com/image.png"))
@@ -189,7 +189,7 @@ struct CachedImageLoaderTests {
 
 	// MARK: - Request Deduplication
 
-	@Test
+	@Test("Concurrent requests for same URL are deduplicated")
 	func concurrentRequestsForSameURLAreDeduplicated() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-dedup-same.example.com/image.png"))
@@ -227,7 +227,7 @@ struct CachedImageLoaderTests {
 		#expect(count == 1)
 	}
 
-	@Test
+	@Test("Concurrent requests for different URLs make separate requests")
 	func concurrentRequestsForDifferentURLsAreNotDeduplicated() async throws {
 		// Given
 		let url1 = try #require(URL(string: "https://test-dedup-different.example.com/image1.png"))

@@ -11,7 +11,7 @@ struct AppNavigationRedirectTests {
 
 	// MARK: - Tests
 
-	@Test
+	@Test("Redirects home outgoing characters navigation to character list")
 	func redirectHomeOutgoingCharactersToCharacterList() throws {
 		// When
 		let result = sut.redirect(HomeOutgoingNavigation.characters)
@@ -21,7 +21,7 @@ struct AppNavigationRedirectTests {
 		#expect(characterNavigation == .list)
 	}
 
-	@Test
+	@Test("Redirect returns nil for unknown navigation type")
 	func redirectUnknownNavigationReturnsNil() {
 		// When
 		let result = sut.redirect(CharacterIncomingNavigation.list)
@@ -30,7 +30,7 @@ struct AppNavigationRedirectTests {
 		#expect(result == nil)
 	}
 
-	@Test
+	@Test("Redirect returns nil for character detail navigation")
 	func redirectCharacterDetailReturnsNil() {
 		// When
 		let result = sut.redirect(CharacterIncomingNavigation.detail(identifier: 1))

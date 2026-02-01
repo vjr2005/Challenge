@@ -11,8 +11,7 @@ struct HomeViewSnapshotTests {
 		UIView.setAnimationsEnabled(false)
 	}
 
-	@Test
-	@MainActor
+	@Test("Renders home view before animation starts")
 	func beforeAnimation() {
 		// Given
 		let viewModel = HomeViewModelStub()
@@ -37,8 +36,7 @@ struct HomeViewSnapshotTests {
 		)
 	}
 
-	@Test
-	@MainActor
+	@Test("Renders home view after animation completes with button visible")
 	func afterAnimation() {
 		// Given
 		let viewModel = HomeViewModelStub()

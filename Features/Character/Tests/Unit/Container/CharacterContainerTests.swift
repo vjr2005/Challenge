@@ -18,7 +18,7 @@ struct CharacterContainerTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Make character list view model returns configured instance")
     func makeCharacterListViewModelReturnsConfiguredInstance() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -30,7 +30,7 @@ struct CharacterContainerTests {
         #expect(viewModel.state == .idle)
     }
 
-    @Test
+    @Test("Make character detail view model returns configured instance")
     func makeCharacterDetailViewModelReturnsConfiguredInstance() {
         // Given
         let navigatorMock = NavigatorMock()

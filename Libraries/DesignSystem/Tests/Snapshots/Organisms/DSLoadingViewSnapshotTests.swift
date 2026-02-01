@@ -11,7 +11,7 @@ struct DSLoadingViewSnapshotTests {
 
 	// MARK: - Without Message
 
-	@Test
+	@Test("Renders loading view without message")
 	func withoutMessage() {
 		let view = DSLoadingView()
 			.frame(width: 320, height: 200)
@@ -21,7 +21,7 @@ struct DSLoadingViewSnapshotTests {
 
 	// MARK: - With Message
 
-	@Test
+	@Test("Renders loading view with custom message")
 	func withMessage() {
 		let view = DSLoadingView(message: "Loading characters...")
 			.frame(width: 320, height: 200)

@@ -11,7 +11,7 @@ struct TextStyleSnapshotTests {
 
 	// MARK: - Typography Gallery
 
-	@Test
+	@Test("Renders gallery of all text styles with default colors")
 	func typographyGallery() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
 			Text("Large Title")
@@ -63,7 +63,7 @@ struct TextStyleSnapshotTests {
 
 	// MARK: - Typography with Labels
 
-	@Test
+	@Test("Renders text styles with monospaced labels for reference")
 	func typographyWithLabels() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.lg) {
 			typographyRow("largeTitle", style: .largeTitle)
@@ -86,7 +86,7 @@ struct TextStyleSnapshotTests {
 
 	// MARK: - Design Variants
 
-	@Test
+	@Test("Renders comparison of rounded, serif, and monospaced designs")
 	func fontDesignComparison() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.lg) {
 			VStack(alignment: .leading, spacing: SpacingToken.xs) {
@@ -125,7 +125,7 @@ struct TextStyleSnapshotTests {
 
 	// MARK: - Hierarchy Example
 
-	@Test
+	@Test("Renders typography hierarchy example with real content")
 	func typographyHierarchy() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
 			Text("Page Title")

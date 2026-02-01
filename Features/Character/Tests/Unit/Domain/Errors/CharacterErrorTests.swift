@@ -30,7 +30,7 @@ struct CharacterErrorTests {
 
     // MARK: - LocalizedError
 
-    @Test
+    @Test("Load failed error description is localized")
     func loadFailedErrorDescriptionIsLocalized() {
         // Given
         let sut = CharacterError.loadFailed
@@ -43,7 +43,7 @@ struct CharacterErrorTests {
         #expect(description?.isEmpty == false)
     }
 
-    @Test
+    @Test("Character not found error description contains id")
     func characterNotFoundErrorDescriptionContainsId() {
         // Given
         let sut = CharacterError.characterNotFound(id: 42)
@@ -56,7 +56,7 @@ struct CharacterErrorTests {
         #expect(description?.contains("42") == true)
     }
 
-    @Test
+    @Test("Invalid page error description contains page number")
     func invalidPageErrorDescriptionContainsPage() {
         // Given
         let sut = CharacterError.invalidPage(page: 5)
@@ -71,7 +71,7 @@ struct CharacterErrorTests {
 
     // MARK: - Sendable
 
-    @Test
+    @Test("Error is Sendable across contexts")
     func errorIsSendable() async {
         // Given
         let error = CharacterError.loadFailed

@@ -4,7 +4,7 @@ import Testing
 @testable import ChallengeCore
 
 struct URLQueryParameterTests {
-    @Test
+    @Test("Returns value when query parameter exists")
     func queryParameterReturnsValueWhenParameterExists() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?name=value"))
@@ -16,7 +16,7 @@ struct URLQueryParameterTests {
         #expect(result == "value")
     }
 
-    @Test
+    @Test("Returns nil when query parameter does not exist")
     func queryParameterReturnsNilWhenParameterDoesNotExist() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?other=value"))
@@ -28,7 +28,7 @@ struct URLQueryParameterTests {
         #expect(result == nil)
     }
 
-    @Test
+    @Test("Returns nil when URL has no query string")
     func queryParameterReturnsNilWhenNoQueryString() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com/path"))
@@ -40,7 +40,7 @@ struct URLQueryParameterTests {
         #expect(result == nil)
     }
 
-    @Test
+    @Test("Returns first value when multiple parameters exist")
     func queryParameterReturnsFirstValueWhenMultipleParametersExist() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?id=123&name=test&active=true"))
@@ -52,7 +52,7 @@ struct URLQueryParameterTests {
         #expect(result == "test")
     }
 
-    @Test
+    @Test("Returns empty string when parameter has no value")
     func queryParameterReturnsEmptyStringWhenParameterHasNoValue() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?name="))
@@ -65,7 +65,7 @@ struct URLQueryParameterTests {
         #expect(unwrappedResult.isEmpty)
     }
 
-    @Test
+    @Test("Handles URL-encoded values correctly")
     func queryParameterHandlesEncodedValues() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?name=hello%20world"))
@@ -77,7 +77,7 @@ struct URLQueryParameterTests {
         #expect(result == "hello world")
     }
 
-    @Test
+    @Test("Returns first occurrence when duplicate parameters exist")
     func queryParameterReturnsFirstOccurrenceWhenDuplicateParametersExist() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?name=first&name=second"))
@@ -89,7 +89,7 @@ struct URLQueryParameterTests {
         #expect(result == "first")
     }
 
-    @Test
+    @Test("Query parameter matching is case sensitive")
     func queryParameterIsCaseSensitive() throws {
         // Given
         let sut = try #require(URL(string: "https://example.com?Name=value"))

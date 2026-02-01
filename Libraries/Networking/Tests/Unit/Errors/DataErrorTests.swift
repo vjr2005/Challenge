@@ -23,7 +23,7 @@ struct DataErrorTests {
         #expect(areEqual == expectedEqual)
     }
 
-    @Test
+    @Test("Network errors with same underlying message are equal")
     func networkErrorsWithSameUnderlyingAreEqual() {
         // Given
         let lhs = DataError.network(underlying: "timeout")
@@ -36,7 +36,7 @@ struct DataErrorTests {
         #expect(areEqual)
     }
 
-    @Test
+    @Test("Network errors with different underlying messages are not equal")
     func networkErrorsWithDifferentUnderlyingAreNotEqual() {
         // Given
         let lhs = DataError.network(underlying: "timeout")
@@ -49,7 +49,7 @@ struct DataErrorTests {
         #expect(!areEqual)
     }
 
-    @Test
+    @Test("Server errors with same status code and message are equal")
     func serverErrorsWithSameStatusCodeAndMessageAreEqual() {
         // Given
         let lhs = DataError.server(statusCode: 500, message: "Internal Server Error")
@@ -62,7 +62,7 @@ struct DataErrorTests {
         #expect(areEqual)
     }
 
-    @Test
+    @Test("Server errors with different status codes are not equal")
     func serverErrorsWithDifferentStatusCodesAreNotEqual() {
         // Given
         let lhs = DataError.server(statusCode: 500, message: nil)
@@ -75,7 +75,7 @@ struct DataErrorTests {
         #expect(!areEqual)
     }
 
-    @Test
+    @Test("Parsing errors with same underlying message are equal")
     func parsingErrorsWithSameUnderlyingAreEqual() {
         // Given
         let lhs = DataError.parsing(underlying: "invalid JSON")
@@ -90,7 +90,7 @@ struct DataErrorTests {
 
     // MARK: - LocalizedError
 
-    @Test
+    @Test("Network error includes underlying message in description")
     func networkErrorDescriptionWithUnderlying() {
         // Given
         let sut = DataError.network(underlying: "timeout")
@@ -102,7 +102,7 @@ struct DataErrorTests {
         #expect(description == "Network error: timeout")
     }
 
-    @Test
+    @Test("Network error shows generic message when no underlying")
     func networkErrorDescriptionWithoutUnderlying() {
         // Given
         let sut = DataError.network(underlying: nil)
@@ -114,7 +114,7 @@ struct DataErrorTests {
         #expect(description == "Network error")
     }
 
-    @Test
+    @Test("Server error includes status code and message in description")
     func serverErrorDescriptionWithMessage() {
         // Given
         let sut = DataError.server(statusCode: 500, message: "Internal Server Error")
@@ -126,7 +126,7 @@ struct DataErrorTests {
         #expect(description == "Server error (500): Internal Server Error")
     }
 
-    @Test
+    @Test("Server error shows only status code when no message")
     func serverErrorDescriptionWithoutMessage() {
         // Given
         let sut = DataError.server(statusCode: 404, message: nil)
@@ -138,7 +138,7 @@ struct DataErrorTests {
         #expect(description == "Server error (404)")
     }
 
-    @Test
+    @Test("Parsing error includes underlying message in description")
     func parsingErrorDescriptionWithUnderlying() {
         // Given
         let sut = DataError.parsing(underlying: "invalid JSON")
@@ -150,7 +150,7 @@ struct DataErrorTests {
         #expect(description == "Parsing error: invalid JSON")
     }
 
-    @Test
+    @Test("Parsing error shows generic message when no underlying")
     func parsingErrorDescriptionWithoutUnderlying() {
         // Given
         let sut = DataError.parsing(underlying: nil)
@@ -162,7 +162,7 @@ struct DataErrorTests {
         #expect(description == "Parsing error")
     }
 
-    @Test
+    @Test("Not found error has correct description")
     func notFoundErrorDescription() {
         // Given
         let sut = DataError.notFound
@@ -174,7 +174,7 @@ struct DataErrorTests {
         #expect(description == "Resource not found")
     }
 
-    @Test
+    @Test("Invalid request error has correct description")
     func invalidRequestErrorDescription() {
         // Given
         let sut = DataError.invalidRequest

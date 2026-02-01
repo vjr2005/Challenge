@@ -5,7 +5,7 @@ import Testing
 @testable import ChallengeCoreMocks
 
 struct ImageLoaderEnvironmentTests {
-    @Test
+    @Test("Default image loader is CachedImageLoader")
     func defaultImageLoaderIsCachedImageLoader() {
         // Given
         let sut = EnvironmentValues()
@@ -17,7 +17,7 @@ struct ImageLoaderEnvironmentTests {
         #expect(loader is CachedImageLoader)
     }
 
-    @Test
+    @Test("Image loader can be set and retrieved from environment")
     func imageLoaderCanBeSetAndRetrieved() {
         // Given
         var sut = EnvironmentValues()
@@ -30,7 +30,7 @@ struct ImageLoaderEnvironmentTests {
         #expect(sut.imageLoader as? ImageLoaderMock === customLoader)
     }
 
-    @Test
+    @Test("Image loader view modifier returns modified view")
     func imageLoaderViewModifierReturnsModifiedView() {
         // Given
         let customLoader = ImageLoaderMock(cachedImage: nil, asyncImage: nil)

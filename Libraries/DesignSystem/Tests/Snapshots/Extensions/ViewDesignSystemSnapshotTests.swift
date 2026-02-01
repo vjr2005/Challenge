@@ -11,7 +11,7 @@ struct ViewDesignSystemSnapshotTests {
 
 	// MARK: - dsCard Extension
 
-	@Test
+	@Test("Renders dsCard extension with default parameters")
 	func dsCardDefault() {
 		let view = Text("Card Content")
 			.dsCard()
@@ -22,7 +22,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCard extension with custom padding")
 	func dsCardCustomPadding() {
 		let view = Text("Custom Padding")
 			.dsCard(padding: SpacingToken.xxl)
@@ -33,7 +33,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCard extension with custom corner radius")
 	func dsCardCustomCornerRadius() {
 		let view = Text("Custom Corner Radius")
 			.dsCard(cornerRadius: CornerRadiusToken.xl)
@@ -44,7 +44,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCard extension with large shadow")
 	func dsCardCustomShadow() {
 		let view = Text("Large Shadow")
 			.dsCard(shadowToken: .large)
@@ -55,7 +55,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCard extension with all parameters customized")
 	func dsCardFullCustomization() {
 		let view = Text("Fully Customized")
 			.dsCard(
@@ -70,7 +70,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCard extension without shadow")
 	func dsCardNoShadow() {
 		let view = Text("No Shadow")
 			.dsCard(shadowToken: .zero)
@@ -81,7 +81,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCard extension with complex nested content")
 	func dsCardWithComplexContent() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.sm) {
 			DSText("Card Title", style: .headline)
@@ -98,7 +98,7 @@ struct ViewDesignSystemSnapshotTests {
 
 	// MARK: - dsBackground Extension
 
-	@Test
+	@Test("Renders dsBackground extension with default color")
 	func dsBackgroundDefault() {
 		let view = Text("Default Background")
 			.padding()
@@ -108,7 +108,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsBackground extension with secondary color")
 	func dsBackgroundSecondary() {
 		let view = Text("Secondary Background")
 			.padding()
@@ -118,7 +118,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsBackground extension with tertiary color")
 	func dsBackgroundTertiary() {
 		let view = Text("Tertiary Background")
 			.padding()
@@ -128,7 +128,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsBackground extension with surface color")
 	func dsBackgroundSurface() {
 		let view = Text("Surface Background")
 			.padding()
@@ -141,7 +141,7 @@ struct ViewDesignSystemSnapshotTests {
 
 	// MARK: - dsCornerRadius Extension
 
-	@Test
+	@Test("Renders dsCornerRadius extension with default value")
 	func dsCornerRadiusDefault() {
 		let view = Text("Default Corner Radius")
 			.padding()
@@ -154,7 +154,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCornerRadius extension with small value")
 	func dsCornerRadiusSmall() {
 		let view = Text("Small Corner Radius")
 			.padding()
@@ -167,7 +167,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCornerRadius extension with large value")
 	func dsCornerRadiusLarge() {
 		let view = Text("Large Corner Radius")
 			.padding()
@@ -180,7 +180,7 @@ struct ViewDesignSystemSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dsCornerRadius extension with full circle value")
 	func dsCornerRadiusFull() {
 		let view = Text("Full")
 			.padding()
@@ -195,7 +195,7 @@ struct ViewDesignSystemSnapshotTests {
 
 	// MARK: - Combined Extensions Gallery
 
-	@Test
+	@Test("Renders gallery of all design system view extensions")
 	func combinedExtensionsGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			Text("dsCard")

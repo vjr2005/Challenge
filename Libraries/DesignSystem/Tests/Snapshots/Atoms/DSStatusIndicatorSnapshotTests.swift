@@ -11,7 +11,7 @@ struct DSStatusIndicatorSnapshotTests {
 
 	// MARK: - Individual Status
 
-	@Test
+	@Test("Renders alive status indicator with success color")
 	func aliveStatus() {
 		let view = DSStatusIndicator(status: .alive)
 			.padding()
@@ -19,7 +19,7 @@ struct DSStatusIndicatorSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders dead status indicator with error color")
 	func deadStatus() {
 		let view = DSStatusIndicator(status: .dead)
 			.padding()
@@ -27,7 +27,7 @@ struct DSStatusIndicatorSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders unknown status indicator with warning color")
 	func unknownStatus() {
 		let view = DSStatusIndicator(status: .unknown)
 			.padding()
@@ -37,7 +37,7 @@ struct DSStatusIndicatorSnapshotTests {
 
 	// MARK: - Different Sizes
 
-	@Test
+	@Test("Renders status indicators at small size")
 	func smallSize() {
 		let view = HStack(spacing: SpacingToken.md) {
 			DSStatusIndicator(status: .alive, size: 8)
@@ -49,7 +49,7 @@ struct DSStatusIndicatorSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders status indicators at default size")
 	func defaultSize() {
 		let view = HStack(spacing: SpacingToken.md) {
 			DSStatusIndicator(status: .alive)
@@ -61,7 +61,7 @@ struct DSStatusIndicatorSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders status indicators at large size")
 	func largeSize() {
 		let view = HStack(spacing: SpacingToken.md) {
 			DSStatusIndicator(status: .alive, size: 16)
@@ -75,7 +75,7 @@ struct DSStatusIndicatorSnapshotTests {
 
 	// MARK: - All Status Gallery
 
-	@Test
+	@Test("Renders gallery of all status types and sizes")
 	func allStatusGallery() {
 		let view = HStack(spacing: SpacingToken.lg) {
 			ForEach(DSStatus.allCases, id: \.self) { status in

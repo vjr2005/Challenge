@@ -11,7 +11,7 @@ struct HomeFeatureTests {
 
     // MARK: - Deep Link Handler
 
-    @Test
+    @Test("Deep link handler returns HomeDeepLinkHandler")
     func deepLinkHandlerReturnsHomeDeepLinkHandler() {
         // When
         let result = sut.deepLinkHandler
@@ -22,7 +22,7 @@ struct HomeFeatureTests {
 
     // MARK: - Main View
 
-    @Test
+    @Test("Main view returns HomeView")
     func makeMainViewReturnsHomeView() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -37,7 +37,7 @@ struct HomeFeatureTests {
 
     // MARK: - Resolve
 
-    @Test
+    @Test("Resolve returns view for home navigation")
     func resolveReturnsViewForHomeNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -51,7 +51,7 @@ struct HomeFeatureTests {
         #expect(viewName.contains("HomeView"))
     }
 
-    @Test
+    @Test("Resolve returns nil for non-home navigation")
     func resolveReturnsNilForOtherNavigation() {
         // Given
         let navigatorMock = NavigatorMock()

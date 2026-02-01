@@ -11,7 +11,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Background Colors
 
-	@Test
+	@Test("Renders background color tokens palette")
 	func backgroundColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
 			colorSwatch("backgroundPrimary", color: ColorToken.backgroundPrimary)
@@ -27,7 +27,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Surface Colors
 
-	@Test
+	@Test("Renders surface color tokens palette")
 	func surfaceColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
 			colorSwatch("surfacePrimary", color: ColorToken.surfacePrimary)
@@ -42,7 +42,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Text Colors
 
-	@Test
+	@Test("Renders text color tokens palette")
 	func textColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
 			colorSwatch("textPrimary", color: ColorToken.textPrimary)
@@ -59,7 +59,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Status Colors
 
-	@Test
+	@Test("Renders status color tokens palette")
 	func statusColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
 			colorSwatch("statusSuccess", color: ColorToken.statusSuccess)
@@ -76,7 +76,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Interactive Colors
 
-	@Test
+	@Test("Renders interactive color tokens palette")
 	func interactiveColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
 			colorSwatch("accent", color: ColorToken.accent)
@@ -92,7 +92,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Separator Colors
 
-	@Test
+	@Test("Renders separator color tokens palette")
 	func separatorColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
 			colorSwatch("separator", color: ColorToken.separator)
@@ -107,7 +107,7 @@ struct ColorTokenSnapshotTests {
 
 	// MARK: - Full Gallery
 
-	@Test
+	@Test("Renders complete gallery of all color tokens organized by category")
 	func fullColorGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			colorSection("Background") {

@@ -11,7 +11,7 @@ struct DSButtonSnapshotTests {
 
 	// MARK: - Primary Variant
 
-	@Test
+	@Test("Renders primary button with default styling")
 	func primaryButton() {
 		let view = DSButton("Primary Button") {}
 			.padding()
@@ -20,7 +20,7 @@ struct DSButtonSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders primary button with trailing icon")
 	func primaryButtonWithIcon() {
 		let view = DSButton("With Icon", icon: "arrow.right") {}
 			.padding()
@@ -29,7 +29,7 @@ struct DSButtonSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders primary button in loading state with spinner")
 	func primaryButtonLoading() {
 		let view = DSButton("Loading", isLoading: true) {}
 			.padding()
@@ -40,7 +40,7 @@ struct DSButtonSnapshotTests {
 
 	// MARK: - Secondary Variant
 
-	@Test
+	@Test("Renders secondary button variant")
 	func secondaryButton() {
 		let view = DSButton("Secondary", variant: .secondary) {}
 			.padding()
@@ -49,7 +49,7 @@ struct DSButtonSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders secondary button with icon")
 	func secondaryButtonWithIcon() {
 		let view = DSButton("With Icon", icon: "plus", variant: .secondary) {}
 			.padding()
@@ -60,7 +60,7 @@ struct DSButtonSnapshotTests {
 
 	// MARK: - Tertiary Variant
 
-	@Test
+	@Test("Renders tertiary button variant")
 	func tertiaryButton() {
 		let view = DSButton("Tertiary", variant: .tertiary) {}
 			.padding()
@@ -69,7 +69,7 @@ struct DSButtonSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders tertiary button with icon")
 	func tertiaryButtonWithIcon() {
 		let view = DSButton("With Icon", icon: "gear", variant: .tertiary) {}
 			.padding()
@@ -80,7 +80,7 @@ struct DSButtonSnapshotTests {
 
 	// MARK: - All Variants Gallery
 
-	@Test
+	@Test("Renders gallery of all button variants and states")
 	func allVariantsGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			DSButton("Primary Button") {}

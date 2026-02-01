@@ -11,7 +11,7 @@ struct DSCardSnapshotTests {
 
 	// MARK: - Basic Card
 
-	@Test
+	@Test("Renders basic card with title and description")
 	func basicCard() {
 		let view = DSCard {
 			VStack(alignment: .leading, spacing: SpacingToken.sm) {
@@ -28,7 +28,7 @@ struct DSCardSnapshotTests {
 
 	// MARK: - Shadow Variants
 
-	@Test
+	@Test("Renders card without shadow")
 	func noShadow() {
 		let view = DSCard(shadow: .zero) {
 			DSText("No Shadow Card", style: .body)
@@ -40,7 +40,7 @@ struct DSCardSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders card with small shadow elevation")
 	func smallShadow() {
 		let view = DSCard(shadow: .small) {
 			DSText("Small Shadow Card", style: .body)
@@ -52,7 +52,7 @@ struct DSCardSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders card with medium shadow elevation")
 	func mediumShadow() {
 		let view = DSCard(shadow: .medium) {
 			DSText("Medium Shadow Card", style: .body)
@@ -64,7 +64,7 @@ struct DSCardSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders card with large shadow elevation")
 	func largeShadow() {
 		let view = DSCard(shadow: .large) {
 			DSText("Large Shadow Card", style: .body)
@@ -78,7 +78,7 @@ struct DSCardSnapshotTests {
 
 	// MARK: - Shadow Gallery
 
-	@Test
+	@Test("Renders gallery of all card shadow variants")
 	func shadowGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			DSCard(shadow: .zero) {

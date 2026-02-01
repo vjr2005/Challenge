@@ -26,13 +26,13 @@ struct CharacterDetailViewModelTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Initial state is idle before loading")
     func initialStateIsIdle() {
         // Then
         #expect(sut.state == .idle)
     }
 
-    @Test
+    @Test("Load sets loaded state with character on success")
     func loadSetsLoadedStateOnSuccess() async {
         // Given
         let expected = Character.stub()
@@ -45,7 +45,7 @@ struct CharacterDetailViewModelTests {
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test
+    @Test("Load sets error state on failure")
     func loadSetsErrorStateOnFailure() async {
         // Given
         useCaseMock.result = .failure(.loadFailed)
@@ -57,7 +57,7 @@ struct CharacterDetailViewModelTests {
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test
+    @Test("Load calls use case with correct character identifier")
     func loadCallsUseCaseWithCorrectIdentifier() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -70,7 +70,7 @@ struct CharacterDetailViewModelTests {
         #expect(useCaseMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test
+    @Test("Tap on back navigates back")
     func didTapOnBackCallsNavigatorGoBack() {
         // When
         sut.didTapOnBack()
@@ -81,7 +81,7 @@ struct CharacterDetailViewModelTests {
 
     // MARK: - Refresh
 
-    @Test
+    @Test("Refresh updates character with fresh data from API")
     func refreshUpdatesCharacterFromAPI() async {
         // Given
         let initialCharacter = Character.stub(name: "Initial")
@@ -98,7 +98,7 @@ struct CharacterDetailViewModelTests {
         #expect(sut.state == .loaded(refreshedCharacter))
     }
 
-    @Test
+    @Test("Refresh calls use case with correct character identifier")
     func refreshCallsUseCaseWithCorrectIdentifier() async {
         // Given
         refreshMock.result = .success(.stub())
@@ -110,7 +110,7 @@ struct CharacterDetailViewModelTests {
         #expect(refreshMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test
+    @Test("Refresh sets error state on failure")
     func refreshSetsErrorStateOnFailure() async {
         // Given
         refreshMock.result = .failure(.loadFailed)

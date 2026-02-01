@@ -11,7 +11,7 @@ struct CharacterDeepLinkHandlerTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Resolves character list deep link URL")
     func resolvesListURL() throws {
         // Given
         let url = try #require(URL(string: "challenge://character/list"))
@@ -24,7 +24,7 @@ struct CharacterDeepLinkHandlerTests {
         #expect(value as? CharacterIncomingNavigation == expected)
     }
 
-    @Test
+    @Test("Resolves character detail deep link URL with id")
     func resolvesDetailURL() throws {
         // Given
         let url = try #require(URL(string: "challenge://character/detail?id=42"))
@@ -37,7 +37,7 @@ struct CharacterDeepLinkHandlerTests {
         #expect(value as? CharacterIncomingNavigation == expected)
     }
 
-    @Test
+    @Test("Returns nil for unknown path")
     func returnsNilForUnknownPath() throws {
         // Given
         let url = try #require(URL(string: "challenge://character/unknown"))
@@ -49,7 +49,7 @@ struct CharacterDeepLinkHandlerTests {
         #expect(value == nil)
     }
 
-    @Test
+    @Test("Returns nil for detail path without id parameter")
     func returnsNilForDetailWithoutId() throws {
         // Given
         let url = try #require(URL(string: "challenge://character/detail"))
@@ -61,7 +61,7 @@ struct CharacterDeepLinkHandlerTests {
         #expect(value == nil)
     }
 
-    @Test
+    @Test("Returns nil for detail path with non-numeric id")
     func returnsNilForDetailWithInvalidId() throws {
         // Given
         let url = try #require(URL(string: "challenge://character/detail?id=abc"))

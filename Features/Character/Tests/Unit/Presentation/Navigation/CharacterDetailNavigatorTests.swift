@@ -17,7 +17,7 @@ struct CharacterDetailNavigatorTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Go back delegates to navigator")
     func goBackCallsNavigator() {
         // When
         sut.goBack()

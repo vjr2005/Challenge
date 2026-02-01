@@ -15,7 +15,7 @@ struct CharacterDetailViewSnapshotTests {
 
 	// MARK: - Idle State
 
-	@Test
+	@Test("Renders character detail view in idle state")
 	func idleState() {
 		// Given
 		let viewModel = CharacterDetailViewModelStub(state: .idle)
@@ -32,7 +32,7 @@ struct CharacterDetailViewSnapshotTests {
 
 	// MARK: - Loading State
 
-	@Test
+	@Test("Renders character detail view in loading state")
 	func loadingState() {
 		// Given
 		let viewModel = CharacterDetailViewModelStub(state: .loading)
@@ -49,7 +49,7 @@ struct CharacterDetailViewSnapshotTests {
 
 	// MARK: - Loaded State
 
-	@Test
+	@Test("Renders character detail with alive status indicator")
 	func loadedStateAliveCharacter() {
 		// Given
 		let character = Character.stub(
@@ -70,7 +70,7 @@ struct CharacterDetailViewSnapshotTests {
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test
+	@Test("Renders character detail with dead status indicator")
 	func loadedStateDeadCharacter() {
 		// Given
 		let character = Character.stub(
@@ -90,7 +90,7 @@ struct CharacterDetailViewSnapshotTests {
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test
+	@Test("Renders character detail with unknown status indicator")
 	func loadedStateUnknownStatus() {
 		// Given
 		let character = Character.stub(
@@ -110,7 +110,7 @@ struct CharacterDetailViewSnapshotTests {
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test
+	@Test("Renders character detail with image placeholder when image not available")
 	func loadedStateWithImagePlaceholder() {
 		// Given
 		let character = Character.stub()
@@ -129,7 +129,7 @@ struct CharacterDetailViewSnapshotTests {
 
 	// MARK: - Error State
 
-	@Test
+	@Test("Renders character detail error state with retry option")
 	func errorState() {
 		// Given
 		let viewModel = CharacterDetailViewModelStub(state: .error(.loadFailed))

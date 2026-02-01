@@ -5,7 +5,7 @@ import Testing
 struct AnyNavigationTests {
     // MARK: - Initialization
 
-    @Test
+    @Test("Init wraps navigation in type-erased container")
     func initWrapsNavigation() {
         // Given
         let navigation = TestNavigation.screen1
@@ -19,7 +19,7 @@ struct AnyNavigationTests {
 
     // MARK: - Equality
 
-    @Test
+    @Test("Equality returns true for same navigation value")
     func equalityReturnsTrueForSameNavigation() {
         // Given
         let navigation1 = AnyNavigation(TestNavigation.screen1)
@@ -29,7 +29,7 @@ struct AnyNavigationTests {
         #expect(navigation1 == navigation2)
     }
 
-    @Test
+    @Test("Equality returns false for different navigation values")
     func equalityReturnsFalseForDifferentNavigationValues() {
         // Given
         let navigation1 = AnyNavigation(TestNavigation.screen1)
@@ -39,7 +39,7 @@ struct AnyNavigationTests {
         #expect(navigation1 != navigation2)
     }
 
-    @Test
+    @Test("Equality returns false for different navigation types")
     func equalityReturnsFalseForDifferentNavigationTypes() {
         // Given
         let navigation1 = AnyNavigation(TestNavigation.screen1)
@@ -49,7 +49,7 @@ struct AnyNavigationTests {
         #expect(navigation1 != navigation2)
     }
 
-    @Test
+    @Test("Equality works correctly with associated values")
     func equalityWorksWithAssociatedValues() {
         // Given
         let navigation1 = AnyNavigation(TestNavigationWithValue.detail(id: 42))
@@ -63,7 +63,7 @@ struct AnyNavigationTests {
 
     // MARK: - Hashing
 
-    @Test
+    @Test("Hashing produces same hash for equal navigations")
     func hashingProducesSameHashForEqualNavigations() {
         // Given
         let navigation1 = AnyNavigation(TestNavigation.screen1)
@@ -73,7 +73,7 @@ struct AnyNavigationTests {
         #expect(navigation1.hashValue == navigation2.hashValue)
     }
 
-    @Test
+    @Test("Hashing works correctly in Set collections")
     func hashingWorksInSets() {
         // Given
         let navigation1 = AnyNavigation(TestNavigation.screen1)

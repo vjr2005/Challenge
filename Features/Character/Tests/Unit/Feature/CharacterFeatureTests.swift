@@ -19,7 +19,7 @@ struct CharacterFeatureTests {
 
     // MARK: - Deep Link Handler
 
-    @Test
+    @Test("Deep link handler returns CharacterDeepLinkHandler")
     func deepLinkHandlerReturnsCharacterDeepLinkHandler() {
         // When
         let result = sut.deepLinkHandler
@@ -30,7 +30,7 @@ struct CharacterFeatureTests {
 
     // MARK: - Main View
 
-    @Test
+    @Test("Main view returns CharacterListView")
     func makeMainViewReturnsCharacterListView() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -45,7 +45,7 @@ struct CharacterFeatureTests {
 
     // MARK: - Resolve
 
-    @Test
+    @Test("Resolve returns view for list navigation")
     func resolveReturnsViewForListNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -59,7 +59,7 @@ struct CharacterFeatureTests {
         #expect(viewName.contains("CharacterListView"))
     }
 
-    @Test
+    @Test("Resolve returns view for detail navigation")
     func resolveReturnsViewForDetailNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -73,7 +73,7 @@ struct CharacterFeatureTests {
         #expect(viewName.contains("CharacterDetailView"))
     }
 
-    @Test
+    @Test("Resolve returns nil for non-character navigation")
     func resolveReturnsNilForOtherNavigation() {
         // Given
         let navigatorMock = NavigatorMock()

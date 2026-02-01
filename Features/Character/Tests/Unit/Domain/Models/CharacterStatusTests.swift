@@ -3,7 +3,7 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterStatusTests {
-    @Test
+    @Test("Init from 'Alive' string returns alive status")
     func initFromAliveStringReturnsAlive() {
         // Given
         let string = "Alive"
@@ -15,7 +15,7 @@ struct CharacterStatusTests {
         #expect(sut == .alive)
     }
 
-    @Test
+    @Test("Init from 'Dead' string returns dead status")
     func initFromDeadStringReturnsDead() {
         // Given
         let string = "Dead"
@@ -27,7 +27,7 @@ struct CharacterStatusTests {
         #expect(sut == .dead)
     }
 
-    @Test
+    @Test("Init from invalid string returns unknown status")
     func initFromUnknownStringReturnsUnknown() {
         // Given
         let string = "InvalidStatus"
@@ -39,7 +39,7 @@ struct CharacterStatusTests {
         #expect(sut == .unknown)
     }
 
-    @Test
+    @Test("Init from empty string returns unknown status")
     func initFromEmptyStringReturnsUnknown() {
         // Given
         let string = ""

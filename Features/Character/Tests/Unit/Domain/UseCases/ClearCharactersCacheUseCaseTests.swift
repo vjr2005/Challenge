@@ -18,7 +18,7 @@ struct ClearCharactersCacheUseCaseTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Execute clears repository page cache")
     func executeClearsRepositoryPageCache() async {
         // When
         await sut.execute()

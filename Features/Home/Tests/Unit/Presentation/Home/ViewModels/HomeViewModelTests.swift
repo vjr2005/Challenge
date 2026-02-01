@@ -16,7 +16,7 @@ struct HomeViewModelTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Tap on character button navigates to characters")
     func didTapOnCharacterButtonCallsNavigator() {
         // When
         sut.didTapOnCharacterButton()

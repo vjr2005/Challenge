@@ -11,7 +11,7 @@ struct SpacingTokenSnapshotTests {
 
 	// MARK: - Spacing Gallery
 
-	@Test
+	@Test("Renders gallery of all spacing tokens with values")
 	func spacingGallery() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
 			spacingRow("xxs", value: SpacingToken.xxs)
@@ -32,7 +32,7 @@ struct SpacingTokenSnapshotTests {
 
 	// MARK: - Spacing Comparison
 
-	@Test
+	@Test("Renders visual comparison of spacing token heights")
 	func spacingComparison() {
 		let view = HStack(alignment: .bottom, spacing: SpacingToken.md) {
 			spacingBar("xxs", value: SpacingToken.xxs)
@@ -53,7 +53,7 @@ struct SpacingTokenSnapshotTests {
 
 	// MARK: - Spacing In Context
 
-	@Test
+	@Test("Renders spacing tokens applied to real UI context")
 	func spacingInContext() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			contextExample("xxs (2pt)", spacing: SpacingToken.xxs)

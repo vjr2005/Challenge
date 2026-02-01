@@ -10,13 +10,13 @@ struct NavigationCoordinatorTests {
 
     // MARK: - Path Management
 
-    @Test
+    @Test("Initial navigation path is empty")
     func initialPathIsEmpty() {
         // Then
         #expect(sut.path.isEmpty)
     }
 
-    @Test
+    @Test("Navigate appends destination to path")
     func navigateAppendsToPath() {
         // When
         sut.navigate(to: TestIncomingNavigation.screen1)
@@ -25,7 +25,7 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.count == 1)
     }
 
-    @Test
+    @Test("Multiple navigations append in order")
     func multipleNavigationsAppendInOrder() {
         // When
         sut.navigate(to: TestIncomingNavigation.screen1)
@@ -36,7 +36,7 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.count == 3)
     }
 
-    @Test
+    @Test("Go back removes last item from path")
     func goBackRemovesLastFromPath() {
         // Given
         sut.navigate(to: TestIncomingNavigation.screen1)
@@ -49,7 +49,7 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.count == 1)
     }
 
-    @Test
+    @Test("Go back on empty path does nothing")
     func goBackOnEmptyPathDoesNothing() {
         // When
         sut.goBack()
@@ -58,7 +58,7 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.isEmpty)
     }
 
-    @Test
+    @Test("Go back multiple times empties path")
     func goBackMultipleTimesEmptiesPath() {
         // Given
         sut.navigate(to: TestIncomingNavigation.screen1)
@@ -72,7 +72,7 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.isEmpty)
     }
 
-    @Test
+    @Test("Go back beyond empty path is safe")
     func goBackBeyondEmptyPathIsSafe() {
         // Given
         sut.navigate(to: TestIncomingNavigation.screen1)
@@ -88,7 +88,7 @@ struct NavigationCoordinatorTests {
 
     // MARK: - IncomingNavigation
 
-    @Test
+    @Test("Incoming navigation appends directly without redirector")
     func incomingNavigationAppendsDirectlyWithoutRedirector() {
         // Given
         let sutWithoutRedirector = NavigationCoordinator(redirector: nil)
@@ -100,7 +100,7 @@ struct NavigationCoordinatorTests {
         #expect(sutWithoutRedirector.path.count == 1)
     }
 
-    @Test
+    @Test("Incoming navigation does not call redirector")
     func incomingNavigationDoesNotCallRedirector() {
         // Given
         let redirector = TestRedirector(result: TestIncomingNavigation.screen2)
@@ -116,7 +116,7 @@ struct NavigationCoordinatorTests {
 
     // MARK: - OutgoingNavigation
 
-    @Test
+    @Test("Outgoing navigation with redirect appends redirected destination")
     func outgoingNavigationWithRedirectAppendsRedirectedDestination() {
         // Given
         let redirector = TestRedirector(result: TestIncomingNavigation.screen2)
@@ -130,7 +130,7 @@ struct NavigationCoordinatorTests {
         #expect(redirector.redirectedNavigations.count == 1)
     }
 
-    @Test
+    @Test("Outgoing navigation without redirect appends unknown navigation")
     func outgoingNavigationWithoutRedirectAppendsUnknownNavigation() {
         // Given
         let redirector = TestRedirector(result: nil)
@@ -143,7 +143,7 @@ struct NavigationCoordinatorTests {
         #expect(sutWithRedirector.path.count == 1)
     }
 
-    @Test
+    @Test("Outgoing navigation without redirector appends unknown navigation")
     func outgoingNavigationWithoutRedirectorAppendsUnknownNavigation() {
         // Given
         let sutWithoutRedirector = NavigationCoordinator(redirector: nil)
@@ -157,7 +157,7 @@ struct NavigationCoordinatorTests {
 
     // MARK: - AnyIncomingNavigation Wrapping
 
-    @Test
+    @Test("Navigate wraps incoming navigation in AnyIncomingNavigation")
     func navigateWrapsIncomingNavigationInAnyIncomingNavigation() {
         // When
         sut.navigate(to: TestIncomingNavigation.screen1)

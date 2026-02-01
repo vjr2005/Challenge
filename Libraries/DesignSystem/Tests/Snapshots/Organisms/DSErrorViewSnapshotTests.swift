@@ -11,7 +11,7 @@ struct DSErrorViewSnapshotTests {
 
 	// MARK: - Title Only
 
-	@Test
+	@Test("Renders error view with title only")
 	func titleOnly() {
 		let view = DSErrorView(title: "Something went wrong")
 			.frame(width: 320, height: 300)
@@ -21,7 +21,7 @@ struct DSErrorViewSnapshotTests {
 
 	// MARK: - With Message
 
-	@Test
+	@Test("Renders error view with descriptive message")
 	func withMessage() {
 		let view = DSErrorView(
 			title: "Connection Error",
@@ -34,7 +34,7 @@ struct DSErrorViewSnapshotTests {
 
 	// MARK: - With Retry Button
 
-	@Test
+	@Test("Renders error view with retry button")
 	func withRetryButton() {
 		let view = DSErrorView(
 			title: "Connection Error",
@@ -48,7 +48,7 @@ struct DSErrorViewSnapshotTests {
 
 	// MARK: - Full Configuration
 
-	@Test
+	@Test("Renders error view with all elements configured")
 	func fullConfiguration() {
 		let view = DSErrorView(
 			title: "Unable to Load",

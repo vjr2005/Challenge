@@ -5,7 +5,7 @@ import Testing
 struct AppEnvironmentTests {
 	// MARK: - current
 
-	@Test
+	@Test("Current returns a valid environment value")
 	func currentReturnsValidEnvironment() {
 		// Given
 		let validEnvironments: [AppEnvironment] = [.development, .staging, .production]
@@ -19,7 +19,7 @@ struct AppEnvironmentTests {
 
 	// MARK: - isDebug
 
-	@Test
+	@Test("isDebug returns true for development environment")
 	func isDebugReturnsTrueForDevelopment() {
 		// Given
 		let sut = AppEnvironment.development
@@ -45,7 +45,7 @@ struct AppEnvironmentTests {
 
 	// MARK: - isRelease
 
-	@Test
+	@Test("isRelease returns true for production environment")
 	func isReleaseReturnsTrueForProduction() {
 		// Given
 		let sut = AppEnvironment.production

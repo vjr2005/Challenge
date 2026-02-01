@@ -43,7 +43,7 @@ struct HTTPErrorTests {
 		#expect(areEqual == expectedEqual)
 	}
 
-	@Test
+	@Test("Status code errors with same code but different data are not equal")
 	func statusCodeWithDifferentDataAreNotEqual() {
 		// Given
 		let data1 = Data("error1".utf8)
@@ -58,7 +58,7 @@ struct HTTPErrorTests {
 		#expect(areEqual == false)
 	}
 
-	@Test
+	@Test("Status code error preserves code and data values")
 	func statusCodePreservesCodeAndData() {
 		// Given
 		let code = 404

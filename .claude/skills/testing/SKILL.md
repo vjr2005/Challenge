@@ -61,12 +61,46 @@ let getUserUseCase = GetUserUseCase(client: mockClient)
 
 ---
 
+## Test Descriptions
+
+**All tests MUST include a description** in the `@Test` attribute:
+
+```swift
+// RIGHT - Always include a description
+@Test("Fetches user successfully from repository")
+func fetchesUserSuccessfully() async throws { }
+
+@Test("Returns error when user not found")
+func returnsErrorWhenUserNotFound() async throws { }
+
+// WRONG - Missing description
+@Test
+func fetchesUserSuccessfully() async throws { }
+```
+
+**Rules:**
+- Description should clearly explain what the test verifies
+- Use sentence case (capitalize first word only)
+- Keep descriptions concise but meaningful
+- For parameterized tests, include description before `arguments:`
+
+```swift
+@Test("Rick and Morty API returns valid URL for all environments", arguments: [
+    AppEnvironment.development,
+    AppEnvironment.staging,
+    AppEnvironment.production
+])
+func rickAndMortyReturnsValidURL(_ environment: AppEnvironment) { }
+```
+
+---
+
 ## Given / When / Then Structure
 
 All tests must use `// Given`, `// When`, `// Then` comments:
 
 ```swift
-@Test
+@Test("Fetches user successfully from repository")
 func fetchesUserSuccessfully() async throws {
     // Given
     let expectedUser = User(id: 1, name: "John")
@@ -88,8 +122,8 @@ func fetchesUserSuccessfully() async throws {
 Always prefer `@Test(arguments:)` for testing multiple cases:
 
 ```swift
-// RIGHT - Parameterized test
-@Test(arguments: [
+// RIGHT - Parameterized test with description
+@Test("Endpoint supports HTTP method", arguments: [
     HTTPMethod.get,
     HTTPMethod.post,
     HTTPMethod.put,
@@ -107,8 +141,8 @@ func endpointSupportsHTTPMethod(_ method: HTTPMethod) {
     #expect(sut.method == method)
 }
 
-// WRONG - Loop inside test
-@Test
+// WRONG - Loop inside test (and missing description)
+@Test("Endpoint supports all methods")
 func endpointSupportsAllMethods() {
     for method in [HTTPMethod.get, .post, .put] {
         let endpoint = Endpoint(path: "/test", method: method)
@@ -120,7 +154,7 @@ func endpointSupportsAllMethods() {
 ### Multiple Arguments
 
 ```swift
-@Test(arguments: [
+@Test("HTTP error status code equality", arguments: [
     (404, 404, true),
     (404, 500, false),
     (200, 200, true),
@@ -171,7 +205,7 @@ await #expect(throws: HTTPError.invalidURL) {
 
 ```swift
 // RIGHT - Compare full objects using stubs
-@Test
+@Test("Fetches character correctly from repository")
 func fetchesCharacterCorrectly() async throws {
     // Given
     let expected = Character.stub()
@@ -186,7 +220,7 @@ func fetchesCharacterCorrectly() async throws {
 }
 
 // WRONG - Checking individual properties
-@Test
+@Test("Fetches character correctly from repository")
 func fetchesCharacterCorrectly() async throws {
     // ...
     let result = try await sut.getCharacter(id: 1)
@@ -208,14 +242,19 @@ func fetchesCharacterCorrectly() async throws {
 ## Test Naming
 
 ```swift
-// RIGHT - Descriptive, no "test" prefix
+// RIGHT - Descriptive function name, no "test" prefix, with description
+@Test("Returns correct value when input is valid")
 func returnsCorrectValue() { }
+
+@Test("Throws error when input is invalid")
 func throwsErrorWhenInvalid() { }
+
+@Test("Fetches user successfully from remote")
 func fetchesUserSuccessfully() { }
 
 // WRONG - "test" prefix
+@Test("Returns correct value")
 func testReturnsCorrectValue() { }
-func testThrowsError() { }
 ```
 
 ---
@@ -228,7 +267,7 @@ Use `@Suite(.timeLimit(.minutes(1)))` **only** for test suites that use `async/a
 // RIGHT - Async tests need time limit
 @Suite(.timeLimit(.minutes(1)))
 struct GetCharacterUseCaseTests {
-    @Test
+    @Test("Fetches character successfully from repository")
     func fetchesCharacterSuccessfully() async throws {
         // ...
     }
@@ -236,7 +275,7 @@ struct GetCharacterUseCaseTests {
 
 // RIGHT - Synchronous tests don't need time limit
 struct CharacterStatusTests {
-    @Test
+    @Test("Init from string returns correct status value")
     func initFromStringReturnsCorrectValue() {
         // ...
     }
@@ -301,7 +340,7 @@ extension User {
 **Usage in tests:**
 
 ```swift
-@Test
+@Test("Processes user correctly with default values")
 func processesUserCorrectly() {
     // Default stub
     let user = User.stub()
@@ -459,7 +498,7 @@ import Testing
 @testable import {AppName}Character
 
 struct GetCharacterUseCaseTests {
-    @Test
+    @Test("Returns character from repository")
     func returnsCharacterFromRepository() async throws {
         // Given
         let expected = Character.stub()
@@ -505,13 +544,13 @@ struct CharacterListViewModelTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Initial state is idle")
     func initialStateIsIdle() {
         // Then
         #expect(sut.state == .idle)
     }
 
-    @Test
+    @Test("Load sets loaded state on success")
     func loadSetsLoadedStateOnSuccess() async {
         // Given
         let expected = CharactersPage.stub()
@@ -524,7 +563,7 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test
+    @Test("Did select navigates to character detail")
     func didSelectNavigatesToCharacterDetail() {
         // Given
         let character = Character.stub(id: 42)
@@ -549,6 +588,7 @@ struct CharacterListViewModelTests {
 ## Checklist
 
 - [ ] Test file named `{ComponentName}Tests.swift` in `Tests/Unit/`
+- [ ] **All `@Test` attributes include a description**
 - [ ] SUT variable named `sut`
 - [ ] All tests use Given/When/Then comments
 - [ ] No `test` prefix in method names

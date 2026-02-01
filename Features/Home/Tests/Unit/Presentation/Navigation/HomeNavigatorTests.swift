@@ -17,7 +17,7 @@ struct HomeNavigatorTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Navigate to characters uses correct navigation destination")
     func navigateToCharactersUsesCorrectNavigation() {
         // Given
         let expected = HomeOutgoingNavigation.characters

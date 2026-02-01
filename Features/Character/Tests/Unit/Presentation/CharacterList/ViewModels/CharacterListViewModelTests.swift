@@ -24,7 +24,7 @@ struct CharacterListViewModelTests {
 
     // MARK: - Initial State
 
-    @Test
+    @Test("Initial state is idle before loading")
     func initialStateIsIdle() {
         // Then
         #expect(sut.state == .idle)
@@ -32,7 +32,7 @@ struct CharacterListViewModelTests {
 
     // MARK: - Load
 
-    @Test
+    @Test("Load sets loaded state with characters on success")
     func loadSetsLoadedStateOnSuccess() async {
         // Given
         let expected = CharactersPage.stub()
@@ -45,7 +45,7 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test
+    @Test("Load sets empty state when no characters returned")
     func loadSetsEmptyStateWhenNoCharacters() async {
         // Given
         let emptyPage = CharactersPage.stub(characters: [])
@@ -58,7 +58,7 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .empty)
     }
 
-    @Test
+    @Test("Load sets error state on failure")
     func loadSetsErrorStateOnFailure() async {
         // Given
         useCaseMock.result = .failure(.loadFailed)
@@ -70,7 +70,7 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test
+    @Test("Load calls use case requesting page one")
     func loadCallsUseCaseWithPageOne() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -83,7 +83,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedPage == 1)
     }
 
-    @Test
+    @Test("Load if needed does nothing when already loaded")
     func loadIfNeededDoesNothingWhenLoaded() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -97,7 +97,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
     }
 
-    @Test
+    @Test("Load if needed does nothing when empty state")
     func loadIfNeededDoesNothingWhenEmpty() async {
         // Given
         let emptyPage = CharactersPage.stub(characters: [])
@@ -112,7 +112,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
     }
 
-    @Test
+    @Test("Load if needed retries when in error state")
     func loadIfNeededLoadsWhenError() async {
         // Given
         useCaseMock.result = .failure(.loadFailed)
@@ -129,7 +129,7 @@ struct CharacterListViewModelTests {
 
     // MARK: - Load More
 
-    @Test
+    @Test("Load more appends new characters to existing list")
     func loadMoreAppendsCharactersToExistingPage() async {
         // Given
         let firstPageCharacters = [Character.stub(id: 1)]
@@ -153,7 +153,7 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test
+    @Test("Load more increments page number")
     func loadMoreIncrementsPage() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
@@ -167,7 +167,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedPage == 2)
     }
 
-    @Test
+    @Test("Load more does nothing when no next page available")
     func loadMoreDoesNothingWhenNoNextPage() async {
         // Given
         let lastPage = CharactersPage.stub(hasNextPage: false)
@@ -182,7 +182,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.executeCallCount == callCountAfterLoad)
     }
 
-    @Test
+    @Test("Load more keeps existing data on error")
     func loadMoreKeepsExistingDataOnError() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
@@ -197,7 +197,7 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .loaded(firstPage))
     }
 
-    @Test
+    @Test("Load more reverts page number on error for retry")
     func loadMoreRevertsPageOnError() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
@@ -216,7 +216,7 @@ struct CharacterListViewModelTests {
 
     // MARK: - Navigation
 
-    @Test
+    @Test("Selecting character navigates to detail screen")
     func didSelectNavigatesToCharacterDetail() {
         // Given
         let character = Character.stub(id: 42)
@@ -230,13 +230,13 @@ struct CharacterListViewModelTests {
 
     // MARK: - Search
 
-    @Test
+    @Test("Initial search query is empty string")
     func initialSearchQueryIsEmpty() {
         // Then
         #expect(sut.searchQuery == "")
     }
 
-    @Test
+    @Test("Search query change triggers load after debounce delay")
     func searchQueryChangeTriggersLoadAfterDebounce() async throws {
         // Given
         useCaseMock.result = .success(.stub())
@@ -249,7 +249,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedQuery == "Rick")
     }
 
-    @Test
+    @Test("Rapid search query changes only trigger one load")
     func rapidSearchQueryChangesOnlyTriggersOneLoad() async throws {
         // Given
         useCaseMock.result = .success(.stub())
@@ -267,7 +267,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedQuery == "Rick")
     }
 
-    @Test
+    @Test("Load uses current search query value")
     func loadUsesCurrentSearchQuery() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -280,7 +280,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedQuery == "Morty")
     }
 
-    @Test
+    @Test("Load more uses current search query value")
     func loadMoreUsesCurrentSearchQuery() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
@@ -295,7 +295,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedQuery == "Summer")
     }
 
-    @Test
+    @Test("Empty search query passes nil to use case")
     func emptySearchQueryPassesNilToUseCase() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -308,7 +308,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedQuery == nil)
     }
 
-    @Test
+    @Test("Whitespace-only search query passes nil to use case")
     func whitespaceOnlySearchQueryPassesNilToUseCase() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -321,7 +321,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedQuery == nil)
     }
 
-    @Test
+    @Test("Search query change resets to page one")
     func searchQueryChangeResetsToPageOne() async throws {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
@@ -339,7 +339,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.lastRequestedPage == 1)
     }
 
-    @Test
+    @Test("Clearing search query before debounce only triggers one load")
     func clearingSearchQueryBeforeDebounceOnlyTriggersOneLoad() async throws {
         // Given
         useCaseMock.result = .success(.stub())
@@ -357,7 +357,7 @@ struct CharacterListViewModelTests {
 
     // MARK: - Refresh
 
-    @Test
+    @Test("Refresh clears cache and reloads data")
     func refreshClearsCacheAndReloads() async {
         // Given
         useCaseMock.result = .success(.stub())
@@ -372,7 +372,7 @@ struct CharacterListViewModelTests {
         #expect(useCaseMock.executeCallCount == callCountAfterLoad + 1)
     }
 
-    @Test
+    @Test("Refresh resets to page one")
     func refreshResetsToPageOne() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)

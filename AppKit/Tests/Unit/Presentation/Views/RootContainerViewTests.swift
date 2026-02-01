@@ -17,7 +17,7 @@ struct RootContainerViewTests {
 
 	// MARK: - Tests
 
-	@Test
+	@Test("Initializes with NavigationStack coordinator")
 	func initializesWithNavigationCoordinator() {
 		// Then
 		let viewName = String(describing: sut.body)

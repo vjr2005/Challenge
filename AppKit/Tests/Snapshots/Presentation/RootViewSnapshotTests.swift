@@ -12,8 +12,7 @@ struct RootViewSnapshotTests {
 		UIView.setAnimationsEnabled(false)
 	}
 
-	@Test
-	@MainActor
+	@Test("Renders root container view in initial state")
 	func initialState() {
 		// Given
 		let httpClient = HTTPClientMock()

@@ -17,7 +17,7 @@ struct CharacterListNavigatorTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Navigate to detail uses correct navigation with identifier")
     func navigateToDetailUsesCorrectNavigation() {
         // Given
         let expected = CharacterIncomingNavigation.detail(identifier: 42)

@@ -11,7 +11,7 @@ struct ShadowTokenSnapshotTests {
 
 	// MARK: - Shadow Gallery
 
-	@Test
+	@Test("Renders gallery of all shadow tokens on cards")
 	func shadowGallery() {
 		let view = VStack(spacing: SpacingToken.xxl) {
 			shadowCard("zero", token: .zero)
@@ -28,7 +28,7 @@ struct ShadowTokenSnapshotTests {
 
 	// MARK: - Shadow Comparison
 
-	@Test
+	@Test("Renders side-by-side comparison of shadow intensities")
 	func shadowComparison() {
 		let view = HStack(spacing: SpacingToken.lg) {
 			shadowBox("zero", token: .zero)
@@ -45,7 +45,7 @@ struct ShadowTokenSnapshotTests {
 
 	// MARK: - Shadow Properties
 
-	@Test
+	@Test("Renders shadow tokens with property values displayed")
 	func shadowProperties() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.lg) {
 			shadowPropertyRow("zero", token: .zero)
@@ -62,7 +62,7 @@ struct ShadowTokenSnapshotTests {
 
 	// MARK: - Shadow In Context
 
-	@Test
+	@Test("Renders shadow tokens applied to real card context")
 	func shadowCardContext() {
 		let view = VStack(spacing: SpacingToken.xxl) {
 			contextCard("Flat Card", token: .zero)

@@ -18,7 +18,7 @@ struct RefreshCharacterUseCaseTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Execute refreshes character from repository")
     func executeRefreshesCharacterFromRepository() async throws {
         // Given
         let expected = Character.stub()
@@ -32,7 +32,7 @@ struct RefreshCharacterUseCaseTests {
         #expect(repositoryMock.refreshCharacterCallCount == 1)
     }
 
-    @Test
+    @Test("Execute calls repository with correct identifier")
     func executeCallsRepositoryWithCorrectIdentifier() async throws {
         // Given
         repositoryMock.refreshResult = .success(.stub())
@@ -44,7 +44,7 @@ struct RefreshCharacterUseCaseTests {
         #expect(repositoryMock.lastRefreshedIdentifier == 42)
     }
 
-    @Test
+    @Test("Execute propagates repository error")
     func executePropagatesRepositoryError() async {
         // Given
         repositoryMock.refreshResult = .failure(.loadFailed)

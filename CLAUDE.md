@@ -133,6 +133,7 @@ Module/Tests/
 
 | Rule | Description |
 |------|-------------|
+| **Test descriptions** | **All `@Test` must include a description: `@Test("Description")`** |
 | SUT naming | Always name object under test as `sut` |
 | Structure | Use `// Given`, `// When`, `// Then` comments |
 | Assertions | Use `#expect`, `#require` for unwrapping |
@@ -141,7 +142,7 @@ Module/Tests/
 | Stubs location | `Tests/Shared/Stubs/` for Domain models |
 | Fixtures location | `Tests/Shared/Fixtures/` for JSON (DTOs) |
 | Coverage scope | Only source targets (never mocks or external libraries) |
-| Unit tests | Use Swift Testing (`@Test`, `#expect`) |
+| Unit tests | Use Swift Testing (`@Test("description")`, `#expect`) |
 | Snapshot tests | Use SnapshotTesting library |
 | E2E/UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
 

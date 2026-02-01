@@ -11,7 +11,7 @@ struct DSEmptyStateSnapshotTests {
 
 	// MARK: - Minimal
 
-	@Test
+	@Test("Renders minimal empty state with icon and title only")
 	func minimal() {
 		let view = DSEmptyState(
 			icon: "magnifyingglass",
@@ -24,7 +24,7 @@ struct DSEmptyStateSnapshotTests {
 
 	// MARK: - With Message
 
-	@Test
+	@Test("Renders empty state with descriptive message")
 	func withMessage() {
 		let view = DSEmptyState(
 			icon: "tray",
@@ -38,7 +38,7 @@ struct DSEmptyStateSnapshotTests {
 
 	// MARK: - With Action Button
 
-	@Test
+	@Test("Renders empty state with action button")
 	func withActionButton() {
 		let view = DSEmptyState(
 			icon: "tray",
@@ -53,7 +53,7 @@ struct DSEmptyStateSnapshotTests {
 
 	// MARK: - Different Icons
 
-	@Test
+	@Test("Renders search empty state with search icon")
 	func searchEmpty() {
 		let view = DSEmptyState(
 			icon: "magnifyingglass",
@@ -66,7 +66,7 @@ struct DSEmptyStateSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders favorites empty state with heart icon")
 	func favoritesEmpty() {
 		let view = DSEmptyState(
 			icon: "heart",

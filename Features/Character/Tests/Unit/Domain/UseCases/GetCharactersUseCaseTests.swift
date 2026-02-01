@@ -18,7 +18,7 @@ struct GetCharactersUseCaseTests {
 
     // MARK: - Without Query (uses getCharacters)
 
-    @Test
+    @Test("Execute without query returns characters page")
     func executeWithoutQueryReturnsCharactersPage() async throws {
         // Given
         let expected = CharactersPage.stub()
@@ -31,7 +31,7 @@ struct GetCharactersUseCaseTests {
         #expect(value == expected)
     }
 
-    @Test
+    @Test("Execute without query calls getCharacters method")
     func executeWithoutQueryCallsGetCharacters() async throws {
         // Given
         repositoryMock.charactersResult = .success(.stub())
@@ -45,7 +45,7 @@ struct GetCharactersUseCaseTests {
         #expect(repositoryMock.searchCharactersCallCount == 0)
     }
 
-    @Test
+    @Test("Execute with empty query calls getCharacters method")
     func executeWithEmptyQueryCallsGetCharacters() async throws {
         // Given
         repositoryMock.charactersResult = .success(.stub())
@@ -58,7 +58,7 @@ struct GetCharactersUseCaseTests {
         #expect(repositoryMock.searchCharactersCallCount == 0)
     }
 
-    @Test
+    @Test("Execute without query propagates error")
     func executeWithoutQueryPropagatesError() async throws {
         // Given
         repositoryMock.charactersResult = .failure(.loadFailed)
@@ -71,7 +71,7 @@ struct GetCharactersUseCaseTests {
 
     // MARK: - With Query (uses searchCharacters)
 
-    @Test
+    @Test("Execute with query returns characters page")
     func executeWithQueryReturnsCharactersPage() async throws {
         // Given
         let expected = CharactersPage.stub()
@@ -84,7 +84,7 @@ struct GetCharactersUseCaseTests {
         #expect(value == expected)
     }
 
-    @Test
+    @Test("Execute with query calls searchCharacters method")
     func executeWithQueryCallsSearchCharacters() async throws {
         // Given
         repositoryMock.searchResult = .success(.stub())
@@ -99,7 +99,7 @@ struct GetCharactersUseCaseTests {
         #expect(repositoryMock.getCharactersCallCount == 0)
     }
 
-    @Test
+    @Test("Execute with query propagates error")
     func executeWithQueryPropagatesError() async throws {
         // Given
         repositoryMock.searchResult = .failure(.loadFailed)

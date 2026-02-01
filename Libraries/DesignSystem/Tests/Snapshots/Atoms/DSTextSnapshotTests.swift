@@ -11,7 +11,7 @@ struct DSTextSnapshotTests {
 
 	// MARK: - Typography Gallery
 
-	@Test
+	@Test("Renders gallery of all typography styles")
 	func typographyGallery() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
 			DSText("Large Title", style: .largeTitle)
@@ -32,7 +32,7 @@ struct DSTextSnapshotTests {
 
 	// MARK: - Custom Colors
 
-	@Test
+	@Test("Renders text with custom color tokens")
 	func customColors() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
 			DSText("Success Color", style: .headline, color: ColorToken.statusSuccess)
@@ -49,7 +49,7 @@ struct DSTextSnapshotTests {
 
 	// MARK: - Individual Styles
 
-	@Test
+	@Test("Renders text with large title style")
 	func largeTitleStyle() {
 		let view = DSText("Large Title", style: .largeTitle)
 			.padding()
@@ -57,7 +57,7 @@ struct DSTextSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders text with headline style")
 	func headlineStyle() {
 		let view = DSText("Headline Text", style: .headline)
 			.padding()
@@ -65,7 +65,7 @@ struct DSTextSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders text with body style supporting multiline wrapping")
 	func bodyStyle() {
 		let view = DSText("Body text for longer content that might wrap to multiple lines.", style: .body)
 			.padding()
@@ -74,7 +74,7 @@ struct DSTextSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders text with caption style")
 	func captionStyle() {
 		let view = DSText("Caption text", style: .caption)
 			.padding()

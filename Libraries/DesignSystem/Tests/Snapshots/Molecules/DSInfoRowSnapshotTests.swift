@@ -11,7 +11,7 @@ struct DSInfoRowSnapshotTests {
 
 	// MARK: - Individual Rows
 
-	@Test
+	@Test("Renders info row with default styling")
 	func defaultInfoRow() {
 		let view = DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
 			.padding()
@@ -20,7 +20,7 @@ struct DSInfoRowSnapshotTests {
 		assertSnapshot(of: view, as: .image)
 	}
 
-	@Test
+	@Test("Renders info row with custom icon color")
 	func infoRowWithCustomIconColor() {
 		let view = DSInfoRow(
 			icon: "heart.fill",
@@ -36,7 +36,7 @@ struct DSInfoRowSnapshotTests {
 
 	// MARK: - Gallery
 
-	@Test
+	@Test("Renders gallery of info rows with various configurations")
 	func infoRowGallery() {
 		let view = VStack(spacing: SpacingToken.md) {
 			DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")

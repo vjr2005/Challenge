@@ -22,7 +22,7 @@ struct HTTPClientTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Builds correct URL from base URL and endpoint path")
     func buildsCorrectURLFromEndpoint() async throws {
         // Given
         let endpoint = Endpoint(path: "/users")
@@ -39,7 +39,7 @@ struct HTTPClientTests {
         _ = try await sut.request(endpoint)
     }
 
-    @Test
+    @Test("Includes query items in URL when provided")
     func includesQueryItemsInURL() async throws {
         // Given
         let endpoint = Endpoint(
@@ -62,7 +62,7 @@ struct HTTPClientTests {
         _ = try await sut.request(endpoint)
     }
 
-    @Test
+    @Test("Includes headers in request when provided")
     func includesHeadersInRequest() async throws {
         // Given
         let endpoint = Endpoint(
@@ -84,7 +84,7 @@ struct HTTPClientTests {
         _ = try await sut.request(endpoint)
     }
 
-    @Test
+    @Test("Includes body in POST request when provided")
     func includesBodyInRequest() async throws {
         // Given
         let body = Data("{\"name\":\"test\"}".utf8)
@@ -105,7 +105,7 @@ struct HTTPClientTests {
         _ = try await sut.request(endpoint)
     }
 
-    @Test
+    @Test("Returns data on successful response")
     func returnsDataOnSuccess() async throws {
         // Given
         let expectedData = Data("{\"id\":1}".utf8)
@@ -122,7 +122,7 @@ struct HTTPClientTests {
         #expect(data == expectedData)
     }
 
-    @Test
+    @Test("Decodes JSON response to specified type")
     func decodesResponseToType() async throws {
         // Given
         let responseData = Data("{\"id\":1,\"name\":\"John\"}".utf8)
@@ -156,7 +156,7 @@ struct HTTPClientTests {
         }
     }
 
-    @Test
+    @Test("Throws invalid response error for non-HTTP response")
     func throwsInvalidResponseWhenResponseIsNotHTTPURLResponse() async throws {
         // Given
         // Use custom URL scheme to prevent URLSession from auto-converting to HTTPURLResponse

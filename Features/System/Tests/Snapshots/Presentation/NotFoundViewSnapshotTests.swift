@@ -9,7 +9,7 @@ struct NotFoundViewSnapshotTests {
         UIView.setAnimationsEnabled(false)
     }
 
-    @Test
+    @Test("Renders not found view with default message")
     func defaultState() {
         // Given
         let viewModel = NotFoundViewModelStub()

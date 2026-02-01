@@ -16,7 +16,7 @@ struct NotFoundViewModelTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Tap go back delegates to navigator")
     func didTapGoBackCallsNavigator() {
         // When
         sut.didTapGoBack()

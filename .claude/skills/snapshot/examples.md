@@ -22,7 +22,7 @@ struct CharacterDetailViewSnapshotTests {
         imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
     }
 
-    @Test
+    @Test("Renders loading state correctly")
     func loadingState() {
         // Given
         let viewModel = CharacterDetailViewModelStub(state: .loading)
@@ -37,7 +37,7 @@ struct CharacterDetailViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders loaded state with alive character")
     func loadedStateAliveCharacter() {
         // Given
         let character = Character.stub(
@@ -58,7 +58,7 @@ struct CharacterDetailViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders loaded state with dead character")
     func loadedStateDeadCharacter() {
         // Given
         let character = Character.stub(
@@ -78,7 +78,7 @@ struct CharacterDetailViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders error state correctly")
     func errorState() {
         // Given
         let viewModel = CharacterDetailViewModelStub(state: .error(SnapshotTestError.loadFailed))
@@ -123,7 +123,7 @@ struct CharacterListViewSnapshotTests {
         imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
     }
 
-    @Test
+    @Test("Renders loading state correctly")
     func loadingState() {
         // Given
         let viewModel = CharacterListViewModelStub(state: .loading)
@@ -138,7 +138,7 @@ struct CharacterListViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders loaded state with characters list")
     func loadedStateWithCharacters() {
         // Given
         let page = CharactersPage.stub(
@@ -160,7 +160,7 @@ struct CharacterListViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders empty state correctly")
     func emptyState() {
         // Given
         let viewModel = CharacterListViewModelStub(state: .empty)
@@ -175,7 +175,7 @@ struct CharacterListViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders error state correctly")
     func errorState() {
         // Given
         let viewModel = CharacterListViewModelStub(state: .error(SnapshotTestError.networkError))

@@ -5,7 +5,7 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct GetCharacterUseCaseTests {
-	@Test
+	@Test("Returns character from repository")
 	func returnsCharacterFromRepository() async throws {
 		// Given
 		let expected = Character.stub()
@@ -20,7 +20,7 @@ struct GetCharacterUseCaseTests {
 		#expect(value == expected)
 	}
 
-	@Test
+	@Test("Calls repository with correct identifier")
 	func callsRepositoryWithCorrectId() async throws {
 		// Given
 		let repositoryMock = CharacterRepositoryMock()
@@ -35,7 +35,7 @@ struct GetCharacterUseCaseTests {
 		#expect(repositoryMock.lastRequestedIdentifier == 42)
 	}
 
-	@Test
+	@Test("Propagates repository error")
 	func propagatesRepositoryError() async throws {
 		// Given
 		let repositoryMock = CharacterRepositoryMock()

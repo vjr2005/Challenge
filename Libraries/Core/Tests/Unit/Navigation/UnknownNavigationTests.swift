@@ -3,7 +3,7 @@ import Testing
 @testable import ChallengeCore
 
 struct UnknownNavigationTests {
-    @Test
+    @Test("Two notFound instances are equal")
     func twoInstancesAreEqual() {
         // Given
         let first = UnknownNavigation.notFound
@@ -13,7 +13,7 @@ struct UnknownNavigationTests {
         #expect(first == second)
     }
 
-    @Test
+    @Test("UnknownNavigation conforms to Hashable")
     func conformsToHashable() {
         // Given
         let sut = UnknownNavigation.notFound

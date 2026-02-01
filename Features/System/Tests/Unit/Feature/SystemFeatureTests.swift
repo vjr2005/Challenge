@@ -11,7 +11,7 @@ struct SystemFeatureTests {
 
     // MARK: - Deep Link Handler
 
-    @Test
+    @Test("Deep link handler returns nil for system feature")
     func deepLinkHandlerReturnsNil() {
         // When
         let result = sut.deepLinkHandler
@@ -22,7 +22,7 @@ struct SystemFeatureTests {
 
     // MARK: - Main View
 
-    @Test
+    @Test("Main view returns not found view")
     func makeMainViewReturnsNotFoundView() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -37,7 +37,7 @@ struct SystemFeatureTests {
 
     // MARK: - Resolve
 
-    @Test
+    @Test("Resolve returns view for unknown navigation")
     func resolveReturnsViewForUnknownNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
@@ -51,7 +51,7 @@ struct SystemFeatureTests {
         #expect(viewName.contains("NotFoundView"))
     }
 
-    @Test
+    @Test("Resolve returns nil for non-unknown navigation types")
     func resolveReturnsNilForOtherNavigation() {
         // Given
         let navigatorMock = NavigatorMock()

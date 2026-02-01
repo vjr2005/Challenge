@@ -125,7 +125,7 @@ struct {Name}ViewSnapshotTests {
 
     // MARK: - Tests
 
-    @Test
+    @Test("Renders loading state correctly")
     func loadingState() {
         // Given
         let viewModel = {Name}ViewModelStub(state: .loading)
@@ -140,7 +140,7 @@ struct {Name}ViewSnapshotTests {
         assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
     }
 
-    @Test
+    @Test("Renders loaded state correctly")
     func loadedState() {
         // Given
         let viewModel = {Name}ViewModelStub(state: .loaded({Name}.stub()))
@@ -182,6 +182,7 @@ struct {Name}ViewSnapshotTests {
 
 - Test file: `{Name}ViewSnapshotTests.swift`
 - Test method: `{stateName}State()` (e.g., `loadingState`)
+- **Test description**: `@Test("Renders {state} state correctly")`
 - Snapshots folder: `__Snapshots__/{Name}ViewSnapshotTests/`
 
 ---
@@ -224,6 +225,7 @@ tuist test {Module}  # Run twice
 
 - [ ] Use `DSAsyncImage` in View
 - [ ] Create snapshot tests file in `Tests/Snapshots/`
+- [ ] **All `@Test` attributes include a description**
 - [ ] Initialize `ImageLoaderMock`
 - [ ] Test each state
 - [ ] Use `.iPhone13ProMax` config

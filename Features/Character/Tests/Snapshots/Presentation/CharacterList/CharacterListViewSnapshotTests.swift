@@ -15,7 +15,7 @@ struct CharacterListViewSnapshotTests {
 
 	// MARK: - Idle State
 
-	@Test
+	@Test("Renders character list view in idle state")
 	func idleState() {
 		// Given
 		let viewModel = CharacterListViewModelStub(state: .idle)
@@ -32,7 +32,7 @@ struct CharacterListViewSnapshotTests {
 
 	// MARK: - Loading State
 
-	@Test
+	@Test("Renders character list view in loading state")
 	func loadingState() {
 		// Given
 		let viewModel = CharacterListViewModelStub(state: .loading)
@@ -49,7 +49,7 @@ struct CharacterListViewSnapshotTests {
 
 	// MARK: - Loaded State
 
-	@Test
+	@Test("Renders character list with multiple characters in different statuses")
 	func loadedStateWithCharacters() {
 		// Given
 		let page = CharactersPage.stub(
@@ -71,7 +71,7 @@ struct CharacterListViewSnapshotTests {
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test
+	@Test("Renders character list without pagination indicator when no next page")
 	func loadedStateWithoutNextPage() {
 		// Given
 		let page = CharactersPage.stub(
@@ -90,7 +90,7 @@ struct CharacterListViewSnapshotTests {
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test
+	@Test("Renders character list with image placeholder when image not available")
 	func loadedStateWithImagePlaceholder() {
 		// Given
 		let page = CharactersPage.stub(characters: [.stub()])
@@ -109,7 +109,7 @@ struct CharacterListViewSnapshotTests {
 
 	// MARK: - Empty State
 
-	@Test
+	@Test("Renders character list empty state when no characters found")
 	func emptyState() {
 		// Given
 		let viewModel = CharacterListViewModelStub(state: .empty)
@@ -126,7 +126,7 @@ struct CharacterListViewSnapshotTests {
 
 	// MARK: - Error State
 
-	@Test
+	@Test("Renders character list error state with retry option")
 	func errorState() {
 		// Given
 		let viewModel = CharacterListViewModelStub(state: .error(.loadFailed))

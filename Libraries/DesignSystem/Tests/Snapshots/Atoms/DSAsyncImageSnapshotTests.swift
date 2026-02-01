@@ -20,7 +20,7 @@ struct DSAsyncImageSnapshotTests {
 
 	// MARK: - Default Content Initializer
 
-	@Test
+	@Test("Renders async image with cached image content")
 	func defaultContentWithLoadedImage() async {
 		let controller = makeHostedView(imageLoader: loadedImageLoader) {
 			DSAsyncImage(url: testURL)
@@ -29,7 +29,7 @@ struct DSAsyncImageSnapshotTests {
 		assertSnapshot(of: controller, as: .image)
 	}
 
-	@Test
+	@Test("Renders async image placeholder when URL is nil")
 	func defaultContentWithNilURL() async {
 		let controller = makeHostedView(imageLoader: emptyImageLoader) {
 			DSAsyncImage(url: nil)
@@ -38,7 +38,7 @@ struct DSAsyncImageSnapshotTests {
 		assertSnapshot(of: controller, as: .image)
 	}
 
-	@Test
+	@Test("Renders async image after asynchronous load completes")
 	func defaultContentWithAsyncLoadedImage() async {
 		let signal = LoadSignal()
 		let imageLoader = ImageLoaderMock(cachedImage: nil, asyncImage: .stub) {
@@ -54,7 +54,7 @@ struct DSAsyncImageSnapshotTests {
 		assertSnapshot(of: controller, as: .image)
 	}
 
-	@Test
+	@Test("Renders async image placeholder when load fails")
 	func defaultContentWithFailedImage() async {
 		let signal = LoadSignal()
 		let imageLoader = ImageLoaderMock(cachedImage: nil, asyncImage: nil) {
@@ -72,7 +72,7 @@ struct DSAsyncImageSnapshotTests {
 
 	// MARK: - ViewBuilder Content Initializer
 
-	@Test
+	@Test("Renders custom content builder with nil URL showing progress")
 	func customContentWithNilURL() async {
 		let controller = makeHostedView(imageLoader: emptyImageLoader) {
 			DSAsyncImage(url: nil) { phase in
@@ -92,7 +92,7 @@ struct DSAsyncImageSnapshotTests {
 		assertSnapshot(of: controller, as: .image)
 	}
 
-	@Test
+	@Test("Renders custom content builder with loaded image")
 	func customContentWithLoadedImage() async {
 		let controller = makeHostedView(imageLoader: loadedImageLoader) {
 			DSAsyncImage(url: testURL) { phase in

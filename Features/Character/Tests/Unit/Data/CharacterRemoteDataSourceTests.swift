@@ -20,7 +20,7 @@ struct CharacterRemoteDataSourceTests {
 
     // MARK: - Fetch Character Tests
 
-    @Test
+    @Test("Fetch character uses correct endpoint path")
     func fetchCharacterUsesCorrectEndpoint() async throws {
         // Given
         let jsonData = try loadJSONData("character")
@@ -35,7 +35,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(endpoint.method == .get)
     }
 
-    @Test
+    @Test("Fetch character decodes response correctly")
     func fetchCharacterDecodesResponseCorrectly() async throws {
         // Given
         let jsonData = try loadJSONData("character")
@@ -51,7 +51,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(value.species == "Human")
     }
 
-    @Test
+    @Test("Fetch character throws on HTTP error")
     func fetchCharacterThrowsOnHTTPError() async throws {
         // Given
         httpClientMock.result = .failure(TestError.network)
@@ -78,7 +78,7 @@ struct CharacterRemoteDataSourceTests {
 
     // MARK: - Fetch Characters (Paginated)
 
-    @Test
+    @Test("Fetch characters uses correct endpoint path")
     func fetchCharactersUsesCorrectEndpoint() async throws {
         // Given
         let jsonData = try loadJSONData("characters_response")
@@ -93,7 +93,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(endpoint.method == .get)
     }
 
-    @Test
+    @Test("Fetch characters includes page query parameter")
     func fetchCharactersIncludesPageQueryParameter() async throws {
         // Given
         let jsonData = try loadJSONData("characters_response")
@@ -108,7 +108,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(pageItem.value == "5")
     }
 
-    @Test
+    @Test("Fetch characters includes name query parameter when provided")
     func fetchCharactersIncludesNameQueryParameterWhenProvided() async throws {
         // Given
         let jsonData = try loadJSONData("characters_response")
@@ -123,7 +123,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(nameItem.value == "Rick")
     }
 
-    @Test
+    @Test("Fetch characters omits name query parameter when nil")
     func fetchCharactersOmitsNameQueryParameterWhenNil() async throws {
         // Given
         let jsonData = try loadJSONData("characters_response")
@@ -138,7 +138,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(nameItem == nil)
     }
 
-    @Test
+    @Test("Fetch characters omits name query parameter when empty")
     func fetchCharactersOmitsNameQueryParameterWhenEmpty() async throws {
         // Given
         let jsonData = try loadJSONData("characters_response")
@@ -153,7 +153,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(nameItem == nil)
     }
 
-    @Test
+    @Test("Fetch characters decodes response correctly")
     func fetchCharactersDecodesResponseCorrectly() async throws {
         // Given
         let jsonData = try loadJSONData("characters_response")
@@ -169,7 +169,7 @@ struct CharacterRemoteDataSourceTests {
         #expect(value.results.first?.name == "Rick Sanchez")
     }
 
-    @Test
+    @Test("Fetch characters throws on HTTP error")
     func fetchCharactersThrowsOnHTTPError() async throws {
         // Given
         httpClientMock.result = .failure(TestError.network)

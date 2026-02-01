@@ -6,7 +6,7 @@ import Testing
 struct FeatureTests {
     // MARK: - Default Implementation
 
-    @Test
+    @Test("Deep link handler returns nil by default")
     func deepLinkHandlerReturnsNilByDefault() {
         // Given
         let sut = TestFeature()

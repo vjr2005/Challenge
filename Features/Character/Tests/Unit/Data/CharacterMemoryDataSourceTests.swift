@@ -12,7 +12,7 @@ struct CharacterMemoryDataSourceTests {
 
     // MARK: - Character Tests
 
-    @Test
+    @Test("Saves and retrieves character from memory")
     func savesAndRetrievesCharacter() async throws {
         // Given
         let expected: CharacterDTO = try loadJSON("character")
@@ -25,7 +25,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(value == expected)
     }
 
-    @Test
+    @Test("Returns nil for non-existent character")
     func returnsNilForNonExistentCharacter() async {
         // When
         let value = await sut.getCharacter(identifier: 999)
@@ -34,7 +34,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(value == nil)
     }
 
-    @Test
+    @Test("Updates existing character in memory")
     func updatesExistingCharacter() async throws {
         // Given
         let original: CharacterDTO = try loadJSON("character")
@@ -51,7 +51,7 @@ struct CharacterMemoryDataSourceTests {
 
     // MARK: - Page Caching Tests
 
-    @Test
+    @Test("Saves and retrieves page from memory")
     func savesAndRetrievesPage() async throws {
         // Given
         let expected: CharactersResponseDTO = try loadJSON("characters_response")
@@ -64,7 +64,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(value == expected)
     }
 
-    @Test
+    @Test("Returns nil for non-existent page")
     func returnsNilForNonExistentPage() async {
         // When
         let value = await sut.getPage(999)
@@ -73,7 +73,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(value == nil)
     }
 
-    @Test
+    @Test("Save page also saves individual characters")
     func savePageAlsoSavesIndividualCharacters() async throws {
         // Given
         let response: CharactersResponseDTO = try loadJSON("characters_response_two_results")
@@ -88,7 +88,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(character2 == response.results[1])
     }
 
-    @Test
+    @Test("Different pages are cached separately")
     func differentPagesAreCachedSeparately() async throws {
         // Given
         let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
@@ -107,7 +107,7 @@ struct CharacterMemoryDataSourceTests {
 
     // MARK: - Clear Pages Tests
 
-    @Test
+    @Test("Clear pages removes all cached pages")
     func clearPagesRemovesAllCachedPages() async throws {
         // Given
         let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
@@ -125,7 +125,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(cachedPage2 == nil)
     }
 
-    @Test
+    @Test("Clear pages keeps individual characters")
     func clearPagesKeepsIndividualCharacters() async throws {
         // Given
         let character: CharacterDTO = try loadJSON("character")
@@ -143,7 +143,7 @@ struct CharacterMemoryDataSourceTests {
 
     // MARK: - Update Character In Pages Tests
 
-    @Test
+    @Test("Update character in pages updates character storage")
     func updateCharacterInPagesUpdatesCharacterStorage() async throws {
         // Given
         let original: CharacterDTO = try loadJSON("character")
@@ -158,7 +158,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(cachedCharacter == updated)
     }
 
-    @Test
+    @Test("Update character in pages updates character in cached page")
     func updateCharacterInPagesUpdatesCharacterInCachedPage() async throws {
         // Given
         let pageResponse: CharactersResponseDTO = try loadJSON("characters_response")
@@ -174,7 +174,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(characterInPage == updatedCharacter)
     }
 
-    @Test
+    @Test("Update character in pages updates character in multiple pages")
     func updateCharacterInPagesUpdatesCharacterInMultiplePages() async throws {
         // Given
         let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
@@ -192,7 +192,7 @@ struct CharacterMemoryDataSourceTests {
         #expect(characterInPage1 == updatedCharacter)
     }
 
-    @Test
+    @Test("Update character in pages does not affect other characters")
     func updateCharacterInPagesDoesNotAffectOtherCharacters() async throws {
         // Given
         let pageResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")

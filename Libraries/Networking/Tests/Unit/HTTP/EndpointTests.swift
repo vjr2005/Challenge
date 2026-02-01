@@ -4,7 +4,7 @@ import Testing
 @testable import ChallengeNetworking
 
 struct EndpointTests {
-	@Test
+	@Test("Endpoint defaults to GET method when not specified")
 	func defaultsToGetMethod() {
 		// Given
 		let path = "/users"
@@ -17,7 +17,7 @@ struct EndpointTests {
 		#expect(sut.method == .get)
 	}
 
-	@Test
+	@Test("Endpoint stores query items correctly")
 	func supportsQueryItems() {
 		// Given
 		let queryItems = [
@@ -66,7 +66,7 @@ struct EndpointTests {
 		#expect(sut.path == path)
 	}
 
-	@Test
+	@Test("Endpoint has correct default values for all properties")
 	func hasCorrectDefaultValues() {
 		// When
 		let sut = Endpoint(path: "/test")
@@ -78,7 +78,7 @@ struct EndpointTests {
 		#expect(sut.body == nil)
 	}
 
-	@Test
+	@Test("Endpoint stores all parameters when provided")
 	func acceptsAllParameters() {
 		// Given
 		let path = "/users"

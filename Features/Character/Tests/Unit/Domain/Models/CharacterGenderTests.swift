@@ -3,7 +3,7 @@ import Testing
 @testable import ChallengeCharacter
 
 struct CharacterGenderTests {
-    @Test
+    @Test("Init from 'Female' string returns female gender")
     func initFromFemaleStringReturnsFemale() {
         // Given
         let string = "Female"
@@ -15,7 +15,7 @@ struct CharacterGenderTests {
         #expect(sut == .female)
     }
 
-    @Test
+    @Test("Init from 'Male' string returns male gender")
     func initFromMaleStringReturnsMale() {
         // Given
         let string = "Male"
@@ -27,7 +27,7 @@ struct CharacterGenderTests {
         #expect(sut == .male)
     }
 
-    @Test
+    @Test("Init from 'Genderless' string returns genderless")
     func initFromGenderlessStringReturnsGenderless() {
         // Given
         let string = "Genderless"
@@ -39,7 +39,7 @@ struct CharacterGenderTests {
         #expect(sut == .genderless)
     }
 
-    @Test
+    @Test("Init from invalid string returns unknown gender")
     func initFromUnknownStringReturnsUnknown() {
         // Given
         let string = "InvalidGender"
@@ -51,7 +51,7 @@ struct CharacterGenderTests {
         #expect(sut == .unknown)
     }
 
-    @Test
+    @Test("Init from empty string returns unknown gender")
     func initFromEmptyStringReturnsUnknown() {
         // Given
         let string = ""

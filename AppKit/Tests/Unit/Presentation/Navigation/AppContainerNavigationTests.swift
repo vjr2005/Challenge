@@ -21,7 +21,7 @@ struct AppContainerNavigationTests {
 
 	// MARK: - Resolve
 
-	@Test
+	@Test("Resolve returns view when feature can handle navigation")
 	func resolveReturnsViewWhenFeatureCanHandle() {
 		// When
 		let result = sut.resolve(HomeIncomingNavigation.main, navigator: navigatorMock)
@@ -31,7 +31,7 @@ struct AppContainerNavigationTests {
 		#expect(!viewName.isEmpty)
 	}
 
-	@Test
+	@Test("Resolve returns NotFoundView when no feature can handle navigation")
 	func resolveReturnsNotFoundViewWhenNoFeatureCanHandle() {
 		// When
 		let result = sut.resolve(TestNavigation.unknown, navigator: navigatorMock)
@@ -43,7 +43,7 @@ struct AppContainerNavigationTests {
 
 	// MARK: - Deep Link Handling
 
-	@Test
+	@Test("Handle URL navigates when feature can resolve deep link")
 	func handleURLNavigatesWhenFeatureCanResolve() throws {
 		// Given
 		let url = try #require(URL(string: "challenge://character/list"))
@@ -55,7 +55,7 @@ struct AppContainerNavigationTests {
 		#expect(navigatorMock.navigatedDestinations.count == 1)
 	}
 
-	@Test
+	@Test("Handle URL does not navigate when no feature can resolve deep link")
 	func handleURLDoesNotNavigateWhenNoFeatureCanResolve() throws {
 		// Given
 		let url = try #require(URL(string: "challenge://unknown/path"))
