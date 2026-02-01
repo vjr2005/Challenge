@@ -68,6 +68,10 @@ let project = Project(
 			"SWIFT_VERSION": .string(swiftVersion),
 			"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
 			"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),
+			"ENABLE_MODULE_VERIFIER": .string("YES"),
+			"SWIFT_EMIT_LOC_STRINGS": .string("YES"),
+			// Disabled: SwiftLint script requires access to mise outside the sandbox
+			"ENABLE_USER_SCRIPT_SANDBOXING": .string("NO"),
 		],
 		configurations: BuildConfiguration.all
 	),
