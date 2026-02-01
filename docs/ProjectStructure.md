@@ -4,24 +4,49 @@
 Challenge/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                # GitHub Actions CI workflow
-├── App/                          # Main application target
+│       └── pull-request-checks.yml  # GitHub Actions CI workflow
+├── App/                             # Main application target
 │   ├── Sources/
-│   ├── Tests/
-│   └── UITests/
-├── Features/                     # Feature modules
+│   └── Tests/
+│       └── UI/                      # UI tests (XCTest)
+├── AppKit/                          # Composition layer
+│   ├── Sources/
+│   │   ├── Data/                    # App-level data configuration
+│   │   └── Presentation/            # Root views and navigation
+│   └── Tests/
+│       ├── Unit/
+│       └── Snapshots/
+├── Features/                        # Feature modules
 │   ├── Character/
-│   └── Home/
-├── Libraries/                    # Shared libraries
-│   ├── Core/                     # Navigation, routing, image loading
-│   ├── Networking/               # HTTP client
-│   └── DesignSystem/             # UI components (Atomic Design)
+│   │   ├── Sources/
+│   │   └── Tests/
+│   ├── Home/
+│   │   ├── Sources/
+│   │   └── Tests/
+│   └── System/
+│       ├── Sources/
+│       └── Tests/
+├── Libraries/                       # Shared libraries
+│   ├── Core/                        # Navigation, routing, image loading
+│   │   ├── Sources/
+│   │   ├── Tests/
+│   │   └── Mocks/
+│   ├── Networking/                  # HTTP client
+│   │   ├── Sources/
+│   │   ├── Tests/
+│   │   └── Mocks/
+│   └── DesignSystem/                # UI components (Atomic Design)
+│       ├── Sources/
+│       └── Tests/
 ├── Shared/
-│   └── Resources/                # Localization, shared resources
+│   └── Resources/                   # Localization, shared resources
+│       └── Sources/
 ├── Tuist/
 │   ├── ProjectDescriptionHelpers/
+│   │   └── Modules/
 │   └── Package.swift
 ├── Scripts/
+├── docs/
 ├── Project.swift
 ├── Tuist.swift
 └── .mise.toml
@@ -31,13 +56,21 @@ Challenge/
 
 ### App
 
-Main application entry point with dependency injection container.
+Main application entry point.
 
 | Target | Purpose |
 |--------|---------|
 | `Challenge` | Main app |
-| `ChallengeTests` | Unit tests |
-| `ChallengeUITests` | UI tests |
+| `ChallengeTests` | UI tests |
+
+### AppKit
+
+Composition layer that wires all features together.
+
+| Target | Purpose |
+|--------|---------|
+| `ChallengeAppKit` | Root views, navigation, dependency wiring |
+| `ChallengeAppKitTests` | Unit tests |
 
 ### Libraries
 
@@ -53,21 +86,34 @@ Main application entry point with dependency injection container.
 | Module | Purpose |
 |--------|---------|
 | **ChallengeCharacter** | Character list and detail screens |
-| **ChallengeHome** | Home/dashboard screen |
+| **ChallengeHome** | Home screen with logo animation |
+| **ChallengeSystem** | System settings and configuration |
 
 ## Dependency Graph
 
 ```
 Challenge (App)
-├── ChallengeCore
-├── ChallengeCharacter
-│   ├── ChallengeCore
-│   ├── ChallengeNetworking
-│   ├── ChallengeResources
-│   └── ChallengeDesignSystem
-│       └── ChallengeCore
-└── ChallengeHome
+└── ChallengeAppKit
     ├── ChallengeCore
-    └── ChallengeResources
-        └── ChallengeCore
+    ├── ChallengeNetworking
+    ├── ChallengeCharacter
+    │   ├── ChallengeCore
+    │   ├── ChallengeNetworking
+    │   ├── ChallengeResources
+    │   └── ChallengeDesignSystem
+    ├── ChallengeHome
+    │   ├── ChallengeCore
+    │   ├── ChallengeResources
+    │   ├── ChallengeDesignSystem
+    │   └── Lottie (external)
+    └── ChallengeSystem
+        ├── ChallengeCore
+        ├── ChallengeResources
+        └── ChallengeDesignSystem
+
+Libraries (base dependencies):
+├── ChallengeCore (no dependencies)
+├── ChallengeNetworking (no dependencies)
+├── ChallengeResources → ChallengeCore
+└── ChallengeDesignSystem → ChallengeCore
 ```
