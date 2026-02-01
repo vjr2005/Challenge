@@ -27,10 +27,10 @@ if [[ "$1" == "--clean" ]]; then
 
     echo "Removing Derived Data..."
     rm -rf ~/Library/Developer/Xcode/DerivedData/Challenge-*
-
-    echo "Installing dependencies..."
-    mise x -- tuist install
 fi
+
+echo "Installing dependencies..."
+mise x -- tuist install
 
 echo "Generating project..."
 mise x -- tuist generate
