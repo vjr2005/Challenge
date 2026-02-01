@@ -44,15 +44,7 @@ extension CharacterListRobot {
 
 	@discardableResult
 	func tapLoadMore(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
 		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
-		// Scroll down to find and tap the button
-		for _ in 0..<5 {
-			if button.exists && button.isHittable {
-				break
-			}
-			scrollView.swipeUp()
-		}
 		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
 		button.tap()
 		return self

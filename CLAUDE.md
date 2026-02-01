@@ -39,7 +39,7 @@ Use these skills for detailed implementation patterns:
 | `/concurrency` | Swift 6 concurrency: async/await, actors, MainActor, Sendable |
 | `/style-guide` | Code formatting, naming conventions, SwiftLint rules |
 | `/testing` | Unit testing patterns, Given/When/Then, parameterized tests |
-| `/e2e-tests` | End-to-end UI tests with Robot pattern |
+| `/ui-tests` | UI tests with Robot pattern |
 | `/project-structure` | Directory organization, feature modules, extensions |
 | `/resources` | Resources module: localization, String extensions |
 | `/tuist` | Tuist configuration: xcframeworks, dependencies, Project.swift |
@@ -120,7 +120,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 Module/Tests/
 ├── Unit/           → Unit tests (Swift Testing)
 ├── Snapshots/      → Snapshot tests (SnapshotTesting)
-├── E2E/            → E2E tests (XCTest, App only)
+├── UI/             → UI tests (XCTest, App only)
 └── Shared/         → Shared resources
     ├── Stubs/      → Domain model test data
     ├── Mocks/      → Internal test mocks
@@ -144,7 +144,7 @@ Module/Tests/
 | Coverage scope | Only source targets (never mocks or external libraries) |
 | Unit tests | Use Swift Testing (`@Test("description")`, `#expect`) |
 | Snapshot tests | Use SnapshotTesting library |
-| E2E/UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
+| UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
 
 For details, see `/testing` skill.
 

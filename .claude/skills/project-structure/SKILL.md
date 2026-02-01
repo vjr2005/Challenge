@@ -26,7 +26,7 @@ Guide for project organization and directory structure.
 │   │   └── Resources/
 │   │       └── Assets.xcassets/
 │   └── Tests/
-│       └── E2E/                      # End-to-end tests only
+│       └── UI/                       # UI tests only
 ├── AppKit/                           # Testable app code (no TEST_HOST needed)
 │   ├── Sources/
 │   │   ├── AppContainer.swift        # Composition Root (centralized DI)
@@ -270,7 +270,7 @@ Tests/
 │       └── {ScreenName}/
 │           ├── {ScreenName}ViewSnapshotTests.swift
 │           └── __Snapshots__/
-├── E2E/                          # E2E tests (XCTest, App only)
+├── UI/                           # UI tests (XCTest, App only)
 │   ├── Robots/
 │   └── Tests/
 └── Shared/                       # Shared resources (used by Unit and Snapshots)
@@ -417,7 +417,7 @@ Derived/
 ## App and AppKit Directories
 
 The app code is split into two modules:
-- **App**: Minimal entry point with E2E tests only
+- **App**: Minimal entry point with UI tests only
 - **AppKit**: Testable app code (unit and snapshot tests run here without TEST_HOST)
 
 ```
@@ -430,7 +430,7 @@ App/
 │           ├── AppIconDev.appiconset/     # Development icon
 │           └── AppIconStaging.appiconset/ # Staging icon
 └── Tests/
-    └── E2E/                      # End-to-end UI tests only (XCTest)
+    └── UI/                       # UI tests only (XCTest)
         ├── Robots/
         └── Tests/
 
@@ -493,7 +493,7 @@ AppKit/
 
 ## Checklist
 
-- [ ] App contains only `{AppName}App.swift` and E2E tests
+- [ ] App contains only `{AppName}App.swift` and UI tests
 - [ ] AppKit contains testable code: `AppContainer.swift`, `RootContainerView.swift`, `AppNavigationRedirect.swift`
 - [ ] Feature folder does not contain "Feature" suffix
 - [ ] {Feature}Container.swift for dependency composition

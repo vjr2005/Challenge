@@ -241,7 +241,7 @@ Challenge/
 ├── App/                          # Main application target
 │   ├── Sources/
 │   ├── Tests/
-│   └── E2ETests/
+│   └── UITests/
 ├── Features/                     # Feature modules
 │   ├── Character/
 │   └── Home/
@@ -270,7 +270,7 @@ Main application entry point with dependency injection container.
 |--------|---------|
 | `Challenge` | Main app |
 | `ChallengeTests` | Unit tests |
-| `ChallengeE2ETests` | End-to-end UI tests |
+| `ChallengeUITests` | UI tests |
 
 ### Libraries
 
@@ -346,7 +346,7 @@ The project uses strict Swift 6 concurrency with:
 |------|-----------|----------|
 | Unit Tests | Swift Testing | `*/Tests/` |
 | Snapshot Tests | SnapshotTesting | `*/Tests/Snapshots/` |
-| E2E Tests | XCTest | `App/E2ETests/` |
+| UI Tests | XCTest | `App/UITests/` |
 
 ### Test Structure
 

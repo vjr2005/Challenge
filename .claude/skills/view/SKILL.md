@@ -275,7 +275,7 @@ private enum LocalizedStrings {
 
 ## Accessibility Identifiers
 
-Views must define **private accessibility identifiers** for E2E testing.
+Views must define **private accessibility identifiers** for UI testing.
 
 ```swift
 // MARK: - AccessibilityIdentifiers

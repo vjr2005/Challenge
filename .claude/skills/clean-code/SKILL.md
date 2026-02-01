@@ -102,7 +102,7 @@ Execute **all tests** in the workspace:
 mise x -- tuist test {AppName}-Workspace
 ```
 
-**Important:** Use `{AppName}-Workspace` to run all unit tests, not just E2E tests.
+**Important:** Use `{AppName}-Workspace` to run all unit tests, not just UI tests.
 
 If tests fail:
 - Check if failed tests were testing removed code → delete them

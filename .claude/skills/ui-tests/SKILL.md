@@ -1,18 +1,18 @@
 ---
-name: e2e-tests
-description: End-to-end UI tests with Robot pattern. Use when creating E2E tests, implementing Robot classes, or adding accessibility identifiers.
+name: ui-tests
+description: UI tests with Robot pattern. Use when creating UI tests, implementing Robot classes, or adding accessibility identifiers.
 ---
 
-# Skill: E2E Tests
+# Skill: UI Tests
 
-Guide for creating End-to-End UI tests using XCTest with the Robot pattern.
+Guide for creating UI tests using XCTest with the Robot pattern.
 
-> **NOTE:** E2E tests and Robot classes are currently commented out for refactoring.
+> **NOTE:** UI tests and Robot classes are currently commented out for refactoring.
 > The code is preserved as reference in `App/Tests/UI/` and `App/Tests/Shared/Robots/`.
 
 ## When to use this skill
 
-- Create E2E tests for user flows
+- Create UI tests for user flows
 - Implement Robot classes for screens
 - Add accessibility identifiers to views
 - Test navigation and user interactions
@@ -122,12 +122,12 @@ private enum AccessibilityIdentifier {
 
 ---
 
-## E2E Test Structure
+## UI Test Structure
 
 ```swift
 import XCTest
 
-nonisolated final class CharacterFlowE2ETests: XCTestCase {
+nonisolated final class CharacterFlowUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
@@ -181,7 +181,7 @@ nonisolated final class CharacterFlowE2ETests: XCTestCase {
 
 ## Accessibility Identifiers in Views
 
-Views must define **private accessibility identifiers** for E2E testing. Pass the `accessibilityIdentifier:` parameter to DS components for automatic propagation.
+Views must define **private accessibility identifiers** for UI testing. Pass the `accessibilityIdentifier:` parameter to DS components for automatic propagation.
 
 ### Pattern with DS Components
 
@@ -380,7 +380,7 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 - [ ] Pass `#filePath` and `line` for accurate failure locations
 - [ ] Use `.firstMatch` for dynamic elements
 
-### E2E Test
+### UI Test
 
 - [ ] Mark test class as `nonisolated`
 - [ ] Mark test methods with `@MainActor`

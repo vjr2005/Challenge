@@ -495,4 +495,4 @@ import ChallengeDesignSystem
 - [ ] Replace empty views with `DSEmptyState`
 - [ ] Use semantic status colors (`DSStatus`)
 - [ ] Use `DSCardInfoRow` for list item cards
-- [ ] Pass `accessibilityIdentifier:` parameter for E2E testing
+- [ ] Pass `accessibilityIdentifier:` parameter for UI testing

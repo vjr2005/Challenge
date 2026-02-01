@@ -22,7 +22,7 @@ Guide for writing tests using Swift Testing framework following project conventi
 |-----------|-------|
 | **Testing** (Swift Testing) | Unit tests, integration tests |
 | **SnapshotTesting** | Snapshot tests for UI components (see `/snapshot` skill) |
-| **XCTest** | UI tests / E2E (see `/e2e-tests` skill) |
+| **XCTest** | UI tests (see `/ui-tests` skill) |
 
 ---
 

@@ -23,8 +23,8 @@ App/
 │       └── Assets.xcassets/
 ├── Tests/
 │   └── ...                          # Unit and snapshot tests
-└── E2ETests/
-    └── ...                          # End-to-end UI tests
+└── UITests/
+    └── ...                          # UI tests
 ```
 
 ## Dependencies
@@ -79,9 +79,9 @@ The root navigation view that:
 
 - `RootViewSnapshotTests.swift` - Visual regression tests for root view
 
-### E2E Tests (`ChallengeE2ETests`)
+### UI Tests (`ChallengeUITests`)
 
-End-to-end UI tests using the Robot pattern:
+UI tests using the Robot pattern:
 
 | Robot | Purpose |
 |-------|---------|
@@ -91,8 +91,8 @@ End-to-end UI tests using the Robot pattern:
 | `CharacterDetailRobot.swift` | Character detail interactions |
 
 **Test Files:**
-- `CharacterFlowE2ETests.swift` - Character navigation flows
-- `DeepLinkE2ETests.swift` - Deep link handling tests
+- `CharacterFlowUITests.swift` - Character navigation flows
+- `DeepLinkUITests.swift` - Deep link handling tests
 
 ## Running the App
 

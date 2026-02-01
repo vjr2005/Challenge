@@ -124,11 +124,11 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 }
 ```
 
-### E2E Test classes
+### UI Test classes
 
 ```swift
 // XCTestCase subclasses need nonisolated for XCTest compatibility
-nonisolated final class CharacterFlowE2ETests: XCTestCase {
+nonisolated final class CharacterFlowUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
