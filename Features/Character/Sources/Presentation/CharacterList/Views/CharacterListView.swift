@@ -78,6 +78,7 @@ private extension CharacterListView {
             title: LocalizedStrings.Empty.title,
             message: LocalizedStrings.Empty.description
         )
+        .accessibilityIdentifier(AccessibilityIdentifier.emptyState)
     }
 
 	func characterList(page: CharactersPage) -> some View {
@@ -223,6 +224,7 @@ private enum LocalizedStrings {
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
 	static let loadMoreButton = "characterList.loadMoreButton"
+	static let emptyState = "characterList.emptyState"
 
 	static func row(id: Int) -> String {
 		"characterList.row.\(id)"

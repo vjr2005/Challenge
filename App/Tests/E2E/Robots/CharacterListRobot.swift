@@ -41,6 +41,22 @@ extension CharacterListRobot {
 		searchField.buttons["Clear text"].tap()
 		return self
 	}
+
+	@discardableResult
+	func tapLoadMore(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
+		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
+		button.tap()
+		return self
+	}
+
+	@discardableResult
+	func pullToRefresh(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
+		XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
+		scrollView.swipeDown()
+		return self
+	}
 }
 
 // MARK: - Verifications
@@ -52,12 +68,36 @@ extension CharacterListRobot {
 		XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
+
+	@discardableResult
+	func verifyCharacterExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = AccessibilityIdentifier.row(id: id)
+		let row = app.descendants(matching: .any)[identifier].firstMatch
+		XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
+		return self
+	}
+
+	@discardableResult
+	func verifyEmptyStateIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let emptyState = app.descendants(matching: .any)[AccessibilityIdentifier.emptyState]
+		XCTAssertTrue(emptyState.waitForExistence(timeout: 5), file: file, line: line)
+		return self
+	}
+
+	@discardableResult
+	func verifyLoadMoreButtonExists(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
+		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
+		return self
+	}
 }
 
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
+	static let loadMoreButton = "characterList.loadMoreButton"
+	static let emptyState = "characterList.emptyState"
 
 	static func row(id: Int) -> String {
 		"characterList.row.\(id)"

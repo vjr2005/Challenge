@@ -33,4 +33,11 @@ extension XCTestCase {
 	) {
 		actions(CharacterDetailRobot(app: app))
 	}
+
+	func notFound(
+		app: XCUIApplication,
+		actions: (NotFoundRobot) -> Void
+	) {
+		actions(NotFoundRobot(app: app))
+	}
 }
