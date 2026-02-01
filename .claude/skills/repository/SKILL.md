@@ -209,24 +209,82 @@ private extension {Name}Repository {
 
 ---
 
-## Local-First Policy
+## CachePolicy
 
-When using both DataSources, follow this order:
-
-1. Check local cache first
-2. If found in cache, return cached data
-3. If not found, fetch from remote
-4. Save to local cache
-5. Return the data
+Use `CachePolicy` enum to control cache behavior:
 
 ```swift
-func get{Name}(id: Int) async throws -> {Name} {
-    if let cached = await memoryDataSource.get{Name}(id: id) {
-        return cached.toDomain()
+enum CachePolicy: Sendable {
+    case localFirst   // Cache first, remote if not found (default)
+    case remoteFirst  // Remote first, cache as fallback on error
+    case none         // Only remote, no cache interaction
+}
+```
+
+### Contract with CachePolicy
+
+```swift
+protocol {Name}RepositoryContract: Sendable {
+    func get{Name}(id: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+}
+```
+
+### Cache Strategies
+
+| Policy | Behavior |
+|--------|----------|
+| `.localFirst` | Cache → Remote (if miss) → Save to cache |
+| `.remoteFirst` | Remote → Save to cache → Cache (if error) |
+| `.none` | Remote only, no cache interaction |
+
+### Implementation Pattern
+
+Extract remote fetching into a helper to avoid code duplication:
+
+```swift
+// MARK: - Remote Fetch Helper
+
+private extension {Name}Repository {
+    func fetchFromRemote(id: Int) async throws({Feature}Error) -> {Name}DTO {
+        do {
+            return try await remoteDataSource.fetch{Name}(id: id)
+        } catch let error as HTTPError {
+            throw mapHTTPError(error, id: id)
+        } catch {
+            throw .loadFailed
+        }
     }
-    let dto = try await remoteDataSource.fetch{Name}(id: id)
-    await memoryDataSource.save{Name}(dto)
-    return dto.toDomain()
+}
+
+// MARK: - Cache Strategies
+
+private extension {Name}Repository {
+    func getLocalFirst(id: Int) async throws({Feature}Error) -> {Name} {
+        if let cached = await memoryDataSource.get{Name}(id: id) {
+            return cached.toDomain()
+        }
+        let dto = try await fetchFromRemote(id: id)
+        await memoryDataSource.save{Name}(dto)
+        return dto.toDomain()
+    }
+
+    func getRemoteFirst(id: Int) async throws({Feature}Error) -> {Name} {
+        do {
+            let dto = try await fetchFromRemote(id: id)
+            await memoryDataSource.save{Name}(dto)
+            return dto.toDomain()
+        } catch {
+            if let cached = await memoryDataSource.get{Name}(id: id) {
+                return cached.toDomain()
+            }
+            throw error
+        }
+    }
+
+    func getNoCache(id: Int) async throws({Feature}Error) -> {Name} {
+        let dto = try await fetchFromRemote(id: id)
+        return dto.toDomain()
+    }
 }
 ```
 
@@ -268,15 +326,19 @@ func get{Name}(id: Int) async throws -> {Name} {
 - [ ] Add Domain to DTO mapping (for saving)
 - [ ] Create Mock and tests
 
-### Local-First Repository
+### Repository with CachePolicy (Both DataSources)
 
+- [ ] Create CachePolicy enum in Domain/Models/
 - [ ] Create Domain model with Equatable conformance
 - [ ] Create Domain error enum in Domain/Errors/ with typed throws
-- [ ] Create Contract in Domain/Repositories/ using typed throws
+- [ ] Create Contract in Domain/Repositories/ with cachePolicy parameter
 - [ ] Create Implementation injecting both DataSources
-- [ ] Implement local-first policy
+- [ ] Extract remote fetch helper methods
+- [ ] Implement cache strategies (localFirst, remoteFirst, none)
 - [ ] Add HTTPError to Domain error mapping
-- [ ] Create tests for cache hit (no remote call)
-- [ ] Create tests for cache miss (remote call + cache save)
+- [ ] Create tests for localFirst (cache hit → no remote call)
+- [ ] Create tests for localFirst (cache miss → remote + save)
+- [ ] Create tests for remoteFirst (always remote, cache fallback on error)
+- [ ] Create tests for none (remote only, no cache interaction)
 - [ ] Create tests for error mapping (404 → notFound, etc.)
 - [ ] Add localized strings for error messages

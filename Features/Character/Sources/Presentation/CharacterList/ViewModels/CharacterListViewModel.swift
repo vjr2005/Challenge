@@ -14,7 +14,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
-    private let clearCacheUseCase: ClearCharactersCacheUseCaseContract
+    private let searchCharactersUseCase: SearchCharactersUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private var currentPage = 1
     private var isLoadingMore = false
@@ -22,11 +22,11 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 
     init(
         getCharactersUseCase: GetCharactersUseCaseContract,
-        clearCacheUseCase: ClearCharactersCacheUseCaseContract,
+        searchCharactersUseCase: SearchCharactersUseCaseContract,
         navigator: CharacterListNavigatorContract
     ) {
         self.getCharactersUseCase = getCharactersUseCase
-        self.clearCacheUseCase = clearCacheUseCase
+        self.searchCharactersUseCase = searchCharactersUseCase
         self.navigator = navigator
     }
 
@@ -40,8 +40,9 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     func refresh() async {
-        await clearCacheUseCase.execute()
-        await load()
+        state = .loading
+        currentPage = 1
+        await fetchCharacters(cachePolicy: .remoteFirst)
     }
 
     func loadMore() async {
@@ -86,9 +87,15 @@ private extension CharacterListViewModel {
         await fetchCharacters()
     }
 
-    func fetchCharacters() async {
+    func fetchCharacters(cachePolicy: CachePolicy = .localFirst) async {
         do {
-            let result = try await getCharactersUseCase.execute(page: currentPage, query: normalizedQuery)
+            let result: CharactersPage
+            if let query = normalizedQuery {
+                result = try await searchCharactersUseCase.execute(page: currentPage, query: query)
+            } else {
+                result = try await getCharactersUseCase.execute(page: currentPage, cachePolicy: cachePolicy)
+            }
+
             if result.characters.isEmpty {
                 state = .empty
             } else {
@@ -101,7 +108,13 @@ private extension CharacterListViewModel {
 
     func fetchMoreCharacters(existingPage: CharactersPage) async {
         do {
-            let result = try await getCharactersUseCase.execute(page: currentPage, query: normalizedQuery)
+            let result: CharactersPage
+            if let query = normalizedQuery {
+                result = try await searchCharactersUseCase.execute(page: currentPage, query: query)
+            } else {
+                result = try await getCharactersUseCase.execute(page: currentPage)
+            }
+
             let combinedCharacters = existingPage.characters + result.characters
             let updatedPage = CharactersPage(
                 characters: combinedCharacters,

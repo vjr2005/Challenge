@@ -5,46 +5,68 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct GetCharacterUseCaseTests {
-	@Test("Returns character from repository")
-	func returnsCharacterFromRepository() async throws {
-		// Given
-		let expected = Character.stub()
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.result = .success(expected)
-		let sut = GetCharacterUseCase(repository: repositoryMock)
+    // MARK: - Properties
 
-		// When
-		let value = try await sut.execute(identifier: 1)
+    private let repositoryMock = CharacterRepositoryMock()
+    private let sut: GetCharacterUseCase
 
-		// Then
-		#expect(value == expected)
-	}
+    // MARK: - Initialization
 
-	@Test("Calls repository with correct identifier")
-	func callsRepositoryWithCorrectId() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.result = .success(.stub())
-		let sut = GetCharacterUseCase(repository: repositoryMock)
+    init() {
+        sut = GetCharacterUseCase(repository: repositoryMock)
+    }
 
-		// When
-		_ = try await sut.execute(identifier: 42)
+    // MARK: - Execute with CachePolicy
 
-		// Then
-		#expect(repositoryMock.getCharacterCallCount == 1)
-		#expect(repositoryMock.lastRequestedIdentifier == 42)
-	}
+    @Test("Returns character from repository with specified cache policy")
+    func returnsCharacterWithCachePolicy() async throws {
+        // Given
+        let expected = Character.stub()
+        repositoryMock.result = .success(expected)
 
-	@Test("Propagates repository error")
-	func propagatesRepositoryError() async throws {
-		// Given
-		let repositoryMock = CharacterRepositoryMock()
-		repositoryMock.result = .failure(.loadFailed)
-		let sut = GetCharacterUseCase(repository: repositoryMock)
+        // When
+        let value = try await sut.execute(identifier: 1, cachePolicy: .remoteFirst)
 
-		// When / Then
-		await #expect(throws: CharacterError.loadFailed) {
-			_ = try await sut.execute(identifier: 1)
-		}
-	}
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test("Calls repository with correct identifier and cache policy")
+    func callsRepositoryWithCorrectIdAndCachePolicy() async throws {
+        // Given
+        repositoryMock.result = .success(.stub())
+
+        // When
+        _ = try await sut.execute(identifier: 42, cachePolicy: .remoteFirst)
+
+        // Then
+        #expect(repositoryMock.getCharacterCallCount == 1)
+        #expect(repositoryMock.lastRequestedIdentifier == 42)
+        #expect(repositoryMock.lastCharacterCachePolicy == .remoteFirst)
+    }
+
+    @Test("Propagates repository error")
+    func propagatesRepositoryError() async throws {
+        // Given
+        repositoryMock.result = .failure(.loadFailed)
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.execute(identifier: 1, cachePolicy: .localFirst)
+        }
+    }
+
+    // MARK: - Default Extension
+
+    @Test("Default execute uses localFirst cache policy")
+    func defaultExecuteUsesLocalFirstCachePolicy() async throws {
+        // Given
+        repositoryMock.result = .success(.stub())
+
+        // When
+        _ = try await sut.execute(identifier: 1)
+
+        // Then
+        #expect(repositoryMock.lastCharacterCachePolicy == .localFirst)
+    }
 }

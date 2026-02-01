@@ -1,7 +1,15 @@
 import Foundation
 
 protocol GetCharactersUseCaseContract: Sendable {
-	func execute(page: Int, query: String?) async throws(CharacterError) -> CharactersPage
+	func execute(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
+}
+
+// MARK: - Default Parameters
+
+extension GetCharactersUseCaseContract {
+	func execute(page: Int) async throws(CharacterError) -> CharactersPage {
+		try await execute(page: page, cachePolicy: .localFirst)
+	}
 }
 
 struct GetCharactersUseCase: GetCharactersUseCaseContract {
@@ -11,11 +19,7 @@ struct GetCharactersUseCase: GetCharactersUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(page: Int, query: String?) async throws(CharacterError) -> CharactersPage {
-		if let query, !query.isEmpty {
-			try await repository.searchCharacters(page: page, query: query)
-		} else {
-			try await repository.getCharacters(page: page)
-		}
+	func execute(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage {
+		try await repository.getCharacters(page: page, cachePolicy: cachePolicy)
 	}
 }

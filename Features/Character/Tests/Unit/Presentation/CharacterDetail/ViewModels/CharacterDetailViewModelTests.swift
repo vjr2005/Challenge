@@ -9,7 +9,6 @@ struct CharacterDetailViewModelTests {
 
     private let identifier = 1
     private let useCaseMock = GetCharacterUseCaseMock()
-    private let refreshMock = RefreshCharacterUseCaseMock()
     private let navigatorMock = CharacterDetailNavigatorMock()
     private let sut: CharacterDetailViewModel
 
@@ -19,7 +18,6 @@ struct CharacterDetailViewModelTests {
         sut = CharacterDetailViewModel(
             identifier: identifier,
             getCharacterUseCase: useCaseMock,
-            refreshCharacterUseCase: refreshMock,
             navigator: navigatorMock
         )
     }
@@ -70,6 +68,18 @@ struct CharacterDetailViewModelTests {
         #expect(useCaseMock.lastRequestedIdentifier == identifier)
     }
 
+    @Test("Load uses localFirst cache policy by default")
+    func loadUsesLocalFirstCachePolicy() async {
+        // Given
+        useCaseMock.result = .success(.stub())
+
+        // When
+        await sut.load()
+
+        // Then
+        #expect(useCaseMock.lastCachePolicy == .localFirst)
+    }
+
     @Test("Tap on back navigates back")
     func didTapOnBackCallsNavigatorGoBack() {
         // When
@@ -87,33 +97,45 @@ struct CharacterDetailViewModelTests {
         let initialCharacter = Character.stub(name: "Initial")
         let refreshedCharacter = Character.stub(name: "Refreshed")
         useCaseMock.result = .success(initialCharacter)
-        refreshMock.result = .success(refreshedCharacter)
         await sut.load()
+        useCaseMock.result = .success(refreshedCharacter)
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(refreshMock.executeCallCount == 1)
+        #expect(useCaseMock.executeCallCount == 2)
         #expect(sut.state == .loaded(refreshedCharacter))
     }
 
     @Test("Refresh calls use case with correct character identifier")
     func refreshCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        refreshMock.result = .success(.stub())
+        useCaseMock.result = .success(.stub())
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(refreshMock.lastRequestedIdentifier == identifier)
+        #expect(useCaseMock.lastRequestedIdentifier == identifier)
+    }
+
+    @Test("Refresh uses remoteFirst cache policy")
+    func refreshUsesRemoteFirstCachePolicy() async {
+        // Given
+        useCaseMock.result = .success(.stub())
+
+        // When
+        await sut.refresh()
+
+        // Then
+        #expect(useCaseMock.lastCachePolicy == .remoteFirst)
     }
 
     @Test("Refresh sets error state on failure")
     func refreshSetsErrorStateOnFailure() async {
         // Given
-        refreshMock.result = .failure(.loadFailed)
+        useCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.refresh()

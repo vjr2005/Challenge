@@ -16,97 +16,57 @@ struct GetCharactersUseCaseTests {
         sut = GetCharactersUseCase(repository: repositoryMock)
     }
 
-    // MARK: - Without Query (uses getCharacters)
+    // MARK: - Execute with CachePolicy
 
-    @Test("Execute without query returns characters page")
-    func executeWithoutQueryReturnsCharactersPage() async throws {
+    @Test("Execute returns characters page from repository")
+    func executeReturnsCharactersPage() async throws {
         // Given
         let expected = CharactersPage.stub()
         repositoryMock.charactersResult = .success(expected)
 
         // When
-        let value = try await sut.execute(page: 1, query: nil)
+        let value = try await sut.execute(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
     }
 
-    @Test("Execute without query calls getCharacters method")
-    func executeWithoutQueryCallsGetCharacters() async throws {
+    @Test("Execute calls repository with correct page and cache policy")
+    func executeCallsRepositoryWithCorrectPageAndCachePolicy() async throws {
         // Given
         repositoryMock.charactersResult = .success(.stub())
 
         // When
-        _ = try await sut.execute(page: 5, query: nil)
+        _ = try await sut.execute(page: 5, cachePolicy: .remoteFirst)
 
         // Then
         #expect(repositoryMock.getCharactersCallCount == 1)
         #expect(repositoryMock.lastRequestedPage == 5)
-        #expect(repositoryMock.searchCharactersCallCount == 0)
+        #expect(repositoryMock.lastCharactersCachePolicy == .remoteFirst)
     }
 
-    @Test("Execute with empty query calls getCharacters method")
-    func executeWithEmptyQueryCallsGetCharacters() async throws {
-        // Given
-        repositoryMock.charactersResult = .success(.stub())
-
-        // When
-        _ = try await sut.execute(page: 1, query: "")
-
-        // Then
-        #expect(repositoryMock.getCharactersCallCount == 1)
-        #expect(repositoryMock.searchCharactersCallCount == 0)
-    }
-
-    @Test("Execute without query propagates error")
-    func executeWithoutQueryPropagatesError() async throws {
+    @Test("Execute propagates repository error")
+    func executePropagatesError() async throws {
         // Given
         repositoryMock.charactersResult = .failure(.loadFailed)
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.execute(page: 1, query: nil)
+            _ = try await sut.execute(page: 1, cachePolicy: .localFirst)
         }
     }
 
-    // MARK: - With Query (uses searchCharacters)
+    // MARK: - Default Extension
 
-    @Test("Execute with query returns characters page")
-    func executeWithQueryReturnsCharactersPage() async throws {
+    @Test("Default execute uses localFirst cache policy")
+    func defaultExecuteUsesLocalFirstCachePolicy() async throws {
         // Given
-        let expected = CharactersPage.stub()
-        repositoryMock.searchResult = .success(expected)
+        repositoryMock.charactersResult = .success(.stub())
 
         // When
-        let value = try await sut.execute(page: 1, query: "Rick")
+        _ = try await sut.execute(page: 1)
 
         // Then
-        #expect(value == expected)
-    }
-
-    @Test("Execute with query calls searchCharacters method")
-    func executeWithQueryCallsSearchCharacters() async throws {
-        // Given
-        repositoryMock.searchResult = .success(.stub())
-
-        // When
-        _ = try await sut.execute(page: 3, query: "Morty")
-
-        // Then
-        #expect(repositoryMock.searchCharactersCallCount == 1)
-        #expect(repositoryMock.lastSearchedPage == 3)
-        #expect(repositoryMock.lastSearchedQuery == "Morty")
-        #expect(repositoryMock.getCharactersCallCount == 0)
-    }
-
-    @Test("Execute with query propagates error")
-    func executeWithQueryPropagatesError() async throws {
-        // Given
-        repositoryMock.searchResult = .failure(.loadFailed)
-
-        // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.execute(page: 1, query: "Rick")
-        }
+        #expect(repositoryMock.lastCharactersCachePolicy == .localFirst)
     }
 }

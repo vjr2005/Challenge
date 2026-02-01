@@ -41,26 +41,21 @@ Each UseCase encapsulates **one business operation** with **exactly one public m
 
 > **CRITICAL:** A UseCase must have only the `execute` method. If you need multiple operations, create separate UseCases. For example:
 > - Instead of adding `search` method to `GetCharactersUseCase`, create a separate `SearchCharactersUseCase`
-> - Instead of adding `clearCache` method to `GetCharactersUseCase`, create a separate `ClearCharactersCacheUseCase`
-> - Instead of adding `refresh` method to `GetCharacterUseCase`, create a separate `RefreshCharacterUseCase`
 >
-> **Never add auxiliary methods** like `clearCache()`, `refresh()`, or `validate()` to existing UseCases. Each operation deserves its own UseCase.
+> **Never add auxiliary methods** like `validate()` to existing UseCases. Each operation deserves its own UseCase.
 >
-> **Naming must match the related UseCase:**
-> - `GetCharactersUseCase` (plural) → `ClearCharactersCacheUseCase` (plural)
-> - `GetCharacterUseCase` (singular) → `RefreshCharacterUseCase` (singular)
+> **For cache control:** Use `CachePolicy` parameter instead of separate UseCases. See "UseCase with CachePolicy" section below.
 
 Naming convention:
 
 | Operation | UseCase Name | Method |
 |-----------|--------------|--------|
-| Get single item | `Get{Name}UseCase` | `execute(id:)` |
-| Get list | `GetAll{Name}sUseCase` | `execute()` |
+| Get single item | `Get{Name}UseCase` | `execute(id:, cachePolicy:)` |
+| Get list | `Get{Name}sUseCase` | `execute(page:, cachePolicy:)` |
+| Search | `Search{Name}sUseCase` | `execute(page:, query:)` |
 | Create | `Create{Name}UseCase` | `execute({name}:)` |
 | Update | `Update{Name}UseCase` | `execute({name}:)` |
 | Delete | `Delete{Name}UseCase` | `execute(id:)` |
-| Clear list cache | `Clear{Name}sCacheUseCase` | `execute()` |
-| Refresh single item | `Refresh{Name}UseCase` | `execute(id:)` |
 | Custom action | `{Action}{Name}UseCase` | `execute(...)` |
 
 ### 1. Contract (Protocol)
@@ -109,19 +104,17 @@ import Foundation
 @testable import {AppName}{Feature}
 
 final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable {
-    var result: Result<{Name}, Error> = .failure(NotConfiguredError.notConfigured)
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
     private(set) var executeCallCount = 0
     private(set) var lastRequestedId: Int?
+    private(set) var lastCachePolicy: CachePolicy?
 
-    func execute(id: Int) async throws -> {Name} {
+    func execute(id: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
         executeCallCount += 1
         lastRequestedId = id
+        lastCachePolicy = cachePolicy
         return try result.get()
     }
-}
-
-private enum NotConfiguredError: Error {
-    case notConfigured
 }
 ```
 
@@ -139,14 +132,21 @@ private enum NotConfiguredError: Error {
 
 > **Note:** The following examples use `Character` as a concrete example. Replace with your domain model name.
 
-### Simple UseCase (Pass-through)
+### Simple UseCase (Pass-through with CachePolicy)
 
-For simple operations that just delegate to repository:
+For simple operations that just delegate to repository with cache control:
 
 ```swift
 // Example: GetCharacterUseCase
 protocol GetCharacterUseCaseContract: Sendable {
-    func execute(id: Int) async throws -> Character
+    func execute(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+}
+
+// Default extension for common case
+extension GetCharacterUseCaseContract {
+    func execute(identifier: Int) async throws(CharacterError) -> Character {
+        try await execute(identifier: identifier, cachePolicy: .localFirst)
+    }
 }
 
 struct GetCharacterUseCase: GetCharacterUseCaseContract {
@@ -156,8 +156,8 @@ struct GetCharacterUseCase: GetCharacterUseCaseContract {
         self.repository = repository
     }
 
-    func execute(id: Int) async throws -> Character {
-        try await repository.getCharacter(id: id)
+    func execute(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        try await repository.getCharacter(identifier: identifier, cachePolicy: cachePolicy)
     }
 }
 ```
@@ -226,6 +226,76 @@ struct GetCharacterWithEpisodesUseCase: GetCharacterWithEpisodesUseCaseContract 
 }
 ```
 
+### UseCase with CachePolicy
+
+For operations that support configurable cache behavior, use `CachePolicy` parameter with a default extension:
+
+```swift
+// Example: GetCharacterUseCase with CachePolicy
+protocol GetCharacterUseCaseContract: Sendable {
+    func execute(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+}
+
+// Default extension for backward compatibility
+extension GetCharacterUseCaseContract {
+    func execute(identifier: Int) async throws(CharacterError) -> Character {
+        try await execute(identifier: identifier, cachePolicy: .localFirst)
+    }
+}
+
+struct GetCharacterUseCase: GetCharacterUseCaseContract {
+    private let repository: CharacterRepositoryContract
+
+    init(repository: CharacterRepositoryContract) {
+        self.repository = repository
+    }
+
+    func execute(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        try await repository.getCharacter(identifier: identifier, cachePolicy: cachePolicy)
+    }
+}
+```
+
+**Usage in ViewModels:**
+
+```swift
+// Load with default (localFirst)
+let character = try await getCharacterUseCase.execute(identifier: id)
+
+// Refresh with remoteFirst
+let character = try await getCharacterUseCase.execute(identifier: id, cachePolicy: .remoteFirst)
+```
+
+> **Note:** The default extension is at the **UseCase level**, not at the Repository level. This provides:
+> - Clean API for callers (no need to specify cachePolicy for common case)
+> - Explicit control when needed (refresh operations)
+> - Repository contract remains explicit about its parameters
+
+### UseCase for Search (No Cache)
+
+Search operations typically bypass cache and always go to remote:
+
+```swift
+// Example: SearchCharactersUseCase (always remote, no cachePolicy parameter)
+protocol SearchCharactersUseCaseContract: Sendable {
+    func execute(page: Int, query: String) async throws(CharacterError) -> CharactersPage
+}
+
+struct SearchCharactersUseCase: SearchCharactersUseCaseContract {
+    private let repository: CharacterRepositoryContract
+
+    init(repository: CharacterRepositoryContract) {
+        self.repository = repository
+    }
+
+    func execute(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+        try await repository.searchCharacters(page: page, query: query)
+    }
+}
+```
+
+> **Note:** `SearchCharactersUseCase` does NOT have a `cachePolicy` parameter because search results are always fetched from remote.
+
 ### UseCase with Validation
 
 For operations that validate input:
@@ -269,7 +339,7 @@ struct CreateCharacterUseCase: CreateCharacterUseCaseContract {
 
 > **Note:** The following test examples use `Character` as a concrete example. Replace with your domain model name.
 
-### Simple UseCase Test
+### Simple UseCase Test (with CachePolicy)
 
 ```swift
 import Foundation
@@ -278,7 +348,7 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct Get{Name}UseCaseTests {
-    @Test
+    @Test("Returns model from repository")
     func returnsModelFromRepository() async throws {
         // Given
         let expected = {Name}.stub()
@@ -287,43 +357,54 @@ struct Get{Name}UseCaseTests {
         let sut = Get{Name}UseCase(repository: repositoryMock)
 
         // When
-        let value = try await sut.execute(id: 1)
+        let value = try await sut.execute(id: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
     }
 
-    @Test
-    func callsRepositoryWithCorrectId() async throws {
+    @Test("Calls repository with correct id and cachePolicy")
+    func callsRepositoryWithCorrectIdAndCachePolicy() async throws {
         // Given
         let repositoryMock = {Name}RepositoryMock()
         repositoryMock.result = .success(.stub())
         let sut = Get{Name}UseCase(repository: repositoryMock)
 
         // When
-        _ = try await sut.execute(id: 42)
+        _ = try await sut.execute(id: 42, cachePolicy: .remoteFirst)
 
         // Then
         #expect(repositoryMock.getCallCount == 1)
         #expect(repositoryMock.lastRequestedId == 42)
+        #expect(repositoryMock.lastCachePolicy == .remoteFirst)
     }
 
-    @Test
+    @Test("Propagates repository error")
     func propagatesRepositoryError() async throws {
         // Given
         let repositoryMock = {Name}RepositoryMock()
-        repositoryMock.result = .failure(TestError.network)
+        repositoryMock.result = .failure(.loadFailed)
         let sut = Get{Name}UseCase(repository: repositoryMock)
 
         // When / Then
-        await #expect(throws: TestError.network) {
-            _ = try await sut.execute(id: 1)
+        await #expect(throws: {Feature}Error.loadFailed) {
+            _ = try await sut.execute(id: 1, cachePolicy: .localFirst)
         }
     }
-}
 
-private enum TestError: Error {
-    case network
+    @Test("Default cachePolicy uses localFirst")
+    func defaultCachePolicyUsesLocalFirst() async throws {
+        // Given
+        let repositoryMock = {Name}RepositoryMock()
+        repositoryMock.result = .success(.stub())
+        let sut = Get{Name}UseCase(repository: repositoryMock)
+
+        // When
+        _ = try await sut.execute(id: 1) // Uses default extension
+
+        // Then
+        #expect(repositoryMock.lastCachePolicy == .localFirst)
+    }
 }
 ```
 
@@ -336,7 +417,7 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct GetFilteredCharactersUseCaseTests {
-    @Test
+    @Test("Returns all characters when no filter is applied")
     func returnsAllCharactersWhenNoFilter() async throws {
         // Given
         let characters = [
@@ -354,7 +435,7 @@ struct GetFilteredCharactersUseCaseTests {
         #expect(value.count == 2)
     }
 
-    @Test
+    @Test("Filters characters by status")
     func filtersCharactersByStatus() async throws {
         // Given
         let characters = [
@@ -374,7 +455,7 @@ struct GetFilteredCharactersUseCaseTests {
         #expect(value.allSatisfy { $0.status == .alive })
     }
 
-    @Test
+    @Test("Returns empty array when no characters match filter")
     func returnsEmptyArrayWhenNoMatches() async throws {
         // Given
         let characters = [Character.stub(status: .alive)]
@@ -400,7 +481,7 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct CreateCharacterUseCaseTests {
-    @Test
+    @Test("Throws error for empty name")
     func throwsErrorForEmptyName() async throws {
         // Given
         let repositoryMock = CharacterRepositoryMock()
@@ -412,7 +493,7 @@ struct CreateCharacterUseCaseTests {
         }
     }
 
-    @Test
+    @Test("Throws error for invalid status")
     func throwsErrorForInvalidStatus() async throws {
         // Given
         let repositoryMock = CharacterRepositoryMock()
@@ -424,7 +505,7 @@ struct CreateCharacterUseCaseTests {
         }
     }
 
-    @Test
+    @Test("Creates character with valid input")
     func createsCharacterWithValidInput() async throws {
         // Given
         let expected = Character.stub()
@@ -440,7 +521,7 @@ struct CreateCharacterUseCaseTests {
         #expect(repositoryMock.createCallCount == 1)
     }
 
-    @Test
+    @Test("Does not call repository on validation error")
     func doesNotCallRepositoryOnValidationError() async throws {
         // Given
         let repositoryMock = CharacterRepositoryMock()
@@ -469,9 +550,19 @@ struct CreateCharacterUseCaseTests {
 
 ## Checklist
 
-### Simple UseCase
+### Simple UseCase with CachePolicy
 
-- [ ] Create Contract with `execute` method and Sendable conformance
+- [ ] Create Contract with `execute` method, `cachePolicy` parameter, and Sendable conformance
+- [ ] Create default extension for `execute` without cachePolicy (defaults to `.localFirst`)
+- [ ] Create Implementation injecting Repository via protocol
+- [ ] Create Mock in Tests/Mocks/ with call tracking (including cachePolicy)
+- [ ] Create tests verifying delegation and error propagation
+- [ ] Create test verifying default cachePolicy uses `.localFirst`
+- [ ] Run tests
+
+### Search UseCase (No CachePolicy)
+
+- [ ] Create Contract with `execute` method (page, query parameters)
 - [ ] Create Implementation injecting Repository via protocol
 - [ ] Create Mock in Tests/Mocks/ with call tracking
 - [ ] Create tests verifying delegation and error propagation

@@ -188,7 +188,7 @@ struct {Name}RepositoryTests {
 
 ---
 
-## Scenario 3: Local-First (Both DataSources)
+## Scenario 3: Both DataSources with CachePolicy
 
 ### Implementation
 
@@ -205,37 +205,60 @@ struct {Name}Repository: {Name}RepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func get{Name}(id: Int) async throws -> {Name} {
-        // 1. Check local cache first
-        if let cachedDTO = await memoryDataSource.get{Name}(id: id) {
-            return cachedDTO.toDomain()
+    func get{Name}(id: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+        switch cachePolicy {
+        case .localFirst:
+            try await getLocalFirst(id: id)
+        case .remoteFirst:
+            try await getRemoteFirst(id: id)
+        case .none:
+            try await getNoCache(id: id)
         }
+    }
+}
 
-        // 2. Fetch from remote
-        let dto = try await remoteDataSource.fetch{Name}(id: id)
+// MARK: - Remote Fetch Helper
 
-        // 3. Save to cache
+private extension {Name}Repository {
+    func fetchFromRemote(id: Int) async throws({Feature}Error) -> {Name}DTO {
+        do {
+            return try await remoteDataSource.fetch{Name}(id: id)
+        } catch let error as HTTPError {
+            throw mapHTTPError(error, id: id)
+        } catch {
+            throw .loadFailed
+        }
+    }
+}
+
+// MARK: - Cache Strategies
+
+private extension {Name}Repository {
+    func getLocalFirst(id: Int) async throws({Feature}Error) -> {Name} {
+        if let cached = await memoryDataSource.get{Name}(id: id) {
+            return cached.toDomain()
+        }
+        let dto = try await fetchFromRemote(id: id)
         await memoryDataSource.save{Name}(dto)
-
-        // 4. Return domain model
         return dto.toDomain()
     }
 
-    func getAll{Name}s() async throws -> [{Name}] {
-        // 1. Check local cache first
-        let cachedDTOs = await memoryDataSource.getAll{Name}s()
-        if !cachedDTOs.isEmpty {
-            return cachedDTOs.map { $0.toDomain() }
+    func getRemoteFirst(id: Int) async throws({Feature}Error) -> {Name} {
+        do {
+            let dto = try await fetchFromRemote(id: id)
+            await memoryDataSource.save{Name}(dto)
+            return dto.toDomain()
+        } catch {
+            if let cached = await memoryDataSource.get{Name}(id: id) {
+                return cached.toDomain()
+            }
+            throw error
         }
+    }
 
-        // 2. Fetch from remote
-        let dtos = try await remoteDataSource.fetchAll{Name}s()
-
-        // 3. Save to cache
-        await memoryDataSource.save{Name}s(dtos)
-
-        // 4. Return domain models
-        return dtos.map { $0.toDomain() }
+    func getNoCache(id: Int) async throws({Feature}Error) -> {Name} {
+        let dto = try await fetchFromRemote(id: id)
+        return dto.toDomain()
     }
 }
 ```
@@ -249,10 +272,10 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}RepositoryTests {
-    // MARK: - Cache Hit Tests
+    // MARK: - LocalFirst Tests
 
-    @Test
-    func returnsCachedDataWhenAvailable() async throws {
+    @Test("LocalFirst returns cached data when available")
+    func localFirstReturnsCachedData() async throws {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
@@ -264,35 +287,15 @@ struct {Name}RepositoryTests {
         )
 
         // When
-        let value = try await sut.get{Name}(id: expected.id)
+        let value = try await sut.get{Name}(id: expected.id, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
         #expect(remoteDataSourceMock.fetchCallCount == 0)
     }
 
-    @Test
-    func doesNotCallRemoteWhenCacheHit() async throws {
-        // Given
-        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
-        memoryDataSourceMock.itemToReturn = .stub()
-        let sut = {Name}Repository(
-            remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
-        )
-
-        // When
-        _ = try await sut.get{Name}(id: 1)
-
-        // Then
-        #expect(remoteDataSourceMock.fetchCallCount == 0)
-    }
-
-    // MARK: - Cache Miss Tests
-
-    @Test
-    func fetchesFromRemoteWhenCacheMiss() async throws {
+    @Test("LocalFirst fetches from remote on cache miss")
+    func localFirstFetchesFromRemoteOnCacheMiss() async throws {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
@@ -304,78 +307,98 @@ struct {Name}RepositoryTests {
         )
 
         // When
-        let value = try await sut.get{Name}(id: 1)
+        let value = try await sut.get{Name}(id: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
         #expect(remoteDataSourceMock.fetchCallCount == 1)
+        #expect(memoryDataSourceMock.saveCallCount == 1)
     }
 
-    @Test
-    func savesToCacheAfterRemoteFetch() async throws {
+    // MARK: - RemoteFirst Tests
+
+    @Test("RemoteFirst fetches from remote and saves to cache")
+    func remoteFirstFetchesFromRemote() async throws {
         // Given
+        let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .success(.stub())
         let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        memoryDataSourceMock.itemToReturn = .stub() // Cache has data
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
         )
 
         // When
-        _ = try await sut.get{Name}(id: 1)
+        let value = try await sut.get{Name}(id: 1, cachePolicy: .remoteFirst)
 
         // Then
+        #expect(value == expected)
+        #expect(remoteDataSourceMock.fetchCallCount == 1) // Always calls remote
         #expect(memoryDataSourceMock.saveCallCount == 1)
-        #expect(memoryDataSourceMock.saveLastValue == .stub())
     }
 
-    // MARK: - Error Tests
-
-    @Test
-    func propagatesRemoteErrorOnCacheMiss() async throws {
+    @Test("RemoteFirst falls back to cache on error")
+    func remoteFirstFallsBackToCache() async throws {
         // Given
+        let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .failure(TestError.network)
+        remoteDataSourceMock.result = .failure(.loadFailed)
         let memoryDataSourceMock = {Name}MemoryDataSourceMock()
-        let sut = {Name}Repository(
-            remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
-        )
-
-        // When / Then
-        await #expect(throws: TestError.network) {
-            _ = try await sut.get{Name}(id: 1)
-        }
-    }
-
-    @Test
-    func doesNotSaveToCacheOnRemoteError() async throws {
-        // Given
-        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .failure(TestError.network)
-        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        memoryDataSourceMock.itemToReturn = .stub()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
         )
 
         // When
-        _ = try? await sut.get{Name}(id: 1)
+        let value = try await sut.get{Name}(id: 1, cachePolicy: .remoteFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCallCount == 0)
+        #expect(value == expected)
     }
-}
 
-private enum TestError: Error {
-    case network
+    // MARK: - NoCache Tests
+
+    @Test("NoCache always fetches from remote")
+    func noCacheAlwaysFetchesFromRemote() async throws {
+        // Given
+        let expected = {Name}.stub()
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+        memoryDataSourceMock.itemToReturn = .stub() // Cache has data
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        let value = try await sut.get{Name}(id: 1, cachePolicy: .none)
+
+        // Then
+        #expect(value == expected)
+        #expect(remoteDataSourceMock.fetchCallCount == 1)
+        #expect(memoryDataSourceMock.saveCallCount == 0) // Does not save
+    }
 }
 ```
 
 ---
 
-## Complete Example: Character (Local-First with Typed Throws)
+## Complete Example: Character (CachePolicy with Typed Throws)
+
+### CachePolicy
+
+```swift
+// Sources/Domain/Models/CachePolicy.swift
+enum CachePolicy: Sendable {
+    case localFirst   // Cache first, remote if not found. Default behavior.
+    case remoteFirst  // Remote first, cache as fallback on error.
+    case none         // Only remote, no cache interaction.
+}
+```
 
 ### Domain Error
 
@@ -413,36 +436,6 @@ struct Character: Equatable {
     let species: String
     let gender: CharacterGender
 }
-
-enum CharacterStatus: Sendable {
-    case alive
-    case dead
-    case unknown
-
-    init(from string: String) {
-        switch string.lowercased() {
-        case "alive": self = .alive
-        case "dead": self = .dead
-        default: self = .unknown
-        }
-    }
-}
-
-enum CharacterGender: Sendable {
-    case male
-    case female
-    case genderless
-    case unknown
-
-    init(from string: String) {
-        switch string.lowercased() {
-        case "male": self = .male
-        case "female": self = .female
-        case "genderless": self = .genderless
-        default: self = .unknown
-        }
-    }
-}
 ```
 
 ### Contract
@@ -450,7 +443,9 @@ enum CharacterGender: Sendable {
 ```swift
 // Sources/Domain/Repositories/CharacterRepositoryContract.swift
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacter(identifier: Int) async throws(CharacterError) -> Character
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
+    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage
 }
 ```
 
@@ -472,20 +467,75 @@ struct CharacterRepository: CharacterRepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func getCharacter(identifier: Int) async throws(CharacterError) -> Character {
-        if let cachedDTO = await memoryDataSource.getCharacter(identifier: identifier) {
-            return cachedDTO.toDomain()
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        switch cachePolicy {
+        case .localFirst:
+            try await getCharacterLocalFirst(identifier: identifier)
+        case .remoteFirst:
+            try await getCharacterRemoteFirst(identifier: identifier)
+        case .none:
+            try await getCharacterNoCache(identifier: identifier)
         }
+    }
 
+    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+        let response = try await fetchCharactersFromRemote(page: page, query: query)
+        return response.toDomain(currentPage: page)
+    }
+}
+
+// MARK: - Remote Fetch Helpers
+
+private extension CharacterRepository {
+    func fetchCharacterFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
         do {
-            let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
-            await memoryDataSource.saveCharacter(dto)
-            return dto.toDomain()
+            return try await remoteDataSource.fetchCharacter(identifier: identifier)
         } catch let error as HTTPError {
             throw mapHTTPError(error, identifier: identifier)
         } catch {
             throw .loadFailed
         }
+    }
+
+    func fetchCharactersFromRemote(page: Int, query: String? = nil) async throws(CharacterError) -> CharactersResponseDTO {
+        do {
+            return try await remoteDataSource.fetchCharacters(page: page, query: query)
+        } catch let error as HTTPError {
+            throw mapHTTPError(error, page: page)
+        } catch {
+            throw .loadFailed
+        }
+    }
+}
+
+// MARK: - Character Cache Strategies
+
+private extension CharacterRepository {
+    func getCharacterLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
+        if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
+            return cached.toDomain()
+        }
+        let dto = try await fetchCharacterFromRemote(identifier: identifier)
+        await memoryDataSource.saveCharacter(dto)
+        return dto.toDomain()
+    }
+
+    func getCharacterRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
+        do {
+            let dto = try await fetchCharacterFromRemote(identifier: identifier)
+            await memoryDataSource.saveCharacter(dto)
+            return dto.toDomain()
+        } catch {
+            if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
+                return cached.toDomain()
+            }
+            throw error
+        }
+    }
+
+    func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
+        let dto = try await fetchCharacterFromRemote(identifier: identifier)
+        return dto.toDomain()
     }
 }
 
@@ -495,9 +545,18 @@ private extension CharacterRepository {
     func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
         switch error {
         case .statusCode(404, _):
-            return .characterNotFound(id: identifier)
+            .characterNotFound(id: identifier)
         case .invalidURL, .invalidResponse, .statusCode:
-            return .loadFailed
+            .loadFailed
+        }
+    }
+
+    func mapHTTPError(_ error: HTTPError, page: Int) -> CharacterError {
+        switch error {
+        case .statusCode(404, _):
+            .invalidPage(page: page)
+        case .invalidURL, .invalidResponse, .statusCode:
+            .loadFailed
         }
     }
 }
@@ -526,64 +585,178 @@ import Foundation
 @testable import {AppName}Character
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
-    var result: Result<Character, CharacterError> = .failure(.loadFailed)
-    private(set) var getCallCount = 0
-    private(set) var lastRequestedIdentifier: Int?
+    var getCharacterResult: Result<Character, CharacterError> = .failure(.loadFailed)
+    var getCharactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
+    var searchCharactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
 
-    func getCharacter(identifier: Int) async throws(CharacterError) -> Character {
-        getCallCount += 1
-        lastRequestedIdentifier = identifier
-        return try result.get()
+    private(set) var getCharacterCallCount = 0
+    private(set) var lastGetCharacterIdentifier: Int?
+    private(set) var lastGetCharacterCachePolicy: CachePolicy?
+
+    private(set) var getCharactersCallCount = 0
+    private(set) var lastGetCharactersPage: Int?
+    private(set) var lastGetCharactersCachePolicy: CachePolicy?
+
+    private(set) var searchCharactersCallCount = 0
+    private(set) var lastSearchCharactersPage: Int?
+    private(set) var lastSearchCharactersQuery: String?
+
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        getCharacterCallCount += 1
+        lastGetCharacterIdentifier = identifier
+        lastGetCharacterCachePolicy = cachePolicy
+        return try getCharacterResult.get()
+    }
+
+    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage {
+        getCharactersCallCount += 1
+        lastGetCharactersPage = page
+        lastGetCharactersCachePolicy = cachePolicy
+        return try getCharactersResult.get()
+    }
+
+    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+        searchCharactersCallCount += 1
+        lastSearchCharactersPage = page
+        lastSearchCharactersQuery = query
+        return try searchCharactersResult.get()
     }
 }
 ```
 
-### Error Tests
+### Tests
 
 ```swift
-// Tests/Domain/Errors/CharacterErrorTests.swift
+// Tests/Data/CharacterRepositoryTests.swift
+import ChallengeNetworking
 import Foundation
 import Testing
 
 @testable import {AppName}Character
 
-struct CharacterErrorTests {
-    @Test(arguments: [
-        (CharacterError.loadFailed, CharacterError.loadFailed, true),
-        (CharacterError.characterNotFound(id: 1), CharacterError.characterNotFound(id: 1), true),
-        (CharacterError.characterNotFound(id: 1), CharacterError.characterNotFound(id: 2), false),
-        (CharacterError.loadFailed, CharacterError.characterNotFound(id: 1), false)
-    ])
-    func equality(lhs: CharacterError, rhs: CharacterError, expectedEqual: Bool) {
+struct CharacterRepositoryTests {
+    // MARK: - LocalFirst Tests
+
+    @Test("LocalFirst returns cached character when available")
+    func localFirstReturnsCachedCharacter() async throws {
+        // Given
+        let expected = Character.stub()
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        memoryDataSourceMock.characterToReturn = .stub()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
         // When
-        let areEqual = lhs == rhs
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(areEqual == expectedEqual)
+        #expect(value == expected)
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 0)
     }
 
-    @Test
-    func loadFailedErrorDescription() {
+    @Test("LocalFirst fetches from remote on cache miss and saves")
+    func localFirstFetchesFromRemoteOnCacheMiss() async throws {
         // Given
-        let sut = CharacterError.loadFailed
+        let expected = Character.stub()
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.fetchCharacterResult = .success(.stub())
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
 
         // When
-        let description = sut.errorDescription
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(description != nil)
+        #expect(value == expected)
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
+        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
     }
 
-    @Test
-    func characterNotFoundErrorDescription() {
+    // MARK: - RemoteFirst Tests
+
+    @Test("RemoteFirst fetches from remote even when cached")
+    func remoteFirstFetchesFromRemote() async throws {
         // Given
-        let sut = CharacterError.characterNotFound(id: 42)
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.fetchCharacterResult = .success(.stub())
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        memoryDataSourceMock.characterToReturn = .stub()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
 
         // When
-        let description = sut.errorDescription
+        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
-        #expect(description != nil)
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
+    }
+
+    @Test("RemoteFirst falls back to cache on error")
+    func remoteFirstFallsBackToCache() async throws {
+        // Given
+        let expected = Character.stub()
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.fetchCharacterResult = .failure(.invalidResponse)
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        memoryDataSourceMock.characterToReturn = .stub()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    // MARK: - NoCache Tests
+
+    @Test("NoCache fetches from remote without saving")
+    func noCacheFetchesFromRemoteWithoutSaving() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.fetchCharacterResult = .success(.stub())
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When
+        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .none)
+
+        // Then
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
+        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
+    }
+
+    // MARK: - Error Mapping Tests
+
+    @Test("Maps 404 error to characterNotFound")
+    func maps404ToCharacterNotFound() async throws {
+        // Given
+        let remoteDataSourceMock = CharacterRemoteDataSourceMock()
+        remoteDataSourceMock.fetchCharacterResult = .failure(.statusCode(404, nil))
+        let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+        let sut = CharacterRepository(
+            remoteDataSource: remoteDataSourceMock,
+            memoryDataSource: memoryDataSourceMock
+        )
+
+        // When / Then
+        await #expect(throws: CharacterError.characterNotFound(id: 42)) {
+            _ = try await sut.getCharacter(identifier: 42, cachePolicy: .none)
+        }
     }
 }
 ```
