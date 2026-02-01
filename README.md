@@ -43,7 +43,34 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
 
 ## Project Structure
 
-See [Project Structure Documentation](docs/ProjectStructure.md) for directory layout, modules, and dependency graph.
+See [Project Structure Documentation](docs/ProjectStructure.md) for directory layout and dependency graph.
+
+### Libraries (Horizontal)
+
+Shared infrastructure modules, agnostic to business logic:
+
+| Module | Description |
+|--------|-------------|
+| **ChallengeCore** | Navigation, routing, deep linking, image loading |
+| **ChallengeNetworking** | HTTP client abstraction over URLSession |
+| **ChallengeDesignSystem** | Atomic Design UI components and design tokens |
+| **ChallengeResources** | Localization and shared assets |
+
+### Features (Vertical)
+
+Self-contained modules with Presentation, Domain, and Data layers:
+
+| Module | Description |
+|--------|-------------|
+| **ChallengeCharacter** | Character list and detail screens (Rick & Morty API) |
+| **ChallengeHome** | Home screen with animated logo |
+| **ChallengeSystem** | System settings and configuration |
+
+### Composition
+
+| Module | Description |
+|--------|-------------|
+| **ChallengeAppKit** | Dependency injection, root navigation, feature wiring |
 
 ## Testing
 
@@ -92,6 +119,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 
 - [Architecture](docs/Architecture.md)
 - [Project Structure](docs/ProjectStructure.md)
+- [Dependency Injection](docs/DependencyInjection.md)
 - [Tuist Configuration](docs/Tuist.md)
 - [Testing](docs/Testing.md)
 - [Deep Linking](docs/DeepLinking.md)
@@ -101,13 +129,20 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 
 ### Modules
 
+**App & Composition**
 - [App](App/README.md)
+- [AppKit](AppKit/README.md)
+
+**Libraries**
 - [ChallengeCore](Libraries/Core/README.md)
 - [ChallengeNetworking](Libraries/Networking/README.md)
 - [ChallengeDesignSystem](Libraries/DesignSystem/README.md)
 - [ChallengeResources](Shared/Resources/README.md)
+
+**Features**
 - [ChallengeCharacter](Features/Character/README.md)
 - [ChallengeHome](Features/Home/README.md)
+- [ChallengeSystem](Features/System/README.md)
 
 ## Credits
 

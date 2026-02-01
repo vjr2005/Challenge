@@ -70,3 +70,287 @@ The codebase adheres to SOLID principles to ensure maintainable, extensible, and
 - **Testability**: Mock any layer by implementing its protocol
 - **Flexibility**: Swap implementations (e.g., remote vs. memory data source) without changing dependent code
 - **Maintainability**: Changes in one layer don't ripple through the entire codebase
+
+## Repository Pattern
+
+The Repository pattern acts as a **boundary between Domain and Data layers**, providing a clean API for data access while hiding implementation details like caching, networking, and data mapping.
+
+### Separation of Responsibilities
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              DOMAIN LAYER                                   │
+│                                                                             │
+│   UseCase ──► CharacterRepositoryContract (Protocol)                        │
+│                        │                                                    │
+│                        │  • Works with Domain Models (Character)            │
+│                        │  • Doesn't know about DTOs, HTTP, or caching       │
+│                        │  • Throws domain-specific errors (CharacterError)  │
+└────────────────────────┼────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                               DATA LAYER                                    │
+│                                                                             │
+│   CharacterRepository (Implementation)                                      │
+│           │                                                                 │
+│           ├── RemoteDataSource ──► HTTP/API (DTOs)                          │
+│           ├── MemoryDataSource ──► In-memory cache (DTOs)                   │
+│           ├── DTO → Domain mapping                                          │
+│           └── Error mapping (HTTPError → CharacterError)                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Contract Definition (Domain Layer)
+
+The contract defines **what** operations are available, using only domain types:
+
+```swift
+// Domain layer - no knowledge of Data layer implementation
+protocol CharacterRepositoryContract: Sendable {
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
+    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage
+}
+```
+
+### Implementation (Data Layer)
+
+The repository implementation handles **how** data is fetched, cached, and transformed:
+
+```swift
+struct CharacterRepository: CharacterRepositoryContract {
+    private let remoteDataSource: CharacterRemoteDataSourceContract
+    private let memoryDataSource: CharacterMemoryDataSourceContract
+
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        switch cachePolicy {
+        case .localFirst:
+            // 1. Check cache first
+            if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
+                return cached.toDomain()  // DTO → Domain
+            }
+            // 2. Fetch from remote
+            let dto = try await fetchFromRemote(identifier: identifier)
+            // 3. Save to cache
+            await memoryDataSource.saveCharacter(dto)
+            return dto.toDomain()
+
+        case .remoteFirst:
+            // 1. Try remote first
+            // 2. Fallback to cache on error
+
+        case .none:
+            // No caching, always fetch from remote
+        }
+    }
+}
+```
+
+### Caching Strategies
+
+The repository supports multiple caching policies through the `CachePolicy` enum:
+
+| Policy | Behavior | Use Case |
+|--------|----------|----------|
+| `.localFirst` | Cache first, remote if not found | Default, best for static data |
+| `.remoteFirst` | Remote first, cache as fallback on error | Fresh data with offline support |
+| `.none` | Always fetch from remote, no caching | Real-time data, search queries |
+
+```swift
+enum CachePolicy: Sendable {
+    case localFirst   // Cache → Remote
+    case remoteFirst  // Remote → Cache (fallback)
+    case none         // Remote only
+}
+```
+
+### DTO to Domain Mapping
+
+The repository transforms Data Transfer Objects (DTOs) into Domain Models, keeping the Domain layer clean:
+
+```swift
+// Data layer - DTO from API
+struct CharacterDTO: Decodable {
+    let id: Int
+    let name: String
+    let status: String  // Raw string from API
+    let image: String   // URL as string
+}
+
+// Domain layer - Clean model
+struct Character: Sendable, Equatable {
+    let id: Int
+    let name: String
+    let status: CharacterStatus  // Type-safe enum
+    let imageURL: URL?           // Proper URL type
+}
+
+// Mapping in Repository
+private extension CharacterDTO {
+    func toDomain() -> Character {
+        Character(
+            id: id,
+            name: name,
+            status: CharacterStatus(from: status),
+            imageURL: URL(string: image)
+        )
+    }
+}
+```
+
+### Error Mapping
+
+The repository translates infrastructure errors into domain-specific errors:
+
+```swift
+private func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
+    switch error {
+    case .statusCode(404, _):
+        .characterNotFound(identifier: identifier)  // Domain error
+    case .invalidURL, .invalidResponse, .statusCode:
+        .loadFailed
+    }
+}
+```
+
+### Repository Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| **Separation of concerns** | Domain doesn't know about HTTP, caching, or DTOs |
+| **Testability** | Mock the repository contract to test UseCases in isolation |
+| **Flexibility** | Change caching strategy without affecting Domain layer |
+| **Single source of truth** | All data access goes through the repository |
+| **Error abstraction** | Domain works with meaningful errors, not HTTP codes |
+
+## Feature Communication (Outgoing/Incoming Navigation)
+
+Features must remain **independent** - they cannot import or reference each other. To enable cross-feature navigation without coupling, the project uses the **Outgoing/Incoming Navigation** pattern.
+
+### The Problem
+
+```
+❌ Direct coupling (FORBIDDEN)
+
+HomeFeature ──imports──► CharacterFeature
+     │
+     └── navigateToCharacters() {
+             navigator.navigate(to: CharacterIncomingNavigation.list)  // Requires import!
+         }
+```
+
+### The Solution
+
+```
+✅ Outgoing/Incoming pattern (DECOUPLED)
+
+┌──────────────────┐                        ┌──────────────────┐
+│   HomeFeature    │                        │ CharacterFeature │
+│                  │                        │                  │
+│ OutgoingNav:     │    AppNavigationRedirect    │ IncomingNav:     │
+│  .characters ────┼────────────────────────┼──► .list         │
+│                  │        (AppKit)        │                  │
+└──────────────────┘                        └──────────────────┘
+
+Home only knows "I want to go to characters" (Outgoing)
+Character only knows "Someone wants to see the list" (Incoming)
+AppKit connects them without either knowing about the other
+```
+
+### Implementation
+
+**1. Outgoing Navigation (Source Feature)**
+
+The feature declares what it wants to navigate TO, without knowing the destination:
+
+```swift
+// HomeFeature - declares outgoing intent
+public enum HomeOutgoingNavigation: OutgoingNavigationContract {
+    case characters  // "I want to navigate to characters"
+}
+```
+
+**2. Incoming Navigation (Target Feature)**
+
+The feature declares what it can receive, without knowing who sends it:
+
+```swift
+// CharacterFeature - declares what it can handle
+public enum CharacterIncomingNavigation: IncomingNavigationContract {
+    case list
+    case detail(identifier: Int)
+}
+```
+
+**3. Navigator (Source Feature)**
+
+Uses outgoing navigation without importing the target feature:
+
+```swift
+struct HomeNavigator: HomeNavigatorContract {
+    private let navigator: NavigatorContract
+
+    func navigateToCharacters() {
+        // Uses HomeOutgoingNavigation, NOT CharacterIncomingNavigation
+        navigator.navigate(to: HomeOutgoingNavigation.characters)
+    }
+}
+```
+
+**4. Navigation Redirect (AppKit)**
+
+The Composition Root connects outgoing to incoming:
+
+```swift
+// AppKit - the ONLY place that knows both features
+public struct AppNavigationRedirect: NavigationRedirectContract {
+    public func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
+        switch navigation {
+        case let outgoing as HomeOutgoingNavigation:
+            redirect(outgoing)
+        default:
+            nil
+        }
+    }
+
+    private func redirect(_ navigation: HomeOutgoingNavigation) -> any NavigationContract {
+        switch navigation {
+        case .characters:
+            CharacterIncomingNavigation.list  // Maps outgoing → incoming
+        }
+    }
+}
+```
+
+### Navigation Flow
+
+```
+1. User taps "Go to Characters" in HomeView
+                    │
+                    ▼
+2. HomeNavigator.navigateToCharacters()
+                    │
+                    ▼
+3. navigator.navigate(to: HomeOutgoingNavigation.characters)
+                    │
+                    ▼
+4. AppNavigationRedirect.redirect() transforms:
+   HomeOutgoingNavigation.characters → CharacterIncomingNavigation.list
+                    │
+                    ▼
+5. AppContainer.resolve(CharacterIncomingNavigation.list)
+                    │
+                    ▼
+6. CharacterFeature returns CharacterListView
+```
+
+### Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| **Zero coupling** | Features never import each other |
+| **Testable** | Test navigation by checking outgoing events |
+| **Flexible** | Change routing in one place (AppNavigationRedirect) |
+| **Scalable** | Add new features without modifying existing ones |
+| **Type-safe** | Compiler ensures all cases are handled |
