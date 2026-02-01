@@ -36,6 +36,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
                 title: LocalizedStrings.Empty.title,
                 message: LocalizedStrings.Empty.description
             )
+            .accessibilityIdentifier(AccessibilityIdentifier.emptyState)
         case .error(let error):
             DSErrorView(
                 title: LocalizedStrings.Error.title,
@@ -50,8 +51,17 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
                 headerView(totalCount: page.totalCount)
 
                 ForEach(page.characters, id: \.id) { character in
-                    CharacterRowView(character: character)
-                        .onTapGesture { viewModel.didSelect(character) }
+                    DSCardInfoRow(
+                        imageURL: character.imageURL,
+                        title: character.name,
+                        subtitle: character.species,
+                        caption: character.location.name,
+                        captionIcon: "mappin.circle.fill",
+                        status: DSStatus.from(character.status.rawValue),
+                        statusLabel: character.status.rawValue
+                    )
+                    .dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
+                    .onTapGesture { viewModel.didSelect(character) }
                 }
 
                 if page.hasNextPage {
@@ -62,10 +72,12 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
                     ) {
                         Task { await viewModel.loadMore() }
                     }
+                    .accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
                 }
             }
             .padding(.horizontal, SpacingToken.lg)
         }
+        .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
         .background(ColorToken.backgroundSecondary)
     }
 
@@ -77,57 +89,16 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
-```
 
----
+// MARK: - AccessibilityIdentifiers
 
-## Character Row Card
+private enum AccessibilityIdentifier {
+    static let scrollView = "characterList.scrollView"
+    static let loadMoreButton = "characterList.loadMoreButton"
+    static let emptyState = "characterList.emptyState"
 
-```swift
-private struct CharacterRowView: View {
-    let character: Character
-
-    var body: some View {
-        DSCard(padding: SpacingToken.lg) {
-            HStack(spacing: SpacingToken.lg) {
-                characterImage
-                characterInfo
-                Spacer()
-                statusIndicator
-            }
-        }
-    }
-
-    private var characterImage: some View {
-        DSAsyncImage(url: character.imageURL)
-            .frame(width: 70, height: 70)
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-    }
-
-    private var characterInfo: some View {
-        VStack(alignment: .leading, spacing: SpacingToken.xs) {
-            DSText(character.name, style: .headline)
-                .lineLimit(1)
-
-            Text(character.species)
-                .font(TextStyle.subheadline.font)
-                .foregroundStyle(ColorToken.textSecondary)
-
-            HStack(spacing: SpacingToken.xs) {
-                Image(systemName: "mappin.circle.fill")
-                    .font(.caption2)
-                Text(character.location.name)
-                    .font(TextStyle.caption2.font)
-            }
-            .foregroundStyle(ColorToken.textTertiary)
-        }
-    }
-
-    private var statusIndicator: some View {
-        VStack(spacing: SpacingToken.xs) {
-            DSStatusIndicator(status: DSStatus.from(character.status.rawValue))
-            DSText(character.status.rawValue, style: .caption)
-        }
+    static func row(id: Int) -> String {
+        "characterList.row.\(id)"
     }
 }
 ```

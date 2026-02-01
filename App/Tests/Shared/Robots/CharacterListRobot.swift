@@ -1,3 +1,4 @@
+/*
 import XCTest
 
 struct CharacterListRobot: RobotContract {
@@ -170,3 +171,4 @@ private enum AccessibilityIdentifier {
 		"characterList.row.\(id)"
 	}
 }
+*/

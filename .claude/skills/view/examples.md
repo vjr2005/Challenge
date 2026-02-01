@@ -387,23 +387,36 @@ final class HomeViewModel: HomeViewModelContract {
 
 ---
 
-## View with List and Accessibility
+## View with List and DS Accessibility Propagation
+
+Using `DSCardInfoRow` with automatic accessibility identifier propagation:
 
 ```swift
+import ChallengeDesignSystem
+
 struct CharacterListView: View {
     @State private var viewModel: CharacterListViewModel
 
     var body: some View {
         ScrollView {
-            LazyVStack {
+            LazyVStack(spacing: SpacingToken.lg) {
                 ForEach(viewModel.characters) { character in
-                    CharacterRowView(character: character)
-                        .accessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
-                        .onTapGesture {
-                            viewModel.didSelect(character)
-                        }
+                    DSCardInfoRow(
+                        imageURL: character.imageURL,
+                        title: character.name,
+                        subtitle: character.species,
+                        caption: character.location.name,
+                        captionIcon: "mappin.circle.fill",
+                        status: DSStatus.from(character.status.rawValue),
+                        statusLabel: character.status.rawValue
+                    )
+                    .dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
+                    .onTapGesture {
+                        viewModel.didSelect(character)
+                    }
                 }
             }
+            .padding(.horizontal, SpacingToken.lg)
         }
         .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
     }
@@ -414,9 +427,17 @@ struct CharacterListView: View {
 private enum AccessibilityIdentifier {
     static let scrollView = "characterList.scrollView"
     static let loadMoreButton = "characterList.loadMoreButton"
+    static let emptyState = "characterList.emptyState"
 
     static func row(id: Int) -> String {
         "characterList.row.\(id)"
     }
 }
 ```
+
+This creates the following accessibility identifiers:
+- `characterList.scrollView`
+- `characterList.row.1` (container)
+- `characterList.row.1.image` (DSAsyncImage)
+- `characterList.row.1.title` (DSText)
+- `characterList.row.1.status` (DSStatusIndicator)

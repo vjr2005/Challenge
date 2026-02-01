@@ -373,6 +373,84 @@ import ChallengeDesignSystem
 
 ---
 
+## Molecules
+
+### DSCardInfoRow
+
+A row card component for displaying items with image, text content, and optional status:
+
+```swift
+DSCardInfoRow(
+    imageURL: character.imageURL,
+    title: character.name,
+    subtitle: character.species,
+    caption: character.location.name,
+    captionIcon: "mappin.circle.fill",
+    status: DSStatus.from(character.status.rawValue),
+    statusLabel: character.status.rawValue
+)
+.dsAccessibilityIdentifier("characterList.row.\(character.id)")
+```
+
+Parameters:
+- `imageURL`: URL of the image to display
+- `title`: Main title text (required)
+- `subtitle`: Optional subtitle text
+- `caption`: Optional caption text below subtitle
+- `captionIcon`: Optional SF Symbol for caption
+- `status`: Optional `DSStatus` indicator
+- `statusLabel`: Optional label below status indicator
+
+---
+
+## Accessibility Identifier Propagation
+
+DS components automatically propagate accessibility identifiers from parent views with descriptive suffixes.
+
+### Setting up propagation
+
+Use `dsAccessibilityIdentifier(_:)` on parent views:
+
+```swift
+ForEach(characters, id: \.id) { character in
+    DSCardInfoRow(
+        imageURL: character.imageURL,
+        title: character.name,
+        status: DSStatus.from(character.status.rawValue)
+    )
+    .dsAccessibilityIdentifier("characterList.row.\(character.id)")
+}
+```
+
+### Result
+
+The identifier propagates to child DS components with suffixes:
+- Container: `characterList.row.1`
+- `DSAsyncImage`: `characterList.row.1.image`
+- `DSText` (title): `characterList.row.1.title`
+- `DSStatusIndicator`: `characterList.row.1.status`
+
+### Custom suffixes
+
+DS components accept custom suffixes:
+
+```swift
+DSText("Name", style: .headline, accessibilitySuffix: "name")
+DSAsyncImage(url: url, accessibilitySuffix: "avatar")
+DSStatusIndicator(status: .alive, accessibilitySuffix: "healthStatus")
+```
+
+### Default suffixes
+
+| Component | Default Suffix |
+|-----------|---------------|
+| `DSText` | `text` |
+| `DSAsyncImage` | `image` |
+| `DSStatusIndicator` | `status` |
+| `DSButton` | `button` |
+
+---
+
 ## Checklist
 
 - [ ] Import `ChallengeDesignSystem`
@@ -387,3 +465,5 @@ import ChallengeDesignSystem
 - [ ] Replace error views with `DSErrorView`
 - [ ] Replace empty views with `DSEmptyState`
 - [ ] Use semantic status colors (`DSStatus`)
+- [ ] Use `DSCardInfoRow` for list item cards
+- [ ] Apply `.dsAccessibilityIdentifier()` for E2E testing

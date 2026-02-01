@@ -281,8 +281,9 @@ Views must define **private accessibility identifiers** for E2E testing.
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-    static let view = "{name}.view"
+    static let scrollView = "{name}.scrollView"
     static let actionButton = "{name}.actionButton"
+    static let emptyState = "{name}.emptyState"
 
     static func row(id: Int) -> String {
         "{name}.row.\(id)"
@@ -290,10 +291,34 @@ private enum AccessibilityIdentifier {
 }
 ```
 
+### Usage
+
+Use `.accessibilityIdentifier()` for standard SwiftUI elements and `.dsAccessibilityIdentifier()` for DS components:
+
+```swift
+ScrollView {
+    LazyVStack {
+        ForEach(items) { item in
+            DSCardInfoRow(...)
+                .dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: item.id))
+        }
+    }
+}
+.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
+```
+
+### DS Propagation
+
+When using `.dsAccessibilityIdentifier()`, identifiers propagate to child DS components with suffixes:
+- `DSAsyncImage`: `.image`
+- `DSText` (title): `.title`
+- `DSStatusIndicator`: `.status`
+
 **Rules:**
 - Private to each View
 - Format: `{screenName}.{elementType}`
 - Use static functions for dynamic IDs
+- Use `.dsAccessibilityIdentifier()` for DS components to enable propagation
 
 ---
 
@@ -320,4 +345,6 @@ private enum AccessibilityIdentifier {
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases
 - [ ] Add private `AccessibilityIdentifier` enum
+- [ ] Apply `.accessibilityIdentifier()` to standard SwiftUI elements
+- [ ] Apply `.dsAccessibilityIdentifier()` to DS components for propagation
 - [ ] Add Previews for each state (except idle)

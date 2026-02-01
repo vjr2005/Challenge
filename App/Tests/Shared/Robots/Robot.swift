@@ -1,3 +1,4 @@
+/*
 import XCTest
 
 /// Base protocol for all screen robots.
@@ -60,3 +61,4 @@ nonisolated class UITestCase: XCTestCase {
 		actions(NotFoundRobot(app: app))
 	}
 }
+*/

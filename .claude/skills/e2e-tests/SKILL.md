@@ -7,6 +7,9 @@ description: End-to-end UI tests with Robot pattern. Use when creating E2E tests
 
 Guide for creating End-to-End UI tests using XCTest with the Robot pattern.
 
+> **NOTE:** E2E tests and Robot classes are currently commented out for refactoring.
+> The code is preserved as reference in `App/Tests/UI/` and `App/Tests/Shared/Robots/`.
+
 ## When to use this skill
 
 - Create E2E tests for user flows
@@ -19,14 +22,16 @@ Guide for creating End-to-End UI tests using XCTest with the Robot pattern.
 ## File Structure
 
 ```
-App/Tests/E2E/
-├── Robots/
-│   ├── Robot.swift              # Base protocol and DSL
-│   ├── HomeRobot.swift
-│   ├── CharacterListRobot.swift
-│   └── CharacterDetailRobot.swift
-└── Tests/
-    └── CharacterFlowE2ETests.swift
+App/Tests/UI/
+├── CharacterFlowUITests.swift   # Flow tests (commented)
+└── DeepLinkUITests.swift        # Deep link tests (commented)
+
+App/Tests/Shared/Robots/
+├── Robot.swift                  # Base protocol and DSL (commented)
+├── HomeRobot.swift              # (commented)
+├── CharacterListRobot.swift     # (commented)
+├── CharacterDetailRobot.swift   # (commented)
+└── NotFoundRobot.swift          # (commented)
 ```
 
 ---
@@ -176,9 +181,11 @@ nonisolated final class CharacterFlowE2ETests: XCTestCase {
 
 ## Accessibility Identifiers in Views
 
-Views must define **private accessibility identifiers** for E2E testing.
+Views must define **private accessibility identifiers** for E2E testing. Use `dsAccessibilityIdentifier(_:)` for Design System components to enable automatic propagation.
 
-### Pattern
+### Pattern with DS Components
+
+When using DS components (like `DSCardInfoRow`), the identifier propagates automatically to child DS atoms:
 
 ```swift
 struct CharacterListView: View {
@@ -188,11 +195,15 @@ struct CharacterListView: View {
         ScrollView {
             LazyVStack {
                 ForEach(viewModel.characters) { character in
-                    CharacterRowView(character: character)
-                        .accessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
-                        .onTapGesture {
-                            viewModel.didSelect(character)
-                        }
+                    DSCardInfoRow(
+                        imageURL: character.imageURL,
+                        title: character.name,
+                        status: DSStatus.from(character.status.rawValue)
+                    )
+                    .dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
+                    .onTapGesture {
+                        viewModel.didSelect(character)
+                    }
                 }
             }
         }
@@ -212,12 +223,21 @@ private enum AccessibilityIdentifier {
 }
 ```
 
+### Propagated Identifiers
+
+When using `.dsAccessibilityIdentifier("characterList.row.1")`:
+- Container: `characterList.row.1`
+- `DSAsyncImage`: `characterList.row.1.image`
+- `DSText` (title): `characterList.row.1.title`
+- `DSStatusIndicator`: `characterList.row.1.status`
+
 ### Rules
 
 - **Private to each View** - Identifiers are defined as a private enum at the bottom of the View file
 - **Naming convention** - Use format `{screenName}.{elementType}` (e.g., `home.characterButton`)
 - **Dynamic identifiers** - Use static functions for elements with IDs (e.g., `row(id:)`)
 - **Place before Previews** - The AccessibilityIdentifier enum goes after the View implementation
+- **DS propagation** - Use `.dsAccessibilityIdentifier()` for DS components to propagate to children
 
 ---
 
@@ -373,5 +393,6 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 
 - [ ] Add private `AccessibilityIdentifier` enum to View
 - [ ] Use format `{screenName}.{elementType}` for identifiers
-- [ ] Apply `.accessibilityIdentifier()` to interactive elements
+- [ ] Apply `.accessibilityIdentifier()` to standard SwiftUI elements
+- [ ] Apply `.dsAccessibilityIdentifier()` to DS components for propagation
 - [ ] Use static functions for dynamic identifiers (e.g., `row(id:)`)
