@@ -378,11 +378,12 @@ DSErrorView(
     title: "Connection Error",
     message: "Please check your internet connection.",
     retryTitle: "Retry",
+    retryAction: {
+        // retry action
+    },
     accessibilityIdentifier: "screen.error"
-) {
-    // retry action
-}
-// Results in: .icon, .title, .message, .retryButton suffixes
+)
+// Results in: .icon, .title, .message, .button suffixes
 ```
 
 ### DSEmptyState
@@ -438,7 +439,7 @@ When you pass `accessibilityIdentifier: "characterList.row.1"`:
 | `DSInfoRow` | `.icon`, `.label`, `.value` |
 | `DSCardInfoRow` | `.image`, `.title`, `.subtitle`, `.caption`, `.status`, `.statusLabel` |
 | `DSEmptyState` | `.icon`, `.title`, `.message`, `.button` |
-| `DSErrorView` | `.icon`, `.title`, `.message`, `.retryButton` |
+| `DSErrorView` | `.icon`, `.title`, `.message`, `.button` |
 | `DSLoadingView` | `.indicator`, `.message` |
 
 ---

@@ -55,6 +55,7 @@ public struct DSCardInfoRow: View {
 				}
 			}
 		}
+		.accessibilityIdentifier(accessibilityIdentifier ?? "")
 	}
 }
 
@@ -125,6 +126,7 @@ private extension DSCardInfoRow {
 	}
 }
 
+/*
 // MARK: - Preview
 
 #Preview("DSCardInfoRow") {
@@ -155,3 +157,4 @@ private extension DSCardInfoRow {
 	.padding()
 	.background(ColorToken.backgroundSecondary)
 }
+*/

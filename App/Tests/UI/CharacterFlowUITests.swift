@@ -2,225 +2,194 @@ import XCTest
 
 /// UI tests for the character browsing flow.
 final class CharacterFlowUITests: UITestCase {
-	@MainActor
-	func testCharacterBrowsingFlow() throws {
-		// Given
-		let charactersData = Data.fixture("characters_response")
-		let characterData = Data.fixture("character")
-		let imageData = Data.stubAvatarImage
+    @MainActor
+    func testListPaginationLoadsMoreAndPullToRefreshResetsContent() throws {
+        let page1Data = Data.fixture("characters_response")
+        let page2Data = Data.fixture("characters_response_page_2")
+        let imageData = Data.stubAvatarImage
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character/") {
-				return .ok(characterData)
-			}
-			if path.contains("/character") {
-				return .ok(charactersData)
-			}
-			return .notFound
-		}
+        stubServer.requestHandler = { path in
+            if path.contains("/avatar/") {
+                return .image(imageData)
+            }
+            if path.contains("/character") {
+                if path.contains("page=2") {
+                    return .ok(page2Data)
+                }
+                return .ok(page1Data)
+            }
+            return .notFound
+        }
 
-		// When
-		launch()
+        // When
+        launch()
 
-		// Then
-		home { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacterButton()
-		}
+        // Then
+        home { robot in
+            robot.tapCharacterButton()
+        }
 
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacter(id: 1)
-		}
+        characterList { robot in
+            // Verify only one element exists
+            robot.verifyIsVisible()
+            robot.verifyCharacterExists(id: 1)
+            robot.verifyCharacterDoesNotExist(id: 21)
 
-		characterDetail { robot in
-			robot.verifyIsVisible()
-			robot.tapBack()
-		}
+            // Tap load more and verify two elements exist
+            robot.tapLoadMore()
+            robot.verifyCharacterExists(id: 1)
+            robot.verifyCharacterExists(id: 21)
 
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.tapBack()
-		}
+            // Pull to refresh and verify only one element exists again
+            robot.pullToRefresh()
+            robot.verifyCharacterExists(id: 1)
+            robot.verifyCharacterDoesNotExist(id: 21)
+        }
+    }
 
-		home { robot in
-			robot.verifyIsVisible()
-		}
-	}
+    @MainActor
+    func testListShowsErrorAndRetryKeepsShowingError() throws {
+        stubServer.requestHandler = { _ in
+            .serverError
+        }
 
-	@MainActor
-	func testCharacterSearchFlow() throws {
-		// Given
-		let charactersData = Data.fixture("characters_response")
-		let imageData = Data.stubAvatarImage
+        // When
+        launch()
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character") {
-				return .ok(charactersData)
-			}
-			return .notFound
-		}
+        // Then
+        home { robot in
+            robot.tapCharacterButton()
+        }
 
-		// When
-		launch()
+        characterList { robot in
+            robot.verifyErrorIsVisible()
+            robot.tapRetry()
+            robot.verifyErrorIsVisible()
+        }
+    }
 
-		// Then
-		home { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacterButton()
-		}
+    @MainActor
+    func testSearchShowsEmptyStateAndClearSearchRestoresContent() throws {
+        let charactersData = Data.fixture("characters_response")
+        let emptyData = Data.fixture("characters_response_empty")
+        let imageData = Data.stubAvatarImage
 
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.typeSearch(text: "Rick")
-			robot.verifyIsVisible()
-		}
-	}
+        stubServer.requestHandler = { path in
+            if path.contains("/avatar/") {
+                return .image(imageData)
+            }
+            if path.contains("/character") {
+                if path.contains("name=") {
+                    return .ok(emptyData)
+                }
+                return .ok(charactersData)
+            }
+            return .notFound
+        }
 
-	@MainActor
-	func testCharacterSearchWithNoResultsShowsEmptyState() throws {
-		// Given
-		let charactersData = Data.fixture("characters_response")
-		let emptyData = Data.fixture("characters_response_empty")
-		let imageData = Data.stubAvatarImage
+        // When
+        launch()
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character") {
-				// Return empty results when searching for non-matching term
-				if path.contains("name=") {
-					return .ok(emptyData)
-				}
-				return .ok(charactersData)
-			}
-			return .notFound
-		}
+        // Then
+        home { robot in
+            robot.tapCharacterButton()
+        }
 
-		// When
-		launch()
+        characterList { robot in
+            robot.verifyIsVisible()
+            robot.verifyCharacterExists(id: 1)
+            robot.typeSearch(text: "NonExistent")
+            robot.verifyEmptyStateIsVisible()
+            robot.clearSearch()
+            robot.verifyCharacterExists(id: 1)
+        }
+    }
 
-		// Then
-		home { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacterButton()
-		}
+    @MainActor
+    func testNavigationFromListToDetailAndBackWithPullToRefresh() throws {
+        let charactersData = Data.fixture("characters_response")
+        let characterData = Data.fixture("character")
+        let imageData = Data.stubAvatarImage
 
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.typeSearch(text: "ZZZZZNONEXISTENT")
-			robot.verifyEmptyStateIsVisible()
-		}
-	}
+        stubServer.requestHandler = { path in
+            if path.contains("/avatar/") {
+                return .image(imageData)
+            }
+            if path.contains("/character/") {
+                return .ok(characterData)
+            }
+            if path.contains("/character") {
+                return .ok(charactersData)
+            }
+            return .notFound
+        }
 
-	@MainActor
-	func testCharacterListPagination() throws {
-		// Given
-		let page1Data = Data.fixture("characters_response")
-		let page2Data = Data.fixture("characters_response_page_2")
-		let imageData = Data.stubAvatarImage
+        // When
+        launch()
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character") {
-				if path.contains("page=2") {
-					return .ok(page2Data)
-				}
-				return .ok(page1Data)
-			}
-			return .notFound
-		}
+        // Then
+        home { robot in
+            robot.tapCharacterButton()
+        }
 
-		// When
-		launch()
+        characterList { robot in
+            robot.verifyIsVisible()
+            robot.pullToRefresh()
+            robot.verifyIsVisible()
+            robot.tapCharacter(id: 1)
+        }
 
-		// Then
-		home { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacterButton()
-		}
+        characterDetail { robot in
+            robot.verifyIsVisible()
+            robot.pullToRefresh()
+            robot.verifyIsVisible()
+            robot.tapBack()
+        }
 
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.verifyLoadMoreButtonExists()
-			robot.tapLoadMore()
-			robot.verifyIsVisible()
-			// After loading more, character with id 21 should exist (first of page 2)
-			robot.verifyCharacterExists(id: 21)
-		}
-	}
+        characterList { robot in
+            robot.tapBack()
+        }
 
-	@MainActor
-	func testCharacterRowAccessibilityIdentifiersArePropagated() throws {
-		// Given
-		let charactersData = Data.fixture("characters_response")
-		let imageData = Data.stubAvatarImage
+        home { robot in
+            robot.verifyIsVisible()
+        }
+    }
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character") {
-				return .ok(charactersData)
-			}
-			return .notFound
-		}
+    @MainActor
+    func testDetailShowsErrorAndRetryKeepsShowingError() throws {
+        let charactersData = Data.fixture("characters_response")
+        let imageData = Data.stubAvatarImage
 
-		// When
-		launch()
+        stubServer.requestHandler = { path in
+            if path.contains("/avatar/") {
+                return .image(imageData)
+            }
+            if path.contains("/character/") {
+                return .serverError
+            }
+            if path.contains("/character") {
+                return .ok(charactersData)
+            }
+            return .notFound
+        }
 
-		home { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacterButton()
-		}
+        // When
+        launch()
 
-		// Then - Verify DS accessibility identifiers are propagated correctly
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.verifyRowTitleIdentifierExists(id: 1)
-			robot.verifyRowImageIdentifierExists(id: 1)
-			robot.verifyRowStatusIdentifierExists(id: 1)
-		}
-	}
+        // Then
+        home { robot in
+            robot.tapCharacterButton()
+        }
 
-	@MainActor
-	func testCharacterListPullToRefresh() throws {
-		// Given
-		let charactersData = Data.fixture("characters_response")
-		let imageData = Data.stubAvatarImage
+        characterList { robot in
+            robot.verifyIsVisible()
+            robot.tapCharacter(id: 1)
+        }
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character") {
-				return .ok(charactersData)
-			}
-			return .notFound
-		}
-
-		// When
-		launch()
-
-		// Then
-		home { robot in
-			robot.verifyIsVisible()
-			robot.tapCharacterButton()
-		}
-
-		characterList { robot in
-			robot.verifyIsVisible()
-			robot.pullToRefresh()
-			robot.verifyIsVisible()
-		}
-	}
+        characterDetail { robot in
+            robot.verifyErrorIsVisible()
+            robot.tapRetry()
+            robot.verifyErrorIsVisible()
+        }
+    }
 }

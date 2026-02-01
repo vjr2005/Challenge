@@ -38,6 +38,9 @@ public struct DSCard<Content: View>: View {
 	}
 }
 
+/*
+// MARK: - Previews
+
 #Preview("DSCard") {
 	VStack(spacing: SpacingToken.lg) {
 		DSCard {
@@ -70,3 +73,4 @@ public struct DSCard<Content: View>: View {
 	.padding()
 	.background(ColorToken.backgroundSecondary)
 }
+*/

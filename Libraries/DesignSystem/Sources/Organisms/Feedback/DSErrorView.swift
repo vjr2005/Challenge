@@ -57,7 +57,7 @@ public struct DSErrorView: View {
 					retryTitle,
 					icon: "arrow.clockwise",
 					variant: .secondary,
-					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).retryButton" },
+					accessibilityIdentifier: accessibilityIdentifier.map { "\($0).button" },
 					action: retryAction
 				)
 			}
@@ -66,6 +66,9 @@ public struct DSErrorView: View {
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 }
+
+/*
+// MARK: - Previews
 
 #Preview("DSErrorView") {
 	VStack(spacing: SpacingToken.xxl) {
@@ -78,3 +81,4 @@ public struct DSErrorView: View {
 		) {}
 	}
 }
+*/

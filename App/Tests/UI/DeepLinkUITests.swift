@@ -74,6 +74,11 @@ final class DeepLinkUITests: UITestCase {
 		// Then
 		notFound { robot in
 			robot.verifyIsVisible()
+			robot.tapGoBack()
+		}
+
+		home { robot in
+			robot.verifyIsVisible()
 		}
 	}
 }

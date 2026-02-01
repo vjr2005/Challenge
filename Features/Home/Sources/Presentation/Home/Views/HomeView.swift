@@ -69,6 +69,7 @@ private enum AccessibilityIdentifier {
     static let characterButton = "home.characterButton"
 }
 
+/*
 // MARK: - Previews
 
 #if DEBUG
@@ -80,3 +81,4 @@ private final class HomeViewModelPreviewStub: HomeViewModelContract {
 	func didTapOnCharacterButton() {}
 }
 #endif
+*/

@@ -21,8 +21,8 @@ extension NotFoundRobot {
 extension NotFoundRobot {
 	@discardableResult
 	func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let container = app.descendants(matching: .any)[AccessibilityIdentifier.container]
-		XCTAssertTrue(container.waitForExistence(timeout: 5), file: file, line: line)
+		let title = app.descendants(matching: .any)[AccessibilityIdentifier.title]
+		XCTAssertTrue(title.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
 }
@@ -30,6 +30,6 @@ extension NotFoundRobot {
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-	static let container = "system.notFound.container"
+	static let title = "system.notFound.container.title"
 	static let goBackButton = "system.notFound.container.button"
 }

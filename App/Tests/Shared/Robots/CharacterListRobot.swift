@@ -54,7 +54,17 @@ extension CharacterListRobot {
 	func pullToRefresh(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
 		XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
-		scrollView.swipeDown()
+		let start = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+		let end = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9))
+		start.press(forDuration: 0.1, thenDragTo: end)
+		return self
+	}
+
+	@discardableResult
+	func tapRetry(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let retryButton = app.buttons[AccessibilityIdentifier.retryButton]
+		XCTAssertTrue(retryButton.waitForExistence(timeout: 5), file: file, line: line)
+		retryButton.tap()
 		return self
 	}
 }
@@ -86,67 +96,24 @@ extension CharacterListRobot {
 	}
 
 	@discardableResult
+	func verifyCharacterDoesNotExist(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = AccessibilityIdentifier.row(id: id)
+		let row = app.descendants(matching: .any)[identifier].firstMatch
+		XCTAssertFalse(row.waitForExistence(timeout: 2), "Character row \(id) should not exist", file: file, line: line)
+		return self
+	}
+
+	@discardableResult
 	func verifyEmptyStateIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let emptyState = app.descendants(matching: .any)[AccessibilityIdentifier.emptyState]
+		let emptyState = app.descendants(matching: .any)[AccessibilityIdentifier.emptyStateTitle]
 		XCTAssertTrue(emptyState.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
 
 	@discardableResult
-	func verifyLoadMoreButtonExists(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
-		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
-		// Scroll down to find the button (it's at the bottom of the list)
-		for _ in 0..<5 {
-			if button.exists && button.isHittable {
-				break
-			}
-			scrollView.swipeUp()
-		}
-		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
-		return self
-	}
-}
-
-// MARK: - DS Accessibility Identifiers Verification
-
-extension CharacterListRobot {
-	@discardableResult
-	func verifyRowTitleIdentifierExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let identifier = "characterList.row.\(id).title"
-		let element = app.descendants(matching: .any)[identifier].firstMatch
-		XCTAssertTrue(
-			element.waitForExistence(timeout: 10),
-			"Expected accessibility identifier '\(identifier)' to exist",
-			file: file,
-			line: line
-		)
-		return self
-	}
-
-	@discardableResult
-	func verifyRowImageIdentifierExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let identifier = "characterList.row.\(id).image"
-		let element = app.descendants(matching: .any)[identifier].firstMatch
-		XCTAssertTrue(
-			element.waitForExistence(timeout: 10),
-			"Expected accessibility identifier '\(identifier)' to exist",
-			file: file,
-			line: line
-		)
-		return self
-	}
-
-	@discardableResult
-	func verifyRowStatusIdentifierExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let identifier = "characterList.row.\(id).status"
-		let element = app.descendants(matching: .any)[identifier].firstMatch
-		XCTAssertTrue(
-			element.waitForExistence(timeout: 10),
-			"Expected accessibility identifier '\(identifier)' to exist",
-			file: file,
-			line: line
-		)
+	func verifyErrorIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let errorTitle = app.descendants(matching: .any)[AccessibilityIdentifier.errorTitle]
+		XCTAssertTrue(errorTitle.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
 }
@@ -155,8 +122,10 @@ extension CharacterListRobot {
 
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
-	static let loadMoreButton = "characterList.loadMoreButton.button"
-	static let emptyState = "characterList.emptyState"
+	static let loadMoreButton = "characterList.loadMore.button"
+	static let emptyStateTitle = "characterList.emptyState.title"
+	static let errorTitle = "characterList.errorView.title"
+	static let retryButton = "characterList.errorView.button"
 
 	static func row(id: Int) -> String {
 		"characterList.row.\(id)"

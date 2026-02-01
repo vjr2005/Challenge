@@ -70,6 +70,9 @@ public struct DSEmptyState: View {
 	}
 }
 
+/*
+// MARK: - Previews
+
 #Preview("DSEmptyState") {
 	VStack(spacing: SpacingToken.xxl) {
 		DSEmptyState(
@@ -85,3 +88,4 @@ public struct DSEmptyState: View {
 		) {}
 	}
 }
+*/

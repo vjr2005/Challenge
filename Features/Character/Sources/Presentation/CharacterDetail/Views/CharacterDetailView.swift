@@ -23,7 +23,6 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 					backButton
 				}
 			}
-			.accessibilityIdentifier(AccessibilityIdentifier.view)
 	}
 }
 
@@ -66,12 +65,14 @@ private extension CharacterDetailView {
         DSErrorView(
             title: LocalizedStrings.Error.title,
             message: LocalizedStrings.Error.description,
-            retryTitle: LocalizedStrings.Common.tryAgain
-        ) {
-            Task {
-                await viewModel.load()
-            }
-        }
+            retryTitle: LocalizedStrings.Common.tryAgain,
+            retryAction: {
+                Task {
+                    await viewModel.load()
+                }
+            },
+            accessibilityIdentifier: AccessibilityIdentifier.errorView
+        )
     }
 
 	func characterContent(_ character: Character) -> some View {
@@ -88,6 +89,7 @@ private extension CharacterDetailView {
 		.refreshable {
 			await viewModel.refresh()
 		}
+		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
 	}
 
 	func headerSection(_ character: Character) -> some View {
@@ -113,6 +115,7 @@ private extension CharacterDetailView {
 				.font(TextStyle.title.font)
 				.foregroundStyle(ColorToken.textPrimary)
 				.multilineTextAlignment(.center)
+                .accessibilityIdentifier(AccessibilityIdentifier.name)
 
 			HStack(spacing: SpacingToken.sm) {
 				DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
@@ -188,10 +191,13 @@ private enum LocalizedStrings {
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-	static let view = "characterDetail.view"
+	static let scrollView = "characterDetail.scrollView"
+	static let name = "characterDetail.name"
 	static let backButton = "characterDetail.backButton"
+	static let errorView = "characterDetail.errorView"
 }
 
+/*
 // MARK: - Previews
 
 #if DEBUG
@@ -251,3 +257,4 @@ private extension Character {
 	}
 }
 #endif
+*/

@@ -7,9 +7,6 @@ description: UI tests with Robot pattern. Use when creating UI tests, implementi
 
 Guide for creating UI tests using XCTest with the Robot pattern.
 
-> **NOTE:** UI tests and Robot classes are currently commented out for refactoring.
-> The code is preserved as reference in `App/Tests/UI/` and `App/Tests/Shared/Robots/`.
-
 ## When to use this skill
 
 - Create UI tests for user flows
@@ -23,15 +20,15 @@ Guide for creating UI tests using XCTest with the Robot pattern.
 
 ```
 App/Tests/UI/
-├── CharacterFlowUITests.swift   # Flow tests (commented)
-└── DeepLinkUITests.swift        # Deep link tests (commented)
+├── CharacterFlowUITests.swift   # Character flow tests
+└── DeepLinkUITests.swift        # Deep link tests
 
 App/Tests/Shared/Robots/
-├── Robot.swift                  # Base protocol and DSL (commented)
-├── HomeRobot.swift              # (commented)
-├── CharacterListRobot.swift     # (commented)
-├── CharacterDetailRobot.swift   # (commented)
-└── NotFoundRobot.swift          # (commented)
+├── Robot.swift                  # Base protocol and DSL
+├── HomeRobot.swift
+├── CharacterListRobot.swift
+├── CharacterDetailRobot.swift
+└── NotFoundRobot.swift
 ```
 
 ---

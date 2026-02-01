@@ -135,12 +135,14 @@ private extension CharacterListView {
 		DSErrorView(
 			title: LocalizedStrings.Error.title,
 			message: error.localizedDescription,
-			retryTitle: LocalizedStrings.Common.tryAgain
-		) {
-			Task {
-				await viewModel.loadIfNeeded()
-			}
-		}
+			retryTitle: LocalizedStrings.Common.tryAgain,
+			retryAction: {
+				Task {
+					await viewModel.loadIfNeeded()
+				}
+			},
+			accessibilityIdentifier: AccessibilityIdentifier.errorView
+		)
 	}
 }
 
@@ -175,14 +177,16 @@ private enum LocalizedStrings {
 
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
-	static let loadMoreButton = "characterList.loadMoreButton"
+	static let loadMoreButton = "characterList.loadMore.button"
 	static let emptyState = "characterList.emptyState"
+	static let errorView = "characterList.errorView"
 
 	static func row(id: Int) -> String {
 		"characterList.row.\(id)"
 	}
 }
 
+/*
 // MARK: - Previews
 
 #if DEBUG
@@ -268,3 +272,4 @@ private extension Character {
 	}
 }
 #endif
+*/

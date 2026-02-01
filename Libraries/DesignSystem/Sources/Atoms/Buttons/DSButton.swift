@@ -115,6 +115,9 @@ public struct DSButton: View {
 	}
 }
 
+/*
+// MARK: - Previews
+
 #Preview("DSButton Variants") {
 	VStack(spacing: SpacingToken.lg) {
 		DSButton("Primary Button") {}
@@ -127,3 +130,4 @@ public struct DSButton: View {
 	}
 	.padding()
 }
+*/

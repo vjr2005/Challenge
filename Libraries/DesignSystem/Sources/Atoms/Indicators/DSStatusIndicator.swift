@@ -61,6 +61,9 @@ public struct DSStatusIndicator: View {
 	}
 }
 
+/*
+// MARK: - Previews
+
 #Preview("DSStatusIndicator") {
 	HStack(spacing: SpacingToken.lg) {
 		ForEach(DSStatus.allCases, id: \.self) { status in
@@ -76,3 +79,4 @@ public struct DSStatusIndicator: View {
 	}
 	.padding()
 }
+*/
