@@ -4,28 +4,28 @@ Feature module for displaying character information from the Rick and Morty API.
 
 ## Overview
 
-ChallengeCharacter implements the character listing and detail screens following Clean Architecture with MVVM presentation layer. It demonstrates the full feature implementation pattern including data sources, repositories, use cases, and view models.
+ChallengeCharacter implements the character listing and detail screens following Clean Architecture with MVVM presentation layer.
 
 ## Structure
 
 ```
 Character/
 ├── Sources/
-│   ├── CharacterFeature.swift         # Feature entry point
-│   ├── CharacterContainer.swift       # DI container
-│   ├── Navigation/
-│   │   ├── CharacterNavigation.swift
-│   │   └── CharacterDeepLinkHandler.swift
+│   ├── CharacterFeature.swift
+│   ├── CharacterContainer.swift
 │   ├── Domain/
 │   │   ├── Models/
 │   │   │   ├── Character.swift
-│   │   │   ├── Location.swift
+│   │   │   ├── CharacterLocation.swift
 │   │   │   └── CharactersPage.swift
 │   │   ├── Repositories/
 │   │   │   └── CharacterRepositoryContract.swift
-│   │   └── UseCases/
-│   │       ├── GetCharactersUseCase.swift
-│   │       └── GetCharacterUseCase.swift
+│   │   ├── UseCases/
+│   │   │   ├── GetCharactersUseCase.swift
+│   │   │   ├── GetCharacterUseCase.swift
+│   │   │   └── SearchCharactersUseCase.swift
+│   │   └── Errors/
+│   │       └── CharacterError.swift
 │   ├── Data/
 │   │   ├── Repositories/
 │   │   │   └── CharacterRepository.swift
@@ -37,6 +37,9 @@ Character/
 │   │       ├── CharactersResponseDTO.swift
 │   │       └── LocationDTO.swift
 │   └── Presentation/
+│       ├── Navigation/
+│       │   ├── CharacterIncomingNavigation.swift
+│       │   └── CharacterDeepLinkHandler.swift
 │       ├── CharacterList/
 │       │   ├── Views/
 │       │   │   └── CharacterListView.swift
@@ -66,62 +69,24 @@ Character/
 | Target | Type | Purpose |
 |--------|------|---------|
 | `ChallengeCharacter` | Framework | Feature implementation |
-| `ChallengeCharacterTests` | Test | Unit and snapshot tests |
+| `ChallengeCharacterTests` | Test | Unit tests |
+| `ChallengeCharacterSnapshotTests` | Test | Snapshot tests |
 
 ## Dependencies
 
 | Module | Purpose |
 |--------|---------|
-| `ChallengeCore` | Navigation, routing, image loading |
-| `ChallengeNetworking` | HTTP client for API requests |
-| `ChallengeResources` | Localized strings |
+| `ChallengeCore` | Navigation, image loading |
+| `ChallengeNetworking` | HTTP client |
+| `ChallengeResources` | Localization |
 | `ChallengeDesignSystem` | UI components |
-
-## Architecture
-
-### Domain Layer
-
-**Models:**
-- `Character` - Domain model representing a character
-- `Location` - Character's location information
-- `CharactersPage` - Paginated list of characters
-
-**Use Cases:**
-- `GetCharactersUseCase` - Fetches paginated character list
-- `GetCharacterUseCase` - Fetches single character by ID
-
-### Data Layer
-
-**Repository:**
-- `CharacterRepository` - Coordinates remote and memory data sources
-
-**Data Sources:**
-- `CharacterRemoteDataSource` - Fetches from Rick and Morty API
-- `CharacterMemoryDataSource` - In-memory cache
-
-**DTOs:**
-- `CharacterDTO` - API response model
-- `CharactersResponseDTO` - Paginated API response
-- `LocationDTO` - Location API model
-
-### Presentation Layer
-
-**Character List:**
-- `CharacterListView` - SwiftUI view for character grid
-- `CharacterListViewModel` - Manages list state and pagination
-- `CharacterListNavigator` - Handles navigation from list
-
-**Character Detail:**
-- `CharacterDetailView` - SwiftUI view for character details
-- `CharacterDetailViewModel` - Manages detail state
-- `CharacterDetailNavigator` - Handles navigation from detail
 
 ## Navigation
 
-### CharacterNavigation
+### CharacterIncomingNavigation
 
 ```swift
-public enum CharacterNavigation: IncomingNavigationContract {
+public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
 }
@@ -131,8 +96,8 @@ public enum CharacterNavigation: IncomingNavigationContract {
 
 | URL | Destination |
 |-----|-------------|
-| `challenge://characters` | Character list |
-| `challenge://characters/{id}` | Character detail |
+| `challenge://character/list` | Character list |
+| `challenge://character/detail?id=1` | Character detail |
 
 ## Usage
 
@@ -140,60 +105,27 @@ public enum CharacterNavigation: IncomingNavigationContract {
 
 ```swift
 let feature = CharacterFeature(httpClient: httpClient)
-feature.registerDeepLinks()
 ```
 
 ### Navigation
 
 ```swift
-// Navigate to list
-router.navigate(to: CharacterNavigation.list)
-
-// Navigate to detail
-router.navigate(to: CharacterNavigation.detail(identifier: 1))
-
-// Via deep link
-router.navigate(to: URL(string: "challenge://characters/1"))
+navigator.navigate(to: CharacterIncomingNavigation.list)
+navigator.navigate(to: CharacterIncomingNavigation.detail(identifier: 1))
 ```
 
-## Testing
+## API
 
-### Test Organization
-
-```
-Tests/
-├── Domain/
-│   ├── UseCases/           # Use case tests
-│   └── Models/             # Model tests
-├── Data/
-│   ├── CharacterRepositoryTests.swift
-│   ├── CharacterRemoteDataSourceTests.swift
-│   └── CharacterMemoryDataSourceTests.swift
-├── Presentation/
-│   ├── CharacterList/
-│   │   ├── ViewModels/     # ViewModel tests
-│   │   └── Snapshots/      # Visual regression tests
-│   └── CharacterDetail/
-│       ├── ViewModels/
-│       └── Snapshots/
-├── Navigation/
-│   └── CharacterDeepLinkHandlerTests.swift
-├── Mocks/                  # Test doubles
-├── Stubs/                  # Domain model stubs
-└── Fixtures/               # JSON test data
-```
-
-### Running Tests
-
-```bash
-tuist test ChallengeCharacter
-```
-
-## API Reference
-
-This feature uses the [Rick and Morty API](https://rickandmortyapi.com/):
+Uses the [Rick and Morty API](https://rickandmortyapi.com/):
 
 | Endpoint | Description |
 |----------|-------------|
 | `GET /character` | List characters with pagination |
 | `GET /character/{id}` | Get character by ID |
+| `GET /character?name=` | Search characters by name |
+
+## Testing
+
+```bash
+tuist test ChallengeCharacter
+```

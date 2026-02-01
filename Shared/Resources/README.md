@@ -1,99 +1,95 @@
 # ChallengeResources
 
-Shared resources module providing localization and bundle utilities.
+Shared resources module providing localization utilities.
 
 ## Overview
 
-ChallengeResources centralizes resource management across the application, providing utilities for accessing localized strings and module bundles.
+ChallengeResources centralizes localization across the application, providing the `localized()` extension for type-safe string access.
 
 ## Structure
 
 ```
 Resources/
-└── Sources/
-    └── Extensions/
-        ├── Bundle+Module.swift      # Module bundle access
-        └── String+Localized.swift   # Localization helpers
+├── Sources/
+│   ├── Extensions/
+│   │   ├── Bundle+Module.swift
+│   │   └── String+Localized.swift
+│   └── Resources/
+│       └── Localizable.xcstrings
+└── Tests/
+    └── ...
 ```
 
 ## Targets
 
 | Target | Type | Purpose |
 |--------|------|---------|
-| `ChallengeResources` | Framework | Resource utilities |
-
-## Dependencies
-
-| Module | Purpose |
-|--------|---------|
-| `ChallengeCore` | Base infrastructure |
+| `ChallengeResources` | Framework | Localization utilities |
 
 ## Components
 
-### Bundle+Module
+### String+Localized
 
-Extension providing access to the module's bundle for loading resources:
+Extension for accessing localized strings:
 
 ```swift
-extension Bundle {
-    /// Returns the bundle for the ChallengeResources module
-    static var module: Bundle { ... }
+public extension String {
+    func localized() -> String
+    func localized(_ arguments: CVarArg...) -> String
 }
 ```
 
-### String+Localized
+### Bundle+Module
 
-Extension for easy access to localized strings:
+Manual bundle accessor (Tuist's generated accessors are disabled):
 
 ```swift
-extension String {
-    /// Returns a localized version of the string
-    var localized: String { ... }
-
-    /// Returns a localized string with format arguments
-    func localized(with arguments: CVarArg...) -> String { ... }
+extension Bundle {
+    static let module: Bundle
 }
 ```
 
 ## Usage
 
-### Accessing Localized Strings
-
 ```swift
+import ChallengeResources
+
 // Simple localization
-let title = "welcome_title".localized
+let title = "home.title".localized()
 
 // With format arguments
-let greeting = "hello_user".localized(with: userName)
+let count = "home.itemCount %lld".localized(5)
 ```
 
-### Accessing Module Bundle
+### In Views
+
+Each View defines a private `LocalizedStrings` enum:
 
 ```swift
-// Load an image from the resources bundle
-let image = UIImage(named: "icon", in: .module, compatibleWith: nil)
-
-// Load a file from the resources bundle
-let url = Bundle.module.url(forResource: "data", withExtension: "json")
+private enum LocalizedStrings {
+    static var title: String { "myView.title".localized() }
+    static func itemCount(_ count: Int) -> String {
+        "myView.itemCount %lld".localized(count)
+    }
+}
 ```
 
-## Localization Files
+## Adding Strings
 
-Localized strings should be added to `.strings` files in the Resources module:
+1. Add key to `Localizable.xcstrings`
+2. Provide translations for all languages (en, es)
+3. Add to View's `LocalizedStrings` enum
 
+## Key Naming
+
+| Pattern | Example |
+|---------|---------|
+| `{screen}.{element}` | `home.title` |
+| `{screen}.{section}.{element}` | `characterList.empty.title` |
+| `common.{element}` | `common.tryAgain` |
+
+## Testing
+
+```bash
+tuist test ChallengeResources
 ```
-Resources/
-└── Sources/
-    └── Resources/
-        ├── en.lproj/
-        │   └── Localizable.strings
-        └── es.lproj/
-            └── Localizable.strings
-```
-
-## Best Practices
-
-1. **Centralize strings**: All user-facing strings should be defined in this module
-2. **Use semantic keys**: Name keys by purpose, not content (e.g., `character_list_title` not `characters`)
-3. **Document placeholders**: Comment format strings with placeholder descriptions
-4. **Test localization**: Verify strings render correctly in all supported languages
