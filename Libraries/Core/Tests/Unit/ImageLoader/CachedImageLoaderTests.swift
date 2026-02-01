@@ -5,8 +5,13 @@ import UIKit
 
 @testable import ChallengeCore
 
-@Suite(.timeLimit(.minutes(1)))
+@Suite(.serialized, .timeLimit(.minutes(1)))
 struct CachedImageLoaderTests {
+	/// Minimal valid 1x1 red PNG - no rendering system dependencies for CI headless environments.
+	private let testImageData = Data(base64Encoded: """
+		iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==
+		""")
+
 	// MARK: - Cached Image
 
 	@Test("Cached image returns nil when URL is not in cache")
@@ -26,7 +31,7 @@ struct CachedImageLoaderTests {
 	func cachedImageForURLReturnsImageAfterLoading() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-cached-after-load.example.com/image.png"))
-		let testImageData = UIImage.checkmark.pngData()
+		let testImageData = self.testImageData
 
 		URLProtocolMock.setHandler({ request in
 			guard let requestURL = request.url else {
@@ -57,7 +62,7 @@ struct CachedImageLoaderTests {
 	func imageForURLReturnsImageOnSuccess() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-image-success.example.com/image.png"))
-		let testImageData = UIImage.checkmark.pngData()
+		let testImageData = self.testImageData
 
 		URLProtocolMock.setHandler({ request in
 			guard let requestURL = request.url else {
@@ -158,7 +163,7 @@ struct CachedImageLoaderTests {
 	func imageForURLReturnsCachedImageOnSecondRequest() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-cached-second.example.com/image.png"))
-		let testImageData = UIImage.checkmark.pngData()
+		let testImageData = self.testImageData
 		let requestCount = RequestCounter()
 
 		URLProtocolMock.setHandler({ request in
@@ -193,7 +198,7 @@ struct CachedImageLoaderTests {
 	func concurrentRequestsForSameURLAreDeduplicated() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-dedup-same.example.com/image.png"))
-		let testImageData = UIImage.checkmark.pngData()
+		let testImageData = self.testImageData
 		let requestCount = RequestCounter()
 
 		URLProtocolMock.setHandler({ request in
@@ -232,7 +237,7 @@ struct CachedImageLoaderTests {
 		// Given
 		let url1 = try #require(URL(string: "https://test-dedup-different.example.com/image1.png"))
 		let url2 = try #require(URL(string: "https://test-dedup-different.example.com/image2.png"))
-		let testImageData = UIImage.checkmark.pngData()
+		let testImageData = self.testImageData
 		let requestCount = RequestCounter()
 
 		URLProtocolMock.setHandler({ request in
