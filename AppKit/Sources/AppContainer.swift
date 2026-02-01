@@ -16,7 +16,7 @@ public struct AppContainer: Sendable {
 	private let characterFeature: CharacterFeature
 	private let systemFeature: SystemFeature
 
-	public var features: [any Feature] {
+	public var features: [any FeatureContract] {
 		[homeFeature, characterFeature, systemFeature]
 	}
 
@@ -37,7 +37,7 @@ public struct AppContainer: Sendable {
 	/// Resolves any navigation to a view by iterating through features.
 	/// Falls back to NotFoundView if no feature can handle the navigation.
 	public func resolve(
-		_ navigation: any Navigation,
+		_ navigation: any NavigationContract,
 		navigator: any NavigatorContract
 	) -> AnyView {
 		for feature in features {

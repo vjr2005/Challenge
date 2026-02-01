@@ -2,7 +2,7 @@ import ChallengeCore
 import SwiftUI
 
 /// Feature entry point for the Home module.
-public struct HomeFeature: Feature {
+public struct HomeFeature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: HomeContainer
@@ -16,7 +16,7 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         HomeDeepLinkHandler()
     }
 
@@ -25,7 +25,7 @@ public struct HomeFeature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? HomeIncomingNavigation else {

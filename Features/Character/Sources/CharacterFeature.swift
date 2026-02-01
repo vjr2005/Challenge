@@ -3,7 +3,7 @@ import ChallengeNetworking
 import SwiftUI
 
 /// Feature entry point for the Character module.
-public struct CharacterFeature: Feature {
+public struct CharacterFeature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: CharacterContainer
@@ -17,7 +17,7 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         CharacterDeepLinkHandler()
     }
 
@@ -28,7 +28,7 @@ public struct CharacterFeature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? CharacterIncomingNavigation else {

@@ -402,6 +402,21 @@ DSEmptyState(
 
 ---
 
+## DS Component Design Principles
+
+DS components follow different conventions than feature Views:
+
+| Aspect | Feature Views | DS Components |
+|--------|---------------|---------------|
+| **LocalizedStrings** | Private enum inside View | Not needed - receive text as parameters |
+| **AccessibilityIdentifier** | Private enum inside View | Receive as parameter, propagate to children |
+| **ViewModel** | Generic over contract | None - pure UI components |
+| **Previews** | One per ViewState | May be commented out for coverage |
+
+DS components are **reusable building blocks** that receive all content (text, identifiers) from the calling View. The calling View is responsible for localization and accessibility identifier definitions.
+
+---
+
 ## Accessibility Identifier Pattern
 
 All DS components accept an optional `accessibilityIdentifier: String?` parameter. Molecules and organisms propagate this identifier to their child components with descriptive suffixes.

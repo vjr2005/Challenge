@@ -52,9 +52,9 @@ struct AnyNavigationTests {
     @Test("Equality works correctly with associated values")
     func equalityWorksWithAssociatedValues() {
         // Given
-        let navigation1 = AnyNavigation(TestNavigationWithValue.detail(id: 42))
-        let navigation2 = AnyNavigation(TestNavigationWithValue.detail(id: 42))
-        let navigation3 = AnyNavigation(TestNavigationWithValue.detail(id: 99))
+        let navigation1 = AnyNavigation(TestNavigationWithValue.detail(identifier: 42))
+        let navigation2 = AnyNavigation(TestNavigationWithValue.detail(identifier: 42))
+        let navigation3 = AnyNavigation(TestNavigationWithValue.detail(identifier: 99))
 
         // Then
         #expect(navigation1 == navigation2)
@@ -90,15 +90,15 @@ struct AnyNavigationTests {
 
 // MARK: - Test Helpers
 
-private enum TestNavigation: IncomingNavigation {
+private enum TestNavigation: IncomingNavigationContract {
     case screen1
     case screen2
 }
 
-private enum OtherNavigation: IncomingNavigation {
+private enum OtherNavigation: IncomingNavigationContract {
     case other
 }
 
-private enum TestNavigationWithValue: IncomingNavigation {
-    case detail(id: Int)
+private enum TestNavigationWithValue: IncomingNavigationContract {
+    case detail(identifier: Int)
 }

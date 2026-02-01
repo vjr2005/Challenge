@@ -106,7 +106,7 @@ struct AppContainer: Sendable {
 
     // MARK: - Features
 
-    let features: [any Feature]
+    let features: [any FeatureContract]
 
     // MARK: - Init
 
@@ -207,26 +207,26 @@ public final class {Feature}Container: Sendable {
 
 ---
 
-## Feature Protocol (Core Module)
+## FeatureContract Protocol (Core Module)
 
 ```swift
 // Libraries/Core/Sources/Feature/Feature.swift
 import SwiftUI
 
-public protocol Feature {
+public protocol FeatureContract {
     /// The deep link handler for this feature (optional).
-    var deepLinkHandler: (any DeepLinkHandler)? { get }
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { get }
 
     /// Creates the main view for this feature.
     func makeMainView(navigator: any NavigatorContract) -> AnyView
 
     /// Resolves a navigation destination to a view.
     /// Returns nil if this feature doesn't handle the given navigation.
-    func resolve(_ navigation: any Navigation, navigator: any NavigatorContract) -> AnyView?
+    func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView?
 }
 
-public extension Feature {
-    var deepLinkHandler: (any DeepLinkHandler)? { nil }
+public extension FeatureContract {
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { nil }
 }
 ```
 
@@ -243,7 +243,7 @@ public extension Feature {
 // Sources/Navigation/{Feature}IncomingNavigation.swift
 import ChallengeCore
 
-public enum {Feature}IncomingNavigation: Navigation {
+public enum {Feature}IncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
 }
@@ -253,13 +253,13 @@ public enum {Feature}IncomingNavigation: Navigation {
 // Sources/Navigation/{Feature}OutgoingNavigation.swift
 import ChallengeCore
 
-public enum {Feature}OutgoingNavigation: Navigation {
+public enum {Feature}OutgoingNavigation: OutgoingNavigationContract {
     case settings  // Navigates to Settings feature
 }
 ```
 
 **Rules:**
-- Conform to `Navigation` protocol (from Core module)
+- Conform to `NavigationContract` protocol (from Core module)
 - Use primitive types for parameters (Int, String, Bool, UUID)
 - Never pass domain objects - only identifiers
 - **IncomingNavigation**: Destinations this feature handles
@@ -276,11 +276,11 @@ Only create a DeepLinkHandler if the feature needs to handle deep links. Feature
 import ChallengeCore
 import Foundation
 
-struct {Feature}DeepLinkHandler: DeepLinkHandler {
+struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
     let scheme = "challenge"
     let host = "{feature}"
 
-    func resolve(_ url: URL) -> (any Navigation)? {
+    func resolve(_ url: URL) -> (any NavigationContract)? {
         switch url.path {
         case "/list":
             return {Feature}IncomingNavigation.list
@@ -298,7 +298,7 @@ struct {Feature}DeepLinkHandler: DeepLinkHandler {
 }
 ```
 
-**Note:** DeepLinkHandler returns `IncomingNavigation` only. If a feature doesn't handle deep links, don't implement `deepLinkHandler` - the default `nil` implementation will be used.
+**Note:** DeepLinkHandler returns `IncomingNavigationContract` only. If a feature doesn't handle deep links, don't implement `deepLinkHandler` - the default `nil` implementation will be used.
 
 ---
 
@@ -310,7 +310,7 @@ import ChallengeCore
 import ChallengeNetworking
 import SwiftUI
 
-public struct {Feature}Feature: Feature {
+public struct {Feature}Feature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: {Feature}Container
@@ -323,7 +323,7 @@ public struct {Feature}Feature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         {Feature}DeepLinkHandler()
     }
 
@@ -334,7 +334,7 @@ public struct {Feature}Feature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? {Feature}IncomingNavigation else {
@@ -372,7 +372,7 @@ public struct {Feature}Feature: Feature {
 import ChallengeCore
 import SwiftUI
 
-public struct HomeFeature: Feature {
+public struct HomeFeature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: HomeContainer
@@ -385,7 +385,7 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         HomeDeepLinkHandler()
     }
 
@@ -394,7 +394,7 @@ public struct HomeFeature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? HomeIncomingNavigation else {
@@ -516,9 +516,11 @@ public struct RootContainerView: View {
     }
 }
 
+/*
 #Preview {
     RootContainerView(appContainer: AppContainer())
 }
+*/
 ```
 
 **Key Changes:**
@@ -597,6 +599,7 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Create `{Feature}Feature.swift` as struct implementing `Feature` protocol
 - [ ] Feature requires `httpClient` in init (no optional default)
 - [ ] Feature creates Container in init
+- [ ] Feature implements `FeatureContract` protocol
 - [ ] Feature implements `makeMainView(navigator:)` returning default entry point
 - [ ] Feature implements `resolve(_:navigator:)` returning view or `nil`
 - [ ] Container has stored `memoryDataSource` property (source of truth)

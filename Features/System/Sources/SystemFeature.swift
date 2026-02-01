@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Feature entry point for the System module.
 /// Handles system-level navigation like unknown routes.
-public struct SystemFeature: Feature {
+public struct SystemFeature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: SystemContainer
@@ -21,7 +21,7 @@ public struct SystemFeature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? UnknownNavigation else {

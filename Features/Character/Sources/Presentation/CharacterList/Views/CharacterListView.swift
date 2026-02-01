@@ -94,7 +94,7 @@ private extension CharacterListView {
 						captionIcon: "mappin.circle.fill",
 						status: DSStatus.from(character.status.rawValue),
 						statusLabel: character.status.rawValue,
-						accessibilityIdentifier: AccessibilityIdentifier.row(id: character.id)
+						accessibilityIdentifier: AccessibilityIdentifier.row(identifier: character.id)
 					)
 					.onTapGesture {
 						viewModel.didSelect(character)
@@ -181,8 +181,8 @@ private enum AccessibilityIdentifier {
 	static let emptyState = "characterList.emptyState"
 	static let errorView = "characterList.errorView"
 
-	static func row(id: Int) -> String {
-		"characterList.row.\(id)"
+	static func row(identifier: Int) -> String {
+		"characterList.row.\(identifier)"
 	}
 }
 

@@ -1,9 +1,9 @@
 @testable import ChallengeCharacter
 
 final class CharacterListNavigatorMock: CharacterListNavigatorContract {
-    private(set) var navigateToDetailIds: [Int] = []
+    private(set) var navigateToDetailIdentifiers: [Int] = []
 
-    func navigateToDetail(id: Int) {
-        navigateToDetailIds.append(id)
+    func navigateToDetail(identifier: Int) {
+        navigateToDetailIdentifiers.append(identifier)
     }
 }

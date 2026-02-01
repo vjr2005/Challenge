@@ -1,5 +1,4 @@
 import ChallengeCore
-import Foundation
 
 struct HomeNavigator: HomeNavigatorContract {
     private let navigator: NavigatorContract

@@ -66,6 +66,6 @@ struct SystemFeatureTests {
 
 // MARK: - Test Helpers
 
-private enum TestNavigation: Navigation {
+private enum TestNavigation: NavigationContract {
     case other
 }

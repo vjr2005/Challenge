@@ -121,7 +121,7 @@ Character/
 ### CharacterNavigation
 
 ```swift
-public enum CharacterNavigation: Navigation {
+public enum CharacterNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
 }

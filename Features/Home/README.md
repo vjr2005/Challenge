@@ -58,7 +58,7 @@ Home/
 ### HomeNavigation
 
 ```swift
-public enum HomeNavigation: Navigation {
+public enum HomeNavigation: IncomingNavigationContract {
     case main
 }
 ```

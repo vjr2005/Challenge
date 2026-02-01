@@ -78,6 +78,7 @@ private enum AccessibilityIdentifier {
     }
 }
 
+/*
 // MARK: - Previews
 
 #Preview("Loading") {
@@ -103,6 +104,7 @@ private enum AccessibilityIdentifier {
         CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(PreviewError.failed)))
     }
 }
+*/
 
 // MARK: - Preview Stubs
 
@@ -240,6 +242,7 @@ private enum AccessibilityIdentifier {
     static let statusLabel = "characterDetail.statusLabel"
 }
 
+/*
 // MARK: - Previews
 
 #Preview("Loading") {
@@ -259,6 +262,7 @@ private enum AccessibilityIdentifier {
         CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(PreviewError.failed)))
     }
 }
+*/
 
 // MARK: - Preview Stubs
 
@@ -345,11 +349,13 @@ private enum AccessibilityIdentifier {
     static let charactersButton = "home.charactersButton"
 }
 
+/*
 // MARK: - Previews
 
 #Preview {
     HomeView(viewModel: HomeViewModelPreviewStub())
 }
+*/
 
 // MARK: - Preview Stubs
 

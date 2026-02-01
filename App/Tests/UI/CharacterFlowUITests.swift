@@ -32,18 +32,18 @@ final class CharacterFlowUITests: UITestCase {
         characterList { robot in
             // Verify only one element exists
             robot.verifyIsVisible()
-            robot.verifyCharacterExists(id: 1)
-            robot.verifyCharacterDoesNotExist(id: 21)
+            robot.verifyCharacterExists(identifier: 1)
+            robot.verifyCharacterDoesNotExist(identifier: 21)
 
             // Tap load more and verify two elements exist
             robot.tapLoadMore()
-            robot.verifyCharacterExists(id: 1)
-            robot.verifyCharacterExists(id: 21)
+            robot.verifyCharacterExists(identifier: 1)
+            robot.verifyCharacterExists(identifier: 21)
 
             // Pull to refresh and verify only one element exists again
             robot.pullToRefresh()
-            robot.verifyCharacterExists(id: 1)
-            robot.verifyCharacterDoesNotExist(id: 21)
+            robot.verifyCharacterExists(identifier: 1)
+            robot.verifyCharacterDoesNotExist(identifier: 21)
         }
     }
 
@@ -97,11 +97,11 @@ final class CharacterFlowUITests: UITestCase {
 
         characterList { robot in
             robot.verifyIsVisible()
-            robot.verifyCharacterExists(id: 1)
+            robot.verifyCharacterExists(identifier: 1)
             robot.typeSearch(text: "NonExistent")
             robot.verifyEmptyStateIsVisible()
             robot.clearSearch()
-            robot.verifyCharacterExists(id: 1)
+            robot.verifyCharacterExists(identifier: 1)
         }
     }
 
@@ -136,7 +136,7 @@ final class CharacterFlowUITests: UITestCase {
             robot.verifyIsVisible()
             robot.pullToRefresh()
             robot.verifyIsVisible()
-            robot.tapCharacter(id: 1)
+            robot.tapCharacter(identifier: 1)
         }
 
         characterDetail { robot in
@@ -183,7 +183,7 @@ final class CharacterFlowUITests: UITestCase {
 
         characterList { robot in
             robot.verifyIsVisible()
-            robot.tapCharacter(id: 1)
+            robot.tapCharacter(identifier: 1)
         }
 
         characterDetail { robot in

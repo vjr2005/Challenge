@@ -15,8 +15,8 @@ struct RootViewSnapshotTests {
 	@Test("Renders root container view in initial state")
 	func initialState() {
 		// Given
-		let httpClient = HTTPClientMock()
-		let appContainer = AppContainer(httpClient: httpClient)
+		let httpClientMock = HTTPClientMock()
+		let appContainer = AppContainer(httpClient: httpClientMock)
 
 		// When
 		let view = RootContainerView(appContainer: appContainer)

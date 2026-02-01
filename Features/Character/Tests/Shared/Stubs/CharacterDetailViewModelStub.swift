@@ -12,7 +12,7 @@ final class CharacterDetailViewModelStub: CharacterDetailViewModelContract {
 		self.state = state
 	}
 
-	func load() async {
+	func loadIfNeeded() async {
 		// No-op: state is fixed for snapshots
 	}
 

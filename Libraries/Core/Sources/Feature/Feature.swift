@@ -1,9 +1,9 @@
 import SwiftUI
 
 /// Protocol that defines a feature module's navigation resolution capabilities.
-public protocol Feature {
+public protocol FeatureContract {
     /// The deep link handler for this feature (optional).
-    var deepLinkHandler: (any DeepLinkHandler)? { get }
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { get }
 
     /// Creates the main view for this feature.
     /// This is the default entry point view.
@@ -17,11 +17,11 @@ public protocol Feature {
     ///   - navigation: The navigation destination to resolve.
     ///   - navigator: The navigator for the resolved view to use.
     /// - Returns: The view for the given navigation, or nil if not handled.
-    func resolve(_ navigation: any Navigation, navigator: any NavigatorContract) -> AnyView?
+    func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView?
 }
 
 // MARK: - Default Implementations
 
-public extension Feature {
-    var deepLinkHandler: (any DeepLinkHandler)? { nil }
+public extension FeatureContract {
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { nil }
 }

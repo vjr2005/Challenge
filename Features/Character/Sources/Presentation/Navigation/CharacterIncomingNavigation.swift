@@ -1,6 +1,6 @@
 import ChallengeCore
 
-public enum CharacterIncomingNavigation: IncomingNavigation {
+public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
 }

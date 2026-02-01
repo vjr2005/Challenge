@@ -54,7 +54,7 @@ Protocol defining navigation capabilities:
 
 ```swift
 public protocol RouterContract {
-    func navigate(to destination: any Navigation)
+    func navigate(to destination: any NavigationContract)
     func navigate(to url: URL?)
     func goBack()
 }
@@ -69,7 +69,7 @@ public protocol RouterContract {
 Marker protocol for type-safe navigation destinations:
 
 ```swift
-public protocol Navigation: Hashable {}
+public protocol NavigationContract: Hashable {}
 ```
 
 #### Deep Linking
@@ -97,14 +97,15 @@ In-memory caching implementation using `NSCache` with configurable limits.
 
 SwiftUI environment key for injecting the image loader.
 
-### Feature Protocol
+### FeatureContract Protocol
 
 Protocol for feature modules to implement navigation destinations and deep link registration:
 
 ```swift
-public protocol Feature {
-    func registerDeepLinks()
-    func applyNavigationDestination<V: View>(to view: V, router: any RouterContract) -> AnyView
+public protocol FeatureContract {
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { get }
+    func makeMainView(navigator: any NavigatorContract) -> AnyView
+    func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView?
 }
 ```
 

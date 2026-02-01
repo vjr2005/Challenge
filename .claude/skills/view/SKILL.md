@@ -71,6 +71,8 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
 ### Stateless Views (no ViewState)
 
+Use this pattern when the ViewModel has **no observable state** - only action methods (navigation, triggers). The ViewModel does not use `@Observable` and the View does not need to observe changes.
+
 ```swift
 struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
     let viewModel: ViewModel
@@ -83,14 +85,34 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 }
 ```
 
+**When to use stateless pattern:**
+- ViewModel only has action methods (e.g., `didTapOnButton()`, `navigateTo...()`)
+- ViewModel does NOT have a `state` property
+- ViewModel does NOT use `@Observable` macro
+- No async data loading required
+
 **Rules:**
 - **Generic over contract** - Use `<ViewModel: {Name}ViewModelContract>` for testability
-- **Stateful views** - Use `@State` + `_viewModel = State(initialValue:)` pattern
-- **Stateless views** - Use `let viewModel` (no `@State` needed)
-- **Switch on state** - Use `switch` on `viewModel.state` for stateful views
+- **Stateful views** - Use `@State` + `_viewModel = State(initialValue:)` pattern when ViewModel has observable state
+- **Stateless views** - Use `let viewModel` (no `@State` needed) when ViewModel only exposes actions
+- **Switch on state** - Use `switch` on `viewModel.state` for stateful views only
 - **@ViewBuilder** - Use for computed properties returning Views
 - **Internal visibility**
 - **No Router in View** - Delegate actions to ViewModel
+
+---
+
+## Exceptions: App-Level Container Views
+
+`RootContainerView` and similar app-level navigation containers are **exceptions** to the standard View pattern:
+
+- **Not generic over ViewModel** - receives `AppContainer` directly
+- **No LocalizedStrings** - doesn't display user-facing text
+- **No AccessibilityIdentifier** - navigation container, not interactive UI
+- **No `.task` modifier** - manages navigation, not data loading
+- **Location:** `AppKit/Sources/Presentation/Views/`
+
+These containers orchestrate navigation and feature composition, not user interface rendering.
 
 ---
 
@@ -163,7 +185,9 @@ List(items) { item in
 
 ## Previews
 
-All Views must include previews. Create one for **each state except `idle`**.
+All Views should include previews. Create one for **each state except `idle`**.
+
+> **Note:** Previews are commented out by default (`/* */`) in this project to avoid negatively impacting test coverage metrics. The preview code should still be maintained and kept up-to-date with the View implementation, but disabled to exclude from coverage reports.
 
 ### Preview Rules
 
@@ -171,6 +195,7 @@ All Views must include previews. Create one for **each state except `idle`**.
 - **One preview per visual state** - Loading, Loaded, Empty, Error
 - **Use descriptive names** - `#Preview("Loading")`
 - **Use ViewModel stubs** - same pattern as snapshot tests for consistency
+- **Comment out by default** - wrap in `/* */` to exclude from coverage (keep code maintained)
 
 ### Preview Stub Pattern
 
@@ -179,6 +204,7 @@ Use ViewModel stubs with direct state injection (same pattern as snapshot tests)
 > **IMPORTANT:** Wrap preview stubs in `#if DEBUG` to exclude them from release builds. The `#Preview` macro is already excluded automatically by the compiler.
 
 ```swift
+/*
 // MARK: - Previews
 
 #Preview("Loading") {
@@ -198,6 +224,7 @@ Use ViewModel stubs with direct state injection (same pattern as snapshot tests)
         {Name}View(viewModel: {Name}ViewModelPreviewStub(state: .error(PreviewError.failed)))
     }
 }
+*/
 
 // MARK: - Preview Stubs
 
@@ -335,19 +362,27 @@ When passing `accessibilityIdentifier:` to DS components, identifiers propagate 
 
 ## Checklist
 
+### All Views
 - [ ] Consult `/design-system` skill before building the view
 - [ ] Create View struct with init receiving ViewModel only
-- [ ] Use `_viewModel = State(initialValue:)` in init
 - [ ] Import `{AppName}Common` for localization
 - [ ] Import `{AppName}DesignSystem` for UI components
 - [ ] Use design tokens (colors, typography, spacing) - no hardcoded values
 - [ ] Create new DesignSystem components if needed for complex UI
 - [ ] Add private `LocalizedStrings` enum with all strings
 - [ ] Delegate user actions to ViewModel methods
-- [ ] Implement `body` with `.task { await viewModel.loadIfNeeded() }`
-- [ ] Implement `content` with switch on `viewModel.state`
-- [ ] Handle all ViewState cases
 - [ ] Add private `AccessibilityIdentifier` enum
 - [ ] Apply `.accessibilityIdentifier()` to standard SwiftUI elements
 - [ ] Pass `accessibilityIdentifier:` parameter to DS components for propagation
 - [ ] Add Previews for each state (except idle)
+
+### Stateful Views (with ViewState)
+- [ ] Use `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
+- [ ] Implement `body` with `.task { await viewModel.loadIfNeeded() }`
+- [ ] Implement `content` with switch on `viewModel.state`
+- [ ] Handle all ViewState cases
+
+### Stateless Views (navigation only, no async data)
+- [ ] Use `let viewModel` (no `@State` needed)
+- [ ] No `.task` modifier needed (no async data loading)
+- [ ] No `loadIfNeeded()` method in ViewModel

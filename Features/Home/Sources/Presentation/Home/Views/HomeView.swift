@@ -20,7 +20,7 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 	}
 
 	var body: some View {
-		VStack(spacing: 20) {
+		VStack(spacing: SpacingToken.xl) {
 			lottieAnimation
 			characterButton
 		}

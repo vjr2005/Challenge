@@ -1,3 +1,3 @@
 protocol CharacterListNavigatorContract {
-    func navigateToDetail(id: Int)
+    func navigateToDetail(identifier: Int)
 }

@@ -49,7 +49,7 @@ Use these skills for detailed implementation patterns:
 | `/viewmodel` | ViewModels with ViewState pattern |
 | `/view` | SwiftUI Views, previews, accessibility identifiers |
 | `/snapshot` | Snapshot tests with SnapshotTesting library |
-| `/router` | Navigation with Router, Navigator pattern, and Deep Links |
+| `/navigator` | Navigation with Navigator pattern and Deep Links |
 | `/dependencyInjection` | Containers, feature entry points, dependency wiring |
 | `/clean-code` | Dead code detection and removal using Periphery |
 

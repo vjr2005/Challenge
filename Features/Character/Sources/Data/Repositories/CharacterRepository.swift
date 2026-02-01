@@ -143,7 +143,7 @@ private extension CharacterRepository {
 	func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
 		switch error {
 		case .statusCode(404, _):
-			.characterNotFound(id: identifier)
+			.characterNotFound(identifier: identifier)
 		case .invalidURL, .invalidResponse, .statusCode:
 			.loadFailed
 		}

@@ -13,7 +13,7 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 	var body: some View {
 		content
 			.task {
-				await viewModel.load()
+				await viewModel.loadIfNeeded()
 			}
 			.background(ColorToken.backgroundSecondary)
 			.navigationBarTitleDisplayMode(.inline)
@@ -68,7 +68,7 @@ private extension CharacterDetailView {
             retryTitle: LocalizedStrings.Common.tryAgain,
             retryAction: {
                 Task {
-                    await viewModel.load()
+                    await viewModel.loadIfNeeded()
                 }
             },
             accessibilityIdentifier: AccessibilityIdentifier.errorView
@@ -231,7 +231,7 @@ private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewMode
 		self.state = state
 	}
 
-	func load() async {}
+	func loadIfNeeded() async {}
 	func refresh() async {}
 	func didTapOnBack() {}
 }

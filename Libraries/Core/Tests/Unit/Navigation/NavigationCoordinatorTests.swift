@@ -18,8 +18,11 @@ struct NavigationCoordinatorTests {
 
     @Test("Navigate appends destination to path")
     func navigateAppendsToPath() {
+        // Given
+        let destination = TestIncomingNavigationContract.screen1
+
         // When
-        sut.navigate(to: TestIncomingNavigation.screen1)
+        sut.navigate(to: destination)
 
         // Then
         #expect(sut.path.count == 1)
@@ -27,10 +30,11 @@ struct NavigationCoordinatorTests {
 
     @Test("Multiple navigations append in order")
     func multipleNavigationsAppendInOrder() {
+        // Given
+        let destinations: [TestIncomingNavigationContract] = [.screen1, .screen2, .screen1]
+
         // When
-        sut.navigate(to: TestIncomingNavigation.screen1)
-        sut.navigate(to: TestIncomingNavigation.screen2)
-        sut.navigate(to: TestIncomingNavigation.screen1)
+        destinations.forEach { sut.navigate(to: $0) }
 
         // Then
         #expect(sut.path.count == 3)
@@ -39,8 +43,8 @@ struct NavigationCoordinatorTests {
     @Test("Go back removes last item from path")
     func goBackRemovesLastFromPath() {
         // Given
-        sut.navigate(to: TestIncomingNavigation.screen1)
-        sut.navigate(to: TestIncomingNavigation.screen2)
+        sut.navigate(to: TestIncomingNavigationContract.screen1)
+        sut.navigate(to: TestIncomingNavigationContract.screen2)
 
         // When
         sut.goBack()
@@ -51,6 +55,9 @@ struct NavigationCoordinatorTests {
 
     @Test("Go back on empty path does nothing")
     func goBackOnEmptyPathDoesNothing() {
+        // Given
+        #expect(sut.path.isEmpty)
+
         // When
         sut.goBack()
 
@@ -61,8 +68,8 @@ struct NavigationCoordinatorTests {
     @Test("Go back multiple times empties path")
     func goBackMultipleTimesEmptiesPath() {
         // Given
-        sut.navigate(to: TestIncomingNavigation.screen1)
-        sut.navigate(to: TestIncomingNavigation.screen2)
+        sut.navigate(to: TestIncomingNavigationContract.screen1)
+        sut.navigate(to: TestIncomingNavigationContract.screen2)
 
         // When
         sut.goBack()
@@ -75,7 +82,7 @@ struct NavigationCoordinatorTests {
     @Test("Go back beyond empty path is safe")
     func goBackBeyondEmptyPathIsSafe() {
         // Given
-        sut.navigate(to: TestIncomingNavigation.screen1)
+        sut.navigate(to: TestIncomingNavigationContract.screen1)
 
         // When
         sut.goBack()
@@ -86,7 +93,7 @@ struct NavigationCoordinatorTests {
         #expect(sut.path.isEmpty)
     }
 
-    // MARK: - IncomingNavigation
+    // MARK: - IncomingNavigationContract
 
     @Test("Incoming navigation appends directly without redirector")
     func incomingNavigationAppendsDirectlyWithoutRedirector() {
@@ -94,7 +101,7 @@ struct NavigationCoordinatorTests {
         let sutWithoutRedirector = NavigationCoordinator(redirector: nil)
 
         // When
-        sutWithoutRedirector.navigate(to: TestIncomingNavigation.screen1)
+        sutWithoutRedirector.navigate(to: TestIncomingNavigationContract.screen1)
 
         // Then
         #expect(sutWithoutRedirector.path.count == 1)
@@ -103,27 +110,27 @@ struct NavigationCoordinatorTests {
     @Test("Incoming navigation does not call redirector")
     func incomingNavigationDoesNotCallRedirector() {
         // Given
-        let redirector = TestRedirector(result: TestIncomingNavigation.screen2)
+        let redirector = TestRedirector(result: TestIncomingNavigationContract.screen2)
         let sutWithRedirector = NavigationCoordinator(redirector: redirector)
 
         // When
-        sutWithRedirector.navigate(to: TestIncomingNavigation.screen1)
+        sutWithRedirector.navigate(to: TestIncomingNavigationContract.screen1)
 
         // Then
         #expect(sutWithRedirector.path.count == 1)
         #expect(redirector.redirectedNavigations.isEmpty)
     }
 
-    // MARK: - OutgoingNavigation
+    // MARK: - OutgoingNavigationContract
 
     @Test("Outgoing navigation with redirect appends redirected destination")
     func outgoingNavigationWithRedirectAppendsRedirectedDestination() {
         // Given
-        let redirector = TestRedirector(result: TestIncomingNavigation.screen2)
+        let redirector = TestRedirector(result: TestIncomingNavigationContract.screen2)
         let sutWithRedirector = NavigationCoordinator(redirector: redirector)
 
         // When
-        sutWithRedirector.navigate(to: TestOutgoingNavigation.external)
+        sutWithRedirector.navigate(to: TestOutgoingNavigationContract.external)
 
         // Then
         #expect(sutWithRedirector.path.count == 1)
@@ -137,7 +144,7 @@ struct NavigationCoordinatorTests {
         let sutWithRedirector = NavigationCoordinator(redirector: redirector)
 
         // When
-        sutWithRedirector.navigate(to: TestOutgoingNavigation.external)
+        sutWithRedirector.navigate(to: TestOutgoingNavigationContract.external)
 
         // Then
         #expect(sutWithRedirector.path.count == 1)
@@ -149,44 +156,47 @@ struct NavigationCoordinatorTests {
         let sutWithoutRedirector = NavigationCoordinator(redirector: nil)
 
         // When
-        sutWithoutRedirector.navigate(to: TestOutgoingNavigation.external)
+        sutWithoutRedirector.navigate(to: TestOutgoingNavigationContract.external)
 
         // Then
         #expect(sutWithoutRedirector.path.count == 1)
     }
 
-    // MARK: - AnyIncomingNavigation Wrapping
+    // MARK: - AnyIncomingNavigationContract Wrapping
 
-    @Test("Navigate wraps incoming navigation in AnyIncomingNavigation")
-    func navigateWrapsIncomingNavigationInAnyIncomingNavigation() {
+    @Test("Navigate wraps incoming navigation in AnyIncomingNavigationContract")
+    func navigateWrapsIncomingNavigationContractInAnyIncomingNavigationContract() {
+        // Given
+        let destination = TestIncomingNavigationContract.screen1
+
         // When
-        sut.navigate(to: TestIncomingNavigation.screen1)
+        sut.navigate(to: destination)
 
-        // Then - Path should contain AnyIncomingNavigation
+        // Then
         #expect(sut.path.count == 1)
     }
 }
 
 // MARK: - Test Helpers
 
-private enum TestIncomingNavigation: IncomingNavigation {
+private enum TestIncomingNavigationContract: IncomingNavigationContract {
     case screen1
     case screen2
 }
 
-private enum TestOutgoingNavigation: OutgoingNavigation {
+private enum TestOutgoingNavigationContract: OutgoingNavigationContract {
     case external
 }
 
 private final class TestRedirector: NavigationRedirectContract, @unchecked Sendable {
-    private(set) var redirectedNavigations: [any Navigation] = []
-    private let result: (any Navigation)?
+    private(set) var redirectedNavigations: [any NavigationContract] = []
+    private let result: (any NavigationContract)?
 
-    init(result: (any Navigation)?) {
+    init(result: (any NavigationContract)?) {
         self.result = result
     }
 
-    func redirect(_ navigation: any Navigation) -> (any Navigation)? {
+    func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
         redirectedNavigations.append(navigation)
         return result
     }

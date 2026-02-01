@@ -8,13 +8,13 @@ struct CharacterErrorTests {
 
     @Test(arguments: [
         (CharacterError.loadFailed, CharacterError.loadFailed, true),
-        (CharacterError.characterNotFound(id: 1), CharacterError.characterNotFound(id: 1), true),
-        (CharacterError.characterNotFound(id: 1), CharacterError.characterNotFound(id: 2), false),
+        (CharacterError.characterNotFound(identifier: 1), CharacterError.characterNotFound(identifier: 1), true),
+        (CharacterError.characterNotFound(identifier: 1), CharacterError.characterNotFound(identifier: 2), false),
         (CharacterError.invalidPage(page: 1), CharacterError.invalidPage(page: 1), true),
         (CharacterError.invalidPage(page: 1), CharacterError.invalidPage(page: 2), false),
-        (CharacterError.loadFailed, CharacterError.characterNotFound(id: 1), false),
+        (CharacterError.loadFailed, CharacterError.characterNotFound(identifier: 1), false),
         (CharacterError.loadFailed, CharacterError.invalidPage(page: 1), false),
-        (CharacterError.characterNotFound(id: 1), CharacterError.invalidPage(page: 1), false)
+        (CharacterError.characterNotFound(identifier: 1), CharacterError.invalidPage(page: 1), false)
     ])
     func equality(
         lhs: CharacterError,
@@ -46,7 +46,7 @@ struct CharacterErrorTests {
     @Test("Character not found error description contains id")
     func characterNotFoundErrorDescriptionContainsId() {
         // Given
-        let sut = CharacterError.characterNotFound(id: 42)
+        let sut = CharacterError.characterNotFound(identifier: 42)
 
         // When
         let description = sut.errorDescription

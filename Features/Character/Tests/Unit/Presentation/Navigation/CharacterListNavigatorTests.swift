@@ -23,7 +23,7 @@ struct CharacterListNavigatorTests {
         let expected = CharacterIncomingNavigation.detail(identifier: 42)
 
         // When
-        sut.navigateToDetail(id: 42)
+        sut.navigateToDetail(identifier: 42)
 
         // Then
         #expect(navigatorMock.navigatedDestinations.count == 1)

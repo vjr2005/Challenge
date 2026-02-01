@@ -7,7 +7,7 @@ import ChallengeHome
 public struct AppNavigationRedirect: NavigationRedirectContract {
 	public init() {}
 
-	public func redirect(_ navigation: any Navigation) -> (any Navigation)? {
+	public func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
 		switch navigation {
 		case let outgoing as HomeOutgoingNavigation:
 			redirect(outgoing)
@@ -18,7 +18,7 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 
 	// MARK: - Private
 
-	private func redirect(_ navigation: HomeOutgoingNavigation) -> any Navigation {
+	private func redirect(_ navigation: HomeOutgoingNavigation) -> any NavigationContract {
 		switch navigation {
 		case .characters:
 			CharacterIncomingNavigation.list

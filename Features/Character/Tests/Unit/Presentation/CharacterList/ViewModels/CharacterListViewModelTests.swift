@@ -237,7 +237,7 @@ struct CharacterListViewModelTests {
         sut.didSelect(character)
 
         // Then
-        #expect(navigatorMock.navigateToDetailIds == [42])
+        #expect(navigatorMock.navigateToDetailIdentifiers == [42])
     }
 
     // MARK: - Search

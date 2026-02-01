@@ -89,19 +89,6 @@ actor CharacterMemoryDataSource {
 }
 ```
 
-### Types stored inside actors
-
-Types stored or processed by actors must be `nonisolated`:
-
-```swift
-// DTOs used inside actors need nonisolated
-nonisolated struct CharacterDTO: Decodable, Equatable {
-    let id: Int
-    let name: String
-    let status: String
-}
-```
-
 ### Framework subclasses called from background threads
 
 ```swift
@@ -223,7 +210,6 @@ actor DataStore {
 | Repository | Yes (default) | No annotation needed |
 | RemoteDataSource | Yes (default) | Struct, no annotation needed |
 | MemoryDataSource | No (actor) | Use `actor` keyword |
-| DTO | nonisolated | Required for actor storage |
 | URLProtocol subclass | nonisolated | Framework requirement |
 | XCTestCase subclass | nonisolated | Framework requirement |
 
@@ -233,7 +219,6 @@ actor DataStore {
 
 - [ ] Async functions use `async throws` (not completion handlers)
 - [ ] Actors are used for shared mutable state
-- [ ] DTOs are marked `nonisolated` if used in actors
 - [ ] No `DispatchQueue` usage
 - [ ] No explicit `Sendable` conformance (it's inferred)
 - [ ] No explicit `@MainActor` on ViewModels/Views (it's default)

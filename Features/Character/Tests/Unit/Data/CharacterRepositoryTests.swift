@@ -264,7 +264,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
 
         // When / Then
-        await #expect(throws: CharacterError.characterNotFound(id: 42)) {
+        await #expect(throws: CharacterError.characterNotFound(identifier: 42)) {
             _ = try await sut.getCharacter(identifier: 42, cachePolicy: .localFirst)
         }
     }

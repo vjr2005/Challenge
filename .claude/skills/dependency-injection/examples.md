@@ -26,7 +26,7 @@ public struct AppContainer: Sendable {
     private let characterFeature: CharacterFeature
     private let systemFeature: SystemFeature
 
-    public var features: [any Feature] {
+    public var features: [any FeatureContract] {
         [homeFeature, characterFeature, systemFeature]
     }
 
@@ -47,7 +47,7 @@ public struct AppContainer: Sendable {
     /// Resolves any navigation to a view by iterating through features.
     /// Falls back to NotFoundView if no feature can handle the navigation.
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView {
         for feature in features {
@@ -89,7 +89,7 @@ import ChallengeCore
 import ChallengeHome
 
 struct AppNavigationRedirect: NavigationRedirectContract {
-    func redirect(_ navigation: any Navigation) -> (any Navigation)? {
+    func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
         switch navigation {
         case let outgoing as HomeOutgoingNavigation:
             return redirect(outgoing)
@@ -100,7 +100,7 @@ struct AppNavigationRedirect: NavigationRedirectContract {
 
     // MARK: - Private
 
-    private func redirect(_ navigation: HomeOutgoingNavigation) -> any Navigation {
+    private func redirect(_ navigation: HomeOutgoingNavigation) -> any NavigationContract {
         switch navigation {
         case .characters:
             return CharacterIncomingNavigation.list
@@ -169,7 +169,7 @@ public final class CharacterContainer: Sendable {
 // Features/Character/Sources/Navigation/CharacterIncomingNavigation.swift
 import ChallengeCore
 
-public enum CharacterIncomingNavigation: Navigation {
+public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
 }
@@ -183,7 +183,7 @@ import ChallengeCore
 import ChallengeNetworking
 import SwiftUI
 
-public struct CharacterFeature: Feature {
+public struct CharacterFeature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: CharacterContainer
@@ -196,7 +196,7 @@ public struct CharacterFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         CharacterDeepLinkHandler()
     }
 
@@ -207,7 +207,7 @@ public struct CharacterFeature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? CharacterIncomingNavigation else {
@@ -275,9 +275,11 @@ public struct RootContainerView: View {
     }
 }
 
+/*
 #Preview {
     RootContainerView(appContainer: AppContainer())
 }
+*/
 ```
 
 ---
@@ -309,7 +311,7 @@ public final class HomeContainer: Sendable {
 // Features/Home/Sources/Navigation/HomeIncomingNavigation.swift
 import ChallengeCore
 
-public enum HomeIncomingNavigation: Navigation {
+public enum HomeIncomingNavigation: IncomingNavigationContract {
     case main
 }
 ```
@@ -318,7 +320,7 @@ public enum HomeIncomingNavigation: Navigation {
 // Features/Home/Sources/Navigation/HomeOutgoingNavigation.swift
 import ChallengeCore
 
-public enum HomeOutgoingNavigation: Navigation {
+public enum HomeOutgoingNavigation: OutgoingNavigationContract {
     case characters
 }
 ```
@@ -349,7 +351,7 @@ struct HomeNavigator: HomeNavigatorContract {
 import ChallengeCore
 import SwiftUI
 
-public struct HomeFeature: Feature {
+public struct HomeFeature: FeatureContract {
     // MARK: - Dependencies
 
     private let container: HomeContainer
@@ -362,7 +364,7 @@ public struct HomeFeature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         HomeDeepLinkHandler()
     }
 
@@ -371,7 +373,7 @@ public struct HomeFeature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? HomeIncomingNavigation else {
@@ -456,7 +458,7 @@ struct CharacterFeatureTests {
     @Test
     func resolveUnknownNavigationReturnsNil() {
         // Given
-        struct UnknownNavigation: Navigation {}
+        struct UnknownNavigation: NavigationContract {}
 
         // When
         let result = sut.resolve(UnknownNavigation(), navigator: navigatorMock)
@@ -514,7 +516,7 @@ struct HomeFeatureTests {
     @Test
     func resolveUnknownNavigationReturnsNil() {
         // Given
-        struct UnknownNavigation: Navigation {}
+        struct UnknownNavigation: NavigationContract {}
 
         // When
         let result = sut.resolve(UnknownNavigation(), navigator: navigatorMock)
@@ -583,7 +585,7 @@ struct {Feature}FeatureTests {
     @Test
     func resolveUnknownNavigationReturnsNil() {
         // Given
-        struct UnknownNavigation: Navigation {}
+        struct UnknownNavigation: NavigationContract {}
 
         // When
         let result = sut.resolve(UnknownNavigation(), navigator: navigatorMock)

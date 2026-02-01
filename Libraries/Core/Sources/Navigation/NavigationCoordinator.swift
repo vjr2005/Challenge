@@ -18,12 +18,12 @@ public final class NavigationCoordinator: NavigatorContract {
 
     /// Navigates to the given destination, applying redirect if configured.
     ///
-    /// - For `OutgoingNavigation`: Requires a redirect; falls back to `UnknownNavigation` if none.
-    /// - For other `Navigation`: Appends directly to the path.
-    public func navigate(to destination: any Navigation) {
-        let resolved: any Navigation
+    /// - For `OutgoingNavigationContract`: Requires a redirect; falls back to `UnknownNavigation` if none.
+    /// - For other `NavigationContract`: Appends directly to the path.
+    public func navigate(to destination: any NavigationContract) {
+        let resolved: any NavigationContract
 
-        if destination is any OutgoingNavigation {
+        if destination is any OutgoingNavigationContract {
             if let redirected = redirector?.redirect(destination) {
                 resolved = redirected
             } else {

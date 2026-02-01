@@ -6,5 +6,5 @@ public protocol NavigationRedirectContract: Sendable {
     /// Redirects the navigation if applicable.
     /// - Parameter navigation: The original navigation.
     /// - Returns: The redirected navigation, or nil if no redirect applies.
-    func redirect(_ navigation: any Navigation) -> (any Navigation)?
+    func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)?
 }

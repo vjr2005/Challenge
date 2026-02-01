@@ -4,7 +4,7 @@ import Foundation
 /// Mock implementation of `NavigatorContract` for testing navigation.
 public final class NavigatorMock: NavigatorContract {
     /// The destinations navigated to.
-    public private(set) var navigatedDestinations: [any Navigation] = []
+    public private(set) var navigatedDestinations: [any NavigationContract] = []
 
     /// The number of times `goBack()` was called.
     public private(set) var goBackCallCount = 0
@@ -13,7 +13,7 @@ public final class NavigatorMock: NavigatorContract {
     public init() {}
 
     /// Records a navigation to the given destination.
-    public func navigate(to destination: any Navigation) {
+    public func navigate(to destination: any NavigationContract) {
         navigatedDestinations.append(destination)
     }
 

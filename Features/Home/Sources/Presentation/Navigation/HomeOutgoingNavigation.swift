@@ -1,5 +1,5 @@
 import ChallengeCore
 
-public enum HomeOutgoingNavigation: OutgoingNavigation {
+public enum HomeOutgoingNavigation: OutgoingNavigationContract {
     case characters
 }

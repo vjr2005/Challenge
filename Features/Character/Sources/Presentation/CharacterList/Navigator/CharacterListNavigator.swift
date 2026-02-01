@@ -7,7 +7,7 @@ struct CharacterListNavigator: CharacterListNavigatorContract {
         self.navigator = navigator
     }
 
-    func navigateToDetail(id: Int) {
-        navigator.navigate(to: CharacterIncomingNavigation.detail(identifier: id))
+    func navigateToDetail(identifier: Int) {
+        navigator.navigate(to: CharacterIncomingNavigation.detail(identifier: identifier))
     }
 }

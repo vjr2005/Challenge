@@ -1,9 +1,9 @@
 ---
-name: router
-description: Creates Router for navigation. Use when setting up navigation, adding navigation to ViewModels, or testing navigation behavior.
+name: navigator
+description: Creates Navigator for navigation. Use when setting up navigation, adding navigation to ViewModels, or testing navigation behavior.
 ---
 
-# Skill: Router
+# Skill: Navigator
 
 Guide for implementing navigation using NavigationCoordinator with SwiftUI NavigationStack, Navigator pattern for decoupling, and Outgoing/Incoming Navigation for cross-feature communication.
 
@@ -61,16 +61,18 @@ Navigation Flow:
 import Foundation
 
 public protocol NavigatorContract {
-    func navigate(to destination: any Navigation)
+    func navigate(to destination: any NavigationContract)
     func goBack()
 }
 ```
 
-### Navigation (Protocol)
+### NavigationContract (Protocol)
 
 ```swift
 // Libraries/Core/Sources/Navigation/Navigation.swift
-public protocol Navigation: Hashable, Sendable {}
+nonisolated public protocol NavigationContract: Hashable, Sendable {}
+nonisolated public protocol IncomingNavigationContract: NavigationContract {}
+nonisolated public protocol OutgoingNavigationContract: NavigationContract {}
 ```
 
 ### NavigationCoordinator (Implementation)
@@ -84,13 +86,13 @@ import SwiftUI
 public final class NavigationCoordinator: NavigatorContract {
     public var path = NavigationPath()
 
-    private let redirector: (any NavigationRedirectContract)?
+    private let redirector: (any NavigationContractRedirectContract)?
 
-    public init(redirector: (any NavigationRedirectContract)? = nil) {
+    public init(redirector: (any NavigationContractRedirectContract)? = nil) {
         self.redirector = redirector
     }
 
-    public func navigate(to destination: any Navigation) {
+    public func navigate(to destination: any NavigationContract) {
         let resolved = redirector?.redirect(destination) ?? destination
         path.append(resolved)
     }
@@ -111,30 +113,30 @@ public final class NavigationCoordinator: NavigatorContract {
 import Foundation
 
 public protocol NavigationRedirectContract: Sendable {
-    func redirect(_ navigation: any Navigation) -> (any Navigation)?
+    func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)?
 }
 ```
 
-### Feature Protocol
+### FeatureContract Protocol
 
 ```swift
 // Libraries/Core/Sources/Feature/Feature.swift
 import SwiftUI
 
-public protocol Feature {
+public protocol FeatureContract {
     /// The deep link handler for this feature (optional).
-    var deepLinkHandler: (any DeepLinkHandler)? { get }
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { get }
 
     /// Creates the main view for this feature.
     func makeMainView(navigator: any NavigatorContract) -> AnyView
 
     /// Resolves a navigation destination to a view.
     /// Returns nil if this feature doesn't handle the given navigation.
-    func resolve(_ navigation: any Navigation, navigator: any NavigatorContract) -> AnyView?
+    func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView?
 }
 
-public extension Feature {
-    var deepLinkHandler: (any DeepLinkHandler)? { nil }
+public extension FeatureContract {
+    var deepLinkHandler: (any DeepLinkHandlerContract)? { nil }
 }
 ```
 
@@ -143,16 +145,16 @@ public extension Feature {
 - `makeMainView()` creates the feature's default entry point view
 - `resolve()` handles navigation destinations (returns `nil` if not handled)
 
-### DeepLinkHandler (Protocol)
+### DeepLinkHandlerContract (Protocol)
 
 ```swift
 // Libraries/Core/Sources/Navigation/DeepLinkHandler.swift
 import Foundation
 
-public protocol DeepLinkHandler: Sendable {
+public protocol DeepLinkHandlerContract: Sendable {
     var scheme: String { get }
     var host: String { get }
-    func resolve(_ url: URL) -> (any Navigation)?
+    func resolve(_ url: URL) -> (any NavigationContract)?
 }
 ```
 
@@ -164,12 +166,12 @@ import ChallengeCore
 import Foundation
 
 public final class NavigatorMock: NavigatorContract {
-    public private(set) var navigatedDestinations: [any Navigation] = []
+    public private(set) var navigatedDestinations: [any NavigationContract] = []
     public private(set) var goBackCallCount = 0
 
     public init() {}
 
-    public func navigate(to destination: any Navigation) {
+    public func navigate(to destination: any NavigationContract) {
         navigatedDestinations.append(destination)
     }
 
@@ -191,7 +193,7 @@ Each feature defines Incoming and optionally Outgoing navigation:
 // Features/{Feature}/Sources/Presentation/Navigation/{Feature}IncomingNavigation.swift
 import ChallengeCore
 
-public enum {Feature}IncomingNavigation: Navigation {
+public enum {Feature}IncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
 }
@@ -203,7 +205,7 @@ public enum {Feature}IncomingNavigation: Navigation {
 // Features/{Feature}/Sources/Presentation/Navigation/{Feature}OutgoingNavigation.swift
 import ChallengeCore
 
-public enum {Feature}OutgoingNavigation: Navigation {
+public enum {Feature}OutgoingNavigation: OutgoingNavigationContract {
     case characters  // Navigates to Character feature
     case settings    // Navigates to Settings feature
 }
@@ -218,11 +220,11 @@ public enum {Feature}OutgoingNavigation: Navigation {
 import ChallengeCore
 import Foundation
 
-struct {Feature}DeepLinkHandler: DeepLinkHandler {
+struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
     let scheme = "challenge"
     let host = "{feature}"  // e.g., "character"
 
-    func resolve(_ url: URL) -> (any Navigation)? {
+    func resolve(_ url: URL) -> (any NavigationContract)? {
         switch url.path {
         case "/list":
             return {Feature}IncomingNavigation.list
@@ -259,7 +261,7 @@ import ChallengeCore
 import ChallengeHome
 
 struct AppNavigationRedirect: NavigationRedirectContract {
-    func redirect(_ navigation: any Navigation) -> (any Navigation)? {
+    func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
         switch navigation {
         case let outgoing as HomeOutgoingNavigation:
             return redirect(outgoing)
@@ -270,7 +272,7 @@ struct AppNavigationRedirect: NavigationRedirectContract {
 
     // MARK: - Private
 
-    private func redirect(_ navigation: HomeOutgoingNavigation) -> any Navigation {
+    private func redirect(_ navigation: HomeOutgoingNavigation) -> any NavigationContract {
         switch navigation {
         case .characters:
             return CharacterIncomingNavigation.list
@@ -314,9 +316,11 @@ public struct RootContainerView: View {
     }
 }
 
+/*
 #Preview {
     RootContainerView(appContainer: AppContainer())
 }
+*/
 ```
 
 **Key Changes:**
@@ -332,7 +336,7 @@ public struct RootContainerView: View {
 /// Resolves any navigation to a view by iterating through features.
 /// Falls back to NotFoundView if no feature can handle the navigation.
 public func resolve(
-    _ navigation: any Navigation,
+    _ navigation: any NavigationContract,
     navigator: any NavigatorContract
 ) -> AnyView {
     for feature in features {
@@ -435,7 +439,7 @@ import ChallengeCore
 import ChallengeNetworking
 import SwiftUI
 
-public struct {Feature}Feature: Feature {
+public struct {Feature}Feature: FeatureContract {
     private let container: {Feature}Container
 
     public init(httpClient: any HTTPClientContract) {
@@ -444,7 +448,7 @@ public struct {Feature}Feature: Feature {
 
     // MARK: - Feature Protocol
 
-    public var deepLinkHandler: (any DeepLinkHandler)? {
+    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
         {Feature}DeepLinkHandler()
     }
 
@@ -455,7 +459,7 @@ public struct {Feature}Feature: Feature {
     }
 
     public func resolve(
-        _ navigation: any Navigation,
+        _ navigation: any NavigationContract,
         navigator: any NavigatorContract
     ) -> AnyView? {
         guard let navigation = navigation as? {Feature}IncomingNavigation else {
@@ -688,10 +692,10 @@ Features/{Feature}/
 - [ ] Core has `NavigatorContract` protocol
 - [ ] Core has `NavigationRedirectContract` protocol
 - [ ] Core has `NavigationCoordinator` (@Observable, manages path + redirects)
-- [ ] Core has `Navigation` protocol
+- [ ] Core has `NavigationContract` protocol
 - [ ] Core has `AnyNavigation` type-erased wrapper
-- [ ] Core has `DeepLinkHandler` protocol
-- [ ] Core has `Feature` protocol with `makeMainView()` and `resolve()` methods
+- [ ] Core has `DeepLinkHandlerContract` protocol
+- [ ] Core has `FeatureContract` protocol with `makeMainView()` and `resolve()` methods
 - [ ] Core has `NavigatorMock` for testing
 
 ### AppKit Configuration
@@ -705,11 +709,11 @@ Features/{Feature}/
 ### Feature Implementation
 - [ ] Feature has `{Feature}IncomingNavigation` in `Presentation/Navigation/`
 - [ ] Feature has `{Feature}OutgoingNavigation` for cross-feature navigation (if needed)
-- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigation` (if deep links needed)
+- [ ] Feature has `{Feature}DeepLinkHandler` returning `IncomingNavigationContract` (if deep links needed)
 - [ ] Feature implements `makeMainView(navigator:)` returning default entry point
 - [ ] Feature implements `resolve(_:navigator:)` returning view or nil
 - [ ] Each screen has `NavigatorContract` and `Navigator`
-- [ ] Navigator uses `IncomingNavigation` for internal, `OutgoingNavigation` for external
+- [ ] Navigator uses `IncomingNavigationContract` for internal, `OutgoingNavigationContract` for external
 - [ ] Container factories receive `navigator: any NavigatorContract`
 - [ ] ViewModel receives specific `NavigatorContract` (not generic)
 
@@ -717,4 +721,4 @@ Features/{Feature}/
 - [ ] Tests use `NavigatorMock` to verify navigation
 - [ ] Navigator tests verify correct Navigation enum is used
 - [ ] AppNavigationRedirect tests verify Outgoing → Incoming mapping
-- [ ] DeepLinkHandler tests verify URL → IncomingNavigation resolution
+- [ ] DeepLinkHandler tests verify URL → IncomingNavigationContract resolution

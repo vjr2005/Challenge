@@ -21,12 +21,12 @@ struct FeatureTests {
 
 // MARK: - Test Helpers
 
-private struct TestFeature: Feature {
+private struct TestFeature: FeatureContract {
     func makeMainView(navigator: any NavigatorContract) -> AnyView {
         AnyView(EmptyView())
     }
 
-    func resolve(_ navigation: any Navigation, navigator: any NavigatorContract) -> AnyView? {
+    func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView? {
         nil
     }
 }

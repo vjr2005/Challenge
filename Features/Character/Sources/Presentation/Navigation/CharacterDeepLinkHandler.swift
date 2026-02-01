@@ -1,11 +1,11 @@
 import ChallengeCore
 import Foundation
 
-struct CharacterDeepLinkHandler: DeepLinkHandler {
+struct CharacterDeepLinkHandler: DeepLinkHandlerContract {
     let scheme = "challenge"
     let host = "character"
 
-    func resolve(_ url: URL) -> (any Navigation)? {
+    func resolve(_ url: URL) -> (any NavigationContract)? {
         switch url.path {
         case "/list":
             return CharacterIncomingNavigation.list

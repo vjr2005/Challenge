@@ -1,5 +1,5 @@
 import ChallengeCore
 
-public enum HomeIncomingNavigation: IncomingNavigation {
+public enum HomeIncomingNavigation: IncomingNavigationContract {
     case main
 }

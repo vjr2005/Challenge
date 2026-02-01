@@ -59,7 +59,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     func didSelect(_ character: Character) {
-        navigator.navigateToDetail(id: character.id)
+        navigator.navigateToDetail(identifier: character.id)
     }
 }
 
