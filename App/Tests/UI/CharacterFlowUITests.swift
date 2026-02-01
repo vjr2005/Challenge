@@ -160,6 +160,39 @@ final class CharacterFlowUITests: UITestCase {
 	}
 
 	@MainActor
+	func testCharacterRowAccessibilityIdentifiersArePropagated() throws {
+		// Given
+		let charactersData = Data.fixture("characters_response")
+		let imageData = Data.stubAvatarImage
+
+		stubServer.requestHandler = { path in
+			if path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if path.contains("/character") {
+				return .ok(charactersData)
+			}
+			return .notFound
+		}
+
+		// When
+		launch()
+
+		home { robot in
+			robot.verifyIsVisible()
+			robot.tapCharacterButton()
+		}
+
+		// Then - Verify DS accessibility identifiers are propagated correctly
+		characterList { robot in
+			robot.verifyIsVisible()
+			robot.verifyRowTitleIdentifierExists(id: 1)
+			robot.verifyRowImageIdentifierExists(id: 1)
+			robot.verifyRowStatusIdentifierExists(id: 1)
+		}
+	}
+
+	@MainActor
 	func testCharacterListPullToRefresh() throws {
 		// Given
 		let charactersData = Data.fixture("characters_response")

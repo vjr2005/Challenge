@@ -1,6 +1,10 @@
 import SwiftUI
 
 /// A generic card container with consistent styling.
+///
+/// DSCard propagates accessibility identifiers to its content. When you apply
+/// an accessibility identifier to a DSCard, child Design System components
+/// will automatically receive it with their default suffixes.
 public struct DSCard<Content: View>: View {
 	private let content: Content
 	private let padding: CGFloat

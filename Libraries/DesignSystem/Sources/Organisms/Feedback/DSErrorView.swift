@@ -7,6 +7,8 @@ public struct DSErrorView: View {
 	private let retryTitle: String?
 	private let retryAction: (() -> Void)?
 
+	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+
 	/// Creates a DSErrorView.
 	/// - Parameters:
 	///   - title: The error title
@@ -30,18 +32,26 @@ public struct DSErrorView: View {
 			Image(systemName: "exclamationmark.triangle.fill")
 				.font(.system(size: IconSizeToken.xxl))
 				.foregroundStyle(ColorToken.statusError)
+				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "icon", traits: .isImage)
+				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
-				DSText(title, style: .headline)
+				DSText(title, style: .headline, accessibilitySuffix: "title")
 
 				if let message {
-					DSText(message, style: .body, color: ColorToken.textSecondary)
+					DSText(message, style: .body, color: ColorToken.textSecondary, accessibilitySuffix: "message")
 						.multilineTextAlignment(.center)
 				}
 			}
 
 			if let retryTitle, let retryAction {
-				DSButton(retryTitle, icon: "arrow.clockwise", variant: .secondary, action: retryAction)
+				DSButton(
+					retryTitle,
+					icon: "arrow.clockwise",
+					variant: .secondary,
+					accessibilitySuffix: "retryButton",
+					action: retryAction
+				)
 			}
 		}
 		.padding(SpacingToken.xl)

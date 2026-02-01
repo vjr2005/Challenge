@@ -60,7 +60,7 @@ private extension CharacterListView {
                 await viewModel.loadMore()
             }
         }
-        .accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
+        .dsAccessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
         .padding(.vertical, SpacingToken.sm)
     }
 
@@ -78,7 +78,7 @@ private extension CharacterListView {
             title: LocalizedStrings.Empty.title,
             message: LocalizedStrings.Empty.description
         )
-        .accessibilityIdentifier(AccessibilityIdentifier.emptyState)
+        .dsAccessibilityIdentifier(AccessibilityIdentifier.emptyState)
     }
 
 	func characterList(page: CharactersPage) -> some View {
@@ -87,11 +87,19 @@ private extension CharacterListView {
 				headerView(totalCount: page.totalCount)
 
 				ForEach(page.characters, id: \.id) { character in
-					CharacterRowView(character: character)
-						.accessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
-						.onTapGesture {
-							viewModel.didSelect(character)
-						}
+					DSCardInfoRow(
+						imageURL: character.imageURL,
+						title: character.name,
+						subtitle: character.species,
+						caption: character.location.name,
+						captionIcon: "mappin.circle.fill",
+						status: DSStatus.from(character.status.rawValue),
+						statusLabel: character.status.rawValue
+					)
+					.dsAccessibilityIdentifier(AccessibilityIdentifier.row(id: character.id))
+					.onTapGesture {
+						viewModel.didSelect(character)
+					}
 				}
 
 				if page.hasNextPage {
@@ -132,63 +140,6 @@ private extension CharacterListView {
 				await viewModel.loadIfNeeded()
 			}
 		}
-	}
-}
-
-// MARK: - Character Row
-
-private struct CharacterRowView: View {
-	let character: Character
-
-	var body: some View {
-		DSCard(padding: SpacingToken.lg) {
-			HStack(spacing: SpacingToken.lg) {
-				characterImage
-				characterInfo
-				Spacer()
-				statusIndicator
-			}
-		}
-	}
-
-	var characterImage: some View {
-		DSAsyncImage(url: character.imageURL)
-			.frame(width: 70, height: 70)
-			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-	}
-
-	var characterInfo: some View {
-		VStack(alignment: .leading, spacing: SpacingToken.xs) {
-			DSText(character.name, style: .headline)
-				.lineLimit(1)
-
-			Text(character.species)
-				.font(TextStyle.subheadline.font)
-				.foregroundStyle(ColorToken.textSecondary)
-
-			HStack(spacing: SpacingToken.xs) {
-				Image(systemName: "mappin.circle.fill")
-					.font(.caption2)
-				Text(character.location.name)
-					.font(TextStyle.caption2.font)
-			}
-			.foregroundStyle(ColorToken.textTertiary)
-			.lineLimit(1)
-		}
-	}
-
-	var statusIndicator: some View {
-		VStack(spacing: SpacingToken.xs) {
-			DSStatusIndicator(status: characterStatus)
-
-			Text(character.status.rawValue)
-				.font(TextStyle.caption.font)
-				.foregroundStyle(ColorToken.textSecondary)
-		}
-	}
-
-	var characterStatus: DSStatus {
-		DSStatus.from(character.status.rawValue)
 	}
 }
 

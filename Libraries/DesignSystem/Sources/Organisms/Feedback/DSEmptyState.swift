@@ -8,6 +8,8 @@ public struct DSEmptyState: View {
 	private let actionTitle: String?
 	private let action: (() -> Void)?
 
+	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+
 	/// Creates a DSEmptyState.
 	/// - Parameters:
 	///   - icon: SF Symbol name for the icon
@@ -34,18 +36,20 @@ public struct DSEmptyState: View {
 			Image(systemName: icon)
 				.font(.system(size: IconSizeToken.xxxl))
 				.foregroundStyle(ColorToken.textTertiary)
+				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "icon", traits: .isImage)
+				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
-				DSText(title, style: .headline)
+				DSText(title, style: .headline, accessibilitySuffix: "title")
 
 				if let message {
-					DSText(message, style: .body, color: ColorToken.textSecondary)
+					DSText(message, style: .body, color: ColorToken.textSecondary, accessibilitySuffix: "message")
 						.multilineTextAlignment(.center)
 				}
 			}
 
 			if let actionTitle, let action {
-				DSButton(actionTitle, variant: .secondary, action: action)
+				DSButton(actionTitle, variant: .secondary, accessibilitySuffix: "button", action: action)
 			}
 		}
 		.padding(SpacingToken.xl)

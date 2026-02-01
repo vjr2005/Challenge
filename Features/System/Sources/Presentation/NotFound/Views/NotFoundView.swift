@@ -14,7 +14,7 @@ struct NotFoundView<ViewModel: NotFoundViewModelContract>: View {
         ) {
             viewModel.didTapGoBack()
         }
-        .accessibilityIdentifier(AccessibilityIdentifier.container)
+        .dsAccessibilityIdentifier(AccessibilityIdentifier.container)
     }
 }
 

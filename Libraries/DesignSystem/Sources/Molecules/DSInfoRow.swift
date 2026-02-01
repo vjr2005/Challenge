@@ -7,6 +7,8 @@ public struct DSInfoRow: View {
 	private let value: String
 	private let iconColor: Color
 
+	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+
 	/// Creates a DSInfoRow.
 	/// - Parameters:
 	///   - icon: SF Symbol name for the icon
@@ -31,10 +33,12 @@ public struct DSInfoRow: View {
 				.font(TextStyle.body.font)
 				.foregroundStyle(iconColor)
 				.frame(width: SpacingToken.xxl)
+				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "icon", traits: .isImage)
+				.accessibilityHidden(true)
 
 			VStack(alignment: .leading, spacing: SpacingToken.xxs) {
-				DSText(label, style: .caption, color: ColorToken.textSecondary)
-				DSText(value, style: .body)
+				DSText(label, style: .caption, color: ColorToken.textSecondary, accessibilitySuffix: "label")
+				DSText(value, style: .body, accessibilitySuffix: "value")
 			}
 
 			Spacer()

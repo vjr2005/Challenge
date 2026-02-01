@@ -4,6 +4,8 @@ import SwiftUI
 public struct DSLoadingView: View {
 	private let message: String?
 
+	@Environment(\.dsAccessibilityIdentifier) private var parentIdentifier
+
 	/// Creates a DSLoadingView.
 	/// - Parameter message: Optional loading message
 	public init(message: String? = nil) {
@@ -14,9 +16,10 @@ public struct DSLoadingView: View {
 		VStack(spacing: SpacingToken.lg) {
 			ProgressView()
 				.scaleEffect(1.5)
+				.dsAccessibility(parentIdentifier: parentIdentifier, suffix: "indicator")
 
 			if let message {
-				DSText(message, style: .body, color: ColorToken.textSecondary)
+				DSText(message, style: .body, color: ColorToken.textSecondary, accessibilitySuffix: "message")
 			}
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)

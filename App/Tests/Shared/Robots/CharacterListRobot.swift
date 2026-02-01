@@ -116,6 +116,49 @@ extension CharacterListRobot {
 	}
 }
 
+// MARK: - DS Accessibility Identifiers Verification
+
+extension CharacterListRobot {
+	@discardableResult
+	func verifyRowTitleIdentifierExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = "characterList.row.\(id).title"
+		let element = app.descendants(matching: .any)[identifier].firstMatch
+		XCTAssertTrue(
+			element.waitForExistence(timeout: 10),
+			"Expected accessibility identifier '\(identifier)' to exist",
+			file: file,
+			line: line
+		)
+		return self
+	}
+
+	@discardableResult
+	func verifyRowImageIdentifierExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = "characterList.row.\(id).image"
+		let element = app.descendants(matching: .any)[identifier].firstMatch
+		XCTAssertTrue(
+			element.waitForExistence(timeout: 10),
+			"Expected accessibility identifier '\(identifier)' to exist",
+			file: file,
+			line: line
+		)
+		return self
+	}
+
+	@discardableResult
+	func verifyRowStatusIdentifierExists(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = "characterList.row.\(id).status"
+		let element = app.descendants(matching: .any)[identifier].firstMatch
+		XCTAssertTrue(
+			element.waitForExistence(timeout: 10),
+			"Expected accessibility identifier '\(identifier)' to exist",
+			file: file,
+			line: line
+		)
+		return self
+	}
+}
+
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
