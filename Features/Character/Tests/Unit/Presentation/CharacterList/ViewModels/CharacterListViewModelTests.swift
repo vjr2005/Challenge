@@ -392,4 +392,38 @@ struct CharacterListViewModelTests {
         // Then
         #expect(refreshCharactersUseCaseMock.lastRequestedPage == 1)
     }
+
+    @Test("Refresh keeps loaded state visible during network request")
+    func refreshKeepsLoadedStateDuringRequest() async {
+        // Given
+        let loadedPage = CharactersPage.stub()
+        getCharactersUseCaseMock.result = .success(loadedPage)
+        await sut.loadIfNeeded()
+        refreshCharactersUseCaseMock.result = .success(.stub())
+
+        var statesDuringRefresh: [CharacterListViewState] = []
+        refreshCharactersUseCaseMock.onExecute = { [weak sut] in
+            guard let sut else { return }
+            statesDuringRefresh.append(sut.state)
+        }
+
+        // When
+        await sut.refresh()
+
+        // Then
+        #expect(statesDuringRefresh.count == 1)
+        #expect(statesDuringRefresh.first == .loaded(loadedPage))
+    }
+
+    @Test("Refresh sets error state on failure")
+    func refreshSetsErrorStateOnFailure() async {
+        // Given
+        refreshCharactersUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await sut.refresh()
+
+        // Then
+        #expect(sut.state == .error(.loadFailed))
+    }
 }

@@ -43,7 +43,6 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     func refresh() async {
-        state = .loading
         currentPage = 1
         await refreshCharacters()
     }

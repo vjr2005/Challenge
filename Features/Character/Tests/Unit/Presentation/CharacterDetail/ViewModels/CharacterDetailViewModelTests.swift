@@ -151,4 +151,26 @@ struct CharacterDetailViewModelTests {
         // Then
         #expect(sut.state == .error(.loadFailed))
     }
+
+    @Test("Refresh keeps loaded state visible during network request")
+    func refreshKeepsLoadedStateDuringRequest() async {
+        // Given
+        let loadedCharacter = Character.stub()
+        getCharacterDetailUseCaseMock.result = .success(loadedCharacter)
+        await sut.loadIfNeeded()
+        refreshCharacterDetailUseCaseMock.result = .success(.stub())
+
+        var statesDuringRefresh: [CharacterDetailViewState] = []
+        refreshCharacterDetailUseCaseMock.onExecute = { [weak sut] in
+            guard let sut else { return }
+            statesDuringRefresh.append(sut.state)
+        }
+
+        // When
+        await sut.refresh()
+
+        // Then
+        #expect(statesDuringRefresh.count == 1)
+        #expect(statesDuringRefresh.first == .loaded(loadedCharacter))
+    }
 }
