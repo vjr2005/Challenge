@@ -48,17 +48,34 @@ struct ChallengeApp: App {
 
 ## UI Tests
 
-UI tests using the Robot pattern:
+UI tests use the Robot pattern with a local HTTP stub server ([Swifter](https://github.com/httpswift/swifter)) to mock API responses.
 
-| Robot | Purpose |
-|-------|---------|
+### Components
+
+| Component | Purpose |
+|-----------|---------|
+| `UITestCase` | Base class with StubServer lifecycle |
+| `StubServer` | Local HTTP server for mocking API |
 | `HomeRobot` | Home screen interactions |
 | `CharacterListRobot` | Character list interactions |
 | `CharacterDetailRobot` | Character detail interactions |
+| `NotFoundRobot` | Not found screen interactions |
 
-**Test Files:**
-- `CharacterFlowUITests.swift` - Character navigation flows
-- `DeepLinkUITests.swift` - Deep link handling tests
+### Test Files
+
+| File | Description |
+|------|-------------|
+| `CharacterFlowUITests.swift` | Character navigation flows |
+| `DeepLinkUITests.swift` | Deep link handling tests |
+
+### Shared Resources
+
+| Directory | Purpose |
+|-----------|---------|
+| `Shared/Robots/` | Robot implementations |
+| `Shared/StubServer/` | HTTP stub server |
+| `Shared/Fixtures/` | JSON response fixtures |
+| `Shared/Stubs/` | Test data helpers |
 
 ## Running
 

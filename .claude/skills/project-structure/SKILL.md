@@ -430,9 +430,22 @@ App/
 │           ├── AppIconDev.appiconset/     # Development icon
 │           └── AppIconStaging.appiconset/ # Staging icon
 └── Tests/
-    └── UI/                       # UI tests only (XCTest)
-        ├── Robots/
-        └── Tests/
+    ├── UI/                           # UI tests (XCTest)
+    │   ├── CharacterFlowUITests.swift
+    │   └── DeepLinkUITests.swift
+    └── Shared/
+        ├── Robots/                   # Robot pattern implementations
+        │   ├── Robot.swift           # UITestCase base class with StubServer
+        │   ├── HomeRobot.swift
+        │   └── CharacterListRobot.swift
+        ├── StubServer/               # HTTP stub server (Swifter)
+        │   └── StubServer.swift
+        ├── Stubs/
+        │   └── Data+Stub.swift       # Test data helpers
+        ├── Fixtures/                 # JSON fixtures for API responses
+        │   └── *.json
+        └── Resources/
+            └── test-avatar.jpg
 
 AppKit/
 ├── Sources/

@@ -55,6 +55,47 @@ final class CharacterRepositoryMock: CharacterRepositoryContract {
 | `*/Tests/Shared/Stubs/` | Domain model test data (`.stub()` extensions) |
 | `*/Tests/Shared/Fixtures/` | JSON files for DTO testing |
 
+## UI Tests
+
+UI tests use a local HTTP stub server ([Swifter](https://github.com/httpswift/swifter)) to mock API responses.
+
+### StubServer
+
+The `UITestCase` base class automatically manages the stub server lifecycle:
+
+```swift
+final class CharacterFlowUITests: UITestCase {
+    @MainActor
+    func testCharacterFlow() throws {
+        // Configure mock responses
+        stubServer.requestHandler = { path in
+            if path.contains("/character") {
+                return .ok(Data.fixture("characters_response"))
+            }
+            return .notFound
+        }
+
+        // Launch app (automatically uses stub server URL)
+        launch()
+
+        // Test with robots
+        characterList { robot in
+            robot.verifyIsVisible()
+        }
+    }
+}
+```
+
+### StubResponse API
+
+| Method | Description |
+|--------|-------------|
+| `.ok(Data)` | 200 with JSON body |
+| `.image(Data)` | 200 with image/jpeg content type |
+| `.error(Int, message:)` | Custom status code with error JSON |
+| `.notFound` | 404 Not Found |
+| `.serverError` | 500 Internal Server Error |
+
 ## Coverage
 
 The project achieves **100% code coverage** across all modules.

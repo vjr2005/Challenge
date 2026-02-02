@@ -23,12 +23,19 @@ App/Tests/UI/
 ├── CharacterFlowUITests.swift   # Character flow tests
 └── DeepLinkUITests.swift        # Deep link tests
 
-App/Tests/Shared/Robots/
-├── Robot.swift                  # Base protocol and DSL
-├── HomeRobot.swift
-├── CharacterListRobot.swift
-├── CharacterDetailRobot.swift
-└── NotFoundRobot.swift
+App/Tests/Shared/
+├── Robots/
+│   ├── Robot.swift              # UITestCase base class with StubServer
+│   ├── HomeRobot.swift
+│   ├── CharacterListRobot.swift
+│   ├── CharacterDetailRobot.swift
+│   └── NotFoundRobot.swift
+├── StubServer/
+│   └── StubServer.swift         # HTTP stub server using Swifter
+├── Stubs/
+│   └── Data+Stub.swift          # Test data helpers
+└── Fixtures/
+    └── *.json                   # JSON fixtures for API responses
 ```
 
 ---
@@ -42,20 +49,75 @@ import XCTest
 protocol RobotContract {
     var app: XCUIApplication { get }
 }
+```
 
-/// Provides DSL for robot-based testing.
-extension XCTestCase {
+---
+
+## StubServer
+
+UI tests use a local HTTP stub server ([Swifter](https://github.com/httpswift/swifter)) to mock API responses. The server runs on localhost with a dynamic port.
+
+### StubResponse API
+
+```swift
+// Success responses
+StubResponse.ok(Data)              // 200 with JSON body
+StubResponse.image(Data)           // 200 with image/jpeg content type
+
+// Error responses
+StubResponse.error(Int, message:)  // Custom status code with error JSON
+StubResponse.notFound              // 404 Not Found
+StubResponse.serverError           // 500 Internal Server Error
+```
+
+### UITestCase Base Class
+
+All UI tests extend `UITestCase` which provides:
+- Automatic StubServer lifecycle (start in setUp, stop in tearDown)
+- `stubServer` property to configure request handler
+- `launch()` method that configures the app with the stub server URL
+
+```swift
+import XCTest
+
+/// Base class for UI tests with stub server support.
+nonisolated class UITestCase: XCTestCase {
+    private(set) var stubServer: StubServer!
+    private(set) var app: XCUIApplication!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        continueAfterFailure = false
+        executionTimeAllowance = 60
+
+        stubServer = StubServer()
+        try stubServer.start()
+    }
+
+    override func tearDownWithError() throws {
+        stubServer.stop()
+        stubServer = nil
+        app = nil
+        try super.tearDownWithError()
+    }
+
+    @MainActor
+    @discardableResult
     func launch() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchEnvironment = ["API_BASE_URL": stubServer.baseURL]
         app.launch()
+        self.app = app
         return app
     }
 
-    func home(app: XCUIApplication, actions: (HomeRobot) -> Void) {
+    @MainActor
+    func home(actions: (HomeRobot) -> Void) {
         actions(HomeRobot(app: app))
     }
 
-    func characterList(app: XCUIApplication, actions: (CharacterListRobot) -> Void) {
+    @MainActor
+    func characterList(actions: (CharacterListRobot) -> Void) {
         actions(CharacterListRobot(app: app))
     }
 }
@@ -124,38 +186,79 @@ private enum AccessibilityIdentifier {
 ```swift
 import XCTest
 
-nonisolated final class CharacterFlowUITests: XCTestCase {
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-    }
-
+final class CharacterFlowUITests: UITestCase {
     @MainActor
     func testCharacterBrowsingFlow() throws {
-        let app = launch()
+        // Given - Configure stub server responses
+        let baseURL = stubServer.baseURL
+        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+        let characterData = Data.fixture("character", baseURL: baseURL)
+        let imageData = Data.stubAvatarImage
 
-        home(app: app) { robot in
+        stubServer.requestHandler = { path in
+            if path.contains("/avatar/") {
+                return .image(imageData)
+            }
+            if path.contains("/character/") {
+                return .ok(characterData)
+            }
+            if path.contains("/character") {
+                return .ok(charactersData)
+            }
+            return .notFound
+        }
+
+        // When
+        launch()
+
+        // Then
+        home { robot in
             robot.tapCharacterButton()
         }
 
-        characterList(app: app) { robot in
-            robot.tapCharacter(id: 1)
+        characterList { robot in
+            robot.verifyIsVisible()
+            robot.tapCharacter(identifier: 1)
         }
 
-        characterDetail(app: app) { robot in
+        characterDetail { robot in
             robot.verifyIsVisible()
             robot.tapBack()
         }
 
-        characterList(app: app) { robot in
+        characterList { robot in
             robot.verifyIsVisible()
             robot.tapBack()
         }
 
-        home(app: app) { robot in
+        home { robot in
             robot.verifyIsVisible()
         }
     }
 }
+```
+
+### JSON Fixtures with Dynamic URLs
+
+Fixtures support `{{BASE_URL}}` placeholders that get replaced at runtime:
+
+```json
+// characters_response.json
+{
+    "results": [
+        {
+            "id": 1,
+            "name": "Rick Sanchez",
+            "image": "{{BASE_URL}}/avatar/1.jpeg"
+        }
+    ]
+}
+```
+
+```swift
+// Load fixture with URL replacement
+let baseURL = stubServer.baseURL
+let data = Data.fixture("characters_response", baseURL: baseURL)
 ```
 
 ---
@@ -164,7 +267,7 @@ nonisolated final class CharacterFlowUITests: XCTestCase {
 
 | Rule | Description |
 |------|-------------|
-| `nonisolated` on test class | Required to avoid actor isolation conflicts with XCTestCase |
+| Extend `UITestCase` | Base class provides StubServer and Robot DSL |
 | `@MainActor` on test methods | Add when tests interact with UI (XCUIApplication) |
 | `RobotContract` protocol | Base protocol with `app: XCUIApplication` |
 | Actions section | Methods that perform UI interactions (tap, swipe, type) |
@@ -173,6 +276,7 @@ nonisolated final class CharacterFlowUITests: XCTestCase {
 | `#filePath` and `line` | Pass through for accurate test failure locations |
 | Private AccessibilityIdentifier | Each Robot has its own copy of identifiers |
 | `.firstMatch` | Use when multiple elements may match an identifier |
+| Configure handler before launch | Set `stubServer.requestHandler` before calling `launch()` |
 
 ---
 
@@ -379,10 +483,12 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 
 ### UI Test
 
-- [ ] Mark test class as `nonisolated`
+- [ ] Extend `UITestCase` base class
 - [ ] Mark test methods with `@MainActor`
-- [ ] Set `continueAfterFailure = false` in setup
-- [ ] Use Robot DSL methods from XCTestCase extension
+- [ ] Configure `stubServer.requestHandler` with mock responses
+- [ ] Use `Data.fixture()` for JSON fixtures with `{{BASE_URL}}` replacement
+- [ ] Call `launch()` after configuring the handler
+- [ ] Use Robot DSL methods (`home {}`, `characterList {}`, etc.)
 - [ ] Chain robot actions fluently
 - [ ] Verify navigation with `verifyIsVisible()`
 
