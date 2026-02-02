@@ -425,6 +425,43 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
 
 **Why:** Using a plain class avoids actor isolation in tests, allowing direct property access without `await` for configuring and verifying mocks.
 
+### HTTPTransportMock (Actor-Based)
+
+For testing components that use `HTTPTransportContract`, use `HTTPTransportMock` from `ChallengeNetworkingMocks`:
+
+```swift
+import ChallengeNetworkingMocks
+import Testing
+
+@testable import ChallengeCore
+
+@Suite(.timeLimit(.minutes(1)))
+struct CachedImageLoaderTests {
+    @Test("Returns image on successful load")
+    func returnsImageOnSuccess() async throws {
+        // Given
+        let url = try #require(URL(string: "https://example.com/image.png"))
+        let imageData = Data.stubAvatarImage
+        let transport = HTTPTransportMock()
+        await transport.setResult(.success((imageData, mockResponse(url: url))))
+        let sut = CachedImageLoader(transport: transport)
+
+        // When
+        let image = await sut.image(for: url)
+
+        // Then
+        #expect(image != nil)
+        let requests = await transport.sentRequests
+        #expect(requests.count == 1)
+    }
+}
+```
+
+**Key points:**
+- `HTTPTransportMock` is an `actor` - use `await` when accessing its properties
+- Configure results with `await transport.setResult(...)`
+- Access tracked requests with `await transport.sentRequests`
+
 ---
 
 ## Equatable Extensions for Tests

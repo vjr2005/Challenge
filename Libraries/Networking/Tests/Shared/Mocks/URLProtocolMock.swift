@@ -1,8 +1,8 @@
 import Foundation
 
-/// Mock URLProtocol for testing network requests without hitting the network.
+/// Mock URLProtocol for testing URLSession-based requests.
 /// Allows registering handlers per URL host to return custom responses.
-public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
+final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	nonisolated(unsafe) private static var handlers: [String: (URLRequest) throws -> (URLResponse, Data?)] = [:]
 	nonisolated private static let lock = NSLock()
 
@@ -10,7 +10,7 @@ public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	/// - Parameters:
 	///   - handler: The handler to invoke for requests to this host. Pass nil to remove.
 	///   - url: The URL whose host will be used to match requests.
-	nonisolated public static func setHandler(
+	nonisolated static func setHandler(
 		_ handler: ((URLRequest) throws -> (URLResponse, Data?))?,
 		forURL url: URL
 	) {
@@ -27,7 +27,7 @@ public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 	}
 
 	/// Removes all registered handlers.
-	nonisolated public static func reset() {
+	nonisolated static func reset() {
 		lock.lock()
 		defer { lock.unlock() }
 		handlers.removeAll()
@@ -46,7 +46,7 @@ public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 
 	// MARK: - URLProtocol
 
-	override nonisolated public init(
+	override nonisolated init(
 		request: URLRequest,
 		cachedResponse: CachedURLResponse?,
 		client: (any URLProtocolClient)?
@@ -54,15 +54,15 @@ public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 		super.init(request: request, cachedResponse: cachedResponse, client: client)
 	}
 
-	override nonisolated public static func canInit(with request: URLRequest) -> Bool {
+	override nonisolated static func canInit(with request: URLRequest) -> Bool {
 		true
 	}
 
-	override nonisolated public static func canonicalRequest(for request: URLRequest) -> URLRequest {
+	override nonisolated static func canonicalRequest(for request: URLRequest) -> URLRequest {
 		request
 	}
 
-	override nonisolated public func startLoading() {
+	override nonisolated func startLoading() {
 		guard let handler = Self.resolveHandler(for: request) else {
 			client?.urlProtocol(self, didFailWithError: URLError(.badURL))
 			return
@@ -80,5 +80,17 @@ public final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 		}
 	}
 
-	override nonisolated public func stopLoading() {}
+	override nonisolated func stopLoading() {}
+}
+
+// MARK: - URLSession Extension
+
+extension URLSession {
+	/// Creates a URLSession configured to use URLProtocolMock for all requests.
+	/// Use this in tests to intercept network calls.
+	static func mockSession() -> URLSession {
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [URLProtocolMock.self]
+		return URLSession(configuration: configuration)
+	}
 }

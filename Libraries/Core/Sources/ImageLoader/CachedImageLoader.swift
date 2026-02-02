@@ -1,3 +1,4 @@
+import ChallengeNetworking
 import UIKit
 
 /// Image loader with in-memory caching and deduplication of in-flight requests.
@@ -7,14 +8,12 @@ public final class CachedImageLoader: ImageLoaderContract, Sendable {
 
 	private let cache: ImageCache
 	private let requestCoordinator: ImageRequestCoordinator
-	private let session: URLSession
 
 	/// Creates a new cached image loader.
-	/// - Parameter session: The URL session to use for network requests.
-	public init(session: URLSession = .shared) {
-		self.session = session
+	/// - Parameter transport: The transport to use for network requests.
+	public init(transport: any HTTPTransportContract = URLSessionTransport()) {
 		self.cache = ImageCache()
-		self.requestCoordinator = ImageRequestCoordinator()
+		self.requestCoordinator = ImageRequestCoordinator(transport: transport)
 	}
 
 	/// Returns the cached image for the given URL, or `nil` if not cached.
@@ -28,7 +27,7 @@ public final class CachedImageLoader: ImageLoaderContract, Sendable {
 			return cached
 		}
 
-		let image = await requestCoordinator.loadImage(for: url, session: session)
+		let image = await requestCoordinator.loadImage(for: url)
 
 		if let image {
 			cache.setImage(image, for: url)
@@ -52,14 +51,19 @@ private final class ImageCache: Sendable {
 
 private actor ImageRequestCoordinator {
 	private var inFlightRequests: [URL: Task<UIImage?, Never>] = [:]
+	private let transport: any HTTPTransportContract
 
-	func loadImage(for url: URL, session: URLSession) async -> UIImage? {
+	init(transport: any HTTPTransportContract) {
+		self.transport = transport
+	}
+
+	func loadImage(for url: URL) async -> UIImage? {
 		if let existingTask = inFlightRequests[url] {
 			return await existingTask.value
 		}
 
-		let task = Task<UIImage?, Never> {
-			await Self.downloadImage(from: url, session: session)
+		let task = Task<UIImage?, Never> { [transport] in
+			await Self.downloadImage(from: url, transport: transport)
 		}
 
 		inFlightRequests[url] = task
@@ -69,12 +73,10 @@ private actor ImageRequestCoordinator {
 		return image
 	}
 
-	private static func downloadImage(from url: URL, session: URLSession) async -> UIImage? {
-		guard let (data, response) = try? await session.data(from: url) else {
-			return nil
-		}
-		guard let httpResponse = response as? HTTPURLResponse,
-			  (200...299).contains(httpResponse.statusCode) else {
+	private static func downloadImage(from url: URL, transport: any HTTPTransportContract) async -> UIImage? {
+		let request = URLRequest(url: url)
+		guard let (data, response) = try? await transport.send(request),
+			  (200...299).contains(response.statusCode) else {
 			return nil
 		}
 		return UIImage(data: data)

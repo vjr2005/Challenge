@@ -23,13 +23,27 @@ public struct AppContainer: Sendable {
 	// MARK: - Init
 
 	public init(httpClient: (any HTTPClientContract)? = nil) {
-		self.httpClient = httpClient ?? HTTPClient(
-			baseURL: AppEnvironment.current.rickAndMorty.baseURL
-		)
+		self.httpClient = httpClient ?? Self.makeHTTPClient()
 
 		homeFeature = HomeFeature()
 		characterFeature = CharacterFeature(httpClient: self.httpClient)
 		systemFeature = SystemFeature()
+	}
+
+	private static func makeHTTPClient() -> HTTPClient {
+		let transport: any HTTPTransportContract
+
+		// Detect UI test mode via launch arguments
+		if let configuration = StubConfiguration.fromLaunchArguments() {
+			transport = StubTransport(configuration: configuration)
+		} else {
+			transport = URLSessionTransport()
+		}
+
+		return HTTPClient(
+			baseURL: AppEnvironment.current.rickAndMorty.baseURL,
+			transport: transport
+		)
 	}
 
 	// MARK: - Navigation Resolution

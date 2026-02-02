@@ -23,12 +23,20 @@ App/Tests/UI/
 ├── CharacterFlowUITests.swift   # Character flow tests
 └── DeepLinkUITests.swift        # Deep link tests
 
-App/Tests/Shared/Robots/
-├── Robot.swift                  # Base protocol and DSL
-├── HomeRobot.swift
-├── CharacterListRobot.swift
-├── CharacterDetailRobot.swift
-└── NotFoundRobot.swift
+App/Tests/Shared/
+├── Robots/
+│   ├── Robot.swift              # UITestCase base class + Robot protocol
+│   ├── HomeRobot.swift
+│   ├── CharacterListRobot.swift
+│   ├── CharacterDetailRobot.swift
+│   └── NotFoundRobot.swift
+├── Stubs/
+│   ├── StubConfigurationBuilder.swift  # Fluent builder for network stubs
+│   └── Data+Stub.swift                 # Stub data helpers
+└── Fixtures/
+    ├── characters_response.json
+    ├── characters_response_page_2.json
+    └── character.json
 ```
 
 ---
@@ -366,6 +374,82 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 
 ---
 
+## Network Stubbing
+
+UI tests use `StubConfigurationBuilder` to configure network responses via launch arguments.
+
+### UITestCase Base Class
+
+```swift
+import ChallengeCore
+import XCTest
+
+nonisolated class UITestCase: XCTestCase {
+    nonisolated(unsafe) private var _stubConfig: StubConfigurationBuilder?
+    nonisolated(unsafe) private(set) var app: XCUIApplication!
+
+    @MainActor
+    var stubConfig: StubConfigurationBuilder {
+        if let config = _stubConfig { return config }
+        let config = StubConfigurationBuilder.create()
+        _stubConfig = config
+        return config
+    }
+
+    override func tearDownWithError() throws {
+        _stubConfig = nil
+        app = nil
+        try super.tearDownWithError()
+    }
+
+    @MainActor
+    @discardableResult
+    func launch() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = stubConfig.build().toLaunchArgument()
+        app.launch()
+        self.app = app
+        return app
+    }
+}
+```
+
+### Stubbing Network Responses
+
+```swift
+@MainActor
+func testCharacterListLoads() throws {
+    // Given - Configure stubs before launching
+    stubConfig
+        .stub(path: "/api/character/avatar/*", data: Data.stubAvatarImage, contentType: "image/jpeg")
+        .stub(path: "/api/character*", fixture: "characters_response")
+
+    // When
+    launch()
+
+    // Then
+    characterList { robot in
+        robot.verifyIsVisible()
+    }
+}
+```
+
+### StubConfigurationBuilder Methods
+
+| Method | Usage |
+|--------|-------|
+| `.stub(path:fixture:)` | JSON response from fixture file |
+| `.stub(path:data:contentType:)` | Binary data (images, etc.) |
+| `.stubError(path:status:)` | HTTP error response |
+
+### Path Patterns
+
+- Use `*` for wildcard matching: `/api/character*` matches `/api/character` and `/api/character?page=2`
+- Include `/api` prefix for API routes
+- Order matters: more specific patterns should come after general ones
+
+---
+
 ## Checklist
 
 ### Robot Implementation
@@ -379,10 +463,10 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 
 ### UI Test
 
-- [ ] Mark test class as `nonisolated`
+- [ ] Extend `UITestCase` (not `XCTestCase` directly)
 - [ ] Mark test methods with `@MainActor`
-- [ ] Set `continueAfterFailure = false` in setup
-- [ ] Use Robot DSL methods from XCTestCase extension
+- [ ] Configure `stubConfig` with required network stubs before `launch()`
+- [ ] Use Robot DSL methods for interactions
 - [ ] Chain robot actions fluently
 - [ ] Verify navigation with `verifyIsVisible()`
 

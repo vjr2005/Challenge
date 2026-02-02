@@ -2,198 +2,150 @@ import XCTest
 
 /// UI tests for the character browsing flow.
 final class CharacterFlowUITests: UITestCase {
-    @MainActor
-    func testListPaginationLoadsMoreAndPullToRefreshResetsContent() throws {
-        let baseURL = stubServer.baseURL
-        let page1Data = Data.fixture("characters_response", baseURL: baseURL)
-        let page2Data = Data.fixture("characters_response_page_2", baseURL: baseURL)
-        let imageData = Data.stubAvatarImage
+	@MainActor
+	func testListPaginationLoadsMoreAndPullToRefreshResetsContent() throws {
+		// Given
+		stubConfig
+			.stub(path: "/api/character/avatar/*", data: Data.stubAvatarImage, contentType: "image/jpeg")
+			.stub(path: "/api/character*page=2*", fixture: "characters_response_page_2")
+			.stub(path: "/api/character*", fixture: "characters_response")
 
-        stubServer.requestHandler = { path in
-            if path.contains("/avatar/") {
-                return .image(imageData)
-            }
-            if path.contains("/character") {
-                if path.contains("page=2") {
-                    return .ok(page2Data)
-                }
-                return .ok(page1Data)
-            }
-            return .notFound
-        }
+		// When
+		launch()
 
-        // When
-        launch()
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
 
-        // Then
-        home { robot in
-            robot.tapCharacterButton()
-        }
+		characterList { robot in
+			// Verify only one element exists
+			robot.verifyIsVisible()
+			robot.verifyCharacterExists(identifier: 1)
+			robot.verifyCharacterDoesNotExist(identifier: 21)
 
-        characterList { robot in
-            // Verify only one element exists
-            robot.verifyIsVisible()
-            robot.verifyCharacterExists(identifier: 1)
-            robot.verifyCharacterDoesNotExist(identifier: 21)
+			// Tap load more and verify two elements exist
+			robot.tapLoadMore()
+			robot.verifyCharacterExists(identifier: 1)
+			robot.verifyCharacterExists(identifier: 21)
 
-            // Tap load more and verify two elements exist
-            robot.tapLoadMore()
-            robot.verifyCharacterExists(identifier: 1)
-            robot.verifyCharacterExists(identifier: 21)
+			// Pull to refresh and verify only one element exists again
+			robot.pullToRefresh()
+			robot.verifyCharacterExists(identifier: 1)
+			robot.verifyCharacterDoesNotExist(identifier: 21)
+		}
+	}
 
-            // Pull to refresh and verify only one element exists again
-            robot.pullToRefresh()
-            robot.verifyCharacterExists(identifier: 1)
-            robot.verifyCharacterDoesNotExist(identifier: 21)
-        }
-    }
+	@MainActor
+	func testListShowsErrorAndRetryKeepsShowingError() throws {
+		// Given
+		stubConfig.stubError(path: "/api/character*")
 
-    @MainActor
-    func testListShowsErrorAndRetryKeepsShowingError() throws {
-        stubServer.requestHandler = { _ in
-            .serverError
-        }
+		// When
+		launch()
 
-        // When
-        launch()
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
 
-        // Then
-        home { robot in
-            robot.tapCharacterButton()
-        }
+		characterList { robot in
+			robot.verifyErrorIsVisible()
+			robot.tapRetry()
+			robot.verifyErrorIsVisible()
+		}
+	}
 
-        characterList { robot in
-            robot.verifyErrorIsVisible()
-            robot.tapRetry()
-            robot.verifyErrorIsVisible()
-        }
-    }
+	@MainActor
+	func testSearchShowsEmptyStateAndClearSearchRestoresContent() throws {
+		// Given
+		stubConfig
+			.stub(path: "/api/character/avatar/*", data: Data.stubAvatarImage, contentType: "image/jpeg")
+			.stub(path: "/api/character*name=*", fixture: "characters_response_empty")
+			.stub(path: "/api/character*", fixture: "characters_response")
 
-    @MainActor
-    func testSearchShowsEmptyStateAndClearSearchRestoresContent() throws {
-        let baseURL = stubServer.baseURL
-        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-        let emptyData = Data.fixture("characters_response_empty")
-        let imageData = Data.stubAvatarImage
+		// When
+		launch()
 
-        stubServer.requestHandler = { path in
-            if path.contains("/avatar/") {
-                return .image(imageData)
-            }
-            if path.contains("/character") {
-                if path.contains("name=") {
-                    return .ok(emptyData)
-                }
-                return .ok(charactersData)
-            }
-            return .notFound
-        }
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
 
-        // When
-        launch()
+		characterList { robot in
+			robot.verifyIsVisible()
+			robot.verifyCharacterExists(identifier: 1)
+			robot.typeSearch(text: "NonExistent")
+			robot.verifyEmptyStateIsVisible()
+			robot.clearSearch()
+			robot.verifyCharacterExists(identifier: 1)
+		}
+	}
 
-        // Then
-        home { robot in
-            robot.tapCharacterButton()
-        }
+	@MainActor
+	func testNavigationFromListToDetailAndBackWithPullToRefresh() throws {
+		// Given
+		stubConfig
+			.stub(path: "/api/character/avatar/*", data: Data.stubAvatarImage, contentType: "image/jpeg")
+			.stub(path: "/api/character/*", fixture: "character")
+			.stub(path: "/api/character*", fixture: "characters_response")
 
-        characterList { robot in
-            robot.verifyIsVisible()
-            robot.verifyCharacterExists(identifier: 1)
-            robot.typeSearch(text: "NonExistent")
-            robot.verifyEmptyStateIsVisible()
-            robot.clearSearch()
-            robot.verifyCharacterExists(identifier: 1)
-        }
-    }
+		// When
+		launch()
 
-    @MainActor
-    func testNavigationFromListToDetailAndBackWithPullToRefresh() throws {
-        let baseURL = stubServer.baseURL
-        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-        let characterData = Data.fixture("character", baseURL: baseURL)
-        let imageData = Data.stubAvatarImage
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
 
-        stubServer.requestHandler = { path in
-            if path.contains("/avatar/") {
-                return .image(imageData)
-            }
-            if path.contains("/character/") {
-                return .ok(characterData)
-            }
-            if path.contains("/character") {
-                return .ok(charactersData)
-            }
-            return .notFound
-        }
+		characterList { robot in
+			robot.verifyIsVisible()
+			robot.pullToRefresh()
+			robot.verifyIsVisible()
+			robot.tapCharacter(identifier: 1)
+		}
 
-        // When
-        launch()
+		characterDetail { robot in
+			robot.verifyIsVisible()
+			robot.pullToRefresh()
+			robot.verifyIsVisible()
+			robot.tapBack()
+		}
 
-        // Then
-        home { robot in
-            robot.tapCharacterButton()
-        }
+		characterList { robot in
+			robot.tapBack()
+		}
 
-        characterList { robot in
-            robot.verifyIsVisible()
-            robot.pullToRefresh()
-            robot.verifyIsVisible()
-            robot.tapCharacter(identifier: 1)
-        }
+		home { robot in
+			robot.verifyIsVisible()
+		}
+	}
 
-        characterDetail { robot in
-            robot.verifyIsVisible()
-            robot.pullToRefresh()
-            robot.verifyIsVisible()
-            robot.tapBack()
-        }
+	@MainActor
+	func testDetailShowsErrorAndRetryKeepsShowingError() throws {
+		// Given
+		stubConfig
+			.stub(path: "/api/character/avatar/*", data: Data.stubAvatarImage, contentType: "image/jpeg")
+			.stubError(path: "/api/character/*")
+			.stub(path: "/api/character*", fixture: "characters_response")
 
-        characterList { robot in
-            robot.tapBack()
-        }
+		// When
+		launch()
 
-        home { robot in
-            robot.verifyIsVisible()
-        }
-    }
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
 
-    @MainActor
-    func testDetailShowsErrorAndRetryKeepsShowingError() throws {
-        let baseURL = stubServer.baseURL
-        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-        let imageData = Data.stubAvatarImage
+		characterList { robot in
+			robot.verifyIsVisible()
+			robot.tapCharacter(identifier: 1)
+		}
 
-        stubServer.requestHandler = { path in
-            if path.contains("/avatar/") {
-                return .image(imageData)
-            }
-            if path.contains("/character/") {
-                return .serverError
-            }
-            if path.contains("/character") {
-                return .ok(charactersData)
-            }
-            return .notFound
-        }
-
-        // When
-        launch()
-
-        // Then
-        home { robot in
-            robot.tapCharacterButton()
-        }
-
-        characterList { robot in
-            robot.verifyIsVisible()
-            robot.tapCharacter(identifier: 1)
-        }
-
-        characterDetail { robot in
-            robot.verifyErrorIsVisible()
-            robot.tapRetry()
-            robot.verifyErrorIsVisible()
-        }
-    }
+		characterDetail { robot in
+			robot.verifyErrorIsVisible()
+			robot.tapRetry()
+			robot.verifyErrorIsVisible()
+		}
+	}
 }

@@ -1,4 +1,4 @@
-import ChallengeCoreMocks
+import ChallengeNetworkingMocks
 import Foundation
 import Testing
 
@@ -6,194 +6,161 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct HTTPClientTests {
-    // MARK: - Properties
+	// MARK: - Properties
 
-    private let baseURL: URL
-    private let session: URLSession
-    private let sut: HTTPClient
+	private let baseURL: URL
+	private let transport: HTTPTransportMock
+	private let sut: HTTPClient
 
-    // MARK: - Initialization
+	// MARK: - Initialization
 
-    init() throws {
-        baseURL = try #require(URL(string: "https://test.example.com"))
-        session = URLSession.mockSession()
-        sut = HTTPClient(baseURL: baseURL, session: session)
-    }
+	init() throws {
+		baseURL = try #require(URL(string: "https://test.example.com"))
+		transport = HTTPTransportMock()
+		sut = HTTPClient(baseURL: baseURL, transport: transport)
+	}
 
-    // MARK: - Tests
+	// MARK: - Tests
 
-    @Test("Builds correct URL from base URL and endpoint path")
-    func buildsCorrectURLFromEndpoint() async throws {
-        // Given
-        let endpoint = Endpoint(path: "/users")
-        let expectedBaseURL = baseURL
+	@Test("Builds correct URL from base URL and endpoint path")
+	func buildsCorrectURLFromEndpoint() async throws {
+		// Given
+		let endpoint = Endpoint(path: "/users")
+		await transport.setResult(.success((Data(), Self.mockResponse(url: baseURL))))
 
-        URLProtocolMock.setHandler({ request in
-            // Then
-            #expect(request.url?.absoluteString == "\(expectedBaseURL)/users")
-            #expect(request.httpMethod == "GET")
-            return (Self.mockResponse(url: request.url), Data())
-        }, forURL: baseURL)
+		// When
+		_ = try await sut.request(endpoint)
 
-        // When
-        _ = try await sut.request(endpoint)
-    }
+		// Then
+		let sentRequests = await transport.sentRequests
+		#expect(sentRequests.count == 1)
+		#expect(sentRequests[0].url?.absoluteString == "\(baseURL)/users")
+		#expect(sentRequests[0].httpMethod == "GET")
+	}
 
-    @Test("Includes query items in URL when provided")
-    func includesQueryItemsInURL() async throws {
-        // Given
-        let endpoint = Endpoint(
-            path: "/users",
-            queryItems: [
-                URLQueryItem(name: "page", value: "1"),
-                URLQueryItem(name: "limit", value: "20")
-            ]
-        )
+	@Test("Includes query items in URL when provided")
+	func includesQueryItemsInURL() async throws {
+		// Given
+		let endpoint = Endpoint(
+			path: "/users",
+			queryItems: [
+				URLQueryItem(name: "page", value: "1"),
+				URLQueryItem(name: "limit", value: "20")
+			]
+		)
+		await transport.setResult(.success((Data(), Self.mockResponse(url: baseURL))))
 
-        URLProtocolMock.setHandler({ request in
-            // Then
-            let urlString = request.url?.absoluteString ?? ""
-            #expect(urlString.contains("page=1"))
-            #expect(urlString.contains("limit=20"))
-            return (Self.mockResponse(url: request.url), Data())
-        }, forURL: baseURL)
+		// When
+		_ = try await sut.request(endpoint)
 
-        // When
-        _ = try await sut.request(endpoint)
-    }
+		// Then
+		let sentRequests = await transport.sentRequests
+		#expect(sentRequests.count == 1)
+		let urlString = sentRequests[0].url?.absoluteString ?? ""
+		#expect(urlString.contains("page=1"))
+		#expect(urlString.contains("limit=20"))
+	}
 
-    @Test("Includes headers in request when provided")
-    func includesHeadersInRequest() async throws {
-        // Given
-        let endpoint = Endpoint(
-            path: "/users",
-            headers: [
-                "Authorization": "Bearer token123",
-                "Content-Type": "application/json"
-            ]
-        )
+	@Test("Includes headers in request when provided")
+	func includesHeadersInRequest() async throws {
+		// Given
+		let endpoint = Endpoint(
+			path: "/users",
+			headers: [
+				"Authorization": "Bearer token123",
+				"Content-Type": "application/json"
+			]
+		)
+		await transport.setResult(.success((Data(), Self.mockResponse(url: baseURL))))
 
-        URLProtocolMock.setHandler({ request in
-            // Then
-            #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer token123")
-            #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-            return (Self.mockResponse(url: request.url), Data())
-        }, forURL: baseURL)
+		// When
+		_ = try await sut.request(endpoint)
 
-        // When
-        _ = try await sut.request(endpoint)
-    }
+		// Then
+		let sentRequests = await transport.sentRequests
+		#expect(sentRequests.count == 1)
+		#expect(sentRequests[0].value(forHTTPHeaderField: "Authorization") == "Bearer token123")
+		#expect(sentRequests[0].value(forHTTPHeaderField: "Content-Type") == "application/json")
+	}
 
-    @Test("Includes body in POST request when provided")
-    func includesBodyInRequest() async throws {
-        // Given
-        let body = Data("{\"name\":\"test\"}".utf8)
-        let endpoint = Endpoint(
-            path: "/users",
-            method: .post,
-            body: body
-        )
+	@Test("Includes body in POST request when provided")
+	func includesBodyInRequest() async throws {
+		// Given
+		let body = Data("{\"name\":\"test\"}".utf8)
+		let endpoint = Endpoint(
+			path: "/users",
+			method: .post,
+			body: body
+		)
+		await transport.setResult(.success((Data(), Self.mockResponse(url: baseURL))))
 
-        URLProtocolMock.setHandler({ request in
-            // Then
-            #expect(request.httpMethod == "POST")
-            #expect(request.bodyData == body)
-            return (Self.mockResponse(url: request.url), Data())
-        }, forURL: baseURL)
+		// When
+		_ = try await sut.request(endpoint)
 
-        // When
-        _ = try await sut.request(endpoint)
-    }
+		// Then
+		let sentRequests = await transport.sentRequests
+		#expect(sentRequests.count == 1)
+		#expect(sentRequests[0].httpMethod == "POST")
+		#expect(sentRequests[0].httpBody == body)
+	}
 
-    @Test("Returns data on successful response")
-    func returnsDataOnSuccess() async throws {
-        // Given
-        let expectedData = Data("{\"id\":1}".utf8)
-        let fallbackURL = baseURL
+	@Test("Returns data on successful response")
+	func returnsDataOnSuccess() async throws {
+		// Given
+		let expectedData = Data("{\"id\":1}".utf8)
+		await transport.setResult(.success((expectedData, Self.mockResponse(url: baseURL))))
 
-        URLProtocolMock.setHandler({ request in
-            (Self.mockResponse(url: request.url ?? fallbackURL), expectedData)
-        }, forURL: baseURL)
+		// When
+		let data = try await sut.request(Endpoint(path: "/users"))
 
-        // When
-        let data = try await sut.request(Endpoint(path: "/users"))
+		// Then
+		#expect(data == expectedData)
+	}
 
-        // Then
-        #expect(data == expectedData)
-    }
+	@Test("Decodes JSON response to specified type")
+	func decodesResponseToType() async throws {
+		// Given
+		let responseData = Data("{\"id\":1,\"name\":\"John\"}".utf8)
+		await transport.setResult(.success((responseData, Self.mockResponse(url: baseURL))))
 
-    @Test("Decodes JSON response to specified type")
-    func decodesResponseToType() async throws {
-        // Given
-        let responseData = Data("{\"id\":1,\"name\":\"John\"}".utf8)
-        let fallbackURL = baseURL
+		// When
+		let user: TestUser = try await sut.request(Endpoint(path: "/users/1"))
 
-        URLProtocolMock.setHandler({ request in
-            (Self.mockResponse(url: request.url ?? fallbackURL), responseData)
-        }, forURL: baseURL)
+		// Then
+		#expect(user.id == 1)
+		#expect(user.name == "John")
+	}
 
-        // When
-        let user: TestUser = try await sut.request(Endpoint(path: "/users/1"))
+	@Test(arguments: [400, 401, 403, 404, 500, 502, 503])
+	func throwsStatusCodeErrorForHTTPErrors(_ statusCode: Int) async throws {
+		// Given
+		let errorData = Data("Error".utf8)
+		await transport.setResult(.success((errorData, Self.mockResponse(url: baseURL, statusCode: statusCode))))
 
-        // Then
-        #expect(user.id == 1)
-        #expect(user.name == "John")
-    }
-
-    @Test(arguments: [400, 401, 403, 404, 500, 502, 503])
-    func throwsStatusCodeErrorForHTTPErrors(_ statusCode: Int) async throws {
-        // Given
-        let errorData = Data("Error".utf8)
-        let fallbackURL = baseURL
-
-        URLProtocolMock.setHandler({ request in
-            (Self.mockResponse(url: request.url ?? fallbackURL, statusCode: statusCode), errorData)
-        }, forURL: baseURL)
-
-        // When / Then
-        await #expect(throws: HTTPError.statusCode(statusCode, errorData)) {
-            _ = try await sut.request(Endpoint(path: "/error"))
-        }
-    }
-
-    @Test("Throws invalid response error for non-HTTP response")
-    func throwsInvalidResponseWhenResponseIsNotHTTPURLResponse() async throws {
-        // Given
-        // Use custom URL scheme to prevent URLSession from auto-converting to HTTPURLResponse
-        let customBaseURL = try #require(URL(string: "custom://test-invalid-response.example.com"))
-        let customSut = HTTPClient(baseURL: customBaseURL, session: session)
-
-        URLProtocolMock.setHandler({ request in
-            let response = URLResponse(
-                url: request.url ?? customBaseURL,
-                mimeType: nil,
-                expectedContentLength: 0,
-                textEncodingName: nil
-            )
-            return (response, Data())
-        }, forURL: customBaseURL)
-
-        // When / Then
-        await #expect(throws: HTTPError.invalidResponse) {
-            _ = try await customSut.request(Endpoint(path: "/test"))
-        }
-    }
+		// When / Then
+		await #expect(throws: HTTPError.statusCode(statusCode, errorData)) {
+			_ = try await sut.request(Endpoint(path: "/error"))
+		}
+	}
 }
 
 // MARK: - Private
 
 private struct TestUser: Decodable {
-    let id: Int
-    let name: String
+	let id: Int
+	let name: String
 }
 
 private extension HTTPClientTests {
-    static func mockResponse(url: URL?, statusCode: Int = 200) -> HTTPURLResponse {
-        guard let url,
-            let response = HTTPURLResponse.withStatus(statusCode, url: url)
-        else {
-            preconditionFailure("Failed to create HTTPURLResponse with status \(statusCode)")
-        }
-        return response
-    }
+	static func mockResponse(url: URL, statusCode: Int = 200) -> HTTPURLResponse {
+		guard let response = HTTPURLResponse(
+			url: url,
+			statusCode: statusCode,
+			httpVersion: "HTTP/1.1",
+			headerFields: nil
+		) else {
+			preconditionFailure("Failed to create HTTPURLResponse with status \(statusCode)")
+		}
+		return response
+	}
 }

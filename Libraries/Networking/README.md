@@ -8,13 +8,23 @@ This library provides a type-safe HTTP client for making network requests. It us
 
 ## Components
 
+### HTTP Client
+
 | File | Visibility | Description |
 |------|------------|-------------|
 | `HTTPClientContract.swift` | **public** | Protocol defining the HTTP client interface |
-| `HTTPClient.swift` | **public (open)** | Implementation using URLSession |
+| `HTTPClient.swift` | **public (open)** | Implementation using HTTPTransportContract |
 | `Endpoint.swift` | **public** | Request configuration |
 | `HTTPMethod.swift` | **public** | Supported HTTP methods |
 | `HTTPError.swift` | **public** | Error types |
+
+### Transport Layer
+
+| File | Visibility | Description |
+|------|------------|-------------|
+| `HTTPTransportContract.swift` | **public** | Minimal transport abstraction: `URLRequest -> (Data, HTTPURLResponse)` |
+| `URLSessionTransport.swift` | **public** | Production implementation using URLSession |
+| `HTTPTransportError.swift` | **public** | Transport-level errors |
 
 ## Usage
 
@@ -35,8 +45,18 @@ let client = HTTPClient(baseURL: baseURL)
 ```swift
 let client = HTTPClient(
     baseURL: baseURL,
-    session: .shared,
+    transport: URLSessionTransport(),
     decoder: JSONDecoder()
+)
+```
+
+### Custom Transport
+
+```swift
+// Use a custom transport (e.g., for UI tests)
+let client = HTTPClient(
+    baseURL: baseURL,
+    transport: StubTransport(configuration: config)
 )
 ```
 
@@ -105,9 +125,44 @@ do {
 
 ## Testing
 
-Use `HTTPClientMock` from `ChallengeNetworkingMocks` for unit testing.
+Use mocks from `ChallengeNetworkingMocks` for unit testing.
+
+### HTTPTransportMock
+
+Thread-safe mock for transport-level testing (actor-based):
+
+```swift
+public actor HTTPTransportMock: HTTPTransportContract {
+    public private(set) var sentRequests: [URLRequest] = []
+
+    public func setResult(_ result: Result<(Data, HTTPURLResponse), Error>)
+    nonisolated public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)
+}
+```
+
+**Usage:**
+
+```swift
+@Test("Loads image from network")
+func loadsImage() async throws {
+    // Given
+    let transport = HTTPTransportMock()
+    await transport.setResult(.success((imageData, mockResponse)))
+    let sut = CachedImageLoader(transport: transport)
+
+    // When
+    let image = await sut.image(for: url)
+
+    // Then
+    #expect(image != nil)
+    let requests = await transport.sentRequests
+    #expect(requests.count == 1)
+}
+```
 
 ### HTTPClientMock
+
+Mock for client-level testing:
 
 ```swift
 public final class HTTPClientMock: HTTPClientContract {
@@ -198,9 +253,37 @@ func sendsCorrectEndpoint() async throws {
 │   HTTPClient     │     │  HTTPClientMock  │
 │   (Production)   │     │    (Testing)     │
 └──────────────────┘     └──────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────┐
+│            HTTPTransportContract                 │
+│  (Minimal abstraction: URLRequest -> Response)  │
+└─────────────────────────────────────────────────┘
+                       │
+     ┌─────────────────┼─────────────────┐
+     ▼                 ▼                 ▼
+┌────────────┐  ┌─────────────┐  ┌────────────────┐
+│URLSession  │  │  Stub       │  │HTTPTransport   │
+│Transport   │  │  Transport  │  │Mock (Testing)  │
+│(Production)│  │ (UI Tests)  │  │                │
+└────────────┘  └─────────────┘  └────────────────┘
 ```
 
+**Transport Layer Benefits:**
+- Minimal interface: `func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)`
+- No URLSession/URLProtocol mocking needed
+- Thread-safe testing with actor-based mock
+- UI test stubbing via launch arguments (StubTransport in Core module)
+
 ## API Reference
+
+### HTTPTransportContract
+
+```swift
+public protocol HTTPTransportContract: Sendable {
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)
+}
+```
 
 ### HTTPClientContract
 

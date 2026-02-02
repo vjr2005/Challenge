@@ -328,16 +328,24 @@ Libraries/Core/
 │   │   └── DeepLinkHandler.swift
 │   ├── ImageLoader/
 │   │   ├── ImageLoaderContract.swift
-│   │   ├── CachedImageLoader.swift
+│   │   ├── CachedImageLoader.swift       # Uses HTTPTransportContract
 │   │   └── ImageLoaderEnvironment.swift
+│   ├── Stub/
+│   │   ├── StubConfiguration.swift       # UI test stub configuration
+│   │   └── StubTransport.swift           # HTTPTransportContract for UI tests
 │   └── Extensions/
 │       └── ...
 ├── Tests/
 │   └── Unit/
 │       ├── AppEnvironment/
 │       │   └── AppEnvironmentTests.swift
-│       └── Navigation/
-│           └── NavigationCoordinatorTests.swift
+│       ├── Navigation/
+│       │   └── NavigationCoordinatorTests.swift
+│       ├── ImageLoader/
+│       │   └── CachedImageLoaderTests.swift
+│       └── Stub/
+│           ├── StubConfigurationTests.swift
+│           └── StubTransportTests.swift
 └── Mocks/
     ├── NavigatorMock.swift
     ├── ImageLoaderMock.swift
@@ -351,21 +359,31 @@ Libraries/Core/
 ```
 Libraries/Networking/
 ├── Sources/
+│   ├── Transport/
+│   │   ├── HTTPTransportContract.swift  # Minimal abstraction: URLRequest -> (Data, HTTPURLResponse)
+│   │   ├── URLSessionTransport.swift    # Production implementation
+│   │   └── HTTPTransportError.swift
 │   ├── HTTP/
-│   │   ├── HTTPClient.swift
+│   │   ├── HTTPClient.swift             # Uses HTTPTransportContract
 │   │   ├── HTTPClientContract.swift
 │   │   ├── Endpoint.swift
 │   │   ├── HTTPMethod.swift
 │   │   └── HTTPError.swift
 │   └── Errors/
-│       └── DataError.swift           # Data layer errors (network, parsing, etc.)
+│       └── DataError.swift              # Data layer errors (network, parsing, etc.)
 ├── Tests/
 │   └── Unit/
+│       └── Transport/
+│           └── URLSessionTransportTests.swift
 └── Mocks/
-    └── HTTPClientMock.swift
+    ├── HTTPClientMock.swift
+    └── Transport/
+        └── HTTPTransportMock.swift      # Actor-based mock for thread-safe testing
 ```
 
 **Note:** `DataError` is in Networking (not Core) as it represents data layer errors that are transformed to domain errors in repositories.
+
+**Transport Layer:** The `HTTPTransportContract` provides a minimal abstraction for HTTP requests, enabling easy testing without URLSession/URLProtocol mocking. Use `HTTPTransportMock` (actor) for unit tests and `StubTransport` (in Core) for UI tests.
 
 ---
 

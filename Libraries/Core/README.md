@@ -27,14 +27,15 @@ Core/
 │   │   ├── NavigationRedirectContract.swift
 │   │   ├── NavigatorContract.swift
 │   │   └── UnknownNavigation.swift
+│   ├── Stub/
+│   │   ├── StubConfiguration.swift
+│   │   └── StubTransport.swift
 │   └── Extensions/
 │       └── URL+QueryParameter.swift
 ├── Mocks/
 │   ├── Bundle+JSON.swift
 │   ├── ImageLoaderMock.swift
-│   ├── NavigatorMock.swift
-│   ├── URLProtocolMock.swift
-│   └── URLSession+Mock.swift
+│   └── NavigatorMock.swift
 └── Tests/
     └── ...
 ```
@@ -94,7 +95,53 @@ public protocol ImageLoaderContract {
 
 #### CachedImageLoader
 
-In-memory caching implementation using `NSCache` with configurable limits.
+In-memory caching implementation using `NSCache` with request deduplication.
+
+```swift
+// CachedImageLoader uses HTTPTransportContract for network requests
+let loader = CachedImageLoader(transport: URLSessionTransport())
+
+// Load image (uses cache if available)
+let image = await loader.image(for: url)
+
+// Check cache without loading
+let cached = loader.cachedImage(for: url)
+```
+
+### Stub System (UI Tests)
+
+The Stub system enables network mocking in UI tests via launch arguments.
+
+#### StubConfiguration
+
+Model for stub configuration, serialized to JSON and passed via launch arguments:
+
+```swift
+let config = StubConfiguration(routes: [
+    StubConfiguration.Route(
+        pathPattern: "/api/character*",
+        statusCode: 200,
+        bodyBase64: jsonData.base64EncodedString(),
+        contentType: "application/json"
+    )
+])
+
+// Pass to app via launch arguments
+app.launchArguments = config.toLaunchArgument()
+```
+
+#### StubTransport
+
+Transport implementation that responds based on `StubConfiguration`:
+
+```swift
+// In AppContainer, detect UI test mode
+if let config = StubConfiguration.fromLaunchArguments() {
+    transport = StubTransport(configuration: config)
+} else {
+    transport = URLSessionTransport()
+}
+```
 
 ### FeatureContract Protocol
 
@@ -141,6 +188,8 @@ Available in `ChallengeCoreMocks` target for testing:
 | `NavigatorMock` | Captures navigation calls |
 | `ImageLoaderMock` | Returns stub images |
 | `Bundle+JSON` | Loads JSON fixtures from test bundles |
+
+**Note:** For HTTP transport mocking, use `HTTPTransportMock` from `ChallengeNetworkingMocks`.
 
 ## Testing
 

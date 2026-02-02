@@ -89,25 +89,54 @@ actor CharacterMemoryDataSource {
 }
 ```
 
-### Framework subclasses called from background threads
+### Actor-based mocks for thread-safe testing
 
 ```swift
-// URLProtocol subclasses are called from background threads
-final class URLProtocolMock: URLProtocol, @unchecked Sendable {
-    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (URLResponse, Data?))?
+// Use actors for mocks that track state across async calls
+public actor HTTPTransportMock: HTTPTransportContract {
+    public var result: Result<(Data, HTTPURLResponse), Error> = .success((Data(), HTTPURLResponse()))
+    public private(set) var sentRequests: [URLRequest] = []
 
-    nonisolated override init(
-        request: URLRequest,
-        cachedResponse: CachedURLResponse?,
-        client: (any URLProtocolClient)?
-    ) {
-        super.init(request: request, cachedResponse: cachedResponse, client: client)
+    public init() {}
+
+    // nonisolated to conform to protocol, but uses actor methods internally
+    nonisolated public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        await appendRequest(request)
+        return try await getResult()
     }
 
-    nonisolated override class func canInit(with request: URLRequest) -> Bool { true }
-    nonisolated override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-    nonisolated override func startLoading() { /* ... */ }
-    nonisolated override func stopLoading() {}
+    public func setResult(_ result: Result<(Data, HTTPURLResponse), Error>) {
+        self.result = result
+    }
+
+    private func appendRequest(_ request: URLRequest) {
+        sentRequests.append(request)
+    }
+
+    private func getResult() throws -> (Data, HTTPURLResponse) {
+        try result.get()
+    }
+}
+```
+
+### nonisolated structs for stateless types
+
+```swift
+// Use nonisolated struct for stateless implementations
+nonisolated public struct URLSessionTransport: HTTPTransportContract {
+    private let session: URLSession
+
+    public init(session: URLSession = .shared) {
+        self.session = session
+    }
+
+    public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw HTTPTransportError.invalidResponse
+        }
+        return (data, httpResponse)
+    }
 }
 ```
 
@@ -210,7 +239,8 @@ actor DataStore {
 | Repository | Yes (default) | No annotation needed |
 | RemoteDataSource | Yes (default) | Struct, no annotation needed |
 | MemoryDataSource | No (actor) | Use `actor` keyword |
-| URLProtocol subclass | nonisolated | Framework requirement |
+| HTTPTransport | nonisolated | Stateless struct, use `nonisolated` |
+| HTTPTransportMock | No (actor) | Thread-safe mock with `actor` |
 | XCTestCase subclass | nonisolated | Framework requirement |
 
 ---

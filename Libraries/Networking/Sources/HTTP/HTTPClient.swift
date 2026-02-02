@@ -1,23 +1,23 @@
 import Foundation
 
-/// HTTP client implementation using URLSession with async/await.
+/// HTTP client implementation using transport abstraction.
 open class HTTPClient: HTTPClientContract {
-	private let session: URLSession
+	private let transport: any HTTPTransportContract
 	private let baseURL: URL
 	private let decoder: JSONDecoder
 
 	/// Creates a new HTTP client.
 	/// - Parameters:
 	///   - baseURL: The base URL for all requests.
-	///   - session: The URL session to use. Defaults to `.shared`.
+	///   - transport: The transport to use. Defaults to `URLSessionTransport()`.
 	///   - decoder: The JSON decoder to use. Defaults to a new `JSONDecoder`.
 	public init(
 		baseURL: URL,
-		session: URLSession = .shared,
+		transport: any HTTPTransportContract = URLSessionTransport(),
 		decoder: JSONDecoder = JSONDecoder()
 	) {
 		self.baseURL = baseURL
-		self.session = session
+		self.transport = transport
 		self.decoder = decoder
 	}
 
@@ -30,11 +30,7 @@ open class HTTPClient: HTTPClientContract {
 	/// Performs a request and returns the raw response data.
 	public func request(_ endpoint: Endpoint) async throws -> Data {
 		let request = try buildRequest(for: endpoint)
-		let (data, response) = try await session.data(for: request)
-
-		guard let httpResponse = response as? HTTPURLResponse else {
-			throw HTTPError.invalidResponse
-		}
+		let (data, httpResponse) = try await transport.send(request)
 
 		guard (200...299).contains(httpResponse.statusCode) else {
 			throw HTTPError.statusCode(httpResponse.statusCode, data)
