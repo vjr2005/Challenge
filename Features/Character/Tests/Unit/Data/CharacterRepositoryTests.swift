@@ -32,7 +32,7 @@ struct CharacterRepositoryTests {
         memoryDataSourceMock.characterToReturn = characterDTO
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -45,7 +45,7 @@ struct CharacterRepositoryTests {
         memoryDataSourceMock.characterToReturn = characterDTO
 
         // When
-        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 0)
@@ -59,7 +59,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -73,11 +73,11 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterLastValue == characterDTO)
+        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 1)
+        #expect(memoryDataSourceMock.saveCharacterDetailLastValue == characterDTO)
     }
 
     // MARK: - Get Character - RemoteFirst Policy
@@ -91,7 +91,7 @@ struct CharacterRepositoryTests {
         memoryDataSourceMock.characterToReturn = cachedDTO
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
@@ -105,11 +105,11 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(freshDTO)
 
         // When
-        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterLastValue == freshDTO)
+        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 1)
+        #expect(memoryDataSourceMock.saveCharacterDetailLastValue == freshDTO)
     }
 
     @Test("RemoteFirst falls back to cache on remote error")
@@ -120,7 +120,7 @@ struct CharacterRepositoryTests {
         memoryDataSourceMock.characterToReturn = cachedDTO
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(value == Character.stub())
@@ -133,7 +133,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+            _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
         }
     }
 
@@ -146,7 +146,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .none)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
 
         // Then
         #expect(value == Character.stub())
@@ -160,10 +160,10 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .none)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
+        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 0)
     }
 
     @Test("None policy does not check cache")
@@ -175,11 +175,11 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .none)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
 
         // Then
         #expect(value.status == .dead)
-        #expect(memoryDataSourceMock.getCharacterCallCount == 0)
+        #expect(memoryDataSourceMock.getCharacterDetailCallCount == 0)
     }
 
     // MARK: - Transformation Tests
@@ -192,7 +192,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -206,7 +206,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -222,7 +222,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -236,7 +236,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -250,7 +250,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -265,7 +265,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.characterNotFound(identifier: 42)) {
-            _ = try await sut.getCharacter(identifier: 42, cachePolicy: .localFirst)
+            _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .localFirst)
         }
     }
 
@@ -276,7 +276,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+            _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
         }
     }
 
@@ -287,7 +287,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+            _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
         }
     }
 
@@ -298,7 +298,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+            _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
         }
     }
 
@@ -309,7 +309,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+            _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
         }
     }
 
@@ -319,10 +319,10 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
 
         // When
-        _ = try? await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        _ = try? await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
+        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 0)
     }
 
     // MARK: - Get Characters (Paginated) - LocalFirst Policy

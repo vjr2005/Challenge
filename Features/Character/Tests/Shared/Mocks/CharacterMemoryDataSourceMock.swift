@@ -10,10 +10,10 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
 
     // MARK: - Call Tracking
 
-    private(set) var getCharacterCallCount = 0
+    private(set) var getCharacterDetailCallCount = 0
 
-    private(set) var saveCharacterCallCount = 0
-    private(set) var saveCharacterLastValue: CharacterDTO?
+    private(set) var saveCharacterDetailCallCount = 0
+    private(set) var saveCharacterDetailLastValue: CharacterDTO?
 
     private(set) var getPageCallCount = 0
 
@@ -23,14 +23,14 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
 
     // MARK: - CharacterMemoryDataSourceContract
 
-    func getCharacter(identifier: Int) -> CharacterDTO? {
-        getCharacterCallCount += 1
+    func getCharacterDetail(identifier: Int) -> CharacterDTO? {
+        getCharacterDetailCallCount += 1
         return characterToReturn
     }
 
-    func saveCharacter(_ character: CharacterDTO) {
-        saveCharacterCallCount += 1
-        saveCharacterLastValue = character
+    func saveCharacterDetail(_ character: CharacterDTO) {
+        saveCharacterDetailCallCount += 1
+        saveCharacterDetailLastValue = character
     }
 
     func getPage(_ page: Int) -> CharactersResponseDTO? {

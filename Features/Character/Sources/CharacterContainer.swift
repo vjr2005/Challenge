@@ -42,8 +42,8 @@ public final class CharacterContainer: Sendable {
     ) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterUseCase: GetCharacterUseCase(repository: repository),
-            refreshCharacterUseCase: RefreshCharacterUseCase(repository: repository),
+            getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: repository),
+            refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
             navigator: CharacterDetailNavigator(navigator: navigator)
         )
     }

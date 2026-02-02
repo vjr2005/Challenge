@@ -2,8 +2,7 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-/// Mock implementation of GetCharacterUseCaseContract for testing.
-final class GetCharacterUseCaseMock: GetCharacterUseCaseContract, @unchecked Sendable {
+final class GetCharacterDetailUseCaseMock: GetCharacterDetailUseCaseContract, @unchecked Sendable {
 	var result: Result<Character, CharacterError> = .failure(.loadFailed)
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?

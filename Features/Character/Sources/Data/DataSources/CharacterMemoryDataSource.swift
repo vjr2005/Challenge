@@ -1,10 +1,10 @@
 import Foundation
 
 protocol CharacterMemoryDataSourceContract: Sendable {
-	// MARK: - Individual Characters
+	// MARK: - Character Detail
 
-	func getCharacter(identifier: Int) async -> CharacterDTO?
-	func saveCharacter(_ character: CharacterDTO) async
+	func getCharacterDetail(identifier: Int) async -> CharacterDTO?
+	func saveCharacterDetail(_ character: CharacterDTO) async
 
 	// MARK: - Paginated Results
 
@@ -16,13 +16,13 @@ actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract {
 	private var characterStorage: [Int: CharacterDTO] = [:]
 	private var pageStorage: [Int: CharactersResponseDTO] = [:]
 
-	// MARK: - Individual Characters
+	// MARK: - Character Detail
 
-	func getCharacter(identifier: Int) -> CharacterDTO? {
+	func getCharacterDetail(identifier: Int) -> CharacterDTO? {
 		characterStorage[identifier]
 	}
 
-	func saveCharacter(_ character: CharacterDTO) {
+	func saveCharacterDetail(_ character: CharacterDTO) {
 		characterStorage[character.id] = character
 	}
 

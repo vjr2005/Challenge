@@ -4,16 +4,16 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
-struct RefreshCharacterUseCaseTests {
+struct RefreshCharacterDetailUseCaseTests {
     // MARK: - Properties
 
     private let repositoryMock = CharacterRepositoryMock()
-    private let sut: RefreshCharacterUseCase
+    private let sut: RefreshCharacterDetailUseCase
 
     // MARK: - Initialization
 
     init() {
-        sut = RefreshCharacterUseCase(repository: repositoryMock)
+        sut = RefreshCharacterDetailUseCase(repository: repositoryMock)
     }
 
     // MARK: - Execute
@@ -40,9 +40,9 @@ struct RefreshCharacterUseCaseTests {
         _ = try await sut.execute(identifier: 42)
 
         // Then
-        #expect(repositoryMock.getCharacterCallCount == 1)
+        #expect(repositoryMock.getCharacterDetailCallCount == 1)
         #expect(repositoryMock.lastRequestedIdentifier == 42)
-        #expect(repositoryMock.lastCharacterCachePolicy == .remoteFirst)
+        #expect(repositoryMock.lastCharacterDetailCachePolicy == .remoteFirst)
     }
 
     @Test("Execute propagates repository error")
