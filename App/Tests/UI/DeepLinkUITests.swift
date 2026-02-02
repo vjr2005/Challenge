@@ -5,19 +5,13 @@ final class DeepLinkUITests: UITestCase {
 	@MainActor
 	func testDeepLinkToCharacterList() throws {
 		// Given
-		let baseURL = stubServer.baseURL
-		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+		let charactersData = Data.fixture("characters_response")
 		let imageData = Data.stubAvatarImage
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character") {
-				return .ok(charactersData)
-			}
-			return .notFound
-		}
+		configureStubs([
+			.image(path: "/avatar/1.jpeg", data: imageData),
+			.ok(path: "/character", data: charactersData)
+		])
 
 		launch()
 		let url = try XCTUnwrap(URL(string: "challenge://character/list"))
@@ -34,19 +28,13 @@ final class DeepLinkUITests: UITestCase {
 	@MainActor
 	func testDeepLinkToCharacterDetail() throws {
 		// Given
-		let baseURL = stubServer.baseURL
-		let characterData = Data.fixture("character", baseURL: baseURL)
+		let characterData = Data.fixture("character")
 		let imageData = Data.stubAvatarImage
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if path.contains("/character/") {
-				return .ok(characterData)
-			}
-			return .notFound
-		}
+		configureStubs([
+			.image(path: "/avatar/1.jpeg", data: imageData),
+			.ok(path: "/character/1", data: characterData)
+		])
 
 		launch()
 		let url = try XCTUnwrap(URL(string: "challenge://character/detail?id=1"))
@@ -63,9 +51,7 @@ final class DeepLinkUITests: UITestCase {
 	@MainActor
 	func testInvalidDeepLinkShowsNotFound() throws {
 		// Given
-		stubServer.requestHandler = { _ in
-			.notFound
-		}
+		configureStubs([])
 
 		launch()
 		let url = try XCTUnwrap(URL(string: "challenge://invalid/route"))

@@ -11,11 +11,19 @@ extension Data {
 	}
 
 	/// Loads a JSON fixture from the test bundle.
+	/// Uses UITestCase.baseURL by default for `{{BASE_URL}}` placeholder replacement.
+	/// - Parameter name: The fixture file name without extension.
+	/// - Returns: The fixture data with placeholders replaced.
+	static func fixture(_ name: String) -> Data {
+		fixture(name, baseURL: UITestCase.baseURL)
+	}
+
+	/// Loads a JSON fixture from the test bundle.
 	/// - Parameters:
 	///   - name: The fixture file name without extension.
 	///   - baseURL: Optional base URL to replace `{{BASE_URL}}` placeholders.
 	/// - Returns: The fixture data.
-	static func fixture(_ name: String, baseURL: String? = nil) -> Data {
+	static func fixture(_ name: String, baseURL: String?) -> Data {
 		guard let url = Bundle.module.url(forResource: name, withExtension: "json"),
 			  let data = try? Data(contentsOf: url) else {
 			fatalError("Fixture not found: \(name).json")

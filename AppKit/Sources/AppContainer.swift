@@ -23,9 +23,24 @@ public struct AppContainer: Sendable {
 	// MARK: - Init
 
 	public init(httpClient: (any HTTPClientContract)? = nil) {
-		self.httpClient = httpClient ?? HTTPClient(
-			baseURL: AppEnvironment.current.rickAndMorty.baseURL
-		)
+		if let providedClient = httpClient {
+			self.httpClient = providedClient
+		} else if StubEnvironment.isEnabled {
+			// UI test mode: register stub protocol and use it
+			StubURLProtocol.registerIfNeeded()
+			let configuration = URLSessionConfiguration.default
+			configuration.protocolClasses = [StubURLProtocol.self]
+			let session = URLSession(configuration: configuration)
+			self.httpClient = HTTPClient(
+				baseURL: AppEnvironment.current.rickAndMorty.baseURL,
+				session: session
+			)
+		} else {
+			// Production mode: use default URLSession
+			self.httpClient = HTTPClient(
+				baseURL: AppEnvironment.current.rickAndMorty.baseURL
+			)
+		}
 
 		homeFeature = HomeFeature()
 		characterFeature = CharacterFeature(httpClient: self.httpClient)

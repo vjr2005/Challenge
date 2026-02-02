@@ -57,7 +57,9 @@ let appUITestsTarget = Target.target(
 		"App/Tests/Shared/Fixtures/**",
 		"App/Tests/Shared/Resources/**",
 	],
-	dependencies: [.target(name: appName)]
+	dependencies: [
+		.target(name: appName),
+	]
 )
 
 let appUITestsScheme = Scheme.scheme(
