@@ -4,11 +4,11 @@ The app supports three environments to separate development, testing, and produc
 
 ## Overview
 
-| Environment | Bundle ID Suffix | Scheme | App Icon |
-|-------------|------------------|--------|----------|
-| Development | `.dev` | Challenge (Dev) | ![Dev](screenshots/icon-dev.png) |
-| Staging | `.staging` | Challenge (Staging) | ![Staging](screenshots/icon-staging.png) |
-| Production | *(none)* | Challenge (Prod) | ![Prod](screenshots/icon-prod.png) |
+| Icon | Environment | Bundle ID Suffix | Scheme |
+|:----:|-------------|------------------|--------|
+| <img src="screenshots/icon-dev.png" width="60"> | Development | `.dev` | Challenge (Dev) |
+| <img src="screenshots/icon-staging.png" width="60"> | Staging | `.staging` | Challenge (Staging) |
+| <img src="screenshots/icon-prod.png" width="60"> | Production | *(none)* | Challenge (Prod) |
 
 ### Development
 
