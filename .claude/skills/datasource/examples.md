@@ -153,12 +153,15 @@ private enum TestError: Error {
 
 ```swift
 protocol {Name}MemoryDataSourceContract: Sendable {
-    func get{Name}(id: Int) async -> {Name}DTO?
-    func getAll{Name}s() async -> [{Name}DTO]
-    func save{Name}(_ item: {Name}DTO) async
-    func save{Name}s(_ items: [{Name}DTO]) async
-    func delete{Name}(id: Int) async
-    func deleteAll{Name}s() async
+    // MARK: - Single Item (Detail)
+    func get{Name}Detail(identifier: Int) async -> {Name}DTO?
+    func save{Name}Detail(_ item: {Name}DTO) async
+    func delete{Name}Detail(identifier: Int) async
+
+    // MARK: - Paginated Results
+    func getPage(_ page: Int) async -> {Name}sResponseDTO?
+    func savePage(_ response: {Name}sResponseDTO, page: Int) async
+    func clearPages() async
 }
 ```
 
@@ -166,32 +169,35 @@ protocol {Name}MemoryDataSourceContract: Sendable {
 
 ```swift
 actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
-    private var storage: [Int: {Name}DTO] = [:]
+    private var items: [Int: {Name}DTO] = [:]
+    private var pages: [Int: {Name}sResponseDTO] = [:]
 
-    func get{Name}(id: Int) -> {Name}DTO? {
-        storage[id]
+    // MARK: - Single Item
+
+    func get{Name}Detail(identifier: Int) -> {Name}DTO? {
+        items[identifier]
     }
 
-    func getAll{Name}s() -> [{Name}DTO] {
-        Array(storage.values)
+    func save{Name}Detail(_ item: {Name}DTO) {
+        items[item.id] = item
     }
 
-    func save{Name}(_ item: {Name}DTO) {
-        storage[item.id] = item
+    func delete{Name}Detail(identifier: Int) {
+        items.removeValue(forKey: identifier)
     }
 
-    func save{Name}s(_ items: [{Name}DTO]) {
-        for item in items {
-            storage[item.id] = item
-        }
+    // MARK: - Paginated Results
+
+    func getPage(_ page: Int) -> {Name}sResponseDTO? {
+        pages[page]
     }
 
-    func delete{Name}(id: Int) {
-        storage.removeValue(forKey: id)
+    func savePage(_ response: {Name}sResponseDTO, page: Int) {
+        pages[page] = response
     }
 
-    func deleteAll{Name}s() {
-        storage.removeAll()
+    func clearPages() {
+        pages.removeAll()
     }
 }
 ```
@@ -206,46 +212,46 @@ import Foundation
 final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @unchecked Sendable {
     // MARK: - Configurable Returns
 
-    var itemToReturn: {Name}DTO?
-    var allItemsToReturn: [{Name}DTO] = []
+    var detailToReturn: {Name}DTO?
+    var pageToReturn: {Name}sResponseDTO?
 
     // MARK: - Call Tracking
 
-    private(set) var getCallCount = 0
-    private(set) var getAllCallCount = 0
-    private(set) var saveCallCount = 0
-    private(set) var saveLastValue: {Name}DTO?
-    private(set) var saveAllCallCount = 0
-    private(set) var deleteCallCount = 0
-    private(set) var deleteAllCallCount = 0
+    private(set) var get{Name}DetailCallCount = 0
+    private(set) var save{Name}DetailCallCount = 0
+    private(set) var lastSavedDetail: {Name}DTO?
+    private(set) var delete{Name}DetailCallCount = 0
+    private(set) var getPageCallCount = 0
+    private(set) var savePageCallCount = 0
+    private(set) var clearPagesCallCount = 0
 
     // MARK: - {Name}MemoryDataSourceContract
 
-    func get{Name}(id: Int) -> {Name}DTO? {
-        getCallCount += 1
-        return itemToReturn
+    func get{Name}Detail(identifier: Int) -> {Name}DTO? {
+        get{Name}DetailCallCount += 1
+        return detailToReturn
     }
 
-    func getAll{Name}s() -> [{Name}DTO] {
-        getAllCallCount += 1
-        return allItemsToReturn
+    func save{Name}Detail(_ item: {Name}DTO) {
+        save{Name}DetailCallCount += 1
+        lastSavedDetail = item
     }
 
-    func save{Name}(_ item: {Name}DTO) {
-        saveCallCount += 1
-        saveLastValue = item
+    func delete{Name}Detail(identifier: Int) {
+        delete{Name}DetailCallCount += 1
     }
 
-    func save{Name}s(_ items: [{Name}DTO]) {
-        saveAllCallCount += 1
+    func getPage(_ page: Int) -> {Name}sResponseDTO? {
+        getPageCallCount += 1
+        return pageToReturn
     }
 
-    func delete{Name}(id: Int) {
-        deleteCallCount += 1
+    func savePage(_ response: {Name}sResponseDTO, page: Int) {
+        savePageCallCount += 1
     }
 
-    func deleteAll{Name}s() {
-        deleteAllCallCount += 1
+    func clearPages() {
+        clearPagesCallCount += 1
     }
 }
 ```
@@ -260,74 +266,72 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}MemoryDataSourceTests {
-    @Test
-    func savesAndRetrievesItem() async throws {
+    @Test("Saves and retrieves detail item")
+    func savesAndRetrievesDetail() async throws {
         // Given
         let expected: {Name}DTO = try loadJSON("{name}")
         let sut = {Name}MemoryDataSource()
 
         // When
-        await sut.save{Name}(expected)
-        let value = await sut.get{Name}(id: expected.id)
+        await sut.save{Name}Detail(expected)
+        let value = await sut.get{Name}Detail(identifier: expected.id)
 
         // Then
         #expect(value == expected)
     }
 
-    @Test
-    func returnsNilForNonExistentItem() async {
+    @Test("Returns nil for non-existent detail")
+    func returnsNilForNonExistentDetail() async {
         // Given
         let sut = {Name}MemoryDataSource()
 
         // When
-        let value = await sut.get{Name}(id: 999)
+        let value = await sut.get{Name}Detail(identifier: 999)
 
         // Then
         #expect(value == nil)
     }
 
-    @Test
-    func savesMultipleItems() async throws {
+    @Test("Updates existing detail item")
+    func updatesExistingDetail() async throws {
         // Given
-        let items: [{Name}DTO] = try loadJSON("{name}_list")
+        let original: {Name}DTO = try loadJSON("{name}")
+        let updated: {Name}DTO = try loadJSON("{name}_updated")
         let sut = {Name}MemoryDataSource()
+        await sut.save{Name}Detail(original)
 
         // When
-        await sut.save{Name}s(items)
-        let value = await sut.getAll{Name}s()
+        await sut.save{Name}Detail(updated)
+        let value = await sut.get{Name}Detail(identifier: original.id)
 
         // Then
-        #expect(value.count == items.count)
+        #expect(value == updated)
     }
 
-    @Test
-    func deletesItem() async throws {
+    @Test("Saves and retrieves page")
+    func savesAndRetrievesPage() async throws {
         // Given
-        let item: {Name}DTO = try loadJSON("{name}")
+        let expected: {Name}sResponseDTO = try loadJSON("{name}s_response")
         let sut = {Name}MemoryDataSource()
-        await sut.save{Name}(item)
 
         // When
-        await sut.delete{Name}(id: item.id)
-        let value = await sut.get{Name}(id: item.id)
+        await sut.savePage(expected, page: 1)
+        let value = await sut.getPage(1)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test("Returns nil for non-existent page")
+    func returnsNilForNonExistentPage() async {
+        // Given
+        let sut = {Name}MemoryDataSource()
+
+        // When
+        let value = await sut.getPage(999)
 
         // Then
         #expect(value == nil)
-    }
-
-    @Test
-    func deletesAllItems() async throws {
-        // Given
-        let items: [{Name}DTO] = try loadJSON("{name}_list")
-        let sut = {Name}MemoryDataSource()
-        await sut.save{Name}s(items)
-
-        // When
-        await sut.deleteAll{Name}s()
-        let value = await sut.getAll{Name}s()
-
-        // Then
-        #expect(value.isEmpty)
     }
 }
 
@@ -409,16 +413,26 @@ struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}MemoryDataSourceContract
 
-    func get{Name}(id: Int) async throws -> {Name} {
-        // Try cache first
-        if let cached = await memoryDataSource.get{Name}(id: id) {
-            return cached.toDomain()
-        }
+    func get{Name}Detail(identifier: Int, cachePolicy: CachePolicy) async throws -> {Name} {
+        switch cachePolicy {
+        case .localFirst:
+            // Try cache first
+            if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
+                return cached.toDomain()
+            }
+            // Fetch from remote and cache
+            let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
+            await memoryDataSource.save{Name}Detail(dto)
+            return dto.toDomain()
 
-        // Fetch from remote and cache
-        let dto = try await remoteDataSource.fetch{Name}(id: id)
-        await memoryDataSource.save{Name}(dto)
-        return dto.toDomain()
+        case .remoteFirst:
+            // Always fetch from remote, fallback to cache on error
+            // ...
+
+        case .none:
+            // Only remote, no cache
+            // ...
+        }
     }
 }
 ```

@@ -82,16 +82,19 @@ final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
     private(set) var state: {ScreenName}ViewState = .idle
 
     private let identifier: Int
-    private let get{Name}UseCase: Get{Name}UseCaseContract
+    private let get{Name}DetailUseCase: Get{Name}DetailUseCaseContract
+    private let refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract
     private let navigator: {ScreenName}NavigatorContract
 
     init(
         identifier: Int,
-        get{Name}UseCase: Get{Name}UseCaseContract,
+        get{Name}DetailUseCase: Get{Name}DetailUseCaseContract,
+        refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract,
         navigator: {ScreenName}NavigatorContract
     ) {
         self.identifier = identifier
-        self.get{Name}UseCase = get{Name}UseCase
+        self.get{Name}DetailUseCase = get{Name}DetailUseCase
+        self.refresh{Name}DetailUseCase = refresh{Name}DetailUseCase
         self.navigator = navigator
     }
 
@@ -106,10 +109,7 @@ final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
 
     func refresh() async {
         do {
-            let item = try await get{Name}UseCase.execute(
-                identifier: identifier,
-                cachePolicy: .remoteFirst
-            )
+            let item = try await refresh{Name}DetailUseCase.execute(identifier: identifier)
             state = .loaded(item)
         } catch {
             state = .error(error)
@@ -127,7 +127,7 @@ private extension {ScreenName}ViewModel {
     func load() async {
         state = .loading
         do {
-            let item = try await get{Name}UseCase.execute(identifier: identifier)
+            let item = try await get{Name}DetailUseCase.execute(identifier: identifier)
             state = .loaded(item)
         } catch {
             state = .error(error)
@@ -139,7 +139,9 @@ private extension {ScreenName}ViewModel {
 **Key patterns:**
 - `@Observable` for SwiftUI integration (iOS 17+)
 - `loadIfNeeded()` is public, `load()` is private
-- `refresh()` uses `.remoteFirst` cache policy
+- **Separate Get and Refresh UseCases** - each with a single responsibility
+- `load()` uses Get UseCase (localFirst cache policy)
+- `refresh()` uses Refresh UseCase (remoteFirst cache policy)
 - State is `private(set)` - only ViewModel mutates it
 
 ### 4. Create ViewState Equatable extension (for tests)
@@ -211,14 +213,16 @@ import Testing
 @Suite(.timeLimit(.minutes(1)))
 struct {ScreenName}ViewModelTests {
     private let identifier = 1
-    private let useCaseMock = Get{Name}UseCaseMock()
+    private let getUseCaseMock = Get{Name}DetailUseCaseMock()
+    private let refreshUseCaseMock = Refresh{Name}DetailUseCaseMock()
     private let navigatorMock = {ScreenName}NavigatorMock()
     private let sut: {ScreenName}ViewModel
 
     init() {
         sut = {ScreenName}ViewModel(
             identifier: identifier,
-            get{Name}UseCase: useCaseMock,
+            get{Name}DetailUseCase: getUseCaseMock,
+            refresh{Name}DetailUseCase: refreshUseCaseMock,
             navigator: navigatorMock
         )
     }
@@ -237,7 +241,7 @@ struct {ScreenName}ViewModelTests {
     func loadIfNeededSetsLoadedStateOnSuccess() async {
         // Given
         let expected = {Name}.stub()
-        useCaseMock.result = .success(expected)
+        getUseCaseMock.result = .success(expected)
 
         // When
         await sut.loadIfNeeded()
@@ -249,7 +253,7 @@ struct {ScreenName}ViewModelTests {
     @Test("Load if needed sets error state on failure")
     func loadIfNeededSetsErrorStateOnFailure() async {
         // Given
-        useCaseMock.result = .failure(.loadFailed)
+        getUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.loadIfNeeded()
@@ -258,92 +262,80 @@ struct {ScreenName}ViewModelTests {
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test("Load if needed calls use case with correct identifier")
-    func loadIfNeededCallsUseCaseWithCorrectIdentifier() async {
+    @Test("Load if needed calls get use case with correct identifier")
+    func loadIfNeededCallsGetUseCaseWithCorrectIdentifier() async {
         // Given
-        useCaseMock.result = .success(.stub())
+        getUseCaseMock.result = .success(.stub())
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(useCaseMock.executeCallCount == 1)
-        #expect(useCaseMock.lastRequestedIdentifier == identifier)
-    }
-
-    @Test("Load if needed uses localFirst cache policy by default")
-    func loadIfNeededUsesLocalFirstCachePolicy() async {
-        // Given
-        useCaseMock.result = .success(.stub())
-
-        // When
-        await sut.loadIfNeeded()
-
-        // Then
-        #expect(useCaseMock.lastCachePolicy == .localFirst)
+        #expect(getUseCaseMock.executeCallCount == 1)
+        #expect(getUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
     @Test("Load if needed does nothing when already loaded")
     func loadIfNeededDoesNothingWhenLoaded() async {
         // Given
-        useCaseMock.result = .success(.stub())
+        getUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+        let callCountAfterFirstLoad = getUseCaseMock.executeCallCount
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+        #expect(getUseCaseMock.executeCallCount == callCountAfterFirstLoad)
     }
 
     @Test("Load if needed retries when in error state")
     func loadIfNeededRetriesWhenError() async {
         // Given
-        useCaseMock.result = .failure(.loadFailed)
+        getUseCaseMock.result = .failure(.loadFailed)
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+        let callCountAfterFirstLoad = getUseCaseMock.executeCallCount
 
         // When
-        useCaseMock.result = .success(.stub())
+        getUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
+        #expect(getUseCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
     }
 
     // MARK: - Refresh
 
-    @Test("Refresh updates item with fresh data from API")
-    func refreshUpdatesItemFromAPI() async {
+    @Test("Refresh calls refresh use case")
+    func refreshCallsRefreshUseCase() async {
         // Given
-        useCaseMock.result = .success(.stub(name: "Initial"))
-        await sut.loadIfNeeded()
-        useCaseMock.result = .success(.stub(name: "Refreshed"))
+        refreshUseCaseMock.result = .success(.stub())
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(useCaseMock.executeCallCount == 2)
+        #expect(refreshUseCaseMock.executeCallCount == 1)
+        #expect(refreshUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test("Refresh uses remoteFirst cache policy")
-    func refreshUsesRemoteFirstCachePolicy() async {
+    @Test("Refresh sets loaded state on success")
+    func refreshSetsLoadedStateOnSuccess() async {
         // Given
-        useCaseMock.result = .success(.stub())
+        let expected = {Name}.stub(name: "Refreshed")
+        refreshUseCaseMock.result = .success(expected)
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(useCaseMock.lastCachePolicy == .remoteFirst)
+        #expect(sut.state == .loaded(expected))
     }
 
     @Test("Refresh sets error state on failure")
     func refreshSetsErrorStateOnFailure() async {
         // Given
-        useCaseMock.result = .failure(.loadFailed)
+        refreshUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.refresh()

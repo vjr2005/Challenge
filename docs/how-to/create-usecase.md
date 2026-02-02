@@ -30,81 +30,119 @@ Features/{Feature}/
 
 | Prefix | Purpose | Example |
 |--------|---------|---------|
-| Get | Fetch single item | `GetCharacterUseCase` |
-| Get (plural) | Fetch collection | `GetCharactersUseCase` |
+| Get + Detail | Fetch single item (localFirst) | `GetCharacterDetailUseCase` |
+| Refresh + Detail | Refresh single item (remoteFirst) | `RefreshCharacterDetailUseCase` |
+| Get (plural) | Fetch collection (localFirst) | `GetCharactersUseCase` |
+| Refresh (plural) | Refresh collection (remoteFirst) | `RefreshCharactersUseCase` |
 | Search | Search with query | `SearchCharactersUseCase` |
 | Create | Create new item | `CreateOrderUseCase` |
 | Update | Update existing item | `UpdateProfileUseCase` |
 | Delete | Delete item | `DeleteCartItemUseCase` |
 | Validate | Validate data | `ValidateEmailUseCase` |
 
+> **Note:** Use `Detail` suffix for single-item UseCases to distinguish from list UseCases (`GetCharacterDetail` vs `GetCharacters`).
+
 ---
 
-## Option A: Simple UseCase with CachePolicy
+## Option A: Separate Get and Refresh UseCases
 
-For UseCases that fetch data with caching support.
+Instead of exposing `cachePolicy` parameter, create separate UseCases for different cache behaviors. This follows the Single Responsibility Principle.
 
-### 1. Create UseCase
+### 1. Create Get UseCase (localFirst)
 
-Create `Sources/Domain/UseCases/Get{Name}UseCase.swift`:
+Create `Sources/Domain/UseCases/Get{Name}DetailUseCase.swift`:
 
 ```swift
 import Foundation
 
-protocol Get{Name}UseCaseContract: Sendable {
-    func execute(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+protocol Get{Name}DetailUseCaseContract: Sendable {
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name}
 }
 
-// MARK: - Default Parameters
-
-extension Get{Name}UseCaseContract {
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
-        try await execute(identifier: identifier, cachePolicy: .localFirst)
-    }
-}
-
-struct Get{Name}UseCase: Get{Name}UseCaseContract {
+struct Get{Name}DetailUseCase: Get{Name}DetailUseCaseContract {
     private let repository: {Name}RepositoryContract
 
     init(repository: {Name}RepositoryContract) {
         self.repository = repository
     }
 
-    func execute(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
-        try await repository.get{Name}(identifier: identifier, cachePolicy: cachePolicy)
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+        try await repository.get{Name}Detail(identifier: identifier, cachePolicy: .localFirst)
     }
 }
 ```
 
-> **Note:** The protocol extension provides a default `localFirst` cache policy, making the common case simple while allowing explicit control when needed.
+### 2. Create Refresh UseCase (remoteFirst)
 
-### 2. Create Mock
+Create `Sources/Domain/UseCases/Refresh{Name}DetailUseCase.swift`:
 
-Create `Tests/Shared/Mocks/Get{Name}UseCaseMock.swift`:
+```swift
+import Foundation
+
+protocol Refresh{Name}DetailUseCaseContract: Sendable {
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name}
+}
+
+struct Refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract {
+    private let repository: {Name}RepositoryContract
+
+    init(repository: {Name}RepositoryContract) {
+        self.repository = repository
+    }
+
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+        try await repository.get{Name}Detail(identifier: identifier, cachePolicy: .remoteFirst)
+    }
+}
+```
+
+> **Note:** The cache policy is encapsulated inside the UseCase. ViewModels don't know about cache policies - they just call the appropriate UseCase.
+
+### 3. Create Mocks
+
+Create `Tests/Shared/Mocks/Get{Name}DetailUseCaseMock.swift`:
 
 ```swift
 import Foundation
 
 @testable import Challenge{Feature}
 
-final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable {
+final class Get{Name}DetailUseCaseMock: Get{Name}DetailUseCaseContract, @unchecked Sendable {
     var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
     private(set) var executeCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
-    private(set) var lastCachePolicy: CachePolicy?
 
-    func execute(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
         executeCallCount += 1
         lastRequestedIdentifier = identifier
-        lastCachePolicy = cachePolicy
         return try result.get()
     }
 }
 ```
 
-### 3. Create tests
+Create `Tests/Shared/Mocks/Refresh{Name}DetailUseCaseMock.swift`:
 
-Create `Tests/Unit/Domain/UseCases/Get{Name}UseCaseTests.swift`:
+```swift
+import Foundation
+
+@testable import Challenge{Feature}
+
+final class Refresh{Name}DetailUseCaseMock: Refresh{Name}DetailUseCaseContract, @unchecked Sendable {
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
+    private(set) var executeCallCount = 0
+    private(set) var lastRequestedIdentifier: Int?
+
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+        executeCallCount += 1
+        lastRequestedIdentifier = identifier
+        return try result.get()
+    }
+}
+```
+
+### 4. Create tests
+
+Create `Tests/Unit/Domain/UseCases/Get{Name}DetailUseCaseTests.swift`:
 
 ```swift
 import Foundation
@@ -113,41 +151,39 @@ import Testing
 @testable import Challenge{Feature}
 
 @Suite(.timeLimit(.minutes(1)))
-struct Get{Name}UseCaseTests {
+struct Get{Name}DetailUseCaseTests {
     private let repositoryMock = {Name}RepositoryMock()
-    private let sut: Get{Name}UseCase
+    private let sut: Get{Name}DetailUseCase
 
     init() {
-        sut = Get{Name}UseCase(repository: repositoryMock)
+        sut = Get{Name}DetailUseCase(repository: repositoryMock)
     }
 
-    // MARK: - Execute with CachePolicy
-
-    @Test("Returns item from repository with specified cache policy")
-    func returnsItemWithCachePolicy() async throws {
+    @Test("Returns item from repository")
+    func returnsItemFromRepository() async throws {
         // Given
         let expected = {Name}.stub()
         repositoryMock.result = .success(expected)
 
         // When
-        let value = try await sut.execute(identifier: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.execute(identifier: 1)
 
         // Then
         #expect(value == expected)
     }
 
-    @Test("Calls repository with correct identifier and cache policy")
-    func callsRepositoryWithCorrectIdAndCachePolicy() async throws {
+    @Test("Calls repository with localFirst cache policy")
+    func callsRepositoryWithLocalFirst() async throws {
         // Given
         repositoryMock.result = .success(.stub())
 
         // When
-        _ = try await sut.execute(identifier: 42, cachePolicy: .remoteFirst)
+        _ = try await sut.execute(identifier: 42)
 
         // Then
-        #expect(repositoryMock.get{Name}CallCount == 1)
+        #expect(repositoryMock.get{Name}DetailCallCount == 1)
         #expect(repositoryMock.lastRequestedIdentifier == 42)
-        #expect(repositoryMock.lastCachePolicy == .remoteFirst)
+        #expect(repositoryMock.last{Name}DetailCachePolicy == .localFirst)
     }
 
     @Test("Propagates repository error")
@@ -157,22 +193,65 @@ struct Get{Name}UseCaseTests {
 
         // When / Then
         await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.execute(identifier: 1, cachePolicy: .localFirst)
+            _ = try await sut.execute(identifier: 1)
         }
     }
+}
+```
 
-    // MARK: - Default Extension
+Create `Tests/Unit/Domain/UseCases/Refresh{Name}DetailUseCaseTests.swift`:
 
-    @Test("Default execute uses localFirst cache policy")
-    func defaultExecuteUsesLocalFirstCachePolicy() async throws {
+```swift
+import Foundation
+import Testing
+
+@testable import Challenge{Feature}
+
+@Suite(.timeLimit(.minutes(1)))
+struct Refresh{Name}DetailUseCaseTests {
+    private let repositoryMock = {Name}RepositoryMock()
+    private let sut: Refresh{Name}DetailUseCase
+
+    init() {
+        sut = Refresh{Name}DetailUseCase(repository: repositoryMock)
+    }
+
+    @Test("Returns item from repository")
+    func returnsItemFromRepository() async throws {
+        // Given
+        let expected = {Name}.stub()
+        repositoryMock.result = .success(expected)
+
+        // When
+        let value = try await sut.execute(identifier: 1)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test("Calls repository with remoteFirst cache policy")
+    func callsRepositoryWithRemoteFirst() async throws {
         // Given
         repositoryMock.result = .success(.stub())
 
         // When
-        _ = try await sut.execute(identifier: 1)
+        _ = try await sut.execute(identifier: 42)
 
         // Then
-        #expect(repositoryMock.lastCachePolicy == .localFirst)
+        #expect(repositoryMock.get{Name}DetailCallCount == 1)
+        #expect(repositoryMock.lastRequestedIdentifier == 42)
+        #expect(repositoryMock.last{Name}DetailCachePolicy == .remoteFirst)
+    }
+
+    @Test("Propagates repository error")
+    func propagatesRepositoryError() async throws {
+        // Given
+        repositoryMock.result = .failure(.loadFailed)
+
+        // When / Then
+        await #expect(throws: {Feature}Error.loadFailed) {
+            _ = try await sut.execute(identifier: 1)
+        }
     }
 }
 ```
