@@ -122,6 +122,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [Dependency Injection](docs/DependencyInjection.md)
 - [Tuist Configuration](docs/Tuist.md)
 - [Environments](docs/Environments.md)
+- [Style Guide](docs/StyleGuide.md)
 - [Testing](docs/Testing.md)
 - [Deep Linking](docs/DeepLinking.md)
 - [Continuous Integration](docs/CI.md)
