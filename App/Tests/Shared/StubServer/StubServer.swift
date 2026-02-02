@@ -36,59 +36,105 @@ nonisolated struct StubResponse: Sendable {
 }
 
 /// A simple HTTP stub server for UI testing.
-/// Runs on localhost and routes requests through a configurable handler.
+/// Runs on localhost with a dynamic port and routes requests through a configurable handler.
 /// Note: Uses DispatchQueue as required by Network framework's NWListener API.
 nonisolated final class StubServer: @unchecked Sendable {
 	private var listener: NWListener?
-	private let port: UInt16
 	private let queue = DispatchQueue(label: "StubServer")
 	private var connections: [NWConnection] = []
+	private var actualPort: UInt16 = 0
 
 	/// Handler called for each request. Receives the request path and returns a response.
 	nonisolated(unsafe) var requestHandler: (@Sendable (String) -> StubResponse)?
 
 	/// The base URL where the server is listening.
 	var baseURL: String {
-		"http://localhost:\(port)"
+		"http://localhost:\(actualPort)"
 	}
 
-	init(port: UInt16 = 8080) {
-		self.port = port
-	}
-
-	/// Starts the stub server.
+	/// Starts the stub server on a dynamic port.
+	/// Blocks until the server is ready to accept connections.
+	/// - Throws: An error if the server fails to start.
 	func start() throws {
 		let parameters = NWParameters.tcp
 		parameters.allowLocalEndpointReuse = true
 
-		listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: port) ?? 8080)
+		// Use port 0 to let the OS assign an available port
+		listener = try NWListener(using: parameters, on: .any)
 
 		listener?.newConnectionHandler = { [weak self] connection in
 			self?.handleConnection(connection)
 		}
 
-		let serverPort = port
-		listener?.stateUpdateHandler = { state in
+		let semaphore = DispatchSemaphore(value: 0)
+		let errorBox = ErrorBox()
+
+		listener?.stateUpdateHandler = { [weak self] state in
 			switch state {
 			case .ready:
-				print("StubServer: Listening on port \(serverPort)")
+				if let port = self?.listener?.port?.rawValue {
+					self?.actualPort = port
+					print("StubServer: Listening on port \(port)")
+				}
+				semaphore.signal()
 			case let .failed(error):
 				print("StubServer: Failed with error \(error)")
+				errorBox.error = error
+				semaphore.signal()
+			case .cancelled:
+				print("StubServer: Cancelled")
 			default:
 				break
 			}
 		}
 
 		listener?.start(queue: queue)
+
+		// Wait for the server to be ready (with timeout)
+		let result = semaphore.wait(timeout: .now() + 5)
+		if result == .timedOut {
+			listener?.cancel()
+			throw StubServerError.startTimeout
+		}
+
+		if let error = errorBox.error {
+			throw error
+		}
 	}
 
-	/// Stops the stub server.
+	/// Stops the stub server and waits for cleanup to complete.
 	func stop() {
-		listener?.cancel()
-		listener = nil
+		let semaphore = DispatchSemaphore(value: 0)
+
+		listener?.stateUpdateHandler = { state in
+			if state == .cancelled {
+				semaphore.signal()
+			}
+		}
+
 		connections.forEach { $0.cancel() }
 		connections.removeAll()
+		listener?.cancel()
+
+		// Wait for listener to be cancelled (with timeout)
+		_ = semaphore.wait(timeout: .now() + 2)
+
+		listener = nil
+		actualPort = 0
 	}
+}
+
+// MARK: - StubServerError
+
+enum StubServerError: Error {
+	case startTimeout
+}
+
+// MARK: - ErrorBox
+
+/// Thread-safe container for capturing errors in closures.
+nonisolated private final class ErrorBox: @unchecked Sendable {
+	nonisolated(unsafe) var error: NWError?
 }
 
 // MARK: - Private

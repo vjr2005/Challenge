@@ -4,8 +4,9 @@ import XCTest
 final class CharacterFlowUITests: UITestCase {
     @MainActor
     func testListPaginationLoadsMoreAndPullToRefreshResetsContent() throws {
-        let page1Data = Data.fixture("characters_response")
-        let page2Data = Data.fixture("characters_response_page_2")
+        let baseURL = stubServer.baseURL
+        let page1Data = Data.fixture("characters_response", baseURL: baseURL)
+        let page2Data = Data.fixture("characters_response_page_2", baseURL: baseURL)
         let imageData = Data.stubAvatarImage
 
         stubServer.requestHandler = { path in
@@ -70,7 +71,8 @@ final class CharacterFlowUITests: UITestCase {
 
     @MainActor
     func testSearchShowsEmptyStateAndClearSearchRestoresContent() throws {
-        let charactersData = Data.fixture("characters_response")
+        let baseURL = stubServer.baseURL
+        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
         let emptyData = Data.fixture("characters_response_empty")
         let imageData = Data.stubAvatarImage
 
@@ -107,8 +109,9 @@ final class CharacterFlowUITests: UITestCase {
 
     @MainActor
     func testNavigationFromListToDetailAndBackWithPullToRefresh() throws {
-        let charactersData = Data.fixture("characters_response")
-        let characterData = Data.fixture("character")
+        let baseURL = stubServer.baseURL
+        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+        let characterData = Data.fixture("character", baseURL: baseURL)
         let imageData = Data.stubAvatarImage
 
         stubServer.requestHandler = { path in
@@ -157,7 +160,8 @@ final class CharacterFlowUITests: UITestCase {
 
     @MainActor
     func testDetailShowsErrorAndRetryKeepsShowingError() throws {
-        let charactersData = Data.fixture("characters_response")
+        let baseURL = stubServer.baseURL
+        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
         let imageData = Data.stubAvatarImage
 
         stubServer.requestHandler = { path in

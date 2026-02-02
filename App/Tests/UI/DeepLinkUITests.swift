@@ -5,7 +5,8 @@ final class DeepLinkUITests: UITestCase {
 	@MainActor
 	func testDeepLinkToCharacterList() throws {
 		// Given
-		let charactersData = Data.fixture("characters_response")
+		let baseURL = stubServer.baseURL
+		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
 		let imageData = Data.stubAvatarImage
 
 		stubServer.requestHandler = { path in
@@ -33,7 +34,8 @@ final class DeepLinkUITests: UITestCase {
 	@MainActor
 	func testDeepLinkToCharacterDetail() throws {
 		// Given
-		let characterData = Data.fixture("character")
+		let baseURL = stubServer.baseURL
+		let characterData = Data.fixture("character", baseURL: baseURL)
 		let imageData = Data.stubAvatarImage
 
 		stubServer.requestHandler = { path in
