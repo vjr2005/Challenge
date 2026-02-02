@@ -446,32 +446,13 @@ var body: some View {
 }
 ```
 
-### #Preview Macro
-
-The `#Preview` macro is automatically excluded from release builds. **Do not wrap it with `#if DEBUG`**:
-
-```swift
-// RIGHT - #Preview without wrapper
-#Preview("MyView") {
-    MyView()
-}
-
-// WRONG - Redundant #if DEBUG wrapper
-#if DEBUG
-#Preview("MyView") {
-    MyView()
-}
-#endif
-```
-
 ## SwiftLint
 
 SwiftLint is installed via **mise** (not SPM). Configuration is in `.swiftlint.yml`.
 
 ```bash
-mise install swiftlint
-swiftlint          # Run linter
-swiftlint --fix    # Auto-fix issues
+mise x -- swiftlint          # Run linter
+mise x -- swiftlint --fix    # Auto-fix issues
 ```
 
 ### Enforced Limits
