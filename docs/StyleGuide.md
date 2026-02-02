@@ -463,7 +463,12 @@ mise x -- swiftlint --fix    # Auto-fix issues
 | File length | 500 | 1000 |
 | Type body length | 300 | 500 |
 | Function body length | 50 | 100 |
+| Closure body length | 30 | 50 |
 | Cyclomatic complexity | 10 | 20 |
+| Enum associated values | 4 | 6 |
+| Tuple size | 3 | 4 |
+| Type nesting level | 2 | - |
+| Function nesting level | 3 | - |
 
 ### Custom Rules
 
