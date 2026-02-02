@@ -129,6 +129,16 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [Scripts](docs/Scripts.md)
 - [AI-Assisted Development](docs/AI.md) - CLAUDE.md and skills for AI coding
 
+### How-To Guides
+
+- [Create Feature](docs/how-to/create-feature.md)
+- [Create DataSource](docs/how-to/create-datasource.md)
+- [Create Repository](docs/how-to/create-repository.md)
+- [Create UseCase](docs/how-to/create-usecase.md)
+- [Create ViewModel](docs/how-to/create-viewmodel.md)
+- [Create View](docs/how-to/create-view.md)
+- [Create Navigator](docs/how-to/create-navigator.md)
+
 ### Modules
 
 **App & Composition**
