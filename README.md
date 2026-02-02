@@ -121,6 +121,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [Project Structure](docs/ProjectStructure.md)
 - [Dependency Injection](docs/DependencyInjection.md)
 - [Tuist Configuration](docs/Tuist.md)
+- [Environments](docs/Environments.md)
 - [Testing](docs/Testing.md)
 - [Deep Linking](docs/DeepLinking.md)
 - [Continuous Integration](docs/CI.md)
