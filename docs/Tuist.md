@@ -59,13 +59,7 @@ The project uses strict Swift 6 concurrency with MainActor isolation by default:
 
 ## Environments
 
-The app supports three environments with different bundle IDs and app icons:
-
-| Environment | Bundle ID Suffix | Scheme Name | App Icon |
-|-------------|------------------|-------------|----------|
-| Dev | `.dev` | Challenge (Dev) | AppIconDev |
-| Staging | `.staging` | Challenge (Staging) | AppIconStaging |
-| Prod | (none) | Challenge (Prod) | AppIcon |
+The app supports three environments (Development, Staging, Production) with different bundle IDs and app icons. See [Environments.md](Environments.md) for full documentation including icons, API configuration, and usage.
 
 ## AppKit - Composition Layer
 
