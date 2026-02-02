@@ -2,6 +2,8 @@
 
 Native networking layer using **URLSession with async/await**. No external dependencies.
 
+> **See also:** [HTTPTransport Architecture](../../docs/HTTPTransportArchitecture.md) for design decisions and motivation.
+
 ## Overview
 
 This library provides a type-safe HTTP client for making network requests. It uses Swift's modern concurrency features and is fully `Sendable` compliant.
