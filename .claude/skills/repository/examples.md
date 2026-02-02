@@ -443,11 +443,16 @@ struct Character: Equatable {
 ```swift
 // Sources/Domain/Repositories/CharacterRepositoryContract.swift
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
     func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
     func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage
 }
 ```
+
+**Naming Convention:**
+- `getCharacterDetail` - singular item with `Detail` suffix
+- `getCharacters` - plural for list operations
+- This avoids confusion between singular and plural method names
 
 ### Implementation
 
@@ -467,14 +472,14 @@ struct CharacterRepository: CharacterRepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
         switch cachePolicy {
         case .localFirst:
-            try await getCharacterLocalFirst(identifier: identifier)
+            try await getCharacterDetailLocalFirst(identifier: identifier)
         case .remoteFirst:
-            try await getCharacterRemoteFirst(identifier: identifier)
+            try await getCharacterDetailRemoteFirst(identifier: identifier)
         case .none:
-            try await getCharacterNoCache(identifier: identifier)
+            try await getCharacterDetailNoCache(identifier: identifier)
         }
     }
 
@@ -508,32 +513,32 @@ private extension CharacterRepository {
     }
 }
 
-// MARK: - Character Cache Strategies
+// MARK: - Character Detail Cache Strategies
 
 private extension CharacterRepository {
-    func getCharacterLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
-        if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
+    func getCharacterDetailLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
+        if let cached = await memoryDataSource.getCharacterDetail(identifier: identifier) {
             return cached.toDomain()
         }
         let dto = try await fetchCharacterFromRemote(identifier: identifier)
-        await memoryDataSource.saveCharacter(dto)
+        await memoryDataSource.saveCharacterDetail(dto)
         return dto.toDomain()
     }
 
-    func getCharacterRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
+    func getCharacterDetailRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
         do {
             let dto = try await fetchCharacterFromRemote(identifier: identifier)
-            await memoryDataSource.saveCharacter(dto)
+            await memoryDataSource.saveCharacterDetail(dto)
             return dto.toDomain()
         } catch {
-            if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
+            if let cached = await memoryDataSource.getCharacterDetail(identifier: identifier) {
                 return cached.toDomain()
             }
             throw error
         }
     }
 
-    func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
+    func getCharacterDetailNoCache(identifier: Int) async throws(CharacterError) -> Character {
         let dto = try await fetchCharacterFromRemote(identifier: identifier)
         return dto.toDomain()
     }
@@ -585,41 +590,38 @@ import Foundation
 @testable import {AppName}Character
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
-    var getCharacterResult: Result<Character, CharacterError> = .failure(.loadFailed)
-    var getCharactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
-    var searchCharactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
-
-    private(set) var getCharacterCallCount = 0
-    private(set) var lastGetCharacterIdentifier: Int?
-    private(set) var lastGetCharacterCachePolicy: CachePolicy?
-
+    var result: Result<Character, CharacterError> = .failure(.loadFailed)
+    var charactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
+    var searchResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
+    private(set) var getCharacterDetailCallCount = 0
     private(set) var getCharactersCallCount = 0
-    private(set) var lastGetCharactersPage: Int?
-    private(set) var lastGetCharactersCachePolicy: CachePolicy?
-
     private(set) var searchCharactersCallCount = 0
-    private(set) var lastSearchCharactersPage: Int?
-    private(set) var lastSearchCharactersQuery: String?
+    private(set) var lastRequestedIdentifier: Int?
+    private(set) var lastRequestedPage: Int?
+    private(set) var lastSearchedPage: Int?
+    private(set) var lastSearchedQuery: String?
+    private(set) var lastCharacterDetailCachePolicy: CachePolicy?
+    private(set) var lastCharactersCachePolicy: CachePolicy?
 
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-        getCharacterCallCount += 1
-        lastGetCharacterIdentifier = identifier
-        lastGetCharacterCachePolicy = cachePolicy
-        return try getCharacterResult.get()
+    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        getCharacterDetailCallCount += 1
+        lastRequestedIdentifier = identifier
+        lastCharacterDetailCachePolicy = cachePolicy
+        return try result.get()
     }
 
     func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage {
         getCharactersCallCount += 1
-        lastGetCharactersPage = page
-        lastGetCharactersCachePolicy = cachePolicy
-        return try getCharactersResult.get()
+        lastRequestedPage = page
+        lastCharactersCachePolicy = cachePolicy
+        return try charactersResult.get()
     }
 
     func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
         searchCharactersCallCount += 1
-        lastSearchCharactersPage = page
-        lastSearchCharactersQuery = query
-        return try searchCharactersResult.get()
+        lastSearchedPage = page
+        lastSearchedQuery = query
+        return try searchResult.get()
     }
 }
 ```
@@ -643,14 +645,14 @@ struct CharacterRepositoryTests {
         let expected = Character.stub()
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
-        memoryDataSourceMock.characterToReturn = .stub()
+        memoryDataSourceMock.characterDetailToReturn = .stub()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
         )
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -670,12 +672,12 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
+        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 1)
     }
 
     // MARK: - RemoteFirst Tests
@@ -686,14 +688,14 @@ struct CharacterRepositoryTests {
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
         remoteDataSourceMock.fetchCharacterResult = .success(.stub())
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
-        memoryDataSourceMock.characterToReturn = .stub()
+        memoryDataSourceMock.characterDetailToReturn = .stub()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
         )
 
         // When
-        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
@@ -706,14 +708,14 @@ struct CharacterRepositoryTests {
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
         remoteDataSourceMock.fetchCharacterResult = .failure(.invalidResponse)
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
-        memoryDataSourceMock.characterToReturn = .stub()
+        memoryDataSourceMock.characterDetailToReturn = .stub()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
             memoryDataSource: memoryDataSourceMock
         )
 
         // When
-        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(value == expected)
@@ -733,11 +735,11 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .none)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
+        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 0)
     }
 
     // MARK: - Error Mapping Tests
@@ -755,7 +757,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.characterNotFound(id: 42)) {
-            _ = try await sut.getCharacter(identifier: 42, cachePolicy: .none)
+            _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .none)
         }
     }
 }

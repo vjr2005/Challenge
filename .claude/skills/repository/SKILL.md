@@ -275,9 +275,14 @@ enum CachePolicy: Sendable {
 
 ```swift
 protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(id: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+    func get{Name}Detail(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
 ```
+
+**Naming Convention:**
+- Use `Detail` suffix for single-item methods: `get{Name}Detail`
+- Use plural for list methods: `get{Name}s`
+- This avoids confusion between `getCharacter` and `getCharacters`
 
 ### Cache Strategies
 
@@ -295,11 +300,11 @@ Extract remote fetching into a helper to avoid code duplication:
 // MARK: - Remote Fetch Helper
 
 private extension {Name}Repository {
-    func fetchFromRemote(id: Int) async throws({Feature}Error) -> {Name}DTO {
+    func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
         do {
-            return try await remoteDataSource.fetch{Name}(id: id)
+            return try await remoteDataSource.fetch{Name}(identifier: identifier)
         } catch let error as HTTPError {
-            throw mapHTTPError(error, id: id)
+            throw mapHTTPError(error, identifier: identifier)
         } catch {
             throw .loadFailed
         }
@@ -309,30 +314,30 @@ private extension {Name}Repository {
 // MARK: - Cache Strategies
 
 private extension {Name}Repository {
-    func getLocalFirst(id: Int) async throws({Feature}Error) -> {Name} {
-        if let cached = await memoryDataSource.get{Name}(id: id) {
+    func get{Name}DetailLocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
+        if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
             return cached.toDomain()
         }
-        let dto = try await fetchFromRemote(id: id)
-        await memoryDataSource.save{Name}(dto)
+        let dto = try await fetchFromRemote(identifier: identifier)
+        await memoryDataSource.save{Name}Detail(dto)
         return dto.toDomain()
     }
 
-    func getRemoteFirst(id: Int) async throws({Feature}Error) -> {Name} {
+    func get{Name}DetailRemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
-            let dto = try await fetchFromRemote(id: id)
-            await memoryDataSource.save{Name}(dto)
+            let dto = try await fetchFromRemote(identifier: identifier)
+            await memoryDataSource.save{Name}Detail(dto)
             return dto.toDomain()
         } catch {
-            if let cached = await memoryDataSource.get{Name}(id: id) {
+            if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
                 return cached.toDomain()
             }
             throw error
         }
     }
 
-    func getNoCache(id: Int) async throws({Feature}Error) -> {Name} {
-        let dto = try await fetchFromRemote(id: id)
+    func get{Name}DetailNoCache(identifier: Int) async throws({Feature}Error) -> {Name} {
+        let dto = try await fetchFromRemote(identifier: identifier)
         return dto.toDomain()
     }
 }

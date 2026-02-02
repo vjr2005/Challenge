@@ -146,6 +146,8 @@ public final class CharacterContainer: Sendable {
     func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
             getCharactersUseCase: GetCharactersUseCase(repository: repository),
+            refreshCharactersUseCase: RefreshCharactersUseCase(repository: repository),
+            searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
             navigator: CharacterListNavigator(navigator: navigator)
         )
     }
@@ -156,12 +158,19 @@ public final class CharacterContainer: Sendable {
     ) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterUseCase: GetCharacterUseCase(repository: repository),
+            getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: repository),
+            refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
             navigator: CharacterDetailNavigator(navigator: navigator)
         )
     }
 }
 ```
+
+**Key patterns:**
+- Use `Detail` suffix for single-item UseCases: `GetCharacterDetailUseCase`
+- Inject **separate Get and Refresh UseCases**
+- Get UseCases use `localFirst` cache policy (fast initial load)
+- Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)
 
 ### Navigation Destinations
 

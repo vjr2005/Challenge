@@ -180,6 +180,7 @@ public final class {Feature}Container: Sendable {
     func make{Name}ListViewModel(navigator: any NavigatorContract) -> {Name}ListViewModel {
         {Name}ListViewModel(
             get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
+            refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: repository),
             navigator: {Name}ListNavigator(navigator: navigator)
         )
     }
@@ -190,12 +191,19 @@ public final class {Feature}Container: Sendable {
     ) -> {Name}DetailViewModel {
         {Name}DetailViewModel(
             identifier: identifier,
-            get{Name}UseCase: Get{Name}UseCase(repository: repository),
+            get{Name}DetailUseCase: Get{Name}DetailUseCase(repository: repository),
+            refresh{Name}DetailUseCase: Refresh{Name}DetailUseCase(repository: repository),
             navigator: {Name}DetailNavigator(navigator: navigator)
         )
     }
 }
 ```
+
+**Key Changes:**
+- Use `Detail` suffix for single-item UseCases: `Get{Name}DetailUseCase`, `Refresh{Name}DetailUseCase`
+- Inject **separate Get and Refresh UseCases** for each ViewModel
+- Get UseCases use `localFirst` cache policy (fast initial load)
+- Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)
 
 **Rules:**
 - **public final class** with `Sendable` conformance
