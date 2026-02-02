@@ -90,13 +90,12 @@ struct CharacterListViewModelTests {
         // Given
         getCharactersUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getCharactersUseCaseMock.executeCallCount
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == callCountAfterFirstLoad)
+        #expect(getCharactersUseCaseMock.executeCallCount == 1)
     }
 
     @Test("Load if needed does nothing when empty state")
@@ -105,13 +104,12 @@ struct CharacterListViewModelTests {
         let emptyPage = CharactersPage.stub(characters: [])
         getCharactersUseCaseMock.result = .success(emptyPage)
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getCharactersUseCaseMock.executeCallCount
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == callCountAfterFirstLoad)
+        #expect(getCharactersUseCaseMock.executeCallCount == 1)
     }
 
     @Test("Load if needed retries when in error state")
@@ -119,14 +117,13 @@ struct CharacterListViewModelTests {
         // Given
         getCharactersUseCaseMock.result = .failure(.loadFailed)
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getCharactersUseCaseMock.executeCallCount
 
         // When
         getCharactersUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
+        #expect(getCharactersUseCaseMock.executeCallCount == 2)
     }
 
     // MARK: - Load More
@@ -175,13 +172,12 @@ struct CharacterListViewModelTests {
         let lastPage = CharactersPage.stub(hasNextPage: false)
         getCharactersUseCaseMock.result = .success(lastPage)
         await sut.loadIfNeeded()
-        let callCountAfterLoad = getCharactersUseCaseMock.executeCallCount
 
         // When
         await sut.loadMore()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == callCountAfterLoad)
+        #expect(getCharactersUseCaseMock.executeCallCount == 1)
     }
 
     @Test("Load more keeps existing data on error")

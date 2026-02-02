@@ -73,16 +73,14 @@ struct CharacterDetailViewModelTests {
     @Test("Load if needed does nothing when already loaded")
     func loadIfNeededDoesNothingWhenLoaded() async {
         // Given
-        let expected = Character.stub()
-        getCharacterDetailUseCaseMock.result = .success(expected)
+        getCharacterDetailUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getCharacterDetailUseCaseMock.executeCallCount
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(getCharacterDetailUseCaseMock.executeCallCount == callCountAfterFirstLoad)
+        #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
     }
 
     @Test("Load if needed retries when in error state")
@@ -90,14 +88,13 @@ struct CharacterDetailViewModelTests {
         // Given
         getCharacterDetailUseCaseMock.result = .failure(.loadFailed)
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getCharacterDetailUseCaseMock.executeCallCount
 
         // When
         getCharacterDetailUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
 
         // Then
-        #expect(getCharacterDetailUseCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
+        #expect(getCharacterDetailUseCaseMock.executeCallCount == 2)
     }
 
     @Test("Tap on back navigates back")
