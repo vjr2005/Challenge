@@ -6,15 +6,18 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
 
     private let identifier: Int
     private let getCharacterUseCase: GetCharacterUseCaseContract
+    private let refreshCharacterUseCase: RefreshCharacterUseCaseContract
     private let navigator: CharacterDetailNavigatorContract
 
     init(
         identifier: Int,
         getCharacterUseCase: GetCharacterUseCaseContract,
+        refreshCharacterUseCase: RefreshCharacterUseCaseContract,
         navigator: CharacterDetailNavigatorContract
     ) {
         self.identifier = identifier
         self.getCharacterUseCase = getCharacterUseCase
+        self.refreshCharacterUseCase = refreshCharacterUseCase
         self.navigator = navigator
     }
 
@@ -29,10 +32,7 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
 
     func refresh() async {
         do {
-            let character = try await getCharacterUseCase.execute(
-                identifier: identifier,
-                cachePolicy: .remoteFirst
-            )
+            let character = try await refreshCharacterUseCase.execute(identifier: identifier)
             state = .loaded(character)
         } catch {
             state = .error(error)

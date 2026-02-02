@@ -4,16 +4,16 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
-struct GetCharacterUseCaseTests {
+struct RefreshCharacterUseCaseTests {
     // MARK: - Properties
 
     private let repositoryMock = CharacterRepositoryMock()
-    private let sut: GetCharacterUseCase
+    private let sut: RefreshCharacterUseCase
 
     // MARK: - Initialization
 
     init() {
-        sut = GetCharacterUseCase(repository: repositoryMock)
+        sut = RefreshCharacterUseCase(repository: repositoryMock)
     }
 
     // MARK: - Execute
@@ -31,8 +31,8 @@ struct GetCharacterUseCaseTests {
         #expect(value == expected)
     }
 
-    @Test("Execute calls repository with correct identifier and localFirst cache policy")
-    func executeCallsRepositoryWithCorrectIdentifierAndLocalFirstCachePolicy() async throws {
+    @Test("Execute calls repository with correct identifier and remoteFirst cache policy")
+    func executeCallsRepositoryWithCorrectIdentifierAndRemoteFirstCachePolicy() async throws {
         // Given
         repositoryMock.result = .success(.stub())
 
@@ -42,7 +42,7 @@ struct GetCharacterUseCaseTests {
         // Then
         #expect(repositoryMock.getCharacterCallCount == 1)
         #expect(repositoryMock.lastRequestedIdentifier == 42)
-        #expect(repositoryMock.lastCharacterCachePolicy == .localFirst)
+        #expect(repositoryMock.lastCharacterCachePolicy == .remoteFirst)
     }
 
     @Test("Execute propagates repository error")

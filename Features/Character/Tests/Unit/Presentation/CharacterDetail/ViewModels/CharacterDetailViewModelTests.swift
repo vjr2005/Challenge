@@ -8,7 +8,8 @@ struct CharacterDetailViewModelTests {
     // MARK: - Properties
 
     private let identifier = 1
-    private let useCaseMock = GetCharacterUseCaseMock()
+    private let getCharacterUseCaseMock = GetCharacterUseCaseMock()
+    private let refreshCharacterUseCaseMock = RefreshCharacterUseCaseMock()
     private let navigatorMock = CharacterDetailNavigatorMock()
     private let sut: CharacterDetailViewModel
 
@@ -17,7 +18,8 @@ struct CharacterDetailViewModelTests {
     init() {
         sut = CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterUseCase: useCaseMock,
+            getCharacterUseCase: getCharacterUseCaseMock,
+            refreshCharacterUseCase: refreshCharacterUseCaseMock,
             navigator: navigatorMock
         )
     }
@@ -34,7 +36,7 @@ struct CharacterDetailViewModelTests {
     func loadIfNeededSetsLoadedStateOnSuccess() async {
         // Given
         let expected = Character.stub()
-        useCaseMock.result = .success(expected)
+        getCharacterUseCaseMock.result = .success(expected)
 
         // When
         await sut.loadIfNeeded()
@@ -46,7 +48,7 @@ struct CharacterDetailViewModelTests {
     @Test("Load if needed sets error state on failure")
     func loadIfNeededSetsErrorStateOnFailure() async {
         // Given
-        useCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.loadIfNeeded()
@@ -58,56 +60,44 @@ struct CharacterDetailViewModelTests {
     @Test("Load if needed calls use case with correct character identifier")
     func loadIfNeededCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        useCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(useCaseMock.executeCallCount == 1)
-        #expect(useCaseMock.lastRequestedIdentifier == identifier)
-    }
-
-    @Test("Load if needed uses localFirst cache policy by default")
-    func loadIfNeededUsesLocalFirstCachePolicy() async {
-        // Given
-        useCaseMock.result = .success(.stub())
-
-        // When
-        await sut.loadIfNeeded()
-
-        // Then
-        #expect(useCaseMock.lastCachePolicy == .localFirst)
+        #expect(getCharacterUseCaseMock.executeCallCount == 1)
+        #expect(getCharacterUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
     @Test("Load if needed does nothing when already loaded")
     func loadIfNeededDoesNothingWhenLoaded() async {
         // Given
         let expected = Character.stub()
-        useCaseMock.result = .success(expected)
+        getCharacterUseCaseMock.result = .success(expected)
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+        let callCountAfterFirstLoad = getCharacterUseCaseMock.executeCallCount
 
         // When
         await sut.loadIfNeeded()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+        #expect(getCharacterUseCaseMock.executeCallCount == callCountAfterFirstLoad)
     }
 
     @Test("Load if needed retries when in error state")
     func loadIfNeededRetriesWhenError() async {
         // Given
-        useCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed)
         await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = useCaseMock.executeCallCount
+        let callCountAfterFirstLoad = getCharacterUseCaseMock.executeCallCount
 
         // When
-        useCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
         await sut.loadIfNeeded()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
+        #expect(getCharacterUseCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
     }
 
     @Test("Tap on back navigates back")
@@ -126,46 +116,34 @@ struct CharacterDetailViewModelTests {
         // Given
         let initialCharacter = Character.stub(name: "Initial")
         let refreshedCharacter = Character.stub(name: "Refreshed")
-        useCaseMock.result = .success(initialCharacter)
+        getCharacterUseCaseMock.result = .success(initialCharacter)
         await sut.loadIfNeeded()
-        useCaseMock.result = .success(refreshedCharacter)
+        refreshCharacterUseCaseMock.result = .success(refreshedCharacter)
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(useCaseMock.executeCallCount == 2)
+        #expect(refreshCharacterUseCaseMock.executeCallCount == 1)
         #expect(sut.state == .loaded(refreshedCharacter))
     }
 
     @Test("Refresh calls use case with correct character identifier")
     func refreshCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        useCaseMock.result = .success(.stub())
+        refreshCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(useCaseMock.lastRequestedIdentifier == identifier)
-    }
-
-    @Test("Refresh uses remoteFirst cache policy")
-    func refreshUsesRemoteFirstCachePolicy() async {
-        // Given
-        useCaseMock.result = .success(.stub())
-
-        // When
-        await sut.refresh()
-
-        // Then
-        #expect(useCaseMock.lastCachePolicy == .remoteFirst)
+        #expect(refreshCharacterUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
     @Test("Refresh sets error state on failure")
     func refreshSetsErrorStateOnFailure() async {
         // Given
-        useCaseMock.result = .failure(.loadFailed)
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.refresh()

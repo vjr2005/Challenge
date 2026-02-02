@@ -8,6 +8,7 @@ struct CharacterListViewModelTests {
     // MARK: - Properties
 
     private let getCharactersUseCaseMock = GetCharactersUseCaseMock()
+    private let refreshCharactersUseCaseMock = RefreshCharactersUseCaseMock()
     private let searchCharactersUseCaseMock = SearchCharactersUseCaseMock()
     private let navigatorMock = CharacterListNavigatorMock()
     private let sut: CharacterListViewModel
@@ -17,6 +18,7 @@ struct CharacterListViewModelTests {
     init() {
         sut = CharacterListViewModel(
             getCharactersUseCase: getCharactersUseCaseMock,
+            refreshCharactersUseCase: refreshCharactersUseCaseMock,
             searchCharactersUseCase: searchCharactersUseCaseMock,
             navigator: navigatorMock
         )
@@ -81,18 +83,6 @@ struct CharacterListViewModelTests {
         // Then
         #expect(getCharactersUseCaseMock.executeCallCount == 1)
         #expect(getCharactersUseCaseMock.lastRequestedPage == 1)
-    }
-
-    @Test("Load uses localFirst cache policy by default")
-    func loadUsesLocalFirstCachePolicy() async {
-        // Given
-        getCharactersUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.loadIfNeeded()
-
-        // Then
-        #expect(getCharactersUseCaseMock.lastCachePolicy == .localFirst)
     }
 
     @Test("Load if needed does nothing when already loaded")
@@ -373,19 +363,16 @@ struct CharacterListViewModelTests {
 
     // MARK: - Refresh
 
-    @Test("Refresh reloads data using remoteFirst cache policy")
-    func refreshReloadsWithRemoteFirstPolicy() async {
+    @Test("Refresh calls refresh use case")
+    func refreshCallsRefreshUseCase() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
-        let callCountAfterLoad = getCharactersUseCaseMock.executeCallCount
+        refreshCharactersUseCaseMock.result = .success(.stub())
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == callCountAfterLoad + 1)
-        #expect(getCharactersUseCaseMock.lastCachePolicy == .remoteFirst)
+        #expect(refreshCharactersUseCaseMock.executeCallCount == 1)
     }
 
     @Test("Refresh resets to page one")
@@ -397,11 +384,12 @@ struct CharacterListViewModelTests {
         await sut.loadIfNeeded()
         getCharactersUseCaseMock.result = .success(secondPage)
         await sut.loadMore()
+        refreshCharactersUseCaseMock.result = .success(.stub())
 
         // When
         await sut.refresh()
 
         // Then
-        #expect(getCharactersUseCaseMock.lastRequestedPage == 1)
+        #expect(refreshCharactersUseCaseMock.lastRequestedPage == 1)
     }
 }

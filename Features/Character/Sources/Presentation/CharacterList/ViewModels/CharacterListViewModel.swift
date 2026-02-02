@@ -14,6 +14,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
+    private let refreshCharactersUseCase: RefreshCharactersUseCaseContract
     private let searchCharactersUseCase: SearchCharactersUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private var currentPage = 1
@@ -22,10 +23,12 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 
     init(
         getCharactersUseCase: GetCharactersUseCaseContract,
+        refreshCharactersUseCase: RefreshCharactersUseCaseContract,
         searchCharactersUseCase: SearchCharactersUseCaseContract,
         navigator: CharacterListNavigatorContract
     ) {
         self.getCharactersUseCase = getCharactersUseCase
+        self.refreshCharactersUseCase = refreshCharactersUseCase
         self.searchCharactersUseCase = searchCharactersUseCase
         self.navigator = navigator
     }
@@ -42,7 +45,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     func refresh() async {
         state = .loading
         currentPage = 1
-        await fetchCharacters(cachePolicy: .remoteFirst)
+        await refreshCharacters()
     }
 
     func loadMore() async {
@@ -87,15 +90,28 @@ private extension CharacterListViewModel {
         await fetchCharacters()
     }
 
-    func fetchCharacters(cachePolicy: CachePolicy = .localFirst) async {
+    func fetchCharacters() async {
         do {
             let result: CharactersPage
             if let query = normalizedQuery {
                 result = try await searchCharactersUseCase.execute(page: currentPage, query: query)
             } else {
-                result = try await getCharactersUseCase.execute(page: currentPage, cachePolicy: cachePolicy)
+                result = try await getCharactersUseCase.execute(page: currentPage)
             }
 
+            if result.characters.isEmpty {
+                state = .empty
+            } else {
+                state = .loaded(result)
+            }
+        } catch {
+            state = .error(error)
+        }
+    }
+
+    func refreshCharacters() async {
+        do {
+            let result = try await refreshCharactersUseCase.execute(page: currentPage)
             if result.characters.isEmpty {
                 state = .empty
             } else {
