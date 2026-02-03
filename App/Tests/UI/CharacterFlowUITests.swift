@@ -1,27 +1,11 @@
-import SwiftMockServer
 import XCTest
 
 /// UI tests for the character browsing flow.
 final class CharacterFlowUITests: UITestCase {
 	@MainActor
 	func testListPaginationLoadsMoreAndPullToRefreshResetsContent() async throws {
-		let baseURL = try XCTUnwrap(serverBaseURL)
-		let page1Data = Data.fixture("characters_response", baseURL: baseURL)
-		let page2Data = Data.fixture("characters_response_page_2", baseURL: baseURL)
-		let imageData = Data.stubAvatarImage
-
-		await serverMock.registerCatchAll { request in
-			if request.path.contains("/avatar/") {
-                return .image(imageData)
-			}
-			if request.path.contains("/character") {
-				if request.queryParameters["page"] == "2" {
-                    return .json(page2Data)
-				}
-                return .json(page1Data)
-			}
-			return .status(.notFound)
-		}
+		// Given
+		try await givenCharacterListWithPaginationSucceeds()
 
 		// When
 		launch()
@@ -51,13 +35,8 @@ final class CharacterFlowUITests: UITestCase {
 
 	@MainActor
 	func testListShowsErrorAndRetryLoadsContent() async throws {
-		let baseURL = try XCTUnwrap(serverBaseURL)
-		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-		let imageData = Data.stubAvatarImage
-
-		await serverMock.registerCatchAll { _ in
-			.status(.internalServerError)
-		}
+		// Given
+		await givenAllRequestsFail()
 
 		// When
 		launch()
@@ -71,15 +50,7 @@ final class CharacterFlowUITests: UITestCase {
 			robot.verifyErrorIsVisible()
 		}
 
-		await serverMock.registerCatchAll { request in
-			if request.path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if request.path.contains("/character") {
-				return .json(charactersData)
-			}
-			return .status(.notFound)
-		}
+		try await givenCharacterListRecovers()
 
 		characterList { robot in
 			robot.tapRetry()
@@ -90,23 +61,8 @@ final class CharacterFlowUITests: UITestCase {
 
 	@MainActor
 	func testSearchShowsEmptyStateAndClearSearchRestoresContent() async throws {
-		let baseURL = try XCTUnwrap(serverBaseURL)
-		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-		let emptyData = Data.fixture("characters_response_empty")
-		let imageData = Data.stubAvatarImage
-
-		await serverMock.registerCatchAll { request in
-			if request.path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if request.path.contains("/character") {
-				if request.queryParameters["name"] != nil {
-					return .json(emptyData)
-				}
-				return .json(charactersData)
-			}
-			return .status(.notFound)
-		}
+		// Given
+		try await givenCharacterListWithEmptySearchSucceeds()
 
 		// When
 		launch()
@@ -128,23 +84,8 @@ final class CharacterFlowUITests: UITestCase {
 
 	@MainActor
 	func testNavigationFromListToDetailAndBackWithPullToRefresh() async throws {
-		let baseURL = try XCTUnwrap(serverBaseURL)
-		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-		let characterData = Data.fixture("character", baseURL: baseURL)
-		let imageData = Data.stubAvatarImage
-
-		await serverMock.registerCatchAll { request in
-			if request.path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if request.path.contains("/character/") {
-				return .json(characterData)
-			}
-			if request.path.contains("/character") {
-				return .json(charactersData)
-			}
-			return .status(.notFound)
-		}
+		// Given
+		try await givenCharacterListAndDetailSucceeds()
 
 		// When
 		launch()
@@ -179,23 +120,8 @@ final class CharacterFlowUITests: UITestCase {
 
 	@MainActor
 	func testDetailShowsErrorAndRetryLoadsContent() async throws {
-		let baseURL = try XCTUnwrap(serverBaseURL)
-		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-		let characterData = Data.fixture("character", baseURL: baseURL)
-		let imageData = Data.stubAvatarImage
-
-		await serverMock.registerCatchAll { request in
-			if request.path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if request.path.contains("/character/") {
-				return .status(.internalServerError)
-			}
-			if request.path.contains("/character") {
-				return .json(charactersData)
-			}
-			return .status(.notFound)
-		}
+		// Given
+		try await givenCharacterDetailFailsButListSucceeds()
 
 		// When
 		launch()
@@ -214,18 +140,7 @@ final class CharacterFlowUITests: UITestCase {
 			robot.verifyErrorIsVisible()
 		}
 
-		await serverMock.registerCatchAll { request in
-			if request.path.contains("/avatar/") {
-				return .image(imageData)
-			}
-			if request.path.contains("/character/") {
-				return .json(characterData)
-			}
-			if request.path.contains("/character") {
-				return .json(charactersData)
-			}
-			return .status(.notFound)
-		}
+		try await givenCharacterDetailRecovers()
 
 		characterDetail { robot in
 			robot.tapRetry()
