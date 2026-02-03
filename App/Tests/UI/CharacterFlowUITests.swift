@@ -76,7 +76,7 @@ final class CharacterFlowUITests: UITestCase {
 			robot.verifyIsVisible()
 			robot.verifyCharacterExists(identifier: 1)
 			robot.typeSearch(text: "NonExistent")
-			robot.verifyEmptyStateIsVisible()
+			robot.verifyEmptySearchStateIsVisible()
 			robot.clearSearch()
 			robot.verifyCharacterExists(identifier: 1)
 		}

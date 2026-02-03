@@ -97,7 +97,7 @@ private extension CharacterListViewModel {
             }
 
             if result.characters.isEmpty {
-                state = .empty
+                state = normalizedQuery != nil ? .emptySearch : .empty
             } else {
                 state = .loaded(result)
             }

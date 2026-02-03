@@ -109,10 +109,27 @@ struct CharacterListViewSnapshotTests {
 
 	// MARK: - Empty State
 
-	@Test("Renders character list empty state when no characters found")
+	@Test("Renders character list empty state when no characters returned")
 	func emptyState() {
 		// Given
 		let viewModel = CharacterListViewModelStub(state: .empty)
+
+		// When
+		let view = NavigationStack {
+			CharacterListView(viewModel: viewModel)
+		}
+		.imageLoader(imageLoader)
+
+		// Then
+		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+	}
+
+	// MARK: - Empty Search State
+
+	@Test("Renders character list empty search state when search has no results")
+	func emptySearchState() {
+		// Given
+		let viewModel = CharacterListViewModelStub(state: .emptySearch)
 
 		// When
 		let view = NavigationStack {

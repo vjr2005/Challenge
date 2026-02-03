@@ -11,19 +11,25 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 	}
 
 	var body: some View {
-		content
-			.task {
-				await viewModel.didAppear()
+		Group {
+			if viewModel.state.isSearchAvailable {
+				content
+					.searchable(
+						text: Binding(
+							get: { viewModel.searchQuery },
+							set: { viewModel.searchQuery = $0 }
+						),
+						prompt: LocalizedStrings.searchPlaceholder
+					)
+			} else {
+				content
 			}
-			.navigationTitle(LocalizedStrings.title)
-			.navigationBarTitleDisplayMode(.large)
-			.searchable(
-				text: Binding(
-					get: { viewModel.searchQuery },
-					set: { viewModel.searchQuery = $0 }
-				),
-				prompt: LocalizedStrings.searchPlaceholder
-			)
+		}
+		.task {
+			await viewModel.didAppear()
+		}
+		.navigationTitle(LocalizedStrings.title)
+		.navigationBarTitleDisplayMode(.large)
 	}
 }
 
@@ -41,6 +47,8 @@ private extension CharacterListView {
                 characterList(page: page)
             case .empty:
                 emptyView
+            case .emptySearch:
+                emptySearchView
             case .error(let error):
                 errorView(error: error)
         }
@@ -77,6 +85,15 @@ private extension CharacterListView {
             title: LocalizedStrings.Empty.title,
             message: LocalizedStrings.Empty.description,
             accessibilityIdentifier: AccessibilityIdentifier.emptyState
+        )
+    }
+
+    var emptySearchView: some View {
+        DSEmptyState(
+            icon: "magnifyingglass",
+            title: LocalizedStrings.EmptySearch.title,
+            message: LocalizedStrings.EmptySearch.description,
+            accessibilityIdentifier: AccessibilityIdentifier.emptySearchState
         )
     }
 
@@ -164,6 +181,11 @@ private enum LocalizedStrings {
 		static var description: String { "characterList.empty.description".localized() }
 	}
 
+	enum EmptySearch {
+		static var title: String { "characterList.emptySearch.title".localized() }
+		static var description: String { "characterList.emptySearch.description".localized() }
+	}
+
 	enum Error {
 		static var title: String { "characterList.error.title".localized() }
 	}
@@ -179,6 +201,7 @@ private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
 	static let loadMoreButton = "characterList.loadMore.button"
 	static let emptyState = "characterList.emptyState"
+	static let emptySearchState = "characterList.emptySearchState"
 	static let errorView = "characterList.errorView"
 
 	static func row(identifier: Int) -> String {

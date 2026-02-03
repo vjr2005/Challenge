@@ -370,6 +370,20 @@ struct CharacterListViewModelTests {
         #expect(searchCharactersUseCaseMock.lastRequestedPage == 1)
     }
 
+    @Test("Search with no results sets emptySearch state")
+    func searchWithNoResultsSetsEmptySearchState() async throws {
+        // Given
+        let emptyPage = CharactersPage.stub(characters: [])
+        searchCharactersUseCaseMock.result = .success(emptyPage)
+
+        // When
+        sut.searchQuery = "NonExistent"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(sut.state == .emptySearch)
+    }
+
     @Test("Clearing search query before debounce only triggers one load")
     func clearingSearchQueryBeforeDebounceOnlyTriggersOneLoad() async throws {
         // Given
@@ -438,6 +452,19 @@ struct CharacterListViewModelTests {
         // Then
         #expect(statesDuringRefresh.count == 1)
         #expect(statesDuringRefresh.first == .loaded(loadedPage))
+    }
+
+    @Test("didPullToRefresh sets empty state when no characters returned")
+    func didPullToRefreshSetsEmptyStateWhenNoCharacters() async {
+        // Given
+        let emptyPage = CharactersPage.stub(characters: [])
+        refreshCharactersUseCaseMock.result = .success(emptyPage)
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(sut.state == .empty)
     }
 
     @Test("didPullToRefresh sets error state on failure")

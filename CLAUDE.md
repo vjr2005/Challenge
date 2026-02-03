@@ -2,6 +2,13 @@
 
 This document defines the coding standards, architecture patterns, and development practices for this iOS project. All code and documentation must be written in **English**.
 
+## Target Configuration
+
+- **Swift 6.2** with **complete strict concurrency**
+- **iOS 17+**
+- `SWIFT_APPROACHABLE_CONCURRENCY` = `YES`
+- `SWIFT_DEFAULT_ACTOR_ISOLATION` = `MainActor`
+
 > **CRITICAL:** Never create git commits without explicit user permission. Always wait for the user to request a commit.
 >
 > **CRITICAL:** All generated code must compile without errors or warnings. Before writing code, carefully analyze for:

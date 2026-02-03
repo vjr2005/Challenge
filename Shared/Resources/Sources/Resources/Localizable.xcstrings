@@ -154,6 +154,40 @@
         }
       }
     },
+    "characterList.emptySearch.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Results"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin Resultados"
+          }
+        }
+      }
+    },
+    "characterList.emptySearch.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try a different search"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prueba otra búsqueda"
+          }
+        }
+      }
+    },
     "characterList.error.title" : {
       "extractionState" : "manual",
       "localizations" : {

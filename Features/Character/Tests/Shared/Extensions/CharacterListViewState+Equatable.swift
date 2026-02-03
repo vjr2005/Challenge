@@ -3,7 +3,7 @@
 extension CharacterListViewState: @retroactive Equatable {
 	public static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
-		case (.idle, .idle), (.loading, .loading), (.empty, .empty):
+		case (.idle, .idle), (.loading, .loading), (.empty, .empty), (.emptySearch, .emptySearch):
 			true
 		case let (.loaded(lhsPage), .loaded(rhsPage)):
 			lhsPage == rhsPage

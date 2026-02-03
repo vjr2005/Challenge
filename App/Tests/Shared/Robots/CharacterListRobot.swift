@@ -111,6 +111,13 @@ extension CharacterListRobot {
 	}
 
 	@discardableResult
+	func verifyEmptySearchStateIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let emptySearchState = app.descendants(matching: .any)[AccessibilityIdentifier.emptySearchStateTitle]
+		XCTAssertTrue(emptySearchState.waitForExistence(timeout: 5), file: file, line: line)
+		return self
+	}
+
+	@discardableResult
 	func verifyErrorIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let errorTitle = app.descendants(matching: .any)[AccessibilityIdentifier.errorTitle]
 		XCTAssertTrue(errorTitle.waitForExistence(timeout: 5), file: file, line: line)
@@ -124,6 +131,7 @@ private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
 	static let loadMoreButton = "characterList.loadMore.button"
 	static let emptyStateTitle = "characterList.emptyState.title"
+	static let emptySearchStateTitle = "characterList.emptySearchState.title"
 	static let errorTitle = "characterList.errorView.title"
 	static let retryButton = "characterList.errorView.button"
 
