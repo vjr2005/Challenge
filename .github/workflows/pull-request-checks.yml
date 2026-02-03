@@ -54,6 +54,7 @@ jobs:
         run: mise x -- tuist generate
 
       - name: Run tests
+        timeout-minutes: 25
         run: |
           mise x -- tuist test \
             --device "$TUIST_TEST_DEVICE" \

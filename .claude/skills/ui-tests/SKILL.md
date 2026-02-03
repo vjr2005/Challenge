@@ -36,6 +36,7 @@ App/Tests/Shared/Robots/
 ## Robot Protocol
 
 ```swift
+import SwiftMockServer
 import XCTest
 
 /// Base protocol for all screen robots.
@@ -43,19 +44,47 @@ protocol RobotContract {
     var app: XCUIApplication { get }
 }
 
-/// Provides DSL for robot-based testing.
-extension XCTestCase {
+/// Base class for UI tests with mock server support.
+nonisolated class UITestCase: XCTestCase {
+    private(set) var serverMock: MockServer!
+    private(set) var serverBaseURL: String!
+    private(set) var app: XCUIApplication!
+
+    override func setUp() async throws {
+        try await super.setUp()
+        continueAfterFailure = false
+        executionTimeAllowance = 60
+
+        serverMock = try await MockServer.create()
+        serverBaseURL = await serverMock.baseURL
+    }
+
+    override func tearDown() async throws {
+        await serverMock.stop()
+        serverMock = nil
+        serverBaseURL = nil
+        app = nil
+        try await super.tearDown()
+    }
+
+    @MainActor
+    @discardableResult
     func launch() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchEnvironment = ["API_BASE_URL": serverBaseURL]
         app.launch()
+
+        self.app = app
         return app
     }
 
-    func home(app: XCUIApplication, actions: (HomeRobot) -> Void) {
+    @MainActor
+    func home(actions: (HomeRobot) -> Void) {
         actions(HomeRobot(app: app))
     }
 
-    func characterList(app: XCUIApplication, actions: (CharacterListRobot) -> Void) {
+    @MainActor
+    func characterList(actions: (CharacterListRobot) -> Void) {
         actions(CharacterListRobot(app: app))
     }
 }
@@ -122,36 +151,51 @@ private enum AccessibilityIdentifier {
 ## UI Test Structure
 
 ```swift
+import SwiftMockServer
 import XCTest
 
-nonisolated final class CharacterFlowUITests: XCTestCase {
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-    }
-
+final class CharacterFlowUITests: UITestCase {
     @MainActor
-    func testCharacterBrowsingFlow() throws {
-        let app = launch()
+    func testCharacterBrowsingFlow() async throws {
+        let baseURL = try XCTUnwrap(serverBaseURL)
+        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+        let characterData = Data.fixture("character", baseURL: baseURL)
+        let imageData = Data.stubAvatarImage
 
-        home(app: app) { robot in
+        await serverMock.registerCatchAll { request in
+            if request.path.contains("/avatar/") {
+                return .image(imageData)
+            }
+            if request.path.contains("/character/") {
+                return .json(characterData)
+            }
+            if request.path.contains("/character") {
+                return .json(charactersData)
+            }
+            return .status(.notFound)
+        }
+
+        launch()
+
+        home { robot in
             robot.tapCharacterButton()
         }
 
-        characterList(app: app) { robot in
+        characterList { robot in
             robot.tapCharacter(id: 1)
         }
 
-        characterDetail(app: app) { robot in
+        characterDetail { robot in
             robot.verifyIsVisible()
             robot.tapBack()
         }
 
-        characterList(app: app) { robot in
+        characterList { robot in
             robot.verifyIsVisible()
             robot.tapBack()
         }
 
-        home(app: app) { robot in
+        home { robot in
             robot.verifyIsVisible()
         }
     }
@@ -164,8 +208,9 @@ nonisolated final class CharacterFlowUITests: XCTestCase {
 
 | Rule | Description |
 |------|-------------|
-| `nonisolated` on test class | Required to avoid actor isolation conflicts with XCTestCase |
-| `@MainActor` on test methods | Add when tests interact with UI (XCUIApplication) |
+| Extend `UITestCase` | Inherits mock server setup, teardown, and robot DSL |
+| `async throws` on test methods | Required for `await serverMock.registerCatchAll` |
+| `@MainActor` on test methods | Required for UI interactions (XCUIApplication) |
 | `RobotContract` protocol | Base protocol with `app: XCUIApplication` |
 | Actions section | Methods that perform UI interactions (tap, swipe, type) |
 | Verifications section | Methods that assert UI state |
@@ -379,10 +424,11 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 
 ### UI Test
 
-- [ ] Mark test class as `nonisolated`
-- [ ] Mark test methods with `@MainActor`
-- [ ] Set `continueAfterFailure = false` in setup
-- [ ] Use Robot DSL methods from XCTestCase extension
+- [ ] Extend `UITestCase` (provides `serverMock`, `serverBaseURL`, `launch()`)
+- [ ] Mark test methods with `@MainActor` and `async throws`
+- [ ] Register mock server routes with `await serverMock.registerCatchAll`
+- [ ] Call `launch()` after registering routes (synchronous, no `await`)
+- [ ] Use Robot DSL methods (`home`, `characterList`, etc.)
 - [ ] Chain robot actions fluently
 - [ ] Verify navigation with `verifyIsVisible()`
 

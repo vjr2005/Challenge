@@ -99,6 +99,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 |---------|---------|
 | SnapshotTesting | Snapshot tests (Point-Free) |
 | lottie-ios | Lottie animations (Airbnb) |
+| SwiftMockServer | Mock HTTP server for UI tests |
 
 ### Tools (via mise)
 
