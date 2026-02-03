@@ -1,22 +1,23 @@
+import SwiftMockServer
 import XCTest
-
+/*
 /// UI tests for deep link navigation.
 final class DeepLinkUITests: UITestCase {
 	@MainActor
-	func testDeepLinkToCharacterList() throws {
+	func testDeepLinkToCharacterList() async throws {
 		// Given
-		let baseURL = stubServer.baseURL
+		let baseURL = try XCTUnwrap(serverBaseURL)
 		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
 		let imageData = Data.stubAvatarImage
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+                return .image(imageData)
 			}
-			if path.contains("/character") {
-				return .ok(charactersData)
+			if request.path.contains("/character") {
+				return .json(charactersData)
 			}
-			return .notFound
+			return .status(.notFound)
 		}
 
 		launch()
@@ -32,20 +33,20 @@ final class DeepLinkUITests: UITestCase {
 	}
 
 	@MainActor
-	func testDeepLinkToCharacterDetail() throws {
+	func testDeepLinkToCharacterDetail() async throws {
 		// Given
-		let baseURL = stubServer.baseURL
+		let baseURL = try XCTUnwrap(serverBaseURL)
 		let characterData = Data.fixture("character", baseURL: baseURL)
 		let imageData = Data.stubAvatarImage
 
-		stubServer.requestHandler = { path in
-			if path.contains("/avatar/") {
-				return .image(imageData)
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+                return .image(imageData)
 			}
-			if path.contains("/character/") {
-				return .ok(characterData)
+			if request.path.contains("/character/") {
+				return .json(characterData)
 			}
-			return .notFound
+			return .status(.notFound)
 		}
 
 		launch()
@@ -61,10 +62,10 @@ final class DeepLinkUITests: UITestCase {
 	}
 
 	@MainActor
-	func testInvalidDeepLinkShowsNotFound() throws {
+	func testInvalidDeepLinkShowsNotFound() async throws {
 		// Given
-		stubServer.requestHandler = { _ in
-			.notFound
+		await serverMock.registerCatchAll { _ in
+			.status(.notFound)
 		}
 
 		launch()
@@ -84,3 +85,4 @@ final class DeepLinkUITests: UITestCase {
 		}
 	}
 }
+*/

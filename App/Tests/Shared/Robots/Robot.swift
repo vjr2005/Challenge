@@ -1,3 +1,4 @@
+import SwiftMockServer
 import XCTest
 
 /// Base protocol for all screen robots.
@@ -5,35 +6,37 @@ protocol RobotContract {
 	var app: XCUIApplication { get }
 }
 
-/// Base class for UI tests with stub server support.
+/// Base class for UI tests with mock server support.
 nonisolated class UITestCase: XCTestCase {
-	private(set) var stubServer: StubServer!
+	private(set) var serverMock: MockServer!
+	private(set) var serverBaseURL: String!
 	private(set) var app: XCUIApplication!
 
-	override func setUpWithError() throws {
-		try super.setUpWithError()
+	override func setUp() async throws {
+		try await super.setUp()
 		continueAfterFailure = false
 		executionTimeAllowance = 60
 
-		stubServer = StubServer()
-		try stubServer.start()
+		serverMock = try await MockServer.create()
+		serverBaseURL = await serverMock.baseURL
 	}
 
-	override func tearDownWithError() throws {
-		stubServer.stop()
-		stubServer = nil
+	override func tearDown() async throws {
+        await serverMock.stop()
+		serverMock = nil
+		serverBaseURL = nil
 		app = nil
-		try super.tearDownWithError()
+		try await super.tearDown()
 	}
 
-	/// Launches the app with the stub server configured.
-	/// Configure `stubServer.requestHandler` before calling this method.
+	/// Launches the app with the mock server configured.
+	/// Configure mock server routes before calling this method.
 	/// - Returns: The launched XCUIApplication instance.
 	@MainActor
 	@discardableResult
 	func launch() -> XCUIApplication {
 		let app = XCUIApplication()
-		app.launchEnvironment = ["API_BASE_URL": stubServer.baseURL]
+		app.launchEnvironment = ["API_BASE_URL": serverBaseURL]
 		app.launch()
 
 		self.app = app
