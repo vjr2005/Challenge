@@ -271,9 +271,7 @@ Tests/
 │           ├── {ScreenName}ViewSnapshotTests.swift
 │           └── __Snapshots__/
 ├── UI/                           # UI tests (XCTest, App only)
-│   ├── Robots/
-│   └── Tests/
-└── Shared/                       # Shared resources (used by Unit and Snapshots)
+└── Shared/                       # Shared resources (used by Unit, Snapshots, and UI)
     ├── Stubs/                    # Domain model test data
     │   ├── Character+Stub.swift
     │   └── Location+Stub.swift
@@ -285,6 +283,8 @@ Tests/
     │   └── character_list.json
     ├── Extensions/               # Test helpers (Equatable, etc.)
     │   └── {Name}ViewState+Equatable.swift
+    ├── Scenarios/                # Reusable SwiftMockServer configurations (UI tests)
+    │   └── UITestCase+Scenarios.swift
     └── Resources/                # Test images
         └── test-avatar.jpg
 ```
@@ -430,9 +430,13 @@ App/
 │           ├── AppIconDev.appiconset/     # Development icon
 │           └── AppIconStaging.appiconset/ # Staging icon
 └── Tests/
+    ├── Shared/
+    │   ├── Robots/               # Robot pattern for UI interactions
+    │   ├── Scenarios/            # Reusable SwiftMockServer configurations
+    │   ├── Stubs/                # Test data helpers
+    │   ├── Fixtures/             # JSON fixtures
+    │   └── Resources/            # Test images
     └── UI/                       # UI tests only (XCTest)
-        ├── Robots/
-        └── Tests/
 
 AppKit/
 ├── Sources/
@@ -493,7 +497,7 @@ AppKit/
 
 ## Checklist
 
-- [ ] App contains only `{AppName}App.swift` and UI tests
+- [ ] App contains only `{AppName}App.swift` and UI tests (with Robots, Scenarios, Stubs, Fixtures)
 - [ ] AppKit contains testable code: `AppContainer.swift`, `RootContainerView.swift`, `AppNavigationRedirect.swift`
 - [ ] Feature folder does not contain "Feature" suffix
 - [ ] {Feature}Container.swift for dependency composition

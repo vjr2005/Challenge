@@ -8,6 +8,7 @@ Challenge/
 ├── App/                             # Main application target
 │   ├── Sources/
 │   └── Tests/
+│       ├── Shared/                  # Robots, Scenarios, Stubs, Fixtures
 │       └── UI/                      # UI tests (XCTest)
 ├── AppKit/                          # Composition layer
 │   ├── Sources/

@@ -23,12 +23,15 @@ App/Tests/UI/
 ├── CharacterFlowUITests.swift   # Character flow tests
 └── DeepLinkUITests.swift        # Deep link tests
 
-App/Tests/Shared/Robots/
-├── Robot.swift                  # Base protocol and DSL
-├── HomeRobot.swift
-├── CharacterListRobot.swift
-├── CharacterDetailRobot.swift
-└── NotFoundRobot.swift
+App/Tests/Shared/
+├── Robots/
+│   ├── Robot.swift                        # UITestCase base class + RobotContract
+│   ├── HomeRobot.swift
+│   ├── CharacterListRobot.swift
+│   ├── CharacterDetailRobot.swift
+│   └── NotFoundRobot.swift
+└── Scenarios/
+    └── UITestCase+Scenarios.swift         # Reusable mock server configurations
 ```
 
 ---
@@ -148,41 +151,128 @@ private enum AccessibilityIdentifier {
 
 ---
 
+## SwiftMockServer
+
+UI tests use [SwiftMockServer](https://github.com/nicklama/SwiftMockServer) to intercept HTTP requests with a local mock server. `UITestCase` manages the server lifecycle automatically:
+
+- **`setUp()`**: Creates a `MockServer` instance and stores `serverBaseURL`
+- **`launch()`**: Passes `serverBaseURL` via `API_BASE_URL` environment variable
+- **`tearDown()`**: Stops the server
+
+### Route Registration
+
+SwiftMockServer provides three registration methods:
+
+| Method | Purpose |
+|--------|---------|
+| `registerCatchAll { request in }` | Handles all unmatched requests (initial scenarios) |
+| `register(.GET, "/path") { request in }` | Exact path match (recovery overrides) |
+| `registerPrefix(.GET, "/path/") { request in }` | Prefix path match (recovery overrides) |
+
+Specific routes (`register`/`registerPrefix`) take priority over `registerCatchAll`. This enables recovery scenarios: register a catch-all that fails, then override specific routes mid-test for retry flows.
+
+### Response Types
+
+```swift
+.json(data)                    // JSON response (200)
+.image(data)                   // Image response (200)
+.status(.notFound)             // Status code only (404)
+.status(.internalServerError)  // Status code only (500)
+```
+
+---
+
+## Scenarios
+
+Mock server configurations are extracted into reusable methods on `UITestCase` in `App/Tests/Shared/Scenarios/UITestCase+Scenarios.swift`.
+
+### Initial Scenarios (before `launch()`)
+
+Use `registerCatchAll` to configure all routes for the test:
+
+| Method | Description |
+|--------|-------------|
+| `givenCharacterListSucceeds()` | Avatars + character list |
+| `givenCharacterListAndDetailSucceeds()` | Avatars + list + detail |
+| `givenCharacterListWithPaginationSucceeds()` | Avatars + list + page 2 |
+| `givenCharacterListWithEmptySearchSucceeds()` | Avatars + list + empty search |
+| `givenCharacterDetailSucceeds()` | Avatars + detail (no list) |
+| `givenCharacterDetailFailsButListSucceeds()` | Avatars + list OK, detail 500 |
+| `givenAllRequestsFail()` | All requests return 500 |
+| `givenAllRequestsReturnNotFound()` | All requests return 404 |
+
+### Recovery Scenarios (mid-test, after initial failure)
+
+Use `register`/`registerPrefix` to override specific routes without replacing the catch-all:
+
+| Method | Description |
+|--------|-------------|
+| `givenCharacterListRecovers()` | Registers avatar + list routes |
+| `givenCharacterDetailRecovers()` | Registers detail route |
+
+### Scenario Implementation Pattern
+
+```swift
+// Initial scenario — uses registerCatchAll
+func givenCharacterListSucceeds() async throws {
+    let baseURL = try XCTUnwrap(serverBaseURL)
+    let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+    let imageData = Data.stubAvatarImage
+
+    await serverMock.registerCatchAll { request in
+        if request.path.contains("/avatar/") {
+            return .image(imageData)
+        }
+        if request.path.contains("/character") {
+            return .json(charactersData)
+        }
+        return .status(.notFound)
+    }
+}
+
+// Recovery scenario — uses register/registerPrefix to override specific routes
+func givenCharacterListRecovers() async throws {
+    let baseURL = try XCTUnwrap(serverBaseURL)
+    let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+    let imageData = Data.stubAvatarImage
+
+    await serverMock.registerPrefix(.GET, "/avatar/") { _ in .image(imageData) }
+    await serverMock.register(.GET, "/character") { _ in .json(charactersData) }
+}
+```
+
+### Naming Convention
+
+- **Prefix**: `given` (follows Given/When/Then pattern)
+- **Success**: `given{Feature}Succeeds()` — happy path
+- **Failure**: `given{Feature}Fails()` or `givenAllRequestsFail()` — error scenarios
+- **Recovery**: `given{Feature}Recovers()` — mid-test overrides for retry flows
+- **Signature**: `async throws` when using `XCTUnwrap(serverBaseURL)`, `async` when not needed
+
+---
+
 ## UI Test Structure
 
 ```swift
-import SwiftMockServer
 import XCTest
 
 final class CharacterFlowUITests: UITestCase {
     @MainActor
-    func testCharacterBrowsingFlow() async throws {
-        let baseURL = try XCTUnwrap(serverBaseURL)
-        let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-        let characterData = Data.fixture("character", baseURL: baseURL)
-        let imageData = Data.stubAvatarImage
+    func testNavigationFromListToDetailAndBack() async throws {
+        // Given
+        try await givenCharacterListAndDetailSucceeds()
 
-        await serverMock.registerCatchAll { request in
-            if request.path.contains("/avatar/") {
-                return .image(imageData)
-            }
-            if request.path.contains("/character/") {
-                return .json(characterData)
-            }
-            if request.path.contains("/character") {
-                return .json(charactersData)
-            }
-            return .status(.notFound)
-        }
-
+        // When
         launch()
 
+        // Then
         home { robot in
             robot.tapCharacterButton()
         }
 
         characterList { robot in
-            robot.tapCharacter(id: 1)
+            robot.verifyIsVisible()
+            robot.tapCharacter(identifier: 1)
         }
 
         characterDetail { robot in
@@ -198,6 +288,36 @@ final class CharacterFlowUITests: UITestCase {
         home { robot in
             robot.verifyIsVisible()
         }
+    }
+}
+```
+
+### Error and Retry Flow
+
+```swift
+@MainActor
+func testListShowsErrorAndRetryLoadsContent() async throws {
+    // Given
+    await givenAllRequestsFail()
+
+    // When
+    launch()
+
+    // Then
+    home { robot in
+        robot.tapCharacterButton()
+    }
+
+    characterList { robot in
+        robot.verifyErrorIsVisible()
+    }
+
+    try await givenCharacterListRecovers()
+
+    characterList { robot in
+        robot.tapRetry()
+        robot.verifyIsVisible()
+        robot.verifyCharacterExists(identifier: 1)
     }
 }
 ```
@@ -426,11 +546,13 @@ XCTAssertTrue(element.waitForExistence(timeout: 10))
 
 - [ ] Extend `UITestCase` (provides `serverMock`, `serverBaseURL`, `launch()`)
 - [ ] Mark test methods with `@MainActor` and `async throws`
-- [ ] Register mock server routes with `await serverMock.registerCatchAll`
-- [ ] Call `launch()` after registering routes (synchronous, no `await`)
+- [ ] Use scenario methods from `UITestCase+Scenarios` (or create new ones)
+- [ ] Follow `// Given` / `// When` / `// Then` structure
+- [ ] Call `launch()` after scenario setup (synchronous, no `await`)
 - [ ] Use Robot DSL methods (`home`, `characterList`, etc.)
 - [ ] Chain robot actions fluently
 - [ ] Verify navigation with `verifyIsVisible()`
+- [ ] For retry flows: use recovery scenarios mid-test after verifying error state
 
 ### View Accessibility
 

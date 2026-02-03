@@ -127,6 +127,7 @@ Module/Tests/
     ├── Mocks/      → Internal test mocks
     ├── Fixtures/   → JSON files for DTOs
     ├── Extensions/ → Test helpers (Equatable, etc.)
+    ├── Scenarios/  → Reusable SwiftMockServer configurations (UI tests)
     └── Resources/  → Test images
 ```
 

@@ -15,6 +15,7 @@ App/
 ├── Tests/
 │   ├── Shared/
 │   │   ├── Robots/
+│   │   ├── Scenarios/
 │   │   ├── Stubs/
 │   │   └── Fixtures/
 │   └── UI/
@@ -48,13 +49,16 @@ struct ChallengeApp: App {
 
 ## UI Tests
 
-UI tests using the Robot pattern:
+UI tests use [SwiftMockServer](https://github.com/nicklama/SwiftMockServer) for HTTP mocking and the Robot pattern for UI interactions.
 
 | Robot | Purpose |
 |-------|---------|
 | `HomeRobot` | Home screen interactions |
 | `CharacterListRobot` | Character list interactions |
 | `CharacterDetailRobot` | Character detail interactions |
+| `NotFoundRobot` | Not found screen interactions |
+
+Mock server configurations are extracted into reusable scenarios in `UITestCase+Scenarios.swift`.
 
 **Test Files:**
 - `CharacterFlowUITests.swift` - Character navigation flows
