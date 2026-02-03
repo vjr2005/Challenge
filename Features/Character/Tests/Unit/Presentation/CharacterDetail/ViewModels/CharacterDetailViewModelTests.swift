@@ -24,7 +24,7 @@ struct CharacterDetailViewModelTests {
         )
     }
 
-    // MARK: - Tests
+    // MARK: - Initial State
 
     @Test("Initial state is idle before loading")
     func initialStateIsIdle() {
@@ -32,70 +32,103 @@ struct CharacterDetailViewModelTests {
         #expect(sut.state == .idle)
     }
 
-    @Test("Load if needed sets loaded state with character on success")
-    func loadIfNeededSetsLoadedStateOnSuccess() async {
+    // MARK: - didAppear
+
+    @Test("didAppear sets loaded state with character on success")
+    func didAppearSetsLoadedStateOnSuccess() async {
         // Given
         let expected = Character.stub()
         getCharacterDetailUseCaseMock.result = .success(expected)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test("Load if needed sets error state on failure")
-    func loadIfNeededSetsErrorStateOnFailure() async {
+    @Test("didAppear sets error state on failure")
+    func didAppearSetsErrorStateOnFailure() async {
         // Given
         getCharacterDetailUseCaseMock.result = .failure(.loadFailed)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test("Load if needed calls use case with correct character identifier")
-    func loadIfNeededCallsUseCaseWithCorrectIdentifier() async {
+    @Test("didAppear calls use case with correct character identifier")
+    func didAppearCallsUseCaseWithCorrectIdentifier() async {
         // Given
         getCharacterDetailUseCaseMock.result = .success(.stub())
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
         #expect(getCharacterDetailUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test("Load if needed does nothing when already loaded")
-    func loadIfNeededDoesNothingWhenLoaded() async {
+    @Test("didAppear does nothing when already loaded")
+    func didAppearDoesNothingWhenLoaded() async {
         // Given
         getCharacterDetailUseCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
     }
 
-    @Test("Load if needed retries when in error state")
-    func loadIfNeededRetriesWhenError() async {
+    @Test("didAppear does nothing when in error state")
+    func didAppearDoesNothingWhenError() async {
         // Given
         getCharacterDetailUseCaseMock.result = .failure(.loadFailed)
-        await sut.loadIfNeeded()
+        await sut.didAppear()
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
+    }
+
+    // MARK: - didTapOnRetryButton
+
+    @Test("didTapOnRetryButton retries loading when in error state")
+    func didTapOnRetryButtonRetriesWhenError() async {
+        // Given
+        getCharacterDetailUseCaseMock.result = .failure(.loadFailed)
+        await sut.didAppear()
 
         // When
         getCharacterDetailUseCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
+        await sut.didTapOnRetryButton()
 
         // Then
         #expect(getCharacterDetailUseCaseMock.executeCallCount == 2)
     }
+
+    @Test("didTapOnRetryButton always loads regardless of current state")
+    func didTapOnRetryButtonAlwaysLoads() async {
+        // Given
+        getCharacterDetailUseCaseMock.result = .success(.stub())
+        await sut.didAppear()
+        #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
+
+        // When
+        await sut.didTapOnRetryButton()
+
+        // Then
+        #expect(getCharacterDetailUseCaseMock.executeCallCount == 2)
+    }
+
+    // MARK: - Navigation
 
     @Test("Tap on back navigates back")
     func didTapOnBackCallsNavigatorGoBack() {
@@ -106,55 +139,55 @@ struct CharacterDetailViewModelTests {
         #expect(navigatorMock.goBackCallCount == 1)
     }
 
-    // MARK: - Refresh
+    // MARK: - didPullToRefresh
 
-    @Test("Refresh updates character with fresh data from API")
-    func refreshUpdatesCharacterFromAPI() async {
+    @Test("didPullToRefresh updates character with fresh data from API")
+    func didPullToRefreshUpdatesCharacterFromAPI() async {
         // Given
         let initialCharacter = Character.stub(name: "Initial")
         let refreshedCharacter = Character.stub(name: "Refreshed")
         getCharacterDetailUseCaseMock.result = .success(initialCharacter)
-        await sut.loadIfNeeded()
+        await sut.didAppear()
         refreshCharacterDetailUseCaseMock.result = .success(refreshedCharacter)
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(refreshCharacterDetailUseCaseMock.executeCallCount == 1)
         #expect(sut.state == .loaded(refreshedCharacter))
     }
 
-    @Test("Refresh calls use case with correct character identifier")
-    func refreshCallsUseCaseWithCorrectIdentifier() async {
+    @Test("didPullToRefresh calls use case with correct character identifier")
+    func didPullToRefreshCallsUseCaseWithCorrectIdentifier() async {
         // Given
         refreshCharacterDetailUseCaseMock.result = .success(.stub())
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(refreshCharacterDetailUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test("Refresh sets error state on failure")
-    func refreshSetsErrorStateOnFailure() async {
+    @Test("didPullToRefresh sets error state on failure")
+    func didPullToRefreshSetsErrorStateOnFailure() async {
         // Given
         refreshCharacterDetailUseCaseMock.result = .failure(.loadFailed)
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test("Refresh keeps loaded state visible during network request")
-    func refreshKeepsLoadedStateDuringRequest() async {
+    @Test("didPullToRefresh keeps loaded state visible during network request")
+    func didPullToRefreshKeepsLoadedStateDuringRequest() async {
         // Given
         let loadedCharacter = Character.stub()
         getCharacterDetailUseCaseMock.result = .success(loadedCharacter)
-        await sut.loadIfNeeded()
+        await sut.didAppear()
         refreshCharacterDetailUseCaseMock.result = .success(.stub())
 
         var statesDuringRefresh: [CharacterDetailViewState] = []
@@ -164,7 +197,7 @@ struct CharacterDetailViewModelTests {
         }
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(statesDuringRefresh.count == 1)

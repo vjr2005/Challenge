@@ -21,22 +21,17 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
         self.navigator = navigator
     }
 
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded:
-            break
-        }
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
     }
 
-    func refresh() async {
-        do {
-            let character = try await refreshCharacterDetailUseCase.execute(identifier: identifier)
-            state = .loaded(character)
-        } catch {
-            state = .error(error)
-        }
+    func didTapOnRetryButton() async {
+        await load()
+    }
+
+    func didPullToRefresh() async {
+        await refresh()
     }
 
     func didTapOnBack() {
@@ -51,6 +46,15 @@ private extension CharacterDetailViewModel {
         state = .loading
         do {
             let character = try await getCharacterDetailUseCase.execute(identifier: identifier)
+            state = .loaded(character)
+        } catch {
+            state = .error(error)
+        }
+    }
+
+    func refresh() async {
+        do {
+            let character = try await refreshCharacterDetailUseCase.execute(identifier: identifier)
             state = .loaded(character)
         } catch {
             state = .error(error)

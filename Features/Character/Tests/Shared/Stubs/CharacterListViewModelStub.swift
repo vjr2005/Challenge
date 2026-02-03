@@ -13,15 +13,19 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 		self.state = state
 	}
 
-	func loadIfNeeded() async {
+	func didAppear() async {
 		// No-op: state is fixed for snapshots
 	}
 
-	func refresh() async {
+	func didTapOnRetryButton() async {
 		// No-op: state is fixed for snapshots
 	}
 
-	func loadMore() async {
+	func didPullToRefresh() async {
+		// No-op: state is fixed for snapshots
+	}
+
+	func didTapOnLoadMoreButton() async {
 		// No-op: state is fixed for snapshots
 	}
 

@@ -33,21 +33,20 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         self.navigator = navigator
     }
 
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded, .empty:
-            break
-        }
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
     }
 
-    func refresh() async {
-        currentPage = 1
+    func didTapOnRetryButton() async {
+        await load()
+    }
+
+    func didPullToRefresh() async {
         await refreshCharacters()
     }
 
-    func loadMore() async {
+    func didTapOnLoadMoreButton() async {
         guard case .loaded(let page) = state,
               page.hasNextPage,
               !isLoadingMore else {
@@ -55,7 +54,6 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         }
 
         isLoadingMore = true
-        currentPage += 1
         await fetchMoreCharacters(existingPage: page)
         isLoadingMore = false
     }
@@ -85,12 +83,12 @@ private extension CharacterListViewModel {
 
     func load() async {
         state = .loading
-        currentPage = 1
         await fetchCharacters()
     }
 
     func fetchCharacters() async {
         do {
+            currentPage = 1
             let result: CharactersPage
             if let query = normalizedQuery {
                 result = try await searchCharactersUseCase.execute(page: currentPage, query: query)
@@ -110,6 +108,7 @@ private extension CharacterListViewModel {
 
     func refreshCharacters() async {
         do {
+            currentPage = 1
             let result = try await refreshCharactersUseCase.execute(page: currentPage)
             if result.characters.isEmpty {
                 state = .empty
@@ -123,6 +122,7 @@ private extension CharacterListViewModel {
 
     func fetchMoreCharacters(existingPage: CharactersPage) async {
         do {
+            currentPage += 1
             let result: CharactersPage
             if let query = normalizedQuery {
                 result = try await searchCharactersUseCase.execute(page: currentPage, query: query)

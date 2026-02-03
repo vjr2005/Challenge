@@ -21,7 +21,7 @@ struct CharacterListView: View {
     var body: some View {
         content
             .task {
-                await viewModel.load()
+                await viewModel.didAppear()
             }
             .navigationTitle(LocalizedStrings.title)
     }
@@ -117,8 +117,10 @@ private final class CharacterListViewModelPreviewStub: CharacterListViewModelCon
         self.state = state
     }
 
-    func load() async {}
-    func loadMore() async {}
+    func didAppear() async {}
+    func didTapOnRetryButton() async {}
+    func didPullToRefresh() async {}
+    func didTapOnLoadMoreButton() async {}
     func didSelect(_ character: Character) {}
 }
 
@@ -186,7 +188,7 @@ struct CharacterDetailView: View {
     var body: some View {
         content
             .task {
-                await viewModel.load()
+                await viewModel.didAppear()
             }
     }
 
@@ -275,7 +277,9 @@ private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewMode
         self.state = state
     }
 
-    func load() async {}
+    func didAppear() async {}
+    func didTapOnRetryButton() async {}
+    func didPullToRefresh() async {}
     func didTapOnBack() {}
 }
 

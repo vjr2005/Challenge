@@ -13,7 +13,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 	var body: some View {
 		content
 			.task {
-				await viewModel.loadIfNeeded()
+				await viewModel.didAppear()
 			}
 			.navigationTitle(LocalizedStrings.title)
 			.navigationBarTitleDisplayMode(.large)
@@ -58,7 +58,7 @@ private extension CharacterListView {
             accessibilityIdentifier: AccessibilityIdentifier.loadMoreButton
         ) {
             Task {
-                await viewModel.loadMore()
+                await viewModel.didTapOnLoadMoreButton()
             }
         }
         .padding(.vertical, SpacingToken.sm)
@@ -110,7 +110,7 @@ private extension CharacterListView {
 			.padding(.horizontal, SpacingToken.lg)
 		}
 		.refreshable {
-			await viewModel.refresh()
+			await viewModel.didPullToRefresh()
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
 		.background(ColorToken.backgroundSecondary)
@@ -138,7 +138,7 @@ private extension CharacterListView {
 			retryTitle: LocalizedStrings.Common.tryAgain,
 			retryAction: {
 				Task {
-					await viewModel.loadIfNeeded()
+					await viewModel.didTapOnRetryButton()
 				}
 			},
 			accessibilityIdentifier: AccessibilityIdentifier.errorView
@@ -228,9 +228,10 @@ private final class CharacterListViewModelPreviewStub: CharacterListViewModelCon
 		self.state = state
 	}
 
-	func loadIfNeeded() async {}
-	func refresh() async {}
-	func loadMore() async {}
+	func didAppear() async {}
+	func didTapOnRetryButton() async {}
+	func didPullToRefresh() async {}
+	func didTapOnLoadMoreButton() async {}
 	func didSelect(_ character: Character) {}
 }
 

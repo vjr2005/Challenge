@@ -64,8 +64,9 @@ import Foundation
 
 protocol {ScreenName}ViewModelContract: AnyObject {
     var state: {ScreenName}ViewState { get }
-    func loadIfNeeded() async
-    func refresh() async
+    func didAppear() async
+    func didTapOnRetryButton() async
+    func didPullToRefresh() async
     func didTapOnBack()
 }
 ```
@@ -98,16 +99,16 @@ final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
         self.navigator = navigator
     }
 
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded:
-            break
-        }
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
     }
 
-    func refresh() async {
+    func didTapOnRetryButton() async {
+        await load()
+    }
+
+    func didPullToRefresh() async {
         do {
             let item = try await refresh{Name}DetailUseCase.execute(identifier: identifier)
             state = .loaded(item)
@@ -138,10 +139,10 @@ private extension {ScreenName}ViewModel {
 
 **Key patterns:**
 - `@Observable` for SwiftUI integration (iOS 17+)
-- `loadIfNeeded()` is public, `load()` is private
+- `didAppear()` (only from `.idle`) and `didTapOnRetryButton()` (always) are public, `load()` is private
 - **Separate Get and Refresh UseCases** - each with a single responsibility
 - `load()` uses Get UseCase (localFirst cache policy)
-- `refresh()` uses Refresh UseCase (remoteFirst cache policy)
+- `didPullToRefresh()` uses Refresh UseCase (remoteFirst cache policy)
 - State is `private(set)` - only ViewModel mutates it
 
 ### 4. Create ViewState Equatable extension (for tests)
@@ -186,11 +187,15 @@ final class {ScreenName}ViewModelStub: {ScreenName}ViewModelContract {
         self.state = state
     }
 
-    func loadIfNeeded() async {
+    func didAppear() async {
         // No-op: state is fixed for snapshots
     }
 
-    func refresh() async {
+    func didTapOnRetryButton() async {
+        // No-op: state is fixed for snapshots
+    }
+
+    func didPullToRefresh() async {
         // No-op: state is fixed for snapshots
     }
 
@@ -235,110 +240,136 @@ struct {ScreenName}ViewModelTests {
         #expect(sut.state == .idle)
     }
 
-    // MARK: - Load If Needed
+    // MARK: - didAppear
 
-    @Test("Load if needed sets loaded state on success")
-    func loadIfNeededSetsLoadedStateOnSuccess() async {
+    @Test("didAppear sets loaded state on success")
+    func didAppearSetsLoadedStateOnSuccess() async {
         // Given
         let expected = {Name}.stub()
         getUseCaseMock.result = .success(expected)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test("Load if needed sets error state on failure")
-    func loadIfNeededSetsErrorStateOnFailure() async {
+    @Test("didAppear sets error state on failure")
+    func didAppearSetsErrorStateOnFailure() async {
         // Given
         getUseCaseMock.result = .failure(.loadFailed)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test("Load if needed calls get use case with correct identifier")
-    func loadIfNeededCallsGetUseCaseWithCorrectIdentifier() async {
+    @Test("didAppear calls get use case with correct identifier")
+    func didAppearCallsGetUseCaseWithCorrectIdentifier() async {
         // Given
         getUseCaseMock.result = .success(.stub())
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(getUseCaseMock.executeCallCount == 1)
         #expect(getUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test("Load if needed does nothing when already loaded")
-    func loadIfNeededDoesNothingWhenLoaded() async {
+    @Test("didAppear does nothing when already loaded")
+    func didAppearDoesNothingWhenLoaded() async {
         // Given
         getUseCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getUseCaseMock.executeCallCount
+        await sut.didAppear()
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
-        #expect(getUseCaseMock.executeCallCount == callCountAfterFirstLoad)
+        #expect(getUseCaseMock.executeCallCount == 1)
     }
 
-    @Test("Load if needed retries when in error state")
-    func loadIfNeededRetriesWhenError() async {
+    @Test("didAppear does nothing when in error state")
+    func didAppearDoesNothingWhenError() async {
         // Given
         getUseCaseMock.result = .failure(.loadFailed)
-        await sut.loadIfNeeded()
-        let callCountAfterFirstLoad = getUseCaseMock.executeCallCount
+        await sut.didAppear()
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(getUseCaseMock.executeCallCount == 1)
+    }
+
+    // MARK: - didTapOnRetryButton
+
+    @Test("didTapOnRetryButton retries loading when in error state")
+    func didTapOnRetryButtonRetriesWhenError() async {
+        // Given
+        getUseCaseMock.result = .failure(.loadFailed)
+        await sut.didAppear()
 
         // When
         getUseCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
+        await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getUseCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
+        #expect(getUseCaseMock.executeCallCount == 2)
     }
 
-    // MARK: - Refresh
+    @Test("didTapOnRetryButton always loads regardless of current state")
+    func didTapOnRetryButtonAlwaysLoads() async {
+        // Given
+        getUseCaseMock.result = .success(.stub())
+        await sut.didAppear()
 
-    @Test("Refresh calls refresh use case")
-    func refreshCallsRefreshUseCase() async {
+        // When
+        await sut.didTapOnRetryButton()
+
+        // Then
+        #expect(getUseCaseMock.executeCallCount == 2)
+    }
+
+    // MARK: - didPullToRefresh
+
+    @Test("didPullToRefresh calls refresh use case")
+    func didPullToRefreshCallsRefreshUseCase() async {
         // Given
         refreshUseCaseMock.result = .success(.stub())
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(refreshUseCaseMock.executeCallCount == 1)
         #expect(refreshUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
-    @Test("Refresh sets loaded state on success")
-    func refreshSetsLoadedStateOnSuccess() async {
+    @Test("didPullToRefresh sets loaded state on success")
+    func didPullToRefreshSetsLoadedStateOnSuccess() async {
         // Given
         let expected = {Name}.stub(name: "Refreshed")
         refreshUseCaseMock.result = .success(expected)
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test("Refresh sets error state on failure")
-    func refreshSetsErrorStateOnFailure() async {
+    @Test("didPullToRefresh sets error state on failure")
+    func didPullToRefreshSetsErrorStateOnFailure() async {
         // Given
         refreshUseCaseMock.result = .failure(.loadFailed)
 
         // When
-        await sut.refresh()
+        await sut.didPullToRefresh()
 
         // Then
         #expect(sut.state == .error(.loadFailed))
@@ -388,7 +419,8 @@ import Foundation
 
 protocol {ScreenName}ViewModelContract: AnyObject {
     var state: {ScreenName}ViewState { get }
-    func loadIfNeeded() async
+    func didAppear() async
+    func didTapOnRetryButton() async
     func didSelect(_ item: {Name})
 }
 ```
@@ -415,13 +447,13 @@ final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
         self.navigator = navigator
     }
 
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded, .empty:
-            break
-        }
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
+    }
+
+    func didTapOnRetryButton() async {
+        await load()
     }
 
     func didSelect(_ item: {Name}) {
@@ -484,7 +516,9 @@ final class {ScreenName}ViewModelStub: {ScreenName}ViewModelContract {
         self.state = state
     }
 
-    func loadIfNeeded() async {}
+    func didAppear() async {}
+
+    func didTapOnRetryButton() async {}
 
     func didSelect(_ item: {Name}) {}
 }
@@ -520,86 +554,111 @@ struct {ScreenName}ViewModelTests {
         #expect(sut.state == .idle)
     }
 
-    // MARK: - Load If Needed
+    // MARK: - didAppear
 
-    @Test("Load if needed sets loaded state on success")
-    func loadIfNeededSetsLoadedStateOnSuccess() async {
+    @Test("didAppear sets loaded state on success")
+    func didAppearSetsLoadedStateOnSuccess() async {
         // Given
         let expected = {Name}sPage.stub()
         useCaseMock.result = .success(expected)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test("Load if needed sets empty state when no items")
-    func loadIfNeededSetsEmptyStateWhenNoItems() async {
+    @Test("didAppear sets empty state when no items")
+    func didAppearSetsEmptyStateWhenNoItems() async {
         // Given
         useCaseMock.result = .success({Name}sPage.stub(items: []))
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .empty)
     }
 
-    @Test("Load if needed sets error state on failure")
-    func loadIfNeededSetsErrorStateOnFailure() async {
+    @Test("didAppear sets error state on failure")
+    func didAppearSetsErrorStateOnFailure() async {
         // Given
         useCaseMock.result = .failure(.loadFailed)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .error(.loadFailed))
     }
 
-    @Test("Load if needed does nothing when loaded")
-    func loadIfNeededDoesNothingWhenLoaded() async {
+    @Test("didAppear does nothing when loaded")
+    func didAppearDoesNothingWhenLoaded() async {
         // Given
         useCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
-        let callCount = useCaseMock.executeCallCount
+        await sut.didAppear()
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCount)
+        #expect(useCaseMock.executeCallCount == 1)
     }
 
-    @Test("Load if needed does nothing when empty")
-    func loadIfNeededDoesNothingWhenEmpty() async {
+    @Test("didAppear does nothing when empty")
+    func didAppearDoesNothingWhenEmpty() async {
         // Given
         useCaseMock.result = .success(.stub(items: []))
-        await sut.loadIfNeeded()
-        let callCount = useCaseMock.executeCallCount
+        await sut.didAppear()
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCount)
+        #expect(useCaseMock.executeCallCount == 1)
     }
 
-    @Test("Load if needed retries when error")
-    func loadIfNeededRetriesWhenError() async {
+    @Test("didAppear does nothing when in error state")
+    func didAppearDoesNothingWhenError() async {
         // Given
         useCaseMock.result = .failure(.loadFailed)
-        await sut.loadIfNeeded()
-        let callCount = useCaseMock.executeCallCount
+        await sut.didAppear()
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(useCaseMock.executeCallCount == 1)
+    }
+
+    // MARK: - didTapOnRetryButton
+
+    @Test("didTapOnRetryButton retries loading when in error state")
+    func didTapOnRetryButtonRetriesWhenError() async {
+        // Given
+        useCaseMock.result = .failure(.loadFailed)
+        await sut.didAppear()
 
         // When
         useCaseMock.result = .success(.stub())
-        await sut.loadIfNeeded()
+        await sut.didTapOnRetryButton()
 
         // Then
-        #expect(useCaseMock.executeCallCount == callCount + 1)
+        #expect(useCaseMock.executeCallCount == 2)
+    }
+
+    @Test("didTapOnRetryButton always loads regardless of current state")
+    func didTapOnRetryButtonAlwaysLoads() async {
+        // Given
+        useCaseMock.result = .success(.stub())
+        await sut.didAppear()
+
+        // When
+        await sut.didTapOnRetryButton()
+
+        // Then
+        #expect(useCaseMock.executeCallCount == 2)
     }
 
     // MARK: - Navigation

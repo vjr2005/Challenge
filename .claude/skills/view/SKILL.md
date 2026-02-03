@@ -54,7 +54,7 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
     var body: some View {
         content
-            .task { await viewModel.loadIfNeeded() }
+            .task { await viewModel.didAppear() }
     }
 
     @ViewBuilder
@@ -237,7 +237,8 @@ private final class {Name}ViewModelPreviewStub: {Name}ViewModelContract {
         self.state = state
     }
 
-    func loadIfNeeded() async {}
+    func didAppear() async {}
+    func didTapOnRetryButton() async {}
     // Add other protocol methods as no-ops
 }
 
@@ -378,11 +379,11 @@ When passing `accessibilityIdentifier:` to DS components, identifiers propagate 
 
 ### Stateful Views (with ViewState)
 - [ ] Use `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
-- [ ] Implement `body` with `.task { await viewModel.loadIfNeeded() }`
+- [ ] Implement `body` with `.task { await viewModel.didAppear() }`
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases
 
 ### Stateless Views (navigation only, no async data)
 - [ ] Use `let viewModel` (no `@State` needed)
 - [ ] No `.task` modifier needed (no async data loading)
-- [ ] No `loadIfNeeded()` method in ViewModel
+- [ ] No `didAppear()` method in ViewModel

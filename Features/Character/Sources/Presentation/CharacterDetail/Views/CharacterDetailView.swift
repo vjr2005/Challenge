@@ -13,7 +13,7 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 	var body: some View {
 		content
 			.task {
-				await viewModel.loadIfNeeded()
+				await viewModel.didAppear()
 			}
 			.background(ColorToken.backgroundSecondary)
 			.navigationBarTitleDisplayMode(.inline)
@@ -68,7 +68,7 @@ private extension CharacterDetailView {
             retryTitle: LocalizedStrings.Common.tryAgain,
             retryAction: {
                 Task {
-                    await viewModel.loadIfNeeded()
+                    await viewModel.didTapOnRetryButton()
                 }
             },
             accessibilityIdentifier: AccessibilityIdentifier.errorView
@@ -87,7 +87,7 @@ private extension CharacterDetailView {
 			.padding(.bottom, SpacingToken.xxl)
 		}
 		.refreshable {
-			await viewModel.refresh()
+			await viewModel.didPullToRefresh()
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
 	}
@@ -231,8 +231,9 @@ private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewMode
 		self.state = state
 	}
 
-	func loadIfNeeded() async {}
-	func refresh() async {}
+	func didAppear() async {}
+	func didTapOnRetryButton() async {}
+	func didPullToRefresh() async {}
 	func didTapOnBack() {}
 }
 

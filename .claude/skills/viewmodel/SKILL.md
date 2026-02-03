@@ -150,13 +150,13 @@ final class {Name}ListViewModel {
         self.get{Name}sUseCase = get{Name}sUseCase
     }
 
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded, .empty:
-            break
-        }
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
+    }
+
+    func didTapOnRetryButton() async {
+        await load()
     }
 }
 
@@ -182,7 +182,7 @@ private extension {Name}ListViewModel {
 - Inject UseCases via **protocol (contract)**
 - State is `private(set)` - only ViewModel mutates it
 - Inject `NavigatorContract` for navigation (see `/router` skill)
-- Use `loadIfNeeded()` public, `load()` private (see "Preventing Unnecessary Reloads")
+- Use `didAppear()` (only from `.idle`) and `didTapOnRetryButton()` (always) public, `load()` private (see "Protocol Method Naming Convention")
 
 ---
 
@@ -293,25 +293,48 @@ struct HomeView: View {
 
 ---
 
+## Protocol Method Naming Convention
+
+All protocol methods describe the **UI event** that triggers them, using the `did` prefix:
+
+| UI Event | Protocol Method |
+|---|---|
+| View appears (`.task {}`) | `didAppear()` |
+| Tap on retry button | `didTapOnRetryButton()` |
+| Pull to refresh (`.refreshable {}`) | `didPullToRefresh()` |
+| Tap on "Load More" button | `didTapOnLoadMoreButton()` |
+| Item selection | `didSelect(_:)` |
+| Tap on button | `didTapOn{ButtonName}()` |
+
+### Behavior Rules
+
+- **`didAppear()`**: Only loads if state is `.idle` (first appearance). Does nothing from `.error`, `.loaded`, `.loading`, or `.empty`. This prevents reloads when returning from navigation.
+- **`didTapOnRetryButton()`**: Always calls `load()` unconditionally. The user has explicitly decided to retry.
+- **`didPullToRefresh()`**: Always calls the refresh use case. Resets pagination to page 1.
+- **`didTapOnLoadMoreButton()`**: Only loads if there is a next page and not already loading more.
+
+---
+
 ## Preventing Unnecessary Reloads
 
 SwiftUI's `.task` modifier executes every time the view appears, including when returning from navigation. To prevent unnecessary data reloads:
 
-### Pattern: loadIfNeeded() + private load()
+### Pattern: didAppear() + didTapOnRetryButton() + private load()
 
 ```swift
 @Observable
 final class {Name}ListViewModel {
     private(set) var state: {Name}ListViewState = .idle
 
-    // Public: View calls this from .task
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded, .empty:
-            break
-        }
+    // Public: View calls this from .task - only loads on first appearance
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
+    }
+
+    // Public: View calls this from retry button - always reloads
+    func didTapOnRetryButton() async {
+        await load()
     }
 }
 
@@ -325,10 +348,11 @@ private extension {Name}ListViewModel {
 ```
 
 **Rules:**
-- `loadIfNeeded()` is **public** - called by View in `.task`
+- `didAppear()` is **public** - called by View in `.task`, only loads from `.idle`
+- `didTapOnRetryButton()` is **public** - called by View in error retry button, always loads
 - `load()` is **private** - encapsulates loading logic
-- Only load from `.idle` (initial) or `.error` (retry)
-- Skip loading from `.loading`, `.loaded`, `.empty`
+- `didAppear()` only loads from `.idle` (first appearance)
+- Error retry is the user's explicit choice via `didTapOnRetryButton()`
 
 ### View Integration
 
@@ -339,7 +363,7 @@ struct {Name}ListView: View {
     var body: some View {
         content
             .task {
-                await viewModel.loadIfNeeded()
+                await viewModel.didAppear()
             }
     }
 }
@@ -361,61 +385,75 @@ var searchQuery: String = "" {
 
 **Why:** SwiftUI may re-set binding values during navigation transitions, triggering `didSet` even when the value hasn't changed. The guard prevents unnecessary reloads.
 
-### Testing loadIfNeeded()
+### Testing didAppear() and didTapOnRetryButton()
 
 Test all state transitions:
 
 ```swift
-@Test
-func loadIfNeededDoesNothingWhenLoaded() async {
+@Test("didAppear does nothing when already loaded")
+func didAppearDoesNothingWhenLoaded() async {
     // Given
-    let useCaseMock = Get{Name}sUseCaseMock()
     useCaseMock.result = .success(.stub())
-    let sut = {Name}ListViewModel(get{Name}sUseCase: useCaseMock)
-
-    await sut.loadIfNeeded()
-    let callCountAfterFirstLoad = useCaseMock.executeCallCount
+    await sut.didAppear()
 
     // When
-    await sut.loadIfNeeded()
+    await sut.didAppear()
 
     // Then
-    #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+    #expect(useCaseMock.executeCallCount == 1)
 }
 
-@Test
-func loadIfNeededDoesNothingWhenEmpty() async {
+@Test("didAppear does nothing when empty state")
+func didAppearDoesNothingWhenEmpty() async {
     // Given
-    let useCaseMock = Get{Name}sUseCaseMock()
     useCaseMock.result = .success([])
-    let sut = {Name}ListViewModel(get{Name}sUseCase: useCaseMock)
-
-    await sut.loadIfNeeded()
-    let callCountAfterFirstLoad = useCaseMock.executeCallCount
+    await sut.didAppear()
 
     // When
-    await sut.loadIfNeeded()
+    await sut.didAppear()
 
     // Then
-    #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad)
+    #expect(useCaseMock.executeCallCount == 1)
 }
 
-@Test
-func loadIfNeededLoadsWhenError() async {
+@Test("didAppear does nothing when in error state")
+func didAppearDoesNothingWhenError() async {
     // Given
-    let useCaseMock = Get{Name}sUseCaseMock()
-    useCaseMock.result = .failure(TestError.network)
-    let sut = {Name}ListViewModel(get{Name}sUseCase: useCaseMock)
+    useCaseMock.result = .failure(.loadFailed)
+    await sut.didAppear()
 
-    await sut.loadIfNeeded()
-    let callCountAfterFirstLoad = useCaseMock.executeCallCount
+    // When
+    await sut.didAppear()
+
+    // Then
+    #expect(useCaseMock.executeCallCount == 1)
+}
+
+@Test("didTapOnRetryButton retries loading when in error state")
+func didTapOnRetryButtonRetriesWhenError() async {
+    // Given
+    useCaseMock.result = .failure(.loadFailed)
+    await sut.didAppear()
 
     // When
     useCaseMock.result = .success(.stub())
-    await sut.loadIfNeeded()
+    await sut.didTapOnRetryButton()
 
     // Then
-    #expect(useCaseMock.executeCallCount == callCountAfterFirstLoad + 1)
+    #expect(useCaseMock.executeCallCount == 2)
+}
+
+@Test("didTapOnRetryButton always loads regardless of current state")
+func didTapOnRetryButtonAlwaysLoads() async {
+    // Given
+    useCaseMock.result = .success(.stub())
+    await sut.didAppear()
+
+    // When
+    await sut.didTapOnRetryButton()
+
+    // Then
+    #expect(useCaseMock.executeCallCount == 2)
 }
 ```
 
@@ -435,8 +473,8 @@ final class {Name}ListViewModel {
     private let get{Name}sUseCase: Get{Name}sUseCaseContract        // localFirst
     private let refresh{Name}sUseCase: Refresh{Name}sUseCaseContract // remoteFirst
 
-    func refresh() async {
-        state = .loading
+    func didPullToRefresh() async {
+        currentPage = 1
         await refreshData()
     }
 }
@@ -471,7 +509,7 @@ final class {Name}DetailViewModel {
         navigator: {Name}DetailNavigatorContract
     ) { ... }
 
-    func refresh() async {
+    func didPullToRefresh() async {
         do {
             let item = try await refresh{Name}DetailUseCase.execute(identifier: identifier)
             state = .loaded(item)
@@ -495,28 +533,20 @@ ScrollView {
     // content...
 }
 .refreshable {
-    await viewModel.refresh()
+    await viewModel.didPullToRefresh()
 }
 ```
 
 ### Testing List Refresh
 
 ```swift
-@Test("Refresh calls refresh use case")
-func refreshCallsRefreshUseCase() async {
+@Test("didPullToRefresh calls refresh use case")
+func didPullToRefreshCallsRefreshUseCase() async {
     // Given
-    let getUseCaseMock = Get{Name}sUseCaseMock()
-    getUseCaseMock.result = .success(.stub())
-    let refreshUseCaseMock = Refresh{Name}sUseCaseMock()
     refreshUseCaseMock.result = .success(.stub())
-    let sut = {Name}ListViewModel(
-        get{Name}sUseCase: getUseCaseMock,
-        refresh{Name}sUseCase: refreshUseCaseMock,
-        navigator: {Name}NavigatorMock()
-    )
 
     // When
-    await sut.refresh()
+    await sut.didPullToRefresh()
 
     // Then
     #expect(refreshUseCaseMock.executeCallCount == 1)
@@ -526,25 +556,18 @@ func refreshCallsRefreshUseCase() async {
 ### Testing Detail Refresh
 
 ```swift
-@Test("Refresh updates from API using refresh use case")
-func refreshUpdatesFromAPI() async {
+@Test("didPullToRefresh updates from API using refresh use case")
+func didPullToRefreshUpdatesFromAPI() async {
     // Given
-    let getMock = Get{Name}DetailUseCaseMock()
-    getMock.result = .success(.stub())
-    let refreshMock = Refresh{Name}DetailUseCaseMock()
-    refreshMock.result = .success(.stub(name: "Refreshed"))
-    let sut = {Name}DetailViewModel(
-        identifier: 1,
-        get{Name}DetailUseCase: getMock,
-        refresh{Name}DetailUseCase: refreshMock,
-        navigator: {Name}NavigatorMock()
-    )
+    getUseCaseMock.result = .success(.stub())
+    await sut.didAppear()
+    refreshUseCaseMock.result = .success(.stub(name: "Refreshed"))
 
     // When
-    await sut.refresh()
+    await sut.didPullToRefresh()
 
     // Then
-    #expect(refreshMock.executeCallCount == 1)
+    #expect(refreshUseCaseMock.executeCallCount == 1)
 }
 ```
 
@@ -709,13 +732,13 @@ final class CharacterListViewModel {
         self.navigator = navigator
     }
 
-    func loadIfNeeded() async {
-        switch state {
-        case .idle, .error:
-            await load()
-        case .loading, .loaded, .empty:
-            break
-        }
+    func didAppear() async {
+        guard case .idle = state else { return }
+        await load()
+    }
+
+    func didTapOnRetryButton() async {
+        await load()
     }
 
     func didSelect(_ character: Character) {
@@ -757,9 +780,9 @@ private extension CharacterListViewModel {
 - [ ] Create ViewModel class with @Observable
 - [ ] Inject UseCase via protocol (contract)
 - [ ] Inject NavigatorContract for navigation (not RouterContract)
-- [ ] Implement `loadIfNeeded()` (public) and `load()` (private) pattern
+- [ ] Implement `didAppear()` (only from `.idle`) and `didTapOnRetryButton()` (always) public, `load()` private
 - [ ] Guard observable properties with `oldValue` check in `didSet`
 - [ ] Create tests for initial state, success, error, and call verification
-- [ ] Create tests for `loadIfNeeded()` state transitions (loaded, empty, error)
+- [ ] Create tests for `didAppear()` state transitions (loaded, empty, error) and `didTapOnRetryButton()` behavior
 - [ ] Create NavigatorMock for testing navigation
 - [ ] Run tests
