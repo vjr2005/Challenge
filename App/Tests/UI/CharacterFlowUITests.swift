@@ -50,7 +50,11 @@ final class CharacterFlowUITests: UITestCase {
 	}
 
 	@MainActor
-	func testListShowsErrorAndRetryKeepsShowingError() async throws {
+	func testListShowsErrorAndRetryLoadsContent() async throws {
+		let baseURL = try XCTUnwrap(serverBaseURL)
+		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+		let imageData = Data.stubAvatarImage
+
 		await serverMock.registerCatchAll { _ in
 			.status(.internalServerError)
 		}
@@ -65,8 +69,22 @@ final class CharacterFlowUITests: UITestCase {
 
 		characterList { robot in
 			robot.verifyErrorIsVisible()
+		}
+
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if request.path.contains("/character") {
+				return .json(charactersData)
+			}
+			return .status(.notFound)
+		}
+
+		characterList { robot in
 			robot.tapRetry()
-			robot.verifyErrorIsVisible()
+			robot.verifyIsVisible()
+			robot.verifyCharacterExists(identifier: 1)
 		}
 	}
 
