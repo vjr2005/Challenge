@@ -1,6 +1,6 @@
 import SwiftMockServer
 import XCTest
-/*
+
 /// UI tests for deep link navigation.
 final class DeepLinkUITests: UITestCase {
 	@MainActor
@@ -85,4 +85,3 @@ final class DeepLinkUITests: UITestCase {
 		}
 	}
 }
-*/
