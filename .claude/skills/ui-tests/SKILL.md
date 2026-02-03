@@ -77,6 +77,9 @@ nonisolated class UITestCase: XCTestCase {
         app.launchEnvironment = ["API_BASE_URL": serverBaseURL]
         app.launch()
 
+        let isRunning = app.wait(for: .runningForeground, timeout: 10)
+        XCTAssertTrue(isRunning, "App failed to reach foreground state")
+
         self.app = app
         return app
     }
@@ -156,7 +159,7 @@ private enum AccessibilityIdentifier {
 UI tests use [SwiftMockServer](https://github.com/nicklama/SwiftMockServer) to intercept HTTP requests with a local mock server. `UITestCase` manages the server lifecycle automatically:
 
 - **`setUp()`**: Creates a `MockServer` instance and stores `serverBaseURL`
-- **`launch()`**: Passes `serverBaseURL` via `API_BASE_URL` environment variable
+- **`launch()`**: Passes `serverBaseURL` via `API_BASE_URL` environment variable, waits for the app to reach foreground state
 - **`tearDown()`**: Stops the server
 
 ### Route Registration

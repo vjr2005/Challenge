@@ -53,6 +53,27 @@ jobs:
       - name: Generate Xcode project
         run: mise x -- tuist generate
 
+      - name: Prepare simulator
+        run: |
+          xcrun simctl shutdown all
+          DEVICE_UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime, devices in data['devices'].items():
+              for d in devices:
+                  if d['name'] == '${{ env.TUIST_TEST_DEVICE }}' and d['isAvailable']:
+                      print(d['udid'])
+                      sys.exit(0)
+          ")
+          if [ -n "$DEVICE_UDID" ]; then
+            echo "Booting simulator: $DEVICE_UDID"
+            xcrun simctl boot "$DEVICE_UDID"
+            echo "Waiting for simulator to be ready..."
+            sleep 5
+          else
+            echo "Warning: Target simulator not found, will rely on Tuist to create it"
+          fi
+
       - name: Run tests
         timeout-minutes: 25
         run: |

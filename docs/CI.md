@@ -13,6 +13,7 @@ The CI workflow (`.github/workflows/pull-request-checks.yml`) runs a single job 
 | Install mise tools | Install tuist, swiftlint, and periphery via mise (cached) |
 | Install SPM dependencies | `mise x -- tuist install` (cached) |
 | Generate Xcode project | `mise x -- tuist generate` |
+| Prepare simulator | Shutdown stale simulators and pre-boot the target device |
 | Run tests | `mise x -- tuist test` (includes SwiftLint as build phase, 25 min timeout) |
 | Upload xcresult | On failure: uploads `test_output` as artifact preserving `.xcresult` bundle |
 | Comment PR (test failure) | On failure: posts a PR comment with a download link to the `.xcresult` artifact |
@@ -90,3 +91,4 @@ After pushing the workflow file, configure the repository:
 - **Concurrency group**: Concurrent runs on the same branch are cancelled automatically, saving CI minutes.
 - **Separate steps**: Individual CI steps are used instead of a single composite command to allow `continue-on-error` on Periphery and capture its output for PR comments.
 - **Test timeout**: The test step has a 25-minute timeout to prevent frozen UI tests from blocking the pipeline indefinitely.
+- **Simulator preparation**: The target simulator is shut down and re-booted before tests to prevent "Application failed preflight checks" errors caused by stale simulator state.

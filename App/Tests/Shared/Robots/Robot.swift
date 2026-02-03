@@ -39,6 +39,11 @@ nonisolated class UITestCase: XCTestCase {
 		app.launchEnvironment = ["API_BASE_URL": serverBaseURL]
 		app.launch()
 
+		// Prevents tests from interacting with the UI before the app is ready,
+		// which causes "Application failed preflight checks" on slow simulators.
+		let isRunning = app.wait(for: .runningForeground, timeout: 10)
+		XCTAssertTrue(isRunning, "App failed to reach foreground state")
+
 		self.app = app
 		return app
 	}
