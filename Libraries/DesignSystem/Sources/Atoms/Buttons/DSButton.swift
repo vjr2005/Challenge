@@ -70,7 +70,7 @@ public struct DSButton: View {
 			.overlay {
 				if variant == .secondary {
 					RoundedRectangle(cornerRadius: CornerRadiusToken.md)
-						.stroke(theme.colors.accent, lineWidth: BorderWidthToken.thin)
+						.stroke(theme.colors.accent, lineWidth: theme.borderWidth.thin)
 				}
 			}
 		}

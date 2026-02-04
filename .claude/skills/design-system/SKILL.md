@@ -25,6 +25,7 @@ Libraries/DesignSystem/
 ├── Sources/
 │   ├── Foundation/           # Design Tokens
 │   │   ├── Theming/          # Theme contracts
+│   │   │   ├── DSBorderWidth.swift
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSDimensions.swift
 │   │   │   ├── DSSpacing.swift
@@ -33,6 +34,7 @@ Libraries/DesignSystem/
 │   │   │   └── DSTypography.swift
 │   │   ├── Themes/           # Theme implementations
 │   │   │   └── Default/
+│   │   │       ├── DefaultBorderWidth.swift
 │   │   │       ├── DefaultColorPalette.swift
 │   │   │       ├── DefaultDimensions.swift
 │   │   │       ├── DefaultSpacing.swift
@@ -43,10 +45,8 @@ Libraries/DesignSystem/
 │   │   │   └── ShadowToken.swift
 │   │   ├── Corners/
 │   │   │   └── CornerRadiusToken.swift
-│   │   ├── Opacity/
-│   │   │   └── OpacityToken.swift
-│   │   └── Borders/
-│   │       └── BorderWidthToken.swift
+│   │   └── Opacity/
+│   │       └── OpacityToken.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
 │   │   ├── Buttons/
@@ -78,7 +78,7 @@ Libraries/DesignSystem/
 
 ## Theming
 
-Colors, typography, spacing, and dimensions are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (corners, borders, opacity, shadows) remain static.
+Colors, typography, spacing, dimensions, and border widths are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (corners, opacity, shadows) remain static.
 
 ### Reading the theme in a View
 
@@ -155,6 +155,19 @@ theme.dimensions.xxxl  // 56pt
 
 ---
 
+## DSBorderWidth (via theme)
+
+Border width values accessed via `theme.borderWidth`:
+
+```swift
+theme.borderWidth.hairline  // 0.5pt
+theme.borderWidth.thin      // 1pt
+theme.borderWidth.medium    // 2pt
+theme.borderWidth.thick     // 4pt
+```
+
+---
+
 ## Foundation: Static Design Tokens
 
 ### TextStyle
@@ -207,15 +220,15 @@ OpacityToken.heavy         // 0.6
 OpacityToken.almostOpaque  // 0.8
 ```
 
-### BorderWidthToken
+### DSBorderWidth (via theme)
 
-Border and stroke widths:
+Border width values accessed via `theme.borderWidth`:
 
 ```swift
-BorderWidthToken.hairline  // 0.5pt
-BorderWidthToken.thin      // 1pt
-BorderWidthToken.medium    // 2pt
-BorderWidthToken.thick     // 4pt
+theme.borderWidth.hairline  // 0.5pt
+theme.borderWidth.thin      // 1pt
+theme.borderWidth.medium    // 2pt
+theme.borderWidth.thick     // 4pt
 ```
 
 ---
@@ -500,7 +513,7 @@ import ChallengeDesignSystem
 - [ ] Use `theme.spacing.xxx` for spacing values
 - [ ] Use `theme.dimensions.xxx` for icon and element sizes
 - [ ] Use `OpacityToken` for opacity values
-- [ ] Use `BorderWidthToken` for border widths
+- [ ] Use `theme.borderWidth.xxx` for border widths
 - [ ] Use `DSCard` for card styling
 - [ ] Use `DSLoadingView`, `DSErrorView`, `DSEmptyState` for feedback states
 - [ ] Use `DSStatus.color(in: theme.colors)` for status colors
