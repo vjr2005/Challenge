@@ -53,8 +53,10 @@ struct DSErrorViewSnapshotTests {
 		let view = DSErrorView(
 			title: "Unable to Load",
 			message: "There was a problem loading the content. Please try again later.",
-			retryTitle: "Try Again"
-		) {}
+			retryTitle: "Try Again",
+			retryAction: {},
+			accessibilityIdentifier: "test.errorView"
+		)
 		.frame(width: 320, height: 350)
 
 		assertSnapshot(of: view, as: .image)

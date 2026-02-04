@@ -85,6 +85,14 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.shadow.large == shadow.large)
 	}
 
+	@Test("dsTheme view modifier sets theme in environment")
+	func dsThemeModifierSetsTheme() throws {
+		var environment = EnvironmentValues()
+		environment.dsTheme = .default
+
+		#expect(environment.dsTheme.spacing.lg == DefaultSpacing().lg)
+	}
+
 	@Test("Custom theme can be created with different palette")
 	func customThemeCanBeCreated() {
 		let customPalette = DefaultColorPalette()

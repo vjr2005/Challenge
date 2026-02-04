@@ -26,7 +26,8 @@ struct DSCardInfoRowSnapshotTests {
 				caption: "Citadel of Ricks",
 				captionIcon: "mappin.circle.fill",
 				status: .alive,
-				statusLabel: "Alive"
+				statusLabel: "Alive",
+				accessibilityIdentifier: "test.cardInfoRow"
 			)
 		}
 

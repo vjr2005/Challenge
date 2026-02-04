@@ -27,7 +27,7 @@ struct ConsoleTrackingProviderTests {
     @Test("Tracks event with properties without crashing")
     func tracksEventWithProperties() {
         // Given
-        let event = TestEvent(name: "button_tapped", properties: ["id": "42"])
+        let event = TestEvent(name: "button_tapped", properties: ["id": "42", "screen": "home"])
 
         // When / Then
         sut.track(event)

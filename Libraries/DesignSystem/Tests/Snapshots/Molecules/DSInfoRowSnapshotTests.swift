@@ -13,9 +13,14 @@ struct DSInfoRowSnapshotTests {
 
 	@Test("Renders info row with default styling")
 	func defaultInfoRow() {
-		let view = DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
-			.padding()
-			.frame(width: 320)
+		let view = DSInfoRow(
+			icon: "person.fill",
+			label: "Name",
+			value: "Rick Sanchez",
+			accessibilityIdentifier: "test.infoRow"
+		)
+		.padding()
+		.frame(width: 320)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -26,7 +31,8 @@ struct DSInfoRowSnapshotTests {
 			icon: "heart.fill",
 			label: "Status",
 			value: "Alive",
-			iconColor: DefaultColorPalette().statusSuccess
+			iconColor: DefaultColorPalette().statusSuccess,
+			accessibilityIdentifier: "test.infoRow"
 		)
 		.padding()
 		.frame(width: 320)

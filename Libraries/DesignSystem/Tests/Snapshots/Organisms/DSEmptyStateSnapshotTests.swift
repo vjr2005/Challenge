@@ -44,8 +44,10 @@ struct DSEmptyStateSnapshotTests {
 			icon: "tray",
 			title: "No Characters",
 			message: "There are no characters to display at this time.",
-			actionTitle: "Refresh"
-		) {}
+			actionTitle: "Refresh",
+			action: {},
+			accessibilityIdentifier: "test.emptyState"
+		)
 		.frame(width: 320, height: 350)
 
 		assertSnapshot(of: view, as: .image)

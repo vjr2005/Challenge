@@ -631,6 +631,17 @@ struct CharacterRepositoryTests {
         #expect(result == .empty(currentPage: 1))
     }
 
+    @Test("Search characters maps HTTP 500 to load failed error")
+    func searchCharactersMapsHTTPServerErrorToLoadFailed() async throws {
+        // Given
+        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
+
+        // When / Then
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.searchCharacters(page: 1, query: "Rick")
+        }
+    }
+
     @Test("Search characters maps generic error to load failed error")
     func searchCharactersMapsGenericErrorToLoadFailed() async throws {
         // Given
