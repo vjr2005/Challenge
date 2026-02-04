@@ -49,7 +49,7 @@ struct ChallengeApp: App {
 
 ## UI Tests
 
-UI tests use [SwiftMockServer](https://github.com/nicklama/SwiftMockServer) for HTTP mocking and the Robot pattern for UI interactions.
+UI tests use [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) for HTTP mocking and the Robot pattern for UI interactions.
 
 | Robot | Purpose |
 |-------|---------|

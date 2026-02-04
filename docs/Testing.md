@@ -57,7 +57,7 @@ final class CharacterRepositoryMock: CharacterRepositoryContract {
 
 ## UI Tests
 
-UI tests use [SwiftMockServer](https://github.com/nicklama/SwiftMockServer) to run a local HTTP mock server. The `UITestCase` base class manages the server lifecycle and passes the base URL to the app via the `API_BASE_URL` environment variable.
+UI tests use [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) to run a local HTTP mock server. The `UITestCase` base class manages the server lifecycle and passes the base URL to the app via the `API_BASE_URL` environment variable.
 
 ### Scenarios
 

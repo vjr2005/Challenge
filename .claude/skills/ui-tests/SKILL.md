@@ -156,7 +156,7 @@ private enum AccessibilityIdentifier {
 
 ## SwiftMockServer
 
-UI tests use [SwiftMockServer](https://github.com/nicklama/SwiftMockServer) to intercept HTTP requests with a local mock server. `UITestCase` manages the server lifecycle automatically:
+UI tests use [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) to intercept HTTP requests with a local mock server. `UITestCase` manages the server lifecycle automatically:
 
 - **`setUp()`**: Creates a `MockServer` instance and stores `serverBaseURL`
 - **`launch()`**: Passes `serverBaseURL` via `API_BASE_URL` environment variable, waits for the app to reach foreground state

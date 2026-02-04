@@ -114,6 +114,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 |---------|---------|
 | [Lottie](https://github.com/airbnb/lottie-ios) | JSON-based animations |
 | [SnapshotTesting](https://github.com/pointfreeco/swift-snapshot-testing) | Visual regression testing |
+| [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) | Local HTTP mock server for UI tests |
 
 **Policy:** Prefer native implementations. External dependencies only when strictly necessary.
 
