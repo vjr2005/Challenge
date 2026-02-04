@@ -93,6 +93,55 @@ func testNavigationFlow() async throws {
 
 See the `/ui-tests` skill for Robot implementation details.
 
+## Test Parallelization
+
+Tests run **serially** (parallelization disabled). A benchmark study was conducted and parallelization resulted in **~49% slower** execution times due to simulator cloning overhead and CPU contention.
+
+### Benchmark Results
+
+| Test Type | Serial | Parallel | Change |
+|-----------|--------|----------|--------|
+| Unit + Snapshot | 0:36 | 0:56 | +55.6% slower |
+| UI Tests | 2:17 | 3:21 | +46.7% slower |
+| **Total** | **2:53** | **4:17** | **+48.6% slower** |
+
+> Measured on iPhone 17 Pro simulator, Tuist 4.129.0 (February 2026).
+
+### Why Parallelization Is Slower
+
+**Unit + Snapshot Tests:**
+The scheme has 12 test targets (7 unit + 5 snapshot), each running in its own xctest process in both serial and parallel modes. The difference is execution strategy:
+
+- **Serial**: The 12 processes run sequentially on the same simulator. The simulator stays "warm" (rendering caches, frameworks already loaded in memory), and each process gets exclusive access to CPU and GPU.
+- **Parallel**: The 12 processes run concurrently on a cloned simulator (Clone 1), causing:
+  1. **Simulator cloning overhead** (creating Clone 1)
+  2. **CPU contention** — 12 processes competing for the same cores
+  3. **Rendering contention** — snapshot tests render SwiftUI simultaneously, saturating the graphics pipeline
+  4. **Cold caches** on the clone vs warm caches on the original simulator
+
+With only **22s of real execution time** in the baseline, resource contention from running 12 processes concurrently (~20s extra) nearly doubles the time.
+
+**UI Tests:**
+Xcode distributes parallel UI tests **by class**, not by method. Tests were split into 8 classes (1 per test) to maximize parallelism, but:
+
+1. Xcode chose to use only **4 clones** (internal decision based on available CPU/RAM)
+2. **Booting each clone** (~15s per simulator) costs more time than it saves with only 8 tests
+3. **CPU contention** between 4 simulators makes each individual test slower
+
+**Serialization requirements:**
+Two test suites required `.serialized` to pass under parallelization:
+
+- **`HTTPClientTests`**: Uses `URLProtocolMock` with global static state (`handlers` dictionary). All tests share the same base URL (`test.example.com`), causing handler collisions when registering in parallel.
+- **`CharacterListViewModelTests`**: Debounce tests with `Task.sleep` that are timing-sensitive. CPU pressure from multiple runners causes sleeps to miss their timing targets.
+
+The impact of `.serialized` is minimal (~2-3s), not the main cause of degradation.
+
+### When to Re-evaluate
+
+- When unit/snapshot test execution exceeds **60-90s of real test time**
+- When UI tests exceed **15-20 classes** to amortize simulator boot overhead
+- When migrating to CI with more powerful runners (more CPU = less relative overhead)
+
 ## Coverage
 
 The project achieves **100% code coverage** across all modules.

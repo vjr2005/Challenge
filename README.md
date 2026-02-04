@@ -74,7 +74,7 @@ Self-contained modules with Presentation, Domain, and Data layers:
 
 ## Testing
 
-Uses Swift Testing for unit tests, SnapshotTesting for visual regression, and XCTest for UI tests. The project achieves **100% code coverage**. See [Testing Documentation](docs/Testing.md) for details.
+Uses Swift Testing for unit tests, SnapshotTesting for visual regression, and XCTest for UI tests. Tests run serially as parallelization was benchmarked and found to be ~49% slower at the current test suite size. The project achieves **100% code coverage**. See [Testing Documentation](docs/Testing.md) for details.
 
 <img src="docs/screenshots/coverage.png" width="100%">
 
