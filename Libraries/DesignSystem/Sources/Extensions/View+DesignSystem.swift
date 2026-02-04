@@ -6,14 +6,14 @@ public extension View {
 	/// - Parameters:
 	///   - padding: The internal padding (default: theme lg spacing)
 	///   - cornerRadius: The corner radius (default: theme lg corner radius)
-	///   - shadowToken: The shadow style (default: small)
+	///   - shadow: The shadow style (default: theme small shadow)
 	/// - Returns: A view with card styling applied
 	func dsCard(
 		padding: CGFloat? = nil,
 		cornerRadius: CGFloat? = nil,
-		shadowToken: ShadowToken = .small
+		shadow: DSShadowValue? = nil
 	) -> some View {
-		modifier(DSCardModifier(padding: padding, cornerRadius: cornerRadius, shadowToken: shadowToken))
+		modifier(DSCardModifier(padding: padding, cornerRadius: cornerRadius, shadow: shadow))
 	}
 
 	/// Applies the design system background color.
@@ -34,7 +34,7 @@ public extension View {
 private struct DSCardModifier: ViewModifier {
 	let padding: CGFloat?
 	let cornerRadius: CGFloat?
-	let shadowToken: ShadowToken
+	let shadow: DSShadowValue?
 
 	@Environment(\.dsTheme) private var theme
 
@@ -43,7 +43,7 @@ private struct DSCardModifier: ViewModifier {
 			.padding(padding ?? theme.spacing.lg)
 			.background(theme.colors.surfacePrimary)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius ?? theme.cornerRadius.lg))
-			.shadow(shadowToken)
+			.shadow(shadow ?? theme.shadow.small)
 	}
 }
 

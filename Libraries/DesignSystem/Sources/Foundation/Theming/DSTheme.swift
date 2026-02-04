@@ -1,8 +1,8 @@
-/// A design system theme combining colors, typography, spacing, dimensions, border widths, corner radii, and opacity.
+/// A design system theme combining colors, typography, spacing, dimensions, border widths, corner radii, opacity, and shadows.
 ///
 /// Use ``DSTheme/default`` for the standard theme, or create custom themes
 /// by providing different ``DSColorPalette``, ``DSTypography``, ``DSSpacing``,
-/// ``DSDimensions``, ``DSBorderWidth``, ``DSCornerRadius``, and ``DSOpacity`` implementations.
+/// ``DSDimensions``, ``DSBorderWidth``, ``DSCornerRadius``, ``DSOpacity``, and ``DSShadow`` implementations.
 public struct DSTheme: Sendable {
 	/// The color palette for this theme
 	public let colors: DSColorPalette
@@ -25,7 +25,10 @@ public struct DSTheme: Sendable {
 	/// The opacity values for this theme
 	public let opacity: DSOpacity
 
-	/// Creates a new theme with the given color palette, typography, spacing, dimensions, border widths, corner radii, and opacity.
+	/// The shadow values for this theme
+	public let shadow: DSShadow
+
+	/// Creates a new theme with the given color palette, typography, spacing, dimensions, border widths, corner radii, opacity, and shadows.
 	/// - Parameters:
 	///   - colors: The color palette
 	///   - typography: The typography
@@ -34,6 +37,7 @@ public struct DSTheme: Sendable {
 	///   - borderWidth: The border width values
 	///   - cornerRadius: The corner radius values
 	///   - opacity: The opacity values
+	///   - shadow: The shadow values
 	public init(
 		colors: DSColorPalette,
 		typography: DSTypography,
@@ -41,7 +45,8 @@ public struct DSTheme: Sendable {
 		dimensions: DSDimensions,
 		borderWidth: DSBorderWidth,
 		cornerRadius: DSCornerRadius,
-		opacity: DSOpacity
+		opacity: DSOpacity,
+		shadow: DSShadow
 	) {
 		self.colors = colors
 		self.typography = typography
@@ -50,6 +55,7 @@ public struct DSTheme: Sendable {
 		self.borderWidth = borderWidth
 		self.cornerRadius = cornerRadius
 		self.opacity = opacity
+		self.shadow = shadow
 	}
 
 	/// The default design system theme
@@ -60,6 +66,7 @@ public struct DSTheme: Sendable {
 		dimensions: DefaultDimensions(),
 		borderWidth: DefaultBorderWidth(),
 		cornerRadius: DefaultCornerRadius(),
-		opacity: DefaultOpacity()
+		opacity: DefaultOpacity(),
+		shadow: DefaultShadow()
 	)
 }

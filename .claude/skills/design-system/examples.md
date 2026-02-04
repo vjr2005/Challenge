@@ -269,10 +269,12 @@ Text("Caption")
 .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.lg))
 ```
 
-### Shadows (static)
+### Shadows (via theme)
 
 ```swift
-.shadow(.small)
-.shadow(.medium)
-.shadow(.large)
+@Environment(\.dsTheme) private var theme
+
+.shadow(theme.shadow.small)
+.shadow(theme.shadow.medium)
+.shadow(theme.shadow.large)
 ```

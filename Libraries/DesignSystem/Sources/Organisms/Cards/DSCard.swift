@@ -9,7 +9,7 @@ public struct DSCard<Content: View>: View {
 	private let content: Content
 	private let padding: CGFloat?
 	private let cornerRadius: CGFloat?
-	private let shadow: ShadowToken
+	private let shadow: DSShadowValue?
 
 	@Environment(\.dsTheme) private var theme
 
@@ -17,12 +17,12 @@ public struct DSCard<Content: View>: View {
 	/// - Parameters:
 	///   - padding: The internal padding (default: theme lg spacing)
 	///   - cornerRadius: The corner radius (default: theme lg corner radius)
-	///   - shadow: The shadow style (default: small)
+	///   - shadow: The shadow style (default: theme small shadow)
 	///   - content: The content view builder
 	public init(
 		padding: CGFloat? = nil,
 		cornerRadius: CGFloat? = nil,
-		shadow: ShadowToken = .small,
+		shadow: DSShadowValue? = nil,
 		@ViewBuilder content: () -> Content
 	) {
 		self.padding = padding
@@ -36,7 +36,7 @@ public struct DSCard<Content: View>: View {
 			.padding(padding ?? theme.spacing.lg)
 			.background(theme.colors.surfacePrimary)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius ?? theme.cornerRadius.lg))
-			.shadow(shadow)
+			.shadow(shadow ?? theme.shadow.small)
 	}
 }
 

@@ -107,7 +107,7 @@ private extension CharacterDetailView {
 		DSAsyncImage(url: character.imageURL)
 			.frame(width: 150, height: 150)
 			.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.xl))
-			.shadow(.medium)
+			.shadow(theme.shadow.medium)
 	}
 
 	func nameAndStatus(_ character: Character) -> some View {

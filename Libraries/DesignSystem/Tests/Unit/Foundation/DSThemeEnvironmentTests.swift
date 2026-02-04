@@ -75,6 +75,16 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.opacity.almostOpaque == opacity.almostOpaque)
 	}
 
+	@Test("Default theme uses DefaultShadow")
+	func defaultThemeUsesDefaultShadow() {
+		let theme = DSTheme.default
+		let shadow = DefaultShadow()
+
+		#expect(theme.shadow.zero == shadow.zero)
+		#expect(theme.shadow.small == shadow.small)
+		#expect(theme.shadow.large == shadow.large)
+	}
+
 	@Test("Custom theme can be created with different palette")
 	func customThemeCanBeCreated() {
 		let customPalette = DefaultColorPalette()
@@ -84,6 +94,7 @@ struct DSThemeEnvironmentTests {
 		let customBorderWidth = DefaultBorderWidth()
 		let customCornerRadius = DefaultCornerRadius()
 		let customOpacity = DefaultOpacity()
+		let customShadow = DefaultShadow()
 		let theme = DSTheme(
 			colors: customPalette,
 			typography: customTypography,
@@ -91,7 +102,8 @@ struct DSThemeEnvironmentTests {
 			dimensions: customDimensions,
 			borderWidth: customBorderWidth,
 			cornerRadius: customCornerRadius,
-			opacity: customOpacity
+			opacity: customOpacity,
+			shadow: customShadow
 		)
 
 		#expect(theme.colors.accent == customPalette.accent)
@@ -101,5 +113,6 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.borderWidth.thin == customBorderWidth.thin)
 		#expect(theme.cornerRadius.lg == customCornerRadius.lg)
 		#expect(theme.opacity.medium == customOpacity.medium)
+		#expect(theme.shadow.small == customShadow.small)
 	}
 }

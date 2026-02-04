@@ -30,6 +30,7 @@ Libraries/DesignSystem/
 │   │   │   ├── DSCornerRadius.swift
 │   │   │   ├── DSDimensions.swift
 │   │   │   ├── DSOpacity.swift
+│   │   │   ├── DSShadow.swift
 │   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
 │   │   │   ├── DSThemeEnvironment.swift
@@ -41,12 +42,11 @@ Libraries/DesignSystem/
 │   │   │       ├── DefaultCornerRadius.swift
 │   │   │       ├── DefaultDimensions.swift
 │   │   │       ├── DefaultOpacity.swift
+│   │   │       ├── DefaultShadow.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
-│   │   ├── Typography/
-│   │   │   └── TextStyle.swift
-│   │   └── Shadows/
-│   │       └── ShadowToken.swift
+│   │   └── Typography/
+│   │       └── TextStyle.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
 │   │   ├── Buttons/
@@ -78,7 +78,7 @@ Libraries/DesignSystem/
 
 ## Theming
 
-Colors, typography, spacing, dimensions, border widths, corner radii, and opacity are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (shadows) remain static.
+Colors, typography, spacing, dimensions, border widths, corner radii, opacity, and shadows are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically.
 
 ### Reading the theme in a View
 
@@ -203,15 +203,6 @@ TextStyle.caption     // .rounded
 TextStyle.caption2    // .monospaced
 ```
 
-### ShadowToken
-
-```swift
-ShadowToken.zero    // No shadow
-ShadowToken.small   // Subtle card shadow
-ShadowToken.medium  // Elevated elements
-ShadowToken.large   // Floating elements
-```
-
 ## DSOpacity (via theme)
 
 Opacity values accessed via `theme.opacity`:
@@ -222,6 +213,25 @@ theme.opacity.light         // 0.15
 theme.opacity.medium        // 0.4
 theme.opacity.heavy         // 0.6
 theme.opacity.almostOpaque  // 0.8
+```
+
+---
+
+## DSShadow (via theme)
+
+Shadow values accessed via `theme.shadow`. Each level returns a `DSShadowValue` with `color`, `radius`, `x`, and `y`:
+
+```swift
+theme.shadow.zero    // No shadow (clear, radius: 0, x: 0, y: 0)
+theme.shadow.small   // Subtle card shadow (black 5%, radius: 8, x: 0, y: 2)
+theme.shadow.medium  // Elevated elements (black 8%, radius: 12, x: 0, y: 4)
+theme.shadow.large   // Floating elements (black 12%, radius: 20, x: 0, y: 8)
+```
+
+Apply with the `.shadow(_:)` View extension:
+
+```swift
+.shadow(theme.shadow.small)
 ```
 
 ---
@@ -373,7 +383,7 @@ DSCard {
 }
 
 // Customized
-DSCard(padding: theme.spacing.xl, shadow: .medium) {
+DSCard(padding: theme.spacing.xl, shadow: theme.shadow.medium) {
     // content
 }
 ```
@@ -470,7 +480,7 @@ Text("Title")
 .padding(16)
 .background(Color(.systemBackground))
 .clipShape(RoundedRectangle(cornerRadius: 16))
-.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)  // hardcoded
 ```
 
 ### After (design system):
@@ -508,6 +518,7 @@ import ChallengeDesignSystem
 - [ ] Use `theme.cornerRadius.xxx` for corner radii
 - [ ] Use `theme.opacity.xxx` for opacity values
 - [ ] Use `theme.borderWidth.xxx` for border widths
+- [ ] Use `theme.shadow.xxx` for shadows
 - [ ] Use `DSCard` for card styling
 - [ ] Use `DSLoadingView`, `DSErrorView`, `DSEmptyState` for feedback states
 - [ ] Use `DSStatus.color(in: theme.colors)` for status colors

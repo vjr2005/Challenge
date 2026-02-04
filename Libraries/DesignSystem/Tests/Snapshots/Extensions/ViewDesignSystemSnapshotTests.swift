@@ -47,7 +47,7 @@ struct ViewDesignSystemSnapshotTests {
 	@Test("Renders dsCard extension with large shadow")
 	func dsCardCustomShadow() {
 		let view = Text("Large Shadow")
-			.dsCard(shadowToken: .large)
+			.dsCard(shadow: DefaultShadow().large)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
@@ -61,7 +61,7 @@ struct ViewDesignSystemSnapshotTests {
 			.dsCard(
 				padding: DefaultSpacing().xl,
 				cornerRadius: DefaultCornerRadius().md,
-				shadowToken: .medium
+				shadow: DefaultShadow().medium
 			)
 			.padding()
 			.frame(width: 320)
@@ -73,7 +73,7 @@ struct ViewDesignSystemSnapshotTests {
 	@Test("Renders dsCard extension without shadow")
 	func dsCardNoShadow() {
 		let view = Text("No Shadow")
-			.dsCard(shadowToken: .zero)
+			.dsCard(shadow: DefaultShadow().zero)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
