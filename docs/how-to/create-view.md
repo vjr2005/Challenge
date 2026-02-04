@@ -97,7 +97,7 @@ private extension {ScreenName}View {
             VStack(spacing: theme.spacing.lg) {
                 // Content using Design System components
                 Text(data.name)
-                    .font(theme.typography.font(for: .title))
+                    .font(theme.typography.title)
                     .foregroundStyle(theme.colors.textPrimary)
             }
             .padding(.horizontal, theme.spacing.lg)
@@ -401,7 +401,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     var body: some View {
         VStack(spacing: theme.spacing.lg) {
             Text(LocalizedStrings.title)
-                .font(theme.typography.font(for: .title))
+                .font(theme.typography.title)
                 .foregroundStyle(theme.colors.textPrimary)
 
             Button(LocalizedStrings.actionButton) {
@@ -456,7 +456,7 @@ All Views must use Design System components and tokens:
 | Type | Usage |
 |------|-------|
 | **Colors** | `theme.colors.textPrimary`, `theme.colors.backgroundSecondary` |
-| **Typography** | `theme.typography.font(for: .title)`, `theme.typography.font(for: .body)` |
+| **Typography** | `theme.typography.title`, `theme.typography.body` |
 | **Spacing** | `theme.spacing.lg`, `theme.spacing.md`, `theme.spacing.sm` |
 | **Corner Radius** | `theme.cornerRadius.lg`, `theme.cornerRadius.md` |
 | **DS Components** | `DSCard`, `DSAsyncImage`, `DSLoadingView`, `DSErrorView` |
@@ -466,7 +466,7 @@ All Views must use Design System components and tokens:
 
 // ✅ Correct - using design system
 Text(item.name)
-    .font(theme.typography.font(for: .body))
+    .font(theme.typography.body)
     .foregroundStyle(theme.colors.textPrimary)
     .padding(theme.spacing.md)    // via @Environment(\.dsTheme)
 

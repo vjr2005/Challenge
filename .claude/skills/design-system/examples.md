@@ -85,10 +85,10 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
     func headerView(totalCount: Int) -> some View {
         VStack(alignment: .leading, spacing: theme.spacing.xs) {
             Text(LocalizedStrings.headerTitle)
-                .font(theme.typography.font(for: .largeTitle))
+                .font(theme.typography.largeTitle)
                 .foregroundStyle(theme.colors.textPrimary)
             Text(LocalizedStrings.headerSubtitle(totalCount))
-                .font(theme.typography.font(for: .subheadline))
+                .font(theme.typography.subheadline)
                 .foregroundStyle(theme.colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,7 +119,7 @@ func infoCard(_ character: Character) -> some View {
     DSCard(padding: theme.spacing.xl) {
         VStack(alignment: .leading, spacing: theme.spacing.lg) {
             Text(LocalizedStrings.information)
-                .font(theme.typography.font(for: .headline))
+                .font(theme.typography.headline)
                 .foregroundStyle(theme.colors.textPrimary)
 
             VStack(spacing: theme.spacing.md) {
@@ -136,7 +136,7 @@ func locationCard(_ character: Character) -> some View {
     DSCard(padding: theme.spacing.xl) {
         VStack(alignment: .leading, spacing: theme.spacing.lg) {
             Text(LocalizedStrings.locations)
-                .font(theme.typography.font(for: .headline))
+                .font(theme.typography.headline)
                 .foregroundStyle(theme.colors.textPrimary)
 
             VStack(spacing: theme.spacing.md) {
@@ -170,7 +170,7 @@ func headerSection(_ character: Character) -> some View {
 func nameAndStatus(_ character: Character) -> some View {
     VStack(spacing: theme.spacing.sm) {
         Text(character.name)
-            .font(theme.typography.font(for: .title))
+            .font(theme.typography.title)
             .foregroundStyle(theme.colors.textPrimary)
             .multilineTextAlignment(.center)
 
@@ -178,14 +178,14 @@ func nameAndStatus(_ character: Character) -> some View {
             DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
             Text(character.status.rawValue)
-                .font(theme.typography.font(for: .subheadline))
+                .font(theme.typography.subheadline)
                 .foregroundStyle(theme.colors.textSecondary)
 
             Text("\u{2022}")
                 .foregroundStyle(theme.colors.textTertiary)
 
             Text(character.species)
-                .font(theme.typography.font(for: .subheadline))
+                .font(theme.typography.subheadline)
                 .foregroundStyle(theme.colors.textSecondary)
                 .italic()
         }
@@ -246,19 +246,19 @@ HStack(spacing: theme.spacing.sm) { }
 @Environment(\.dsTheme) private var theme
 
 Text("Title")
-    .font(theme.typography.font(for: .largeTitle))
+    .font(theme.typography.largeTitle)
     .foregroundStyle(theme.colors.textPrimary)
 
 Text("Heading")
-    .font(theme.typography.font(for: .headline))
+    .font(theme.typography.headline)
     .foregroundStyle(theme.colors.textPrimary)
 
 Text("Body text")
-    .font(theme.typography.font(for: .body))
+    .font(theme.typography.body)
     .foregroundStyle(theme.colors.textPrimary)
 
 Text("Caption")
-    .font(theme.typography.font(for: .caption))
+    .font(theme.typography.caption)
     .foregroundStyle(theme.colors.textSecondary)
 ```
 

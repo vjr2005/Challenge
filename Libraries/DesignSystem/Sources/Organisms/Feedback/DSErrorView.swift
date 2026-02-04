@@ -41,13 +41,13 @@ public struct DSErrorView: View {
 
 			VStack(spacing: theme.spacing.sm) {
 				Text(title)
-					.font(theme.typography.font(for: .headline))
+					.font(theme.typography.headline)
 					.foregroundStyle(theme.colors.textPrimary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
 
 				if let message {
 					Text(message)
-						.font(theme.typography.font(for: .body))
+						.font(theme.typography.body)
 						.foregroundStyle(theme.colors.textSecondary)
 						.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
 						.multilineTextAlignment(.center)

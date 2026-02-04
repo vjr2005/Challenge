@@ -2,17 +2,36 @@ import SwiftUI
 
 /// Contract for design system typography.
 ///
-/// Conforming types provide font and default color mappings for each ``TextStyle``.
+/// Conforming types provide font values for each text style.
+/// Each property maps to a semantic text style (large title, title, headline, body, etc.).
 public protocol DSTypography: Sendable {
-	/// Returns the SwiftUI font for the given text style.
-	/// - Parameter style: The text style to resolve
-	/// - Returns: The corresponding font
-	func font(for style: TextStyle) -> Font
+	/// Large title font - prominent page headers
+	var largeTitle: Font { get }
 
-	/// Returns the default foreground color for the given text style in the given palette.
-	/// - Parameters:
-	///   - style: The text style to resolve
-	///   - palette: The color palette to use
-	/// - Returns: The corresponding default color
-	func defaultColor(for style: TextStyle, in palette: DSColorPalette) -> Color
+	/// Title font - section titles
+	var title: Font { get }
+
+	/// Title 2 font - secondary section titles
+	var title2: Font { get }
+
+	/// Title 3 font - tertiary section titles
+	var title3: Font { get }
+
+	/// Headline font - emphasized text
+	var headline: Font { get }
+
+	/// Body font - standard content text
+	var body: Font { get }
+
+	/// Subheadline font - supporting text below headlines
+	var subheadline: Font { get }
+
+	/// Footnote font - auxiliary information
+	var footnote: Font { get }
+
+	/// Caption font - labels and annotations
+	var caption: Font { get }
+
+	/// Caption 2 font - smallest text style
+	var caption2: Font { get }
 }

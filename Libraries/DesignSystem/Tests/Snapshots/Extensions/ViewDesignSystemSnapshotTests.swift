@@ -85,10 +85,10 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCardWithComplexContent() {
 		let view = VStack(alignment: .leading, spacing: DefaultSpacing().sm) {
 			Text("Card Title")
-				.font(DefaultTypography().font(for: .headline))
+				.font(DefaultTypography().headline)
 				.foregroundStyle(DefaultColorPalette().textPrimary)
 			Text("This is a description inside the card.")
-				.font(DefaultTypography().font(for: .body))
+				.font(DefaultTypography().body)
 				.foregroundStyle(DefaultColorPalette().textPrimary)
 			DSButton("Action") {}
 		}

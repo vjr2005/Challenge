@@ -36,9 +36,9 @@ private extension CharacterDetailView {
 		} label: {
 			HStack(spacing: theme.spacing.xs) {
 				Image(systemName: "chevron.left")
-					.font(theme.typography.font(for: .body).weight(.semibold))
+					.font(theme.typography.body.weight(.semibold))
 				Text(LocalizedStrings.back)
-					.font(theme.typography.font(for: .body))
+					.font(theme.typography.body)
 			}
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.backButton)
@@ -113,7 +113,7 @@ private extension CharacterDetailView {
 	func nameAndStatus(_ character: Character) -> some View {
 		VStack(spacing: theme.spacing.sm) {
 			Text(character.name)
-				.font(theme.typography.font(for: .title))
+				.font(theme.typography.title)
 				.foregroundStyle(theme.colors.textPrimary)
 				.multilineTextAlignment(.center)
                 .accessibilityIdentifier(AccessibilityIdentifier.name)
@@ -122,14 +122,14 @@ private extension CharacterDetailView {
 				DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
 				Text(character.status.rawValue)
-					.font(theme.typography.font(for: .subheadline))
+					.font(theme.typography.subheadline)
 					.foregroundStyle(theme.colors.textSecondary)
 
 				Text("•")
 					.foregroundStyle(theme.colors.textTertiary)
 
 				Text(character.species)
-					.font(theme.typography.font(for: .subheadline))
+					.font(theme.typography.subheadline)
 					.foregroundStyle(theme.colors.textSecondary)
 					.italic()
 			}
@@ -140,7 +140,7 @@ private extension CharacterDetailView {
 		DSCard(padding: theme.spacing.xl) {
 			VStack(alignment: .leading, spacing: theme.spacing.lg) {
 				Text(LocalizedStrings.information)
-					.font(theme.typography.font(for: .headline))
+					.font(theme.typography.headline)
 					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: theme.spacing.md) {
@@ -157,7 +157,7 @@ private extension CharacterDetailView {
 		DSCard(padding: theme.spacing.xl) {
 			VStack(alignment: .leading, spacing: theme.spacing.lg) {
 				Text(LocalizedStrings.locations)
-					.font(theme.typography.font(for: .headline))
+					.font(theme.typography.headline)
 					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: theme.spacing.md) {

@@ -33,8 +33,6 @@ DesignSystem/
 │   │   │       ├── DefaultShadow.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
-│   │   └── Typography/
-│   │       └── TextStyle.swift
 │   ├── Atoms/                # Basic components
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
@@ -107,7 +105,7 @@ struct MyView: View {
 
     var body: some View {
         Text("Hello")
-            .font(theme.typography.font(for: .headline))
+            .font(theme.typography.headline)
             .foregroundStyle(theme.colors.textPrimary)
     }
 }
@@ -169,23 +167,16 @@ theme.colors.disabled
 Typography accessed via `theme.typography`:
 
 ```swift
-theme.typography.font(for: .headline)
-theme.typography.font(for: .body)
-theme.typography.defaultColor(for: .headline, in: theme.colors)
-```
-
-### TextStyle
-
-Enum cases for typography styles (input to `DSTypography`):
-
-```swift
-TextStyle.largeTitle   // .rounded, .bold
-TextStyle.title        // .rounded, .bold
-TextStyle.headline     // .rounded, .semibold
-TextStyle.body         // .rounded
-TextStyle.subheadline  // .serif
-TextStyle.caption      // .rounded
-TextStyle.caption2     // .monospaced
+theme.typography.largeTitle   // .rounded, .bold
+theme.typography.title        // .rounded, .bold
+theme.typography.title2       // .rounded, .semibold
+theme.typography.title3       // .rounded, .semibold
+theme.typography.headline     // .rounded, .semibold
+theme.typography.body         // .rounded
+theme.typography.subheadline  // .serif
+theme.typography.footnote     // .rounded
+theme.typography.caption      // .rounded
+theme.typography.caption2     // .monospaced
 ```
 
 ### DSSpacing (via theme)
@@ -305,7 +296,7 @@ Each shadow level returns a `DSShadowValue` with `color`, `radius`, `x`, and `y`
 @Environment(\.dsTheme) private var theme
 
 Text("Hello World")
-    .font(theme.typography.font(for: .headline))
+    .font(theme.typography.headline)
     .foregroundStyle(theme.colors.textPrimary)
 ```
 
@@ -322,7 +313,7 @@ DSButton("Secondary", variant: .secondary) { /* action */ }
 DSCard {
     VStack {
         Text("Card Title")
-            .font(theme.typography.font(for: .headline))
+            .font(theme.typography.headline)
             .foregroundStyle(theme.colors.textPrimary)
     }
 }

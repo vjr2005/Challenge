@@ -76,14 +76,14 @@ private extension DSCardInfoRow {
 	var textContent: some View {
 		VStack(alignment: .leading, spacing: theme.spacing.xs) {
 			Text(title)
-				.font(theme.typography.font(for: .headline))
+				.font(theme.typography.headline)
 				.foregroundStyle(theme.colors.textPrimary)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
 				.lineLimit(1)
 
 			if let subtitle {
 				Text(subtitle)
-					.font(theme.typography.font(for: .subheadline))
+					.font(theme.typography.subheadline)
 					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).subtitle" } ?? "")
 			}
@@ -102,7 +102,7 @@ private extension DSCardInfoRow {
 					.accessibilityHidden(true)
 			}
 			Text(text)
-				.font(theme.typography.font(for: .caption2))
+				.font(theme.typography.caption2)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).caption" } ?? "")
 		}
 		.foregroundStyle(theme.colors.textTertiary)
@@ -120,7 +120,7 @@ private extension DSCardInfoRow {
 
 			if let statusLabel {
 				Text(statusLabel)
-					.font(theme.typography.font(for: .caption))
+					.font(theme.typography.caption)
 					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).statusLabel" } ?? "")
 			}

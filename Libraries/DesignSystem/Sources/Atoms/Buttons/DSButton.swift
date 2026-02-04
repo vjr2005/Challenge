@@ -60,7 +60,7 @@ public struct DSButton: View {
 				}
 				Text(title)
 			}
-			.font(theme.typography.font(for: .headline))
+			.font(theme.typography.headline)
 			.foregroundStyle(foregroundColor)
 			.padding(.horizontal, horizontalPadding)
 			.padding(.vertical, verticalPadding)

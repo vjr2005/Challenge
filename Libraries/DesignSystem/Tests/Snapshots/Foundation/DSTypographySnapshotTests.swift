@@ -4,7 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct TextStyleSnapshotTests {
+struct DSTypographySnapshotTests {
 	private let typography = DefaultTypography()
 	private let palette = DefaultColorPalette()
 
@@ -18,44 +18,44 @@ struct TextStyleSnapshotTests {
 	func typographyGallery() {
 		let view = VStack(alignment: .leading, spacing: DefaultSpacing().md) {
 			Text("Large Title")
-				.font(typography.font(for: .largeTitle))
-				.foregroundStyle(typography.defaultColor(for: .largeTitle, in: palette))
+				.font(typography.largeTitle)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Title")
-				.font(typography.font(for: .title))
-				.foregroundStyle(typography.defaultColor(for: .title, in: palette))
+				.font(typography.title)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Title 2")
-				.font(typography.font(for: .title2))
-				.foregroundStyle(typography.defaultColor(for: .title2, in: palette))
+				.font(typography.title2)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Title 3")
-				.font(typography.font(for: .title3))
-				.foregroundStyle(typography.defaultColor(for: .title3, in: palette))
+				.font(typography.title3)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Headline")
-				.font(typography.font(for: .headline))
-				.foregroundStyle(typography.defaultColor(for: .headline, in: palette))
+				.font(typography.headline)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Body")
-				.font(typography.font(for: .body))
-				.foregroundStyle(typography.defaultColor(for: .body, in: palette))
+				.font(typography.body)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Subheadline")
-				.font(typography.font(for: .subheadline))
-				.foregroundStyle(typography.defaultColor(for: .subheadline, in: palette))
+				.font(typography.subheadline)
+				.foregroundStyle(palette.textSecondary)
 
 			Text("Footnote")
-				.font(typography.font(for: .footnote))
-				.foregroundStyle(typography.defaultColor(for: .footnote, in: palette))
+				.font(typography.footnote)
+				.foregroundStyle(palette.textSecondary)
 
 			Text("Caption")
-				.font(typography.font(for: .caption))
-				.foregroundStyle(typography.defaultColor(for: .caption, in: palette))
+				.font(typography.caption)
+				.foregroundStyle(palette.textSecondary)
 
 			Text("Caption 2")
-				.font(typography.font(for: .caption2))
-				.foregroundStyle(typography.defaultColor(for: .caption2, in: palette))
+				.font(typography.caption2)
+				.foregroundStyle(palette.textTertiary)
 		}
 		.padding()
 		.frame(width: 320, alignment: .leading)
@@ -69,16 +69,16 @@ struct TextStyleSnapshotTests {
 	@Test("Renders text styles with monospaced labels for reference")
 	func typographyWithLabels() {
 		let view = VStack(alignment: .leading, spacing: DefaultSpacing().lg) {
-			typographyRow("largeTitle", style: .largeTitle)
-			typographyRow("title", style: .title)
-			typographyRow("title2", style: .title2)
-			typographyRow("title3", style: .title3)
-			typographyRow("headline", style: .headline)
-			typographyRow("body", style: .body)
-			typographyRow("subheadline", style: .subheadline)
-			typographyRow("footnote", style: .footnote)
-			typographyRow("caption", style: .caption)
-			typographyRow("caption2", style: .caption2)
+			typographyRow("largeTitle", font: typography.largeTitle, color: palette.textPrimary)
+			typographyRow("title", font: typography.title, color: palette.textPrimary)
+			typographyRow("title2", font: typography.title2, color: palette.textPrimary)
+			typographyRow("title3", font: typography.title3, color: palette.textPrimary)
+			typographyRow("headline", font: typography.headline, color: palette.textPrimary)
+			typographyRow("body", font: typography.body, color: palette.textPrimary)
+			typographyRow("subheadline", font: typography.subheadline, color: palette.textSecondary)
+			typographyRow("footnote", font: typography.footnote, color: palette.textSecondary)
+			typographyRow("caption", font: typography.caption, color: palette.textSecondary)
+			typographyRow("caption2", font: typography.caption2, color: palette.textTertiary)
 		}
 		.padding()
 		.frame(width: 360, alignment: .leading)
@@ -97,7 +97,7 @@ struct TextStyleSnapshotTests {
 					.font(.system(.caption, design: .rounded, weight: .semibold))
 					.foregroundStyle(palette.textSecondary)
 				Text("The quick brown fox jumps")
-					.font(typography.font(for: .body))
+					.font(typography.body)
 					.foregroundStyle(palette.textPrimary)
 			}
 
@@ -106,7 +106,7 @@ struct TextStyleSnapshotTests {
 					.font(.system(.caption, design: .rounded, weight: .semibold))
 					.foregroundStyle(palette.textSecondary)
 				Text("The quick brown fox jumps")
-					.font(typography.font(for: .subheadline))
+					.font(typography.subheadline)
 					.foregroundStyle(palette.textSecondary)
 			}
 
@@ -115,7 +115,7 @@ struct TextStyleSnapshotTests {
 					.font(.system(.caption, design: .rounded, weight: .semibold))
 					.foregroundStyle(palette.textSecondary)
 				Text("The quick brown fox jumps")
-					.font(typography.font(for: .caption2))
+					.font(typography.caption2)
 					.foregroundStyle(palette.textTertiary)
 			}
 		}
@@ -132,24 +132,24 @@ struct TextStyleSnapshotTests {
 	func typographyHierarchy() {
 		let view = VStack(alignment: .leading, spacing: DefaultSpacing().md) {
 			Text("Page Title")
-				.font(typography.font(for: .largeTitle))
-				.foregroundStyle(typography.defaultColor(for: .largeTitle, in: palette))
+				.font(typography.largeTitle)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Section Header")
-				.font(typography.font(for: .title2))
-				.foregroundStyle(typography.defaultColor(for: .title2, in: palette))
+				.font(typography.title2)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("This is the main body text that provides detailed information.")
-				.font(typography.font(for: .body))
-				.foregroundStyle(typography.defaultColor(for: .body, in: palette))
+				.font(typography.body)
+				.foregroundStyle(palette.textPrimary)
 
 			Text("Additional context in subheadline")
-				.font(typography.font(for: .subheadline))
-				.foregroundStyle(typography.defaultColor(for: .subheadline, in: palette))
+				.font(typography.subheadline)
+				.foregroundStyle(palette.textSecondary)
 
 			Text("Last updated: 2024-01-15")
-				.font(typography.font(for: .caption))
-				.foregroundStyle(typography.defaultColor(for: .caption, in: palette))
+				.font(typography.caption)
+				.foregroundStyle(palette.textSecondary)
 		}
 		.padding()
 		.frame(width: 320, alignment: .leading)
@@ -160,7 +160,7 @@ struct TextStyleSnapshotTests {
 
 	// MARK: - Helpers
 
-	private func typographyRow(_ name: String, style: TextStyle) -> some View {
+	private func typographyRow(_ name: String, font: Font, color: Color) -> some View {
 		HStack(alignment: .firstTextBaseline) {
 			Text(name)
 				.font(.system(.caption, design: .monospaced))
@@ -168,8 +168,8 @@ struct TextStyleSnapshotTests {
 				.frame(width: 90, alignment: .leading)
 
 			Text("Sample Text")
-				.font(typography.font(for: style))
-				.foregroundStyle(typography.defaultColor(for: style, in: palette))
+				.font(font)
+				.foregroundStyle(color)
 
 			Spacer()
 		}

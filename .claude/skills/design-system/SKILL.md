@@ -45,8 +45,6 @@ Libraries/DesignSystem/
 │   │   │       ├── DefaultShadow.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
-│   │   └── Typography/
-│   │       └── TextStyle.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
 │   │   ├── Buttons/
@@ -88,7 +86,7 @@ struct MyView: View {
 
     var body: some View {
         Text("Hello")
-            .font(theme.typography.font(for: .headline))
+            .font(theme.typography.headline)
             .foregroundStyle(theme.colors.textPrimary)
     }
 }
@@ -184,23 +182,21 @@ theme.cornerRadius.full  // 9999pt
 
 ---
 
-## Foundation: Static Design Tokens
+## DSTypography (via theme)
 
-### TextStyle
-
-Enum cases for typography (input to `DSTypography`):
+Typography accessed via `theme.typography`:
 
 ```swift
-TextStyle.largeTitle  // .rounded, .bold
-TextStyle.title       // .rounded, .bold
-TextStyle.title2      // .rounded, .semibold
-TextStyle.title3      // .rounded, .semibold
-TextStyle.headline    // .rounded, .semibold
-TextStyle.body        // .rounded
-TextStyle.subheadline // .serif
-TextStyle.footnote    // .rounded
-TextStyle.caption     // .rounded
-TextStyle.caption2    // .monospaced
+theme.typography.largeTitle   // .rounded, .bold
+theme.typography.title        // .rounded, .bold
+theme.typography.title2       // .rounded, .semibold
+theme.typography.title3       // .rounded, .semibold
+theme.typography.headline     // .rounded, .semibold
+theme.typography.body         // .rounded
+theme.typography.subheadline  // .serif
+theme.typography.footnote     // .rounded
+theme.typography.caption      // .rounded
+theme.typography.caption2     // .monospaced
 ```
 
 ## DSOpacity (via theme)
@@ -238,7 +234,7 @@ Apply with the `.shadow(_:)` View extension:
 
 ## Atoms
 
-### Typography with TextStyle
+### Typography
 
 Use SwiftUI's native `Text` with the theme for consistent typography:
 
@@ -247,17 +243,17 @@ Use SwiftUI's native `Text` with the theme for consistent typography:
 
 // Basic usage
 Text("Hello World")
-    .font(theme.typography.font(for: .headline))
+    .font(theme.typography.headline)
     .foregroundStyle(theme.colors.textPrimary)
 
 // With custom color
 Text("Error message")
-    .font(theme.typography.font(for: .body))
+    .font(theme.typography.body)
     .foregroundStyle(theme.colors.statusError)
 
 // With accessibility identifier
 Text("Title")
-    .font(theme.typography.font(for: .headline))
+    .font(theme.typography.headline)
     .foregroundStyle(theme.colors.textPrimary)
     .accessibilityIdentifier("screen.title")
 ```
@@ -374,10 +370,10 @@ Generic card container:
 DSCard {
     VStack {
         Text("Card Title")
-            .font(theme.typography.font(for: .headline))
+            .font(theme.typography.headline)
             .foregroundStyle(theme.colors.textPrimary)
         Text("Card content")
-            .font(theme.typography.font(for: .body))
+            .font(theme.typography.body)
             .foregroundStyle(theme.colors.textPrimary)
     }
 }
@@ -489,7 +485,7 @@ Text("Title")
 @Environment(\.dsTheme) private var theme
 
 Text("Title")
-    .font(theme.typography.font(for: .headline))
+    .font(theme.typography.headline)
     .foregroundStyle(theme.colors.textPrimary)
 
 DSCard {
@@ -512,7 +508,7 @@ import ChallengeDesignSystem
 - [ ] Import `ChallengeDesignSystem`
 - [ ] Add `@Environment(\.dsTheme) private var theme`
 - [ ] Use `theme.colors.xxx` for colors
-- [ ] Use `theme.typography.font(for: .xxx)` for fonts
+- [ ] Use `theme.typography.xxx` for fonts
 - [ ] Use `theme.spacing.xxx` for spacing values
 - [ ] Use `theme.dimensions.xxx` for icon and element sizes
 - [ ] Use `theme.cornerRadius.xxx` for corner radii

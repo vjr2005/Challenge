@@ -27,7 +27,7 @@ public struct DSLoadingView: View {
 
 			if let message {
 				Text(message)
-					.font(theme.typography.font(for: .body))
+					.font(theme.typography.body)
 					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
 			}

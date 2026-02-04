@@ -48,10 +48,10 @@ public struct DSCard<Content: View>: View {
 		DSCard {
 			VStack(alignment: .leading, spacing: SpacingToken.sm) {
 				Text("Card Title")
-					.font(TextStyle.headline.font)
+					.font(DefaultTypography().headline)
 					.foregroundStyle(ColorToken.textPrimary)
 				Text("This is the card content with some description text.")
-					.font(TextStyle.body.font)
+					.font(DefaultTypography().body)
 					.foregroundStyle(ColorToken.textPrimary)
 			}
 		}
@@ -59,7 +59,7 @@ public struct DSCard<Content: View>: View {
 		DSCard(shadow: .medium) {
 			HStack {
 				Text("Medium Shadow")
-					.font(TextStyle.body.font)
+					.font(DefaultTypography().body)
 					.foregroundStyle(ColorToken.textPrimary)
 				Spacer()
 				Image(systemName: "arrow.right")
@@ -68,7 +68,7 @@ public struct DSCard<Content: View>: View {
 
 		DSCard(shadow: .zero) {
 			Text("No Shadow Card")
-				.font(TextStyle.body.font)
+				.font(DefaultTypography().body)
 				.foregroundStyle(ColorToken.textPrimary)
 		}
 	}

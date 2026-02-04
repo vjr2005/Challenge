@@ -20,9 +20,9 @@ struct DSThemeEnvironmentTests {
 		let theme = DSTheme.default
 		let typography = DefaultTypography()
 
-		#expect(theme.typography.font(for: .headline) == typography.font(for: .headline))
-		#expect(theme.typography.font(for: .body) == typography.font(for: .body))
-		#expect(theme.typography.font(for: .caption2) == typography.font(for: .caption2))
+		#expect(theme.typography.headline == typography.headline)
+		#expect(theme.typography.body == typography.body)
+		#expect(theme.typography.caption2 == typography.caption2)
 	}
 
 	@Test("Default theme uses DefaultSpacing")
@@ -107,7 +107,7 @@ struct DSThemeEnvironmentTests {
 		)
 
 		#expect(theme.colors.accent == customPalette.accent)
-		#expect(theme.typography.font(for: .body) == customTypography.font(for: .body))
+		#expect(theme.typography.body == customTypography.body)
 		#expect(theme.spacing.lg == customSpacing.lg)
 		#expect(theme.dimensions.lg == customDimensions.lg)
 		#expect(theme.borderWidth.thin == customBorderWidth.thin)

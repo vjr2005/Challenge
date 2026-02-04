@@ -77,7 +77,7 @@ public struct DSStatusIndicator: View {
 				DSStatusIndicator(status: status, size: 8)
 				DSStatusIndicator(status: status, size: 16)
 				Text(status.rawValue.capitalized)
-					.font(TextStyle.caption.font)
+					.font(DefaultTypography().caption)
 					.foregroundStyle(ColorToken.textPrimary)
 			}
 		}

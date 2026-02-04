@@ -18,10 +18,10 @@ struct DSCardSnapshotTests {
 		let view = DSCard {
 			VStack(alignment: .leading, spacing: DefaultSpacing().sm) {
 				Text("Card Title")
-					.font(DefaultTypography().font(for: .headline))
+					.font(DefaultTypography().headline)
 					.foregroundStyle(DefaultColorPalette().textPrimary)
 				Text("This is the card content with some description text.")
-					.font(DefaultTypography().font(for: .body))
+					.font(DefaultTypography().body)
 					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 		}
@@ -38,7 +38,7 @@ struct DSCardSnapshotTests {
 	func noShadow() {
 		let view = DSCard(shadow: shadow.zero) {
 			Text("No Shadow Card")
-				.font(DefaultTypography().font(for: .body))
+				.font(DefaultTypography().body)
 				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
@@ -52,7 +52,7 @@ struct DSCardSnapshotTests {
 	func smallShadow() {
 		let view = DSCard(shadow: shadow.small) {
 			Text("Small Shadow Card")
-				.font(DefaultTypography().font(for: .body))
+				.font(DefaultTypography().body)
 				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
@@ -66,7 +66,7 @@ struct DSCardSnapshotTests {
 	func mediumShadow() {
 		let view = DSCard(shadow: shadow.medium) {
 			Text("Medium Shadow Card")
-				.font(DefaultTypography().font(for: .body))
+				.font(DefaultTypography().body)
 				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
@@ -80,7 +80,7 @@ struct DSCardSnapshotTests {
 	func largeShadow() {
 		let view = DSCard(shadow: shadow.large) {
 			Text("Large Shadow Card")
-				.font(DefaultTypography().font(for: .body))
+				.font(DefaultTypography().body)
 				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
@@ -97,22 +97,22 @@ struct DSCardSnapshotTests {
 		let view = VStack(spacing: DefaultSpacing().lg) {
 			DSCard(shadow: shadow.zero) {
 				Text("Zero Shadow")
-					.font(DefaultTypography().font(for: .body))
+					.font(DefaultTypography().body)
 					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 			DSCard(shadow: shadow.small) {
 				Text("Small Shadow")
-					.font(DefaultTypography().font(for: .body))
+					.font(DefaultTypography().body)
 					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 			DSCard(shadow: shadow.medium) {
 				Text("Medium Shadow")
-					.font(DefaultTypography().font(for: .body))
+					.font(DefaultTypography().body)
 					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 			DSCard(shadow: shadow.large) {
 				Text("Large Shadow")
-					.font(DefaultTypography().font(for: .body))
+					.font(DefaultTypography().body)
 					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 		}

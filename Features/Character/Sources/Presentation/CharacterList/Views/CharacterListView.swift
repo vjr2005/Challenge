@@ -75,7 +75,7 @@ private extension CharacterListView {
 
     func footerView(page: CharactersPage) -> some View {
         Text(LocalizedStrings.pageIndicator(page.currentPage, page.totalPages))
-            .font(theme.typography.font(for: .caption2))
+            .font(theme.typography.caption2)
             .foregroundStyle(theme.colors.textPrimary)
             .padding(.bottom, theme.spacing.lg)
     }
@@ -137,11 +137,11 @@ private extension CharacterListView {
 	func headerView(totalCount: Int) -> some View {
 		VStack(alignment: .leading, spacing: theme.spacing.xs) {
 			Text(LocalizedStrings.headerTitle)
-				.font(theme.typography.font(for: .largeTitle))
+				.font(theme.typography.largeTitle)
 				.foregroundStyle(theme.colors.textPrimary)
 
 			Text(LocalizedStrings.headerSubtitle(totalCount))
-				.font(theme.typography.font(for: .subheadline))
+				.font(theme.typography.subheadline)
 				.foregroundStyle(theme.colors.textSecondary)
 				.italic()
 		}

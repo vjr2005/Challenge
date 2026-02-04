@@ -34,7 +34,7 @@ public struct DSInfoRow: View {
 	public var body: some View {
 		HStack(spacing: theme.spacing.md) {
 			Image(systemName: icon)
-				.font(theme.typography.font(for: .body))
+				.font(theme.typography.body)
 				.foregroundStyle(iconColor ?? theme.colors.accent)
 				.frame(width: theme.spacing.xxl)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
@@ -42,11 +42,11 @@ public struct DSInfoRow: View {
 
 			VStack(alignment: .leading, spacing: theme.spacing.xxs) {
 				Text(label)
-					.font(theme.typography.font(for: .caption))
+					.font(theme.typography.caption)
 					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).label" } ?? "")
 				Text(value)
-					.font(theme.typography.font(for: .body))
+					.font(theme.typography.body)
 					.foregroundStyle(theme.colors.textPrimary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).value" } ?? "")
 			}
