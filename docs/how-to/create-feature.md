@@ -142,16 +142,19 @@ import ChallengeNetworking
 
 public final class {Feature}Container: Sendable {
     private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
 
-    public init(httpClient: any HTTPClientContract) {
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.httpClient = httpClient
+        self.tracker = tracker
     }
 
     // MARK: - Factory Methods
 
     func make{Feature}ViewModel(navigator: any NavigatorContract) -> {Feature}ViewModel {
         {Feature}ViewModel(
-            navigator: {Feature}Navigator(navigator: navigator)
+            navigator: {Feature}Navigator(navigator: navigator),
+            tracker: {Feature}Tracker(tracker: tracker)
         )
     }
 }
@@ -169,8 +172,8 @@ import SwiftUI
 public struct {Feature}Feature: FeatureContract {
     private let container: {Feature}Container
 
-    public init(httpClient: any HTTPClientContract) {
-        self.container = {Feature}Container(httpClient: httpClient)
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+        self.container = {Feature}Container(httpClient: httpClient, tracker: tracker)
     }
 
     public var deepLinkHandler: (any DeepLinkHandlerContract)? {
@@ -225,10 +228,11 @@ import Testing
 
 struct {Feature}FeatureTests {
     private let httpClientMock = HTTPClientMock()
+    private let trackerMock = TrackerMock()
     private let sut: {Feature}Feature
 
     init() {
-        sut = {Feature}Feature(httpClient: httpClientMock)
+        sut = {Feature}Feature(httpClient: httpClientMock, tracker: trackerMock)
     }
 
     // MARK: - Deep Link Handler
@@ -277,10 +281,11 @@ import Testing
 
 struct {Feature}ContainerTests {
     private let httpClientMock = HTTPClientMock()
+    private let trackerMock = TrackerMock()
     private let sut: {Feature}Container
 
     init() {
-        sut = {Feature}Container(httpClient: httpClientMock)
+        sut = {Feature}Container(httpClient: httpClientMock, tracker: trackerMock)
     }
 
     // MARK: - Factory Methods
@@ -308,7 +313,7 @@ Edit `AppKit/Sources/AppContainer.swift`:
 import Challenge{Feature}
 
 // In the 'features' array, add:
-{Feature}Feature(httpClient: self.httpClient),
+{Feature}Feature(httpClient: self.httpClient, tracker: self.tracker),
 ```
 
 ### 12. Generate project and verify
@@ -325,6 +330,7 @@ import Challenge{Feature}
 - [Create ViewModel](create-viewmodel.md) - Create state management
 - [Create View](create-view.md) - Create user interface
 - [Create Navigator](create-navigator.md) - Create navigation between screens
+- [Create Tracker](create-tracker.md) - Create analytics event tracking
 
 ## See also
 

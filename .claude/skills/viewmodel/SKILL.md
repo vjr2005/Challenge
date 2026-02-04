@@ -535,7 +535,8 @@ final class {Name}DetailViewModel {
         identifier: Int,
         get{Name}DetailUseCase: Get{Name}DetailUseCaseContract,
         refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract,
-        navigator: {Name}DetailNavigatorContract
+        navigator: {Name}DetailNavigatorContract,
+        tracker: {Name}DetailTrackerContract
     ) { ... }
 
     func didPullToRefresh() async {
@@ -618,7 +619,8 @@ struct {Name}ViewModelTests {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
         let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // Then
         #expect(sut.state == .idle)
@@ -631,7 +633,8 @@ struct {Name}ViewModelTests {
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .success(expected)
         let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
         await sut.load(id: 1)
@@ -646,7 +649,8 @@ struct {Name}ViewModelTests {
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .failure(TestError.network)
         let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
         await sut.load(id: 1)
@@ -661,7 +665,8 @@ struct {Name}ViewModelTests {
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .success(.stub())
         let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}DetailViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}DetailViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
         await sut.load(id: 42)
@@ -676,7 +681,8 @@ struct {Name}ViewModelTests {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
         let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
         sut.didSelectItem({Name}(id: 42))
@@ -690,13 +696,30 @@ struct {Name}ViewModelTests {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
         let navigatorMock = {Name}NavigatorMock()
-        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock)
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
         sut.didTapOnBack()
 
         // Then
         #expect(navigatorMock.goBackCallCount == 1)
+    }
+
+    @Test
+    func didAppearTracksScreenViewed() async {
+        // Given
+        let useCaseMock = Get{Name}UseCaseMock()
+        useCaseMock.result = .success(.stub())
+        let navigatorMock = {Name}NavigatorMock()
+        let trackerMock = {Name}TrackerMock()
+        let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedCallCount == 1)
     }
 }
 
@@ -710,6 +733,7 @@ private enum TestError: Error {
 - ViewState must implement `==` operator for direct comparison
 - Test initial state, success, error, and call verification
 - Use **NavigatorMock** to verify navigation calls (not RouterMock)
+- Use **TrackerMock** to verify tracking calls
 
 ---
 
@@ -755,22 +779,31 @@ final class CharacterListViewModel {
 
     private let getCharactersUseCase: GetCharactersUseCaseContract
     private let navigator: CharacterListNavigatorContract
+    private let tracker: CharacterListTrackerContract
 
-    init(getCharactersUseCase: GetCharactersUseCaseContract, navigator: CharacterListNavigatorContract) {
+    init(
+        getCharactersUseCase: GetCharactersUseCaseContract,
+        navigator: CharacterListNavigatorContract,
+        tracker: CharacterListTrackerContract
+    ) {
         self.getCharactersUseCase = getCharactersUseCase
         self.navigator = navigator
+        self.tracker = tracker
     }
 
     func didAppear() async {
+        tracker.trackScreenViewed()
         guard case .idle = state else { return }
         await load()
     }
 
     func didTapOnRetryButton() async {
+        tracker.trackRetryButtonTapped()
         await load()
     }
 
     func didSelect(_ character: Character) {
+        tracker.trackCharacterSelected(identifier: character.id)
         navigator.navigateToDetail(id: character.id)
     }
 }

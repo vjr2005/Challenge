@@ -63,7 +63,7 @@ final class CharacterRepository: CharacterRepositoryContract {
 
 | Layer | Protocol Examples | Purpose |
 |-------|-------------------|---------|
-| **Presentation** | `CharacterListViewModelContract`, `NavigatorContract` | ViewModel abstractions for Views |
+| **Presentation** | `CharacterListViewModelContract`, `NavigatorContract`, `TrackerContract` | ViewModel abstractions for Views |
 | **Domain** | `GetCharactersUseCaseContract`, `CharacterRepositoryContract` | Business logic contracts |
 | **Data** | `CharacterRemoteDataSourceContract`, `HTTPClientContract` | Data access abstractions |
 
@@ -77,22 +77,32 @@ The root container that creates shared dependencies and feature containers:
 public struct AppContainer: Sendable {
     // Shared dependencies
     public let httpClient: any HTTPClientContract
+    public let tracker: any TrackerContract
 
     // Feature containers
     private let homeFeature: HomeFeature
     private let characterFeature: CharacterFeature
     private let systemFeature: SystemFeature
 
-    public init(httpClient: (any HTTPClientContract)? = nil) {
-        // Default implementation if not provided (for production)
+    public init(
+        httpClient: (any HTTPClientContract)? = nil,
+        tracker: (any TrackerContract)? = nil
+    ) {
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
+        let providers = Self.makeTrackingProviders()
+        providers.forEach { $0.configure() }
+        self.tracker = tracker ?? Tracker(providers: providers)
 
         // Wire features with shared dependencies
-        homeFeature = HomeFeature()
-        characterFeature = CharacterFeature(httpClient: self.httpClient)
-        systemFeature = SystemFeature()
+        homeFeature = HomeFeature(tracker: self.tracker)
+        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+        systemFeature = SystemFeature(tracker: self.tracker)
+    }
+
+    private static func makeTrackingProviders() -> [any TrackingProviderContract] {
+        [ConsoleTrackingProvider()]
     }
 }
 ```
@@ -104,10 +114,12 @@ Each feature has its own container that manages its internal dependencies:
 ```swift
 public final class CharacterContainer: Sendable {
     private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
 
-    public init(httpClient: any HTTPClientContract) {
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.httpClient = httpClient
+        self.tracker = tracker
     }
 
     // Repository (created on demand)
@@ -123,7 +135,8 @@ public final class CharacterContainer: Sendable {
         CharacterListViewModel(
             getCharactersUseCase: GetCharactersUseCase(repository: repository),
             searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
-            navigator: CharacterListNavigator(navigator: navigator)
+            navigator: CharacterListNavigator(navigator: navigator),
+            tracker: CharacterListTracker(tracker: tracker)
         )
     }
 }
@@ -135,6 +148,7 @@ public final class CharacterContainer: Sendable {
 AppContainer
     │
     ├── HTTPClient (shared)
+    ├── Tracker (shared) ← [Providers]
     │
     └── CharacterFeature
             │
@@ -147,7 +161,7 @@ AppContainer
                             │
                             ├── GetCharactersUseCase ← Repository
                             │
-                            └── CharacterListViewModel ← UseCases, Navigator
+                            └── CharacterListViewModel ← UseCases, Navigator, Tracker
 ```
 
 ## Testing
@@ -184,6 +198,18 @@ func usesInjectedClient() {
 
     // Then
     #expect(container.httpClient === httpClientMock)
+}
+
+@Test("AppContainer uses injected tracker")
+func usesInjectedTracker() {
+    // Given - Inject mock tracker
+    let trackerMock = TrackerMock()
+
+    // When
+    let container = AppContainer(tracker: trackerMock)
+
+    // Then
+    #expect(container.tracker === trackerMock)
 }
 ```
 

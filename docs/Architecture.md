@@ -8,9 +8,13 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
                     ┌─────────────────────────────────────────────────────────────┐
                     │                    Presentation Layer                       │
                     │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-                    │  │    View     │  │  ViewModel  │  │     Navigator       │  │
-                    │  │  (SwiftUI)  │◄─┤ @Observable │──┤ (NavigatorContract) │  │
-                    │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+                    │  │    View     │  │  ViewModel  │──│     Navigator       │  │
+                    │  │  (SwiftUI)  │◄─┤ @Observable │  │ (NavigatorContract) │  │
+                    │  └─────────────┘  │             │  └─────────────────────┘  │
+                    │                   │             │  ┌─────────────────────┐  │
+                    │                   │             │──│      Tracker        │  │
+                    │                   └─────────────┘  │ (TrackerContract)   │  │
+                    │                                    └─────────────────────┘  │
                     └─────────────────────────────────────────────────────────────┘
                                                 │
                                                 ▼
@@ -36,7 +40,7 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
 
 | Layer | Responsibility |
 |-------|----------------|
-| **Presentation** | UI components, ViewModels with state management, navigation |
+| **Presentation** | UI components, ViewModels with state management, navigation, tracking |
 | **Domain** | Business logic (UseCases), domain models, repository contracts |
 | **Data** | Repository implementations, data sources (remote/memory), DTOs |
 

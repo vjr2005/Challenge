@@ -7,6 +7,7 @@ Create ViewModels for state management with the ViewState pattern.
 - Feature module exists (see [Create Feature](create-feature.md))
 - UseCase exists (see [Create UseCase](create-usecase.md))
 - Navigator exists (see [Create Navigator](create-navigator.md))
+- Tracker exists (see [Create Tracker](create-tracker.md))
 
 ## File structure
 
@@ -86,20 +87,24 @@ final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
     private let get{Name}DetailUseCase: Get{Name}DetailUseCaseContract
     private let refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract
     private let navigator: {ScreenName}NavigatorContract
+    private let tracker: {ScreenName}TrackerContract
 
     init(
         identifier: Int,
         get{Name}DetailUseCase: Get{Name}DetailUseCaseContract,
         refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract,
-        navigator: {ScreenName}NavigatorContract
+        navigator: {ScreenName}NavigatorContract,
+        tracker: {ScreenName}TrackerContract
     ) {
         self.identifier = identifier
         self.get{Name}DetailUseCase = get{Name}DetailUseCase
         self.refresh{Name}DetailUseCase = refresh{Name}DetailUseCase
         self.navigator = navigator
+        self.tracker = tracker
     }
 
     func didAppear() async {
+        tracker.trackScreenViewed(identifier: identifier)
         guard case .idle = state else { return }
         await load()
     }
@@ -221,6 +226,7 @@ struct {ScreenName}ViewModelTests {
     private let getUseCaseMock = Get{Name}DetailUseCaseMock()
     private let refreshUseCaseMock = Refresh{Name}DetailUseCaseMock()
     private let navigatorMock = {ScreenName}NavigatorMock()
+    private let trackerMock = {ScreenName}TrackerMock()
     private let sut: {ScreenName}ViewModel
 
     init() {
@@ -228,7 +234,8 @@ struct {ScreenName}ViewModelTests {
             identifier: identifier,
             get{Name}DetailUseCase: getUseCaseMock,
             refresh{Name}DetailUseCase: refreshUseCaseMock,
-            navigator: navigatorMock
+            navigator: navigatorMock,
+            tracker: trackerMock
         )
     }
 
@@ -385,6 +392,20 @@ struct {ScreenName}ViewModelTests {
         // Then
         #expect(navigatorMock.goBackCallCount == 1)
     }
+
+    // MARK: - Tracking
+
+    @Test("didAppear tracks screen viewed with identifier")
+    func didAppearTracksScreenViewed() async {
+        // Given
+        getUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedIdentifiers == [identifier])
+    }
 }
 ```
 
@@ -438,25 +459,31 @@ final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
 
     private let get{Name}sUseCase: Get{Name}sUseCaseContract
     private let navigator: {ScreenName}NavigatorContract
+    private let tracker: {ScreenName}TrackerContract
 
     init(
         get{Name}sUseCase: Get{Name}sUseCaseContract,
-        navigator: {ScreenName}NavigatorContract
+        navigator: {ScreenName}NavigatorContract,
+        tracker: {ScreenName}TrackerContract
     ) {
         self.get{Name}sUseCase = get{Name}sUseCase
         self.navigator = navigator
+        self.tracker = tracker
     }
 
     func didAppear() async {
+        tracker.trackScreenViewed()
         guard case .idle = state else { return }
         await load()
     }
 
     func didTapOnRetryButton() async {
+        tracker.trackRetryButtonTapped()
         await load()
     }
 
     func didSelect(_ item: {Name}) {
+        tracker.trackItemSelected(identifier: item.id)
         navigator.navigateToDetail(id: item.id)
     }
 }
@@ -538,12 +565,14 @@ import Testing
 struct {ScreenName}ViewModelTests {
     private let useCaseMock = Get{Name}sUseCaseMock()
     private let navigatorMock = {ScreenName}NavigatorMock()
+    private let trackerMock = {ScreenName}TrackerMock()
     private let sut: {ScreenName}ViewModel
 
     init() {
         sut = {ScreenName}ViewModel(
             get{Name}sUseCase: useCaseMock,
-            navigator: navigatorMock
+            navigator: navigatorMock,
+            tracker: trackerMock
         )
     }
 
@@ -674,6 +703,32 @@ struct {ScreenName}ViewModelTests {
         // Then
         #expect(navigatorMock.navigateToDetailIds == [42])
     }
+
+    // MARK: - Tracking
+
+    @Test("didAppear tracks screen viewed")
+    func didAppearTracksScreenViewed() async {
+        // Given
+        useCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedCallCount == 1)
+    }
+
+    @Test("Did select tracks item selected")
+    func didSelectTracksItemSelected() {
+        // Given
+        let item = {Name}.stub(id: 42)
+
+        // When
+        sut.didSelect(item)
+
+        // Then
+        #expect(trackerMock.selectedIdentifiers == [42])
+    }
 }
 ```
 
@@ -689,6 +744,7 @@ Create `Sources/Presentation/{ScreenName}/ViewModels/{ScreenName}ViewModelContra
 
 ```swift
 protocol {ScreenName}ViewModelContract {
+    func didAppear()
     func didTapOn{Action}()
 }
 ```
@@ -701,9 +757,18 @@ Create `Sources/Presentation/{ScreenName}/ViewModels/{ScreenName}ViewModel.swift
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class {ScreenName}ViewModel: {ScreenName}ViewModelContract {
     private let navigator: {ScreenName}NavigatorContract
+    private let tracker: {ScreenName}TrackerContract
 
-    init(navigator: {ScreenName}NavigatorContract) {
+    init(
+        navigator: {ScreenName}NavigatorContract,
+        tracker: {ScreenName}TrackerContract
+    ) {
         self.navigator = navigator
+        self.tracker = tracker
+    }
+
+    func didAppear() {
+        tracker.trackScreenViewed()
     }
 
     func didTapOn{Action}() {
@@ -722,6 +787,7 @@ Create `Tests/Shared/Stubs/{ScreenName}ViewModelStub.swift`:
 @testable import Challenge{Feature}
 
 final class {ScreenName}ViewModelStub: {ScreenName}ViewModelContract {
+    func didAppear() {}
     func didTapOn{Action}() {}
 }
 ```
@@ -738,10 +804,14 @@ import Testing
 @Suite(.timeLimit(.minutes(1)))
 struct {ScreenName}ViewModelTests {
     private let navigatorMock = {ScreenName}NavigatorMock()
+    private let trackerMock = {ScreenName}TrackerMock()
     private let sut: {ScreenName}ViewModel
 
     init() {
-        sut = {ScreenName}ViewModel(navigator: navigatorMock)
+        sut = {ScreenName}ViewModel(
+            navigator: navigatorMock,
+            tracker: trackerMock
+        )
     }
 
     @Test("Did tap on action navigates to destination")
@@ -751,6 +821,15 @@ struct {ScreenName}ViewModelTests {
 
         // Then
         #expect(navigatorMock.navigateTo{Destination}CallCount == 1)
+    }
+
+    @Test("didAppear tracks screen viewed")
+    func didAppearTracksScreenViewed() {
+        // When
+        sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedCallCount == 1)
     }
 }
 ```
@@ -771,4 +850,5 @@ struct {ScreenName}ViewModelTests {
 
 - [Create UseCase](create-usecase.md) - UseCase that ViewModel depends on
 - [Create Navigator](create-navigator.md) - Navigator for navigation
+- [Create Tracker](create-tracker.md) - Tracker for analytics events
 - [Testing](../Testing.md)

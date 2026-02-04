@@ -51,7 +51,7 @@ Shared infrastructure modules, agnostic to business logic:
 
 | Module | Description |
 |--------|-------------|
-| **ChallengeCore** | Navigation, routing, deep linking, image loading |
+| **ChallengeCore** | Navigation, routing, deep linking, image loading, tracking |
 | **ChallengeNetworking** | HTTP client abstraction over URLSession |
 | **ChallengeDesignSystem** | Atomic Design UI components and design tokens |
 | **ChallengeResources** | Localization and shared assets |
@@ -85,6 +85,10 @@ The project uses GitHub Actions to run quality checks on every pull request. See
 | Test Failure | Periphery |
 |:------------:|:---------:|
 | <img src="docs/screenshots/test-failure-comment.png" width="400"> | <img src="docs/screenshots/periphery-comment.png" width="400"> |
+
+## Tracking
+
+The app uses a **3-tier tracking architecture** with screen-specific contracts, implementations, and events for type-safe event tracking. See [Tracking Documentation](docs/Tracking.md) for architecture details and [Create Tracker](docs/how-to/create-tracker.md) for step-by-step setup.
 
 ## Deep Linking
 
@@ -124,6 +128,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [Environments](docs/Environments.md)
 - [Style Guide](docs/StyleGuide.md)
 - [Testing](docs/Testing.md)
+- [Tracking](docs/Tracking.md)
 - [Deep Linking](docs/DeepLinking.md)
 - [Continuous Integration](docs/CI.md)
 - [Scripts](docs/Scripts.md)
@@ -138,6 +143,8 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [Create ViewModel](docs/how-to/create-viewmodel.md)
 - [Create View](docs/how-to/create-view.md)
 - [Create Navigator](docs/how-to/create-navigator.md)
+- [Create Tracker](docs/how-to/create-tracker.md)
+- [Create Tracking Provider](docs/how-to/create-tracking-provider.md)
 
 ### Modules
 
