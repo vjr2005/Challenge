@@ -12,6 +12,7 @@ Guide for the Resources module: localization and shared resources.
 - Work with localized strings
 - Add new translations
 - Understand the localization system
+- Add support for a new language
 
 ---
 
@@ -25,6 +26,15 @@ The `Resources` module provides app-specific resources used across features:
 **Location:** `Shared/Resources/`
 
 **Note:** Shared modules are app-specific (not reusable across apps), unlike Libraries which are generic and reusable.
+
+### Supported Languages
+
+| Language | Code | Status |
+|----------|------|--------|
+| English | `en` | Source language |
+| Spanish | `es` | Fully translated |
+
+The app uses `.xcstrings` format (Apple's modern localization format for iOS 16+).
 
 **Structure:**
 ```
@@ -141,6 +151,35 @@ extension Bundle {
 
 ---
 
+## Project Configuration
+
+The main app must declare supported languages in `Project.swift` via `CFBundleLocalizations`:
+
+```swift
+// Project.swift
+let appInfoPlist: [String: Plist.Value] = [
+    "CFBundleLocalizations": ["en", "es"],
+    // ...
+]
+```
+
+> **Important:** iOS does not load localizations from embedded frameworks unless the main app declares supported languages in `CFBundleLocalizations`. Without this configuration, the app will always display the development language (English) regardless of device settings.
+
+---
+
+## Adding a New Language
+
+1. Open `Localizable.xcstrings` in Xcode
+2. Click the "+" button to add a new language
+3. Translate all strings to the new language
+4. Update `CFBundleLocalizations` in `Project.swift`:
+   ```swift
+   "CFBundleLocalizations": ["en", "es", "NEW_LANG_CODE"],
+   ```
+5. Regenerate the project: `./generate.sh`
+
+---
+
 ## Checklist
 
 ### Adding Localized Strings
@@ -148,3 +187,10 @@ extension Bundle {
 - [ ] Add key to `Localizable.xcstrings` with all translations
 - [ ] Add to View's private `LocalizedStrings` enum
 - [ ] Use `localized()` or `localized(_:)` for interpolation
+
+### Adding a New Language
+
+- [ ] Add language to `Localizable.xcstrings` in Xcode
+- [ ] Translate all existing strings
+- [ ] Add language code to `CFBundleLocalizations` in `Project.swift`
+- [ ] Regenerate project with `./generate.sh`

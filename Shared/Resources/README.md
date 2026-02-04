@@ -6,6 +6,15 @@ Shared resources module providing localization utilities.
 
 ChallengeResources centralizes localization across the application, providing the `localized()` extension for type-safe string access.
 
+## Supported Languages
+
+| Language | Code | Status |
+|----------|------|--------|
+| English | `en` | Source language |
+| Spanish | `es` | Fully translated |
+
+The app uses `.xcstrings` format (Apple's modern localization format for iOS 16+).
+
 ## Structure
 
 ```
@@ -79,6 +88,30 @@ private enum LocalizedStrings {
 1. Add key to `Localizable.xcstrings`
 2. Provide translations for all languages (en, es)
 3. Add to View's `LocalizedStrings` enum
+
+## Adding a New Language
+
+1. Open `Localizable.xcstrings` in Xcode
+2. Click the "+" button to add a new language
+3. Translate all strings to the new language
+4. Update `CFBundleLocalizations` in `Project.swift`:
+   ```swift
+   "CFBundleLocalizations": ["en", "es", "NEW_LANG_CODE"],
+   ```
+5. Regenerate the project: `./generate.sh`
+
+## Project Configuration
+
+The main app must declare supported languages in `Project.swift` via `CFBundleLocalizations`:
+
+```swift
+let appInfoPlist: [String: Plist.Value] = [
+    "CFBundleLocalizations": ["en", "es"],
+    // ...
+]
+```
+
+> **Important:** iOS does not load localizations from embedded frameworks unless the main app declares supported languages in `CFBundleLocalizations`. Without this, the app will always show the development language (English) regardless of device settings.
 
 ## Key Naming
 

@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 // MARK: - App Target
 
 let appInfoPlist: [String: Plist.Value] = [
+	"CFBundleLocalizations": ["en", "es"],
 	"UILaunchStoryboardName": "LaunchScreen",
 	"UISupportedInterfaceOrientations": [
 		"UIInterfaceOrientationPortrait",

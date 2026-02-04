@@ -92,6 +92,29 @@ Currently used in:
 
 ---
 
+## Localization Configuration
+
+The app must declare supported languages in `CFBundleLocalizations` for iOS to load localizations from embedded frameworks:
+
+```swift
+// Project.swift
+let appInfoPlist: [String: Plist.Value] = [
+    "CFBundleLocalizations": ["en", "es"],
+    // ... other settings ...
+]
+```
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `CFBundleLocalizations` | `["en", "es"]` | Languages the app supports |
+| `developmentRegion` | `"en"` | Default/fallback language (in project options) |
+
+> **Important:** Without `CFBundleLocalizations`, iOS ignores localizations in embedded frameworks (like `ChallengeResources`) and always shows the development language.
+
+See `/resources` skill for adding new languages and managing localized strings.
+
+---
+
 ## URL Schemes (Deep Links)
 
 To enable the app to receive external URLs (from Safari, other apps, push notifications), configure `CFBundleURLTypes` in the app's Info.plist:
