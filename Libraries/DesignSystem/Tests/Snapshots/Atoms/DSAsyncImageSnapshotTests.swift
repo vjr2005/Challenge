@@ -134,10 +134,10 @@ private extension DSAsyncImageSnapshotTests {
 
 	var errorView: some View {
 		ZStack {
-			ColorToken.surfaceSecondary
+			DefaultColorPalette().surfaceSecondary
 			Image(systemName: "photo")
 				.font(.title)
-				.foregroundStyle(ColorToken.textTertiary)
+				.foregroundStyle(DefaultColorPalette().textTertiary)
 		}
 	}
 }

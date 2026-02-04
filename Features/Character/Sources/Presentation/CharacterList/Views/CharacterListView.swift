@@ -5,6 +5,7 @@ import SwiftUI
 
 struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 	@State private var viewModel: ViewModel
+	@Environment(\.dsTheme) private var theme
 
 	init(viewModel: ViewModel) {
 		_viewModel = State(initialValue: viewModel)
@@ -74,8 +75,8 @@ private extension CharacterListView {
 
     func footerView(page: CharactersPage) -> some View {
         Text(LocalizedStrings.pageIndicator(page.currentPage, page.totalPages))
-            .font(TextStyle.caption2.font)
-            .foregroundStyle(ColorToken.textPrimary)
+            .font(theme.typography.font(for: .caption2))
+            .foregroundStyle(theme.colors.textPrimary)
             .padding(.bottom, SpacingToken.lg)
     }
 
@@ -130,18 +131,18 @@ private extension CharacterListView {
 			await viewModel.didPullToRefresh()
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
-		.background(ColorToken.backgroundSecondary)
+		.background(theme.colors.backgroundSecondary)
 	}
 
 	func headerView(totalCount: Int) -> some View {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
 			Text(LocalizedStrings.headerTitle)
-				.font(TextStyle.largeTitle.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(theme.typography.font(for: .largeTitle))
+				.foregroundStyle(theme.colors.textPrimary)
 
 			Text(LocalizedStrings.headerSubtitle(totalCount))
-				.font(TextStyle.subheadline.font)
-				.foregroundStyle(ColorToken.textSecondary)
+				.font(theme.typography.font(for: .subheadline))
+				.foregroundStyle(theme.colors.textSecondary)
 				.italic()
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)

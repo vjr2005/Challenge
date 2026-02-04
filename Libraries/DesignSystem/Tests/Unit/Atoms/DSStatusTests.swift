@@ -5,21 +5,23 @@ import Testing
 
 @Suite("DSStatus")
 struct DSStatusTests {
+	private let palette = DefaultColorPalette()
+
 	// MARK: - Color Properties
 
 	@Test("Alive status has success color")
 	func aliveStatusColor() {
-		#expect(DSStatus.alive.color == ColorToken.statusSuccess)
+		#expect(DSStatus.alive.color(in: palette) == palette.statusSuccess)
 	}
 
 	@Test("Dead status has error color")
 	func deadStatusColor() {
-		#expect(DSStatus.dead.color == ColorToken.statusError)
+		#expect(DSStatus.dead.color(in: palette) == palette.statusError)
 	}
 
 	@Test("Unknown status has neutral color")
 	func unknownStatusColor() {
-		#expect(DSStatus.unknown.color == ColorToken.statusNeutral)
+		#expect(DSStatus.unknown.color(in: palette) == palette.statusNeutral)
 	}
 
 	// MARK: - Raw Values

@@ -5,6 +5,8 @@ public struct DSLoadingView: View {
 	private let message: String?
 	private let accessibilityIdentifier: String?
 
+	@Environment(\.dsTheme) private var theme
+
 	/// Creates a DSLoadingView.
 	/// - Parameters:
 	///   - message: Optional loading message
@@ -25,8 +27,8 @@ public struct DSLoadingView: View {
 
 			if let message {
 				Text(message)
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textSecondary)
+					.font(theme.typography.font(for: .body))
+					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
 			}
 		}

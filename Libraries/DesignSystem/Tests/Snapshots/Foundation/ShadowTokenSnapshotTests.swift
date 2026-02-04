@@ -21,7 +21,7 @@ struct ShadowTokenSnapshotTests {
 		}
 		.padding(SpacingToken.xl)
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -38,7 +38,7 @@ struct ShadowTokenSnapshotTests {
 		}
 		.padding(SpacingToken.xl)
 		.frame(width: 360)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -55,7 +55,7 @@ struct ShadowTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -72,7 +72,7 @@ struct ShadowTokenSnapshotTests {
 		}
 		.padding(SpacingToken.xl)
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -83,11 +83,11 @@ struct ShadowTokenSnapshotTests {
 		HStack {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 				.frame(width: 60, alignment: .leading)
 
 			RoundedRectangle(cornerRadius: CornerRadiusToken.md)
-				.fill(ColorToken.surfacePrimary)
+				.fill(DefaultColorPalette().surfacePrimary)
 				.frame(width: 160, height: 50)
 				.shadow(token)
 
@@ -98,13 +98,13 @@ struct ShadowTokenSnapshotTests {
 	private func shadowBox(_ name: String, token: ShadowToken) -> some View {
 		VStack(spacing: SpacingToken.sm) {
 			RoundedRectangle(cornerRadius: CornerRadiusToken.sm)
-				.fill(ColorToken.surfacePrimary)
+				.fill(DefaultColorPalette().surfacePrimary)
 				.frame(width: 60, height: 60)
 				.shadow(token)
 
 			Text(name)
 				.font(.system(.caption2, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 		}
 	}
 
@@ -112,7 +112,7 @@ struct ShadowTokenSnapshotTests {
 		HStack(spacing: SpacingToken.md) {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
-				.foregroundStyle(ColorToken.textPrimary)
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 				.frame(width: 50, alignment: .leading)
 
 			VStack(alignment: .leading, spacing: 2) {
@@ -120,7 +120,7 @@ struct ShadowTokenSnapshotTests {
 				Text("y: \(Int(token.y))pt")
 			}
 			.font(.system(.caption2, design: .monospaced))
-			.foregroundStyle(ColorToken.textSecondary)
+			.foregroundStyle(DefaultColorPalette().textSecondary)
 
 			Spacer()
 
@@ -138,15 +138,15 @@ struct ShadowTokenSnapshotTests {
 		VStack(alignment: .leading, spacing: SpacingToken.sm) {
 			Text(title)
 				.font(.system(.headline, design: .rounded))
-				.foregroundStyle(ColorToken.textPrimary)
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 
 			Text("Description text for the card content.")
 				.font(.system(.subheadline, design: .rounded))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.padding()
-		.background(ColorToken.surfacePrimary)
+		.background(DefaultColorPalette().surfacePrimary)
 		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 		.shadow(token)
 	}

@@ -61,6 +61,8 @@ public extension DSAsyncImage where Content == AnyView {
 private struct DefaultPhaseContent: View {
 	let phase: AsyncImagePhase
 
+	@Environment(\.dsTheme) private var theme
+
 	var body: some View {
 		switch phase {
 		case .success(let image):
@@ -71,9 +73,9 @@ private struct DefaultPhaseContent: View {
 			ProgressView()
 		case .failure:
 			ZStack {
-				ColorToken.surfaceSecondary
+				theme.colors.surfaceSecondary
 				Image(systemName: "photo")
-					.foregroundStyle(ColorToken.textTertiary)
+					.foregroundStyle(theme.colors.textTertiary)
 			}
 		@unknown default:
 			ProgressView()

@@ -24,8 +24,15 @@ Guide for using the Atomic Design System to build consistent SwiftUI interfaces.
 Libraries/DesignSystem/
 ├── Sources/
 │   ├── Foundation/           # Design Tokens
-│   │   ├── Colors/
-│   │   │   └── ColorToken.swift
+│   │   ├── Theming/          # Theme contracts
+│   │   │   ├── DSColorPalette.swift
+│   │   │   ├── DSTypography.swift
+│   │   │   ├── DSTheme.swift
+│   │   │   └── DSThemeEnvironment.swift
+│   │   ├── Themes/           # Theme implementations
+│   │   │   └── Default/
+│   │   │       ├── DefaultColorPalette.swift
+│   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
 │   │   │   └── TextStyle.swift
 │   │   ├── Spacing/
@@ -69,26 +76,53 @@ Libraries/DesignSystem/
 
 ---
 
-## Foundation: Design Tokens
+## Theming
 
-### ColorToken
+Colors and typography are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (spacing, corners, borders, icons, opacity, shadows) remain static.
 
-Semantic color definitions for consistent theming:
+### Reading the theme in a View
 
 ```swift
-ColorToken.backgroundPrimary    // Primary background
-ColorToken.backgroundSecondary  // Secondary/grouped background
-ColorToken.surfacePrimary       // Card/elevated surfaces
-ColorToken.textPrimary          // Primary text
-ColorToken.textSecondary        // Secondary text
-ColorToken.textTertiary         // Tertiary text
-ColorToken.statusSuccess        // Success (green)
-ColorToken.statusError          // Error (red)
-ColorToken.statusWarning        // Warning (orange)
-ColorToken.statusNeutral        // Neutral (gray)
-ColorToken.accent               // Accent color
-ColorToken.accentSubtle         // Accent with opacity
+struct MyView: View {
+    @Environment(\.dsTheme) private var theme
+
+    var body: some View {
+        Text("Hello")
+            .font(theme.typography.font(for: .headline))
+            .foregroundStyle(theme.colors.textPrimary)
+    }
+}
 ```
+
+### Applying a custom theme
+
+```swift
+ContentView()
+    .dsTheme(customTheme)
+```
+
+### DSColorPalette (protocol)
+
+Accessed via `theme.colors`:
+
+```swift
+theme.colors.backgroundPrimary    // Primary background
+theme.colors.backgroundSecondary  // Secondary/grouped background
+theme.colors.surfacePrimary       // Card/elevated surfaces
+theme.colors.textPrimary          // Primary text
+theme.colors.textSecondary        // Secondary text
+theme.colors.textTertiary         // Tertiary text
+theme.colors.statusSuccess        // Success (green)
+theme.colors.statusError          // Error (red)
+theme.colors.statusWarning        // Warning (orange)
+theme.colors.statusNeutral        // Neutral (gray)
+theme.colors.accent               // Accent color
+theme.colors.accentSubtle         // Accent with opacity
+```
+
+---
+
+## Foundation: Static Design Tokens
 
 ### SpacingToken
 
@@ -107,7 +141,7 @@ SpacingToken.xxxl  // 32pt
 
 ### TextStyle
 
-Typography definitions with semantic names:
+Enum cases for typography (input to `DSTypography`):
 
 ```swift
 TextStyle.largeTitle  // .rounded, .bold
@@ -125,7 +159,7 @@ TextStyle.caption2    // .monospaced
 ### CornerRadiusToken
 
 ```swift
-CornerRadiusToken.none  // 0pt
+CornerRadiusToken.zero  // 0pt
 CornerRadiusToken.xs    // 4pt
 CornerRadiusToken.sm    // 8pt
 CornerRadiusToken.md    // 12pt
@@ -186,23 +220,25 @@ BorderWidthToken.thick     // 4pt
 
 ### Typography with TextStyle
 
-Use SwiftUI's native `Text` with `TextStyle` tokens for consistent typography:
+Use SwiftUI's native `Text` with the theme for consistent typography:
 
 ```swift
+@Environment(\.dsTheme) private var theme
+
 // Basic usage
 Text("Hello World")
-    .font(TextStyle.headline.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .headline))
+    .foregroundStyle(theme.colors.textPrimary)
 
 // With custom color
 Text("Error message")
-    .font(TextStyle.body.font)
-    .foregroundStyle(ColorToken.statusError)
+    .font(theme.typography.font(for: .body))
+    .foregroundStyle(theme.colors.statusError)
 
 // With accessibility identifier
 Text("Title")
-    .font(TextStyle.headline.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .headline))
+    .foregroundStyle(theme.colors.textPrimary)
     .accessibilityIdentifier("screen.title")
 ```
 
@@ -240,6 +276,15 @@ DSStatusIndicator(status: .unknown)         // Gray circle
 DSStatusIndicator(status: .alive, accessibilityIdentifier: "character.status")
 ```
 
+### DSStatus
+
+`DSStatus` is a non-View enum. Colors are resolved via `color(in:)`:
+
+```swift
+let status = DSStatus.from("alive")
+let color = status.color(in: theme.colors)
+```
+
 ### DSAsyncImage
 
 Async image with caching support (replaces `AsyncImage` for snapshot testing). Uses `AsyncImagePhase` for handling loading states.
@@ -254,29 +299,6 @@ DSAsyncImage(url: character.imageURL)
 
 Default behavior: shows `ProgressView` while loading, error placeholder on failure, and `image.resizable().scaledToFill()` on success.
 
-**Custom content:**
-
-```swift
-DSAsyncImage(url: character.imageURL) { phase in
-    switch phase {
-    case .success(let image):
-        image.resizable().scaledToFill()
-    case .empty:
-        ProgressView()
-    case .failure:
-        ZStack {
-            ColorToken.surfaceSecondary
-            Image(systemName: "photo")
-                .foregroundStyle(ColorToken.textTertiary)
-        }
-    @unknown default:
-        ProgressView()
-    }
-}
-.frame(width: 70, height: 70)
-.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-```
-
 > **Note:** Uses `ImageLoaderContract` from Core via environment. For snapshot tests, inject `ImageLoaderMock` with `.imageLoader(mock)`.
 
 ---
@@ -289,7 +311,9 @@ Icon + label + value layout:
 
 ```swift
 DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
-DSInfoRow(icon: "heart.fill", label: "Status", value: "Alive", iconColor: ColorToken.statusSuccess)
+
+// With custom icon color (defaults to theme.colors.accent)
+DSInfoRow(icon: "heart.fill", label: "Status", value: "Alive", iconColor: .green)
 
 // With accessibility identifier (propagates to children with suffixes)
 DSInfoRow(
@@ -318,16 +342,6 @@ DSCardInfoRow(
 )
 ```
 
-Parameters:
-- `imageURL`: URL of the image to display
-- `title`: Main title text (required)
-- `subtitle`: Optional subtitle text
-- `caption`: Optional caption text below subtitle
-- `captionIcon`: Optional SF Symbol for caption
-- `status`: Optional `DSStatus` indicator
-- `statusLabel`: Optional label below status indicator
-- `accessibilityIdentifier`: Optional identifier (propagates to children)
-
 ---
 
 ## Organisms
@@ -340,11 +354,11 @@ Generic card container:
 DSCard {
     VStack {
         Text("Card Title")
-            .font(TextStyle.headline.font)
-            .foregroundStyle(ColorToken.textPrimary)
+            .font(theme.typography.font(for: .headline))
+            .foregroundStyle(theme.colors.textPrimary)
         Text("Card content")
-            .font(TextStyle.body.font)
-            .foregroundStyle(ColorToken.textPrimary)
+            .font(theme.typography.font(for: .body))
+            .foregroundStyle(theme.colors.textPrimary)
     }
 }
 
@@ -411,6 +425,7 @@ DS components follow different conventions than feature Views:
 | **LocalizedStrings** | Private enum inside View | Not needed - receive text as parameters |
 | **AccessibilityIdentifier** | Private enum inside View | Receive as parameter, propagate to children |
 | **ViewModel** | Generic over contract | None - pure UI components |
+| **Theme** | `@Environment(\.dsTheme)` | `@Environment(\.dsTheme)` (automatic) |
 | **Previews** | One per ViewState | May be commented out for coverage |
 
 DS components are **reusable building blocks** that receive all content (text, identifiers) from the calling View. The calling View is responsible for localization and accessibility identifier definitions.
@@ -421,33 +436,7 @@ DS components are **reusable building blocks** that receive all content (text, i
 
 All DS components accept an optional `accessibilityIdentifier: String?` parameter. Molecules and organisms propagate this identifier to their child components with descriptive suffixes.
 
-### Usage
-
-Pass the identifier directly in the constructor:
-
-```swift
-ForEach(characters, id: \.id) { character in
-    DSCardInfoRow(
-        imageURL: character.imageURL,
-        title: character.name,
-        status: DSStatus.from(character.status.rawValue),
-        accessibilityIdentifier: "characterList.row.\(character.id)"
-    )
-}
-```
-
 ### Propagation Suffixes
-
-When you pass `accessibilityIdentifier: "characterList.row.1"`:
-
-| Component | Resulting Identifier |
-|-----------|---------------------|
-| Container | `characterList.row.1` |
-| Image | `characterList.row.1.image` |
-| Title | `characterList.row.1.title` |
-| Status | `characterList.row.1.status` |
-
-### Suffix Reference by Component
 
 | Component | Child Suffixes |
 |-----------|---------------|
@@ -477,9 +466,11 @@ Text("Title")
 ### After (design system):
 
 ```swift
+@Environment(\.dsTheme) private var theme
+
 Text("Title")
-    .font(TextStyle.headline.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .headline))
+    .foregroundStyle(theme.colors.textPrimary)
 
 DSCard {
     // content
@@ -499,16 +490,14 @@ import ChallengeDesignSystem
 ## Checklist
 
 - [ ] Import `ChallengeDesignSystem`
-- [ ] Replace hardcoded colors with `ColorToken`
-- [ ] Replace spacing values with `SpacingToken`
-- [ ] Replace icon sizes with `IconSizeToken`
-- [ ] Replace opacity values with `OpacityToken`
-- [ ] Replace border widths with `BorderWidthToken`
-- [ ] Replace fonts with `TextStyle.{style}.font`
-- [ ] Replace card styling with `DSCard`
-- [ ] Replace loading views with `DSLoadingView`
-- [ ] Replace error views with `DSErrorView`
-- [ ] Replace empty views with `DSEmptyState`
-- [ ] Use semantic status colors (`DSStatus`)
-- [ ] Use `DSCardInfoRow` for list item cards
+- [ ] Add `@Environment(\.dsTheme) private var theme`
+- [ ] Use `theme.colors.xxx` for colors
+- [ ] Use `theme.typography.font(for: .xxx)` for fonts
+- [ ] Use `SpacingToken` for spacing values
+- [ ] Use `IconSizeToken` for icon sizes
+- [ ] Use `OpacityToken` for opacity values
+- [ ] Use `BorderWidthToken` for border widths
+- [ ] Use `DSCard` for card styling
+- [ ] Use `DSLoadingView`, `DSErrorView`, `DSEmptyState` for feedback states
+- [ ] Use `DSStatus.color(in: theme.colors)` for status colors
 - [ ] Pass `accessibilityIdentifier:` parameter for UI testing

@@ -25,7 +25,7 @@ struct SpacingTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -46,7 +46,7 @@ struct SpacingTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320, height: 180)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -63,7 +63,7 @@ struct SpacingTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -75,15 +75,15 @@ struct SpacingTokenSnapshotTests {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
 				.frame(width: 40, alignment: .leading)
-				.foregroundStyle(ColorToken.textPrimary)
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 
 			Rectangle()
-				.fill(ColorToken.accent)
+				.fill(DefaultColorPalette().accent)
 				.frame(width: value, height: 20)
 
 			Text("\(Int(value))pt")
 				.font(.system(.caption, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 
 			Spacer()
 		}
@@ -92,11 +92,11 @@ struct SpacingTokenSnapshotTests {
 	private func spacingBar(_ name: String, value: CGFloat) -> some View {
 		VStack(spacing: SpacingToken.xs) {
 			Rectangle()
-				.fill(ColorToken.accent)
+				.fill(DefaultColorPalette().accent)
 				.frame(width: 24, height: value * 3)
 			Text(name)
 				.font(.system(.caption2, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 		}
 	}
 
@@ -104,12 +104,12 @@ struct SpacingTokenSnapshotTests {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
 			Text(label)
 				.font(.system(.caption, design: .rounded, weight: .semibold))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 
 			HStack(spacing: spacing) {
 				ForEach(0..<4, id: \.self) { _ in
 					RoundedRectangle(cornerRadius: CornerRadiusToken.xs)
-						.fill(ColorToken.accent)
+						.fill(DefaultColorPalette().accent)
 						.frame(width: 40, height: 30)
 				}
 			}

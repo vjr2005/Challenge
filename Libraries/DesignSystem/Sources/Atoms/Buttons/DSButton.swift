@@ -21,6 +21,8 @@ public struct DSButton: View {
 	private let accessibilityIdentifier: String?
 	private let action: () -> Void
 
+	@Environment(\.dsTheme) private var theme
+
 	/// Creates a DSButton.
 	/// - Parameters:
 	///   - title: The button title
@@ -58,7 +60,7 @@ public struct DSButton: View {
 				}
 				Text(title)
 			}
-			.font(TextStyle.headline.font)
+			.font(theme.typography.font(for: .headline))
 			.foregroundStyle(foregroundColor)
 			.padding(.horizontal, horizontalPadding)
 			.padding(.vertical, verticalPadding)
@@ -68,7 +70,7 @@ public struct DSButton: View {
 			.overlay {
 				if variant == .secondary {
 					RoundedRectangle(cornerRadius: CornerRadiusToken.md)
-						.stroke(ColorToken.accent, lineWidth: BorderWidthToken.thin)
+						.stroke(theme.colors.accent, lineWidth: BorderWidthToken.thin)
 				}
 			}
 		}
@@ -79,20 +81,20 @@ public struct DSButton: View {
 	private var foregroundColor: Color {
 		switch variant {
 		case .primary:
-			ColorToken.textInverted
+			theme.colors.textInverted
 		case .secondary, .tertiary:
-			ColorToken.accent
+			theme.colors.accent
 		}
 	}
 
 	private var backgroundColor: Color {
 		switch variant {
 		case .primary:
-			ColorToken.accent
+			theme.colors.accent
 		case .secondary:
 			Color.clear
 		case .tertiary:
-			ColorToken.accentSubtle
+			theme.colors.accentSubtle
 		}
 	}
 

@@ -1,0 +1,37 @@
+import SwiftUI
+import Testing
+
+@testable import ChallengeDesignSystem
+
+@Suite("DSThemeEnvironment")
+struct DSThemeEnvironmentTests {
+	@Test("Default theme uses DefaultColorPalette")
+	func defaultThemeUsesDefaultColorPalette() {
+		let theme = DSTheme.default
+		let palette = DefaultColorPalette()
+
+		#expect(theme.colors.accent == palette.accent)
+		#expect(theme.colors.statusSuccess == palette.statusSuccess)
+		#expect(theme.colors.textPrimary == palette.textPrimary)
+	}
+
+	@Test("Default theme uses DefaultTypography")
+	func defaultThemeUsesDefaultTypography() {
+		let theme = DSTheme.default
+		let typography = DefaultTypography()
+
+		#expect(theme.typography.font(for: .headline) == typography.font(for: .headline))
+		#expect(theme.typography.font(for: .body) == typography.font(for: .body))
+		#expect(theme.typography.font(for: .caption2) == typography.font(for: .caption2))
+	}
+
+	@Test("Custom theme can be created with different palette")
+	func customThemeCanBeCreated() {
+		let customPalette = DefaultColorPalette()
+		let customTypography = DefaultTypography()
+		let theme = DSTheme(colors: customPalette, typography: customTypography)
+
+		#expect(theme.colors.accent == customPalette.accent)
+		#expect(theme.typography.font(for: .body) == customTypography.font(for: .body))
+	}
+}

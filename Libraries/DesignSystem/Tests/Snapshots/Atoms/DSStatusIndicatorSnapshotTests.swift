@@ -84,8 +84,8 @@ struct DSStatusIndicatorSnapshotTests {
 					DSStatusIndicator(status: status)
 					DSStatusIndicator(status: status, size: 16)
 					Text(status.rawValue.capitalized)
-						.font(TextStyle.caption.font)
-						.foregroundStyle(ColorToken.textPrimary)
+						.font(DefaultTypography().font(for: .caption))
+						.foregroundStyle(DefaultColorPalette().textPrimary)
 				}
 			}
 		}

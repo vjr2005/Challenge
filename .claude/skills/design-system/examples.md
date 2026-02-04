@@ -10,6 +10,7 @@ import SwiftUI
 
 struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
     @State private var viewModel: ViewModel
+    @Environment(\.dsTheme) private var theme
 
     init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -78,17 +79,17 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
             .padding(.horizontal, SpacingToken.lg)
         }
         .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
-        .background(ColorToken.backgroundSecondary)
+        .background(theme.colors.backgroundSecondary)
     }
 
     func headerView(totalCount: Int) -> some View {
         VStack(alignment: .leading, spacing: SpacingToken.xs) {
             Text(LocalizedStrings.headerTitle)
-                .font(TextStyle.largeTitle.font)
-                .foregroundStyle(ColorToken.textPrimary)
+                .font(theme.typography.font(for: .largeTitle))
+                .foregroundStyle(theme.colors.textPrimary)
             Text(LocalizedStrings.headerSubtitle(totalCount))
-                .font(TextStyle.subheadline.font)
-                .foregroundStyle(ColorToken.textSecondary)
+                .font(theme.typography.font(for: .subheadline))
+                .foregroundStyle(theme.colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -112,12 +113,14 @@ private enum AccessibilityIdentifier {
 ## Detail View with Cards
 
 ```swift
+@Environment(\.dsTheme) private var theme
+
 func infoCard(_ character: Character) -> some View {
     DSCard(padding: SpacingToken.xl) {
         VStack(alignment: .leading, spacing: SpacingToken.lg) {
             Text(LocalizedStrings.information)
-                .font(TextStyle.headline.font)
-                .foregroundStyle(ColorToken.textPrimary)
+                .font(theme.typography.font(for: .headline))
+                .foregroundStyle(theme.colors.textPrimary)
 
             VStack(spacing: SpacingToken.md) {
                 DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
@@ -133,8 +136,8 @@ func locationCard(_ character: Character) -> some View {
     DSCard(padding: SpacingToken.xl) {
         VStack(alignment: .leading, spacing: SpacingToken.lg) {
             Text(LocalizedStrings.locations)
-                .font(TextStyle.headline.font)
-                .foregroundStyle(ColorToken.textPrimary)
+                .font(theme.typography.font(for: .headline))
+                .foregroundStyle(theme.colors.textPrimary)
 
             VStack(spacing: SpacingToken.md) {
                 DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)
@@ -152,6 +155,8 @@ func locationCard(_ character: Character) -> some View {
 ## Header Section with Status
 
 ```swift
+@Environment(\.dsTheme) private var theme
+
 func headerSection(_ character: Character) -> some View {
     DSCard(padding: SpacingToken.xl) {
         VStack(spacing: SpacingToken.lg) {
@@ -165,23 +170,23 @@ func headerSection(_ character: Character) -> some View {
 func nameAndStatus(_ character: Character) -> some View {
     VStack(spacing: SpacingToken.sm) {
         Text(character.name)
-            .font(TextStyle.title.font)
-            .foregroundStyle(ColorToken.textPrimary)
+            .font(theme.typography.font(for: .title))
+            .foregroundStyle(theme.colors.textPrimary)
             .multilineTextAlignment(.center)
 
         HStack(spacing: SpacingToken.sm) {
             DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
             Text(character.status.rawValue)
-                .font(TextStyle.subheadline.font)
-                .foregroundStyle(ColorToken.textSecondary)
+                .font(theme.typography.font(for: .subheadline))
+                .foregroundStyle(theme.colors.textSecondary)
 
-            Text("•")
-                .foregroundStyle(ColorToken.textTertiary)
+            Text("\u{2022}")
+                .foregroundStyle(theme.colors.textTertiary)
 
             Text(character.species)
-                .font(TextStyle.subheadline.font)
-                .foregroundStyle(ColorToken.textSecondary)
+                .font(theme.typography.font(for: .subheadline))
+                .foregroundStyle(theme.colors.textSecondary)
                 .italic()
         }
     }
@@ -210,17 +215,19 @@ var errorView: some View {
 
 ## Token Usage Examples
 
-### Colors
+### Colors (via theme)
 
 ```swift
-.background(ColorToken.backgroundPrimary)
-.background(ColorToken.backgroundSecondary)
-.foregroundStyle(ColorToken.textPrimary)
-.foregroundStyle(ColorToken.textSecondary)
-.foregroundStyle(ColorToken.statusSuccess)
+@Environment(\.dsTheme) private var theme
+
+.background(theme.colors.backgroundPrimary)
+.background(theme.colors.backgroundSecondary)
+.foregroundStyle(theme.colors.textPrimary)
+.foregroundStyle(theme.colors.textSecondary)
+.foregroundStyle(theme.colors.statusSuccess)
 ```
 
-### Spacing
+### Spacing (static)
 
 ```swift
 .padding(SpacingToken.lg)
@@ -231,34 +238,36 @@ VStack(spacing: SpacingToken.md) { }
 HStack(spacing: SpacingToken.sm) { }
 ```
 
-### Typography
+### Typography (via theme)
 
 ```swift
+@Environment(\.dsTheme) private var theme
+
 Text("Title")
-    .font(TextStyle.largeTitle.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .largeTitle))
+    .foregroundStyle(theme.colors.textPrimary)
 
 Text("Heading")
-    .font(TextStyle.headline.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .headline))
+    .foregroundStyle(theme.colors.textPrimary)
 
 Text("Body text")
-    .font(TextStyle.body.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .body))
+    .foregroundStyle(theme.colors.textPrimary)
 
 Text("Caption")
-    .font(TextStyle.caption.font)
-    .foregroundStyle(ColorToken.textSecondary)
+    .font(theme.typography.font(for: .caption))
+    .foregroundStyle(theme.colors.textSecondary)
 ```
 
-### Corners
+### Corners (static)
 
 ```swift
 .clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
 .clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.lg))
 ```
 
-### Shadows
+### Shadows (static)
 
 ```swift
 .shadow(.small)

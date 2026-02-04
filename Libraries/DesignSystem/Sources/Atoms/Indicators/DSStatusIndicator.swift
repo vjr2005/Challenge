@@ -11,15 +11,17 @@ public enum DSStatus: String, CaseIterable, Sendable {
 	/// Unknown/neutral status
 	case unknown
 
-	/// The color associated with this status
-	public var color: Color {
+	/// Returns the color for this status in the given palette.
+	/// - Parameter palette: The color palette to use
+	/// - Returns: The color associated with this status
+	public func color(in palette: DSColorPalette) -> Color {
 		switch self {
 		case .alive:
-			ColorToken.statusSuccess
+			palette.statusSuccess
 		case .dead:
-			ColorToken.statusError
+			palette.statusError
 		case .unknown:
-			ColorToken.statusNeutral
+			palette.statusNeutral
 		}
 	}
 
@@ -36,6 +38,8 @@ public struct DSStatusIndicator: View {
 	private let status: DSStatus
 	private let size: CGFloat
 	private let accessibilityIdentifier: String?
+
+	@Environment(\.dsTheme) private var theme
 
 	/// Creates a DSStatusIndicator.
 	/// - Parameters:
@@ -54,7 +58,7 @@ public struct DSStatusIndicator: View {
 
 	public var body: some View {
 		Circle()
-			.fill(status.color)
+			.fill(status.color(in: theme.colors))
 			.frame(width: size, height: size)
 			.accessibilityIdentifier(accessibilityIdentifier ?? "")
 			.accessibilityLabel(status.rawValue)

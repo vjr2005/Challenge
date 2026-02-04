@@ -1,10 +1,10 @@
 # ChallengeDesignSystem
 
-Atomic Design System providing reusable UI components and design tokens.
+Atomic Design System providing reusable UI components and design tokens with themeable colors and typography via SwiftUI Environment.
 
 ## Overview
 
-ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, and other visual properties.
+ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, and other visual properties. Colors and typography are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (spacing, corners, borders, icons, opacity, shadows) remain static.
 
 ## Structure
 
@@ -12,8 +12,15 @@ ChallengeDesignSystem implements the Atomic Design methodology, organizing compo
 DesignSystem/
 ├── Sources/
 │   ├── Foundation/           # Design tokens
-│   │   ├── Colors/
-│   │   │   └── ColorToken.swift
+│   │   ├── Theming/          # Theme contracts
+│   │   │   ├── DSColorPalette.swift
+│   │   │   ├── DSTypography.swift
+│   │   │   ├── DSTheme.swift
+│   │   │   └── DSThemeEnvironment.swift
+│   │   ├── Themes/           # Theme implementations
+│   │   │   └── Default/
+│   │   │       ├── DefaultColorPalette.swift
+│   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
 │   │   │   └── TextStyle.swift
 │   │   ├── Spacing/
@@ -32,19 +39,15 @@ DesignSystem/
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
 │   │   ├── Images/
-│   │   │   ├── DSAsyncImage.swift
-│   │   │   └── DSAvatar.swift
+│   │   │   └── DSAsyncImage.swift
 │   │   └── Indicators/
-│   │       ├── DSBadge.swift
 │   │       └── DSStatusIndicator.swift
 │   ├── Molecules/            # Combined components
 │   │   ├── DSInfoRow.swift
-│   │   ├── DSLabeledValue.swift
-│   │   └── DSStatusBadge.swift
+│   │   └── DSCardInfoRow.swift
 │   ├── Organisms/            # Complex components
 │   │   ├── Cards/
-│   │   │   ├── DSCard.swift
-│   │   │   └── DSListItemCard.swift
+│   │   │   └── DSCard.swift
 │   │   └── Feedback/
 │   │       ├── DSLoadingView.swift
 │   │       ├── DSEmptyState.swift
@@ -68,38 +71,118 @@ DesignSystem/
 |--------|---------|
 | `ChallengeCore` | Image loader for async images |
 
-## Design Tokens
+## Theming
 
-### ColorToken
+Colors and typography are accessed through the theme environment, enabling runtime theme switching.
 
-Semantic color definitions:
+### Architecture
 
-```swift
-// Background
-ColorToken.backgroundPrimary
-ColorToken.backgroundSecondary
-ColorToken.backgroundTertiary
-
-// Text
-ColorToken.textPrimary
-ColorToken.textSecondary
-ColorToken.textTertiary
-
-// Status
-ColorToken.statusSuccess    // Green
-ColorToken.statusError      // Red
-ColorToken.statusWarning    // Orange
-ColorToken.statusNeutral    // Gray
-
-// Interactive
-ColorToken.accent
-ColorToken.accentSubtle
-ColorToken.disabled
+```
+┌─────────────────────────────────────────────┐
+│         DSTheme (struct, Sendable)          │
+│  ┌───────────────┐  ┌───────────────────┐   │
+│  │ DSColorPalette│  │  DSTypography     │   │
+│  │  (protocol)   │  │  (protocol)       │   │
+│  └───────────────┘  └───────────────────┘   │
+└─────────────────────────────────────────────┘
+                    │
+        SwiftUI Environment (.dsTheme)
+                    │
+    ┌───────────────┼───────────────┐
+    ▼               ▼               ▼
+ DSButton      DSCard         DSInfoRow ...
+ @Environment  @Environment   @Environment
 ```
 
-### SpacingToken
+### Usage
 
-Consistent spacing values:
+```swift
+// Root of the app (optional - defaults to DSTheme.default)
+ContentView()
+    .dsTheme(customTheme)
+
+// Components read from environment automatically
+struct MyView: View {
+    @Environment(\.dsTheme) private var theme
+
+    var body: some View {
+        Text("Hello")
+            .font(theme.typography.font(for: .headline))
+            .foregroundStyle(theme.colors.textPrimary)
+    }
+}
+```
+
+### Creating a Custom Theme
+
+```swift
+struct BrandColorPalette: DSColorPalette {
+    var accent: Color { .blue }
+    // ... implement all 18 color properties
+}
+
+let brandTheme = DSTheme(
+    colors: BrandColorPalette(),
+    typography: DefaultTypography()
+)
+```
+
+## Design Tokens
+
+### DSColorPalette (via theme)
+
+Semantic color definitions accessed via `theme.colors`:
+
+```swift
+@Environment(\.dsTheme) private var theme
+
+// Background
+theme.colors.backgroundPrimary
+theme.colors.backgroundSecondary
+theme.colors.backgroundTertiary
+
+// Text
+theme.colors.textPrimary
+theme.colors.textSecondary
+theme.colors.textTertiary
+
+// Status
+theme.colors.statusSuccess    // Green
+theme.colors.statusError      // Red
+theme.colors.statusWarning    // Orange
+theme.colors.statusNeutral    // Gray
+
+// Interactive
+theme.colors.accent
+theme.colors.accentSubtle
+theme.colors.disabled
+```
+
+### DSTypography (via theme)
+
+Typography accessed via `theme.typography`:
+
+```swift
+theme.typography.font(for: .headline)
+theme.typography.font(for: .body)
+theme.typography.defaultColor(for: .headline, in: theme.colors)
+```
+
+### TextStyle
+
+Enum cases for typography styles (input to `DSTypography`):
+
+```swift
+TextStyle.largeTitle   // .rounded, .bold
+TextStyle.title        // .rounded, .bold
+TextStyle.headline     // .rounded, .semibold
+TextStyle.body         // .rounded
+TextStyle.subheadline  // .serif
+TextStyle.caption      // .rounded
+TextStyle.caption2     // .monospaced
+```
+
+### SpacingToken (static)
 
 ```swift
 SpacingToken.xxs   // 2pt
@@ -107,67 +190,45 @@ SpacingToken.xs    // 4pt
 SpacingToken.sm    // 8pt
 SpacingToken.md    // 12pt
 SpacingToken.lg    // 16pt
-SpacingToken.xl    // 24pt
-SpacingToken.xxl   // 32pt
+SpacingToken.xl    // 20pt
+SpacingToken.xxl   // 24pt
+SpacingToken.xxxl  // 32pt
 ```
 
-### TextStyle
-
-Typography definitions:
+### CornerRadiusToken (static)
 
 ```swift
-TextStyle.largeTitle
-TextStyle.title
-TextStyle.headline
-TextStyle.body
-TextStyle.callout
-TextStyle.caption
-```
-
-### CornerRadiusToken
-
-Border radius values:
-
-```swift
-CornerRadiusToken.none
-CornerRadiusToken.small
-CornerRadiusToken.medium
-CornerRadiusToken.large
-CornerRadiusToken.full
+CornerRadiusToken.zero  // 0pt
+CornerRadiusToken.xs    // 4pt
+CornerRadiusToken.sm    // 8pt
+CornerRadiusToken.md    // 12pt
+CornerRadiusToken.lg    // 16pt
+CornerRadiusToken.xl    // 20pt
+CornerRadiusToken.full  // 9999pt
 ```
 
 ## Components
 
 ### Atoms
 
-Basic building blocks:
-
 | Component | Description |
 |-----------|-------------|
-| `DSButton` | Button with variants (primary, secondary, etc.) |
-| `DSAsyncImage` | Async image loading with placeholder |
-| `DSAvatar` | Circular avatar image |
-| `DSBadge` | Small label badge |
+| `DSButton` | Button with variants (primary, secondary, tertiary) |
+| `DSAsyncImage` | Async image loading with caching |
 | `DSStatusIndicator` | Status dot indicator |
 
 ### Molecules
 
-Combined atoms:
-
 | Component | Description |
 |-----------|-------------|
 | `DSInfoRow` | Icon + label + value row |
-| `DSLabeledValue` | Label above value |
-| `DSStatusBadge` | Status indicator with label |
+| `DSCardInfoRow` | Card with image, text, and status |
 
 ### Organisms
-
-Complex components:
 
 | Component | Description |
 |-----------|-------------|
 | `DSCard` | Generic card container |
-| `DSListItemCard` | Card for list items with avatar |
 | `DSLoadingView` | Loading spinner with message |
 | `DSEmptyState` | Empty state with icon and message |
 | `DSErrorView` | Error state with retry button |
@@ -176,35 +237,19 @@ Complex components:
 
 ### Text
 
-Use SwiftUI's native `Text` with `TextStyle` tokens:
-
 ```swift
-Text("Hello World")
-    .font(TextStyle.headline.font)
-    .foregroundStyle(ColorToken.textPrimary)
+@Environment(\.dsTheme) private var theme
 
-Text("Subtitle")
-    .font(TextStyle.body.font)
-    .foregroundStyle(ColorToken.textSecondary)
+Text("Hello World")
+    .font(theme.typography.font(for: .headline))
+    .foregroundStyle(theme.colors.textPrimary)
 ```
 
 ### Button
 
 ```swift
-DSButton("Primary", variant: .primary) {
-    // Action
-}
-
-DSButton("Secondary", variant: .secondary) {
-    // Action
-}
-```
-
-### Avatar
-
-```swift
-DSAvatar(url: avatarURL, size: .medium)
-DSAvatar(url: nil, size: .large, placeholder: "JD")
+DSButton("Primary") { /* action */ }
+DSButton("Secondary", variant: .secondary) { /* action */ }
 ```
 
 ### Cards
@@ -213,38 +258,27 @@ DSAvatar(url: nil, size: .large, placeholder: "JD")
 DSCard {
     VStack {
         Text("Card Title")
-            .font(TextStyle.headline.font)
-            .foregroundStyle(ColorToken.textPrimary)
-        Text("Card content")
-            .font(TextStyle.body.font)
-            .foregroundStyle(ColorToken.textPrimary)
+            .font(theme.typography.font(for: .headline))
+            .foregroundStyle(theme.colors.textPrimary)
     }
 }
-
-DSListItemCard(
-    imageURL: avatarURL,
-    title: "Character Name",
-    subtitle: "Human - Alive"
-)
 ```
 
 ### Feedback States
 
 ```swift
-// Loading
 DSLoadingView(message: "Loading...")
 
-// Empty
 DSEmptyState(
     icon: "person.slash",
     title: "No Characters",
     message: "No characters found"
 )
 
-// Error
 DSErrorView(
     title: "Error",
     message: "Failed to load",
+    retryTitle: "Retry",
     retryAction: { /* retry */ }
 )
 ```
@@ -253,11 +287,11 @@ DSErrorView(
 
 The module includes:
 
-- **Unit tests** for token values and component behavior
+- **Unit tests** for token values, palette parity, and typography
 - **Snapshot tests** for visual regression testing
 
 Run tests with:
 
 ```bash
-tuist test ChallengeDesignSystem
+mise x -- tuist test
 ```

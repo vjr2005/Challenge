@@ -14,6 +14,8 @@ public struct DSCardInfoRow: View {
 	private let statusLabel: String?
 	private let accessibilityIdentifier: String?
 
+	@Environment(\.dsTheme) private var theme
+
 	/// Creates a DSCardInfoRow.
 	/// - Parameters:
 	///   - imageURL: The URL of the image to display.
@@ -74,15 +76,15 @@ private extension DSCardInfoRow {
 	var textContent: some View {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
 			Text(title)
-				.font(TextStyle.headline.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(theme.typography.font(for: .headline))
+				.foregroundStyle(theme.colors.textPrimary)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
 				.lineLimit(1)
 
 			if let subtitle {
 				Text(subtitle)
-					.font(TextStyle.subheadline.font)
-					.foregroundStyle(ColorToken.textSecondary)
+					.font(theme.typography.font(for: .subheadline))
+					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).subtitle" } ?? "")
 			}
 
@@ -100,10 +102,10 @@ private extension DSCardInfoRow {
 					.accessibilityHidden(true)
 			}
 			Text(text)
-				.font(TextStyle.caption2.font)
+				.font(theme.typography.font(for: .caption2))
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).caption" } ?? "")
 		}
-		.foregroundStyle(ColorToken.textTertiary)
+		.foregroundStyle(theme.colors.textTertiary)
 		.lineLimit(1)
 	}
 
@@ -118,8 +120,8 @@ private extension DSCardInfoRow {
 
 			if let statusLabel {
 				Text(statusLabel)
-					.font(TextStyle.caption.font)
-					.foregroundStyle(ColorToken.textSecondary)
+					.font(theme.typography.font(for: .caption))
+					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).statusLabel" } ?? "")
 			}
 		}

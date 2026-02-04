@@ -5,21 +5,23 @@ public struct DSInfoRow: View {
 	private let icon: String
 	private let label: String
 	private let value: String
-	private let iconColor: Color
+	private let iconColor: Color?
 	private let accessibilityIdentifier: String?
+
+	@Environment(\.dsTheme) private var theme
 
 	/// Creates a DSInfoRow.
 	/// - Parameters:
 	///   - icon: SF Symbol name for the icon
 	///   - label: The label text
 	///   - value: The value text
-	///   - iconColor: The icon color (default: accent)
+	///   - iconColor: The icon color (default: accent from theme)
 	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		icon: String,
 		label: String,
 		value: String,
-		iconColor: Color = ColorToken.accent,
+		iconColor: Color? = nil,
 		accessibilityIdentifier: String? = nil
 	) {
 		self.icon = icon
@@ -32,20 +34,20 @@ public struct DSInfoRow: View {
 	public var body: some View {
 		HStack(spacing: SpacingToken.md) {
 			Image(systemName: icon)
-				.font(TextStyle.body.font)
-				.foregroundStyle(iconColor)
+				.font(theme.typography.font(for: .body))
+				.foregroundStyle(iconColor ?? theme.colors.accent)
 				.frame(width: SpacingToken.xxl)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
 			VStack(alignment: .leading, spacing: SpacingToken.xxs) {
 				Text(label)
-					.font(TextStyle.caption.font)
-					.foregroundStyle(ColorToken.textSecondary)
+					.font(theme.typography.font(for: .caption))
+					.foregroundStyle(theme.colors.textSecondary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).label" } ?? "")
 				Text(value)
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(theme.typography.font(for: .body))
+					.foregroundStyle(theme.colors.textPrimary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).value" } ?? "")
 			}
 

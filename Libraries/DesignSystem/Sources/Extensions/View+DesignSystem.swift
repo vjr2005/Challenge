@@ -13,17 +13,13 @@ public extension View {
 		cornerRadius: CGFloat = CornerRadiusToken.lg,
 		shadowToken: ShadowToken = .small
 	) -> some View {
-		self
-			.padding(padding)
-			.background(ColorToken.surfacePrimary)
-			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-			.shadow(shadowToken)
+		modifier(DSCardModifier(padding: padding, cornerRadius: cornerRadius, shadowToken: shadowToken))
 	}
 
 	/// Applies the design system background color.
 	/// - Parameter color: The background color token
 	/// - Returns: A view with the background applied
-	func dsBackground(_ color: Color = ColorToken.backgroundPrimary) -> some View {
+	func dsBackground(_ color: Color) -> some View {
 		background(color)
 	}
 
@@ -32,5 +28,21 @@ public extension View {
 	/// - Returns: A view with the corner radius applied
 	func dsCornerRadius(_ radius: CGFloat = CornerRadiusToken.md) -> some View {
 		clipShape(RoundedRectangle(cornerRadius: radius))
+	}
+}
+
+private struct DSCardModifier: ViewModifier {
+	let padding: CGFloat
+	let cornerRadius: CGFloat
+	let shadowToken: ShadowToken
+
+	@Environment(\.dsTheme) private var theme
+
+	func body(content: Content) -> some View {
+		content
+			.padding(padding)
+			.background(theme.colors.surfacePrimary)
+			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+			.shadow(shadowToken)
 	}
 }

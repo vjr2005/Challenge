@@ -8,6 +8,8 @@ public struct DSErrorView: View {
 	private let retryAction: (() -> Void)?
 	private let accessibilityIdentifier: String?
 
+	@Environment(\.dsTheme) private var theme
+
 	/// Creates a DSErrorView.
 	/// - Parameters:
 	///   - title: The error title
@@ -33,20 +35,20 @@ public struct DSErrorView: View {
 		VStack(spacing: SpacingToken.lg) {
 			Image(systemName: "exclamationmark.triangle.fill")
 				.font(.system(size: IconSizeToken.xxl))
-				.foregroundStyle(ColorToken.statusError)
+				.foregroundStyle(theme.colors.statusError)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
 				Text(title)
-					.font(TextStyle.headline.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(theme.typography.font(for: .headline))
+					.foregroundStyle(theme.colors.textPrimary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
 
 				if let message {
 					Text(message)
-						.font(TextStyle.body.font)
-						.foregroundStyle(ColorToken.textSecondary)
+						.font(theme.typography.font(for: .body))
+						.foregroundStyle(theme.colors.textSecondary)
 						.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
 						.multilineTextAlignment(.center)
 				}

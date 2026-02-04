@@ -4,7 +4,9 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct ColorTokenSnapshotTests {
+struct DefaultColorPaletteSnapshotTests {
+	private let palette = DefaultColorPalette()
+
 	init() {
 		UIView.setAnimationsEnabled(false)
 	}
@@ -14,9 +16,9 @@ struct ColorTokenSnapshotTests {
 	@Test("Renders background color tokens palette")
 	func backgroundColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
-			colorSwatch("backgroundPrimary", color: ColorToken.backgroundPrimary)
-			colorSwatch("backgroundSecondary", color: ColorToken.backgroundSecondary)
-			colorSwatch("backgroundTertiary", color: ColorToken.backgroundTertiary)
+			colorSwatch("backgroundPrimary", color: palette.backgroundPrimary)
+			colorSwatch("backgroundSecondary", color: palette.backgroundSecondary)
+			colorSwatch("backgroundTertiary", color: palette.backgroundTertiary)
 		}
 		.padding()
 		.frame(width: 300)
@@ -30,8 +32,8 @@ struct ColorTokenSnapshotTests {
 	@Test("Renders surface color tokens palette")
 	func surfaceColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
-			colorSwatch("surfacePrimary", color: ColorToken.surfacePrimary)
-			colorSwatch("surfaceSecondary", color: ColorToken.surfaceSecondary)
+			colorSwatch("surfacePrimary", color: palette.surfacePrimary)
+			colorSwatch("surfaceSecondary", color: palette.surfaceSecondary)
 		}
 		.padding()
 		.frame(width: 300)
@@ -45,10 +47,10 @@ struct ColorTokenSnapshotTests {
 	@Test("Renders text color tokens palette")
 	func textColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
-			colorSwatch("textPrimary", color: ColorToken.textPrimary)
-			colorSwatch("textSecondary", color: ColorToken.textSecondary)
-			colorSwatch("textTertiary", color: ColorToken.textTertiary)
-			colorSwatch("textInverted", color: ColorToken.textInverted)
+			colorSwatch("textPrimary", color: palette.textPrimary)
+			colorSwatch("textSecondary", color: palette.textSecondary)
+			colorSwatch("textTertiary", color: palette.textTertiary)
+			colorSwatch("textInverted", color: palette.textInverted)
 		}
 		.padding()
 		.frame(width: 300)
@@ -62,14 +64,14 @@ struct ColorTokenSnapshotTests {
 	@Test("Renders status color tokens palette")
 	func statusColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
-			colorSwatch("statusSuccess", color: ColorToken.statusSuccess)
-			colorSwatch("statusError", color: ColorToken.statusError)
-			colorSwatch("statusWarning", color: ColorToken.statusWarning)
-			colorSwatch("statusNeutral", color: ColorToken.statusNeutral)
+			colorSwatch("statusSuccess", color: palette.statusSuccess)
+			colorSwatch("statusError", color: palette.statusError)
+			colorSwatch("statusWarning", color: palette.statusWarning)
+			colorSwatch("statusNeutral", color: palette.statusNeutral)
 		}
 		.padding()
 		.frame(width: 300)
-		.background(ColorToken.backgroundSecondary)
+		.background(palette.backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -79,13 +81,13 @@ struct ColorTokenSnapshotTests {
 	@Test("Renders interactive color tokens palette")
 	func interactiveColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
-			colorSwatch("accent", color: ColorToken.accent)
-			colorSwatch("accentSubtle", color: ColorToken.accentSubtle)
-			colorSwatch("disabled", color: ColorToken.disabled)
+			colorSwatch("accent", color: palette.accent)
+			colorSwatch("accentSubtle", color: palette.accentSubtle)
+			colorSwatch("disabled", color: palette.disabled)
 		}
 		.padding()
 		.frame(width: 300)
-		.background(ColorToken.backgroundSecondary)
+		.background(palette.backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -95,12 +97,12 @@ struct ColorTokenSnapshotTests {
 	@Test("Renders separator color tokens palette")
 	func separatorColors() {
 		let view = VStack(spacing: SpacingToken.sm) {
-			colorSwatch("separator", color: ColorToken.separator)
-			colorSwatch("separatorOpaque", color: ColorToken.separatorOpaque)
+			colorSwatch("separator", color: palette.separator)
+			colorSwatch("separatorOpaque", color: palette.separatorOpaque)
 		}
 		.padding()
 		.frame(width: 300)
-		.background(ColorToken.backgroundSecondary)
+		.background(palette.backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -111,38 +113,38 @@ struct ColorTokenSnapshotTests {
 	func fullColorGallery() {
 		let view = VStack(spacing: SpacingToken.lg) {
 			colorSection("Background") {
-				colorSwatch("backgroundPrimary", color: ColorToken.backgroundPrimary)
-				colorSwatch("backgroundSecondary", color: ColorToken.backgroundSecondary)
-				colorSwatch("backgroundTertiary", color: ColorToken.backgroundTertiary)
+				colorSwatch("backgroundPrimary", color: palette.backgroundPrimary)
+				colorSwatch("backgroundSecondary", color: palette.backgroundSecondary)
+				colorSwatch("backgroundTertiary", color: palette.backgroundTertiary)
 			}
 
 			colorSection("Surface") {
-				colorSwatch("surfacePrimary", color: ColorToken.surfacePrimary)
-				colorSwatch("surfaceSecondary", color: ColorToken.surfaceSecondary)
+				colorSwatch("surfacePrimary", color: palette.surfacePrimary)
+				colorSwatch("surfaceSecondary", color: palette.surfaceSecondary)
 			}
 
 			colorSection("Text") {
-				colorSwatch("textPrimary", color: ColorToken.textPrimary)
-				colorSwatch("textSecondary", color: ColorToken.textSecondary)
-				colorSwatch("textTertiary", color: ColorToken.textTertiary)
+				colorSwatch("textPrimary", color: palette.textPrimary)
+				colorSwatch("textSecondary", color: palette.textSecondary)
+				colorSwatch("textTertiary", color: palette.textTertiary)
 			}
 
 			colorSection("Status") {
-				colorSwatch("statusSuccess", color: ColorToken.statusSuccess)
-				colorSwatch("statusError", color: ColorToken.statusError)
-				colorSwatch("statusWarning", color: ColorToken.statusWarning)
-				colorSwatch("statusNeutral", color: ColorToken.statusNeutral)
+				colorSwatch("statusSuccess", color: palette.statusSuccess)
+				colorSwatch("statusError", color: palette.statusError)
+				colorSwatch("statusWarning", color: palette.statusWarning)
+				colorSwatch("statusNeutral", color: palette.statusNeutral)
 			}
 
 			colorSection("Interactive") {
-				colorSwatch("accent", color: ColorToken.accent)
-				colorSwatch("accentSubtle", color: ColorToken.accentSubtle)
-				colorSwatch("disabled", color: ColorToken.disabled)
+				colorSwatch("accent", color: palette.accent)
+				colorSwatch("accentSubtle", color: palette.accentSubtle)
+				colorSwatch("disabled", color: palette.disabled)
 			}
 
 			colorSection("Separator") {
-				colorSwatch("separator", color: ColorToken.separator)
-				colorSwatch("separatorOpaque", color: ColorToken.separatorOpaque)
+				colorSwatch("separator", color: palette.separator)
+				colorSwatch("separatorOpaque", color: palette.separatorOpaque)
 			}
 		}
 		.padding()
@@ -165,7 +167,7 @@ struct ColorTokenSnapshotTests {
 				)
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
-				.foregroundStyle(ColorToken.textPrimary)
+				.foregroundStyle(palette.textPrimary)
 			Spacer()
 		}
 	}
@@ -177,7 +179,7 @@ struct ColorTokenSnapshotTests {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
 			Text(title)
 				.font(.system(.caption, design: .rounded, weight: .semibold))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(palette.textSecondary)
 			VStack(spacing: SpacingToken.xs) {
 				content()
 			}

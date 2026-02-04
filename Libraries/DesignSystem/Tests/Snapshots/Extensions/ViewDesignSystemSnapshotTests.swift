@@ -17,7 +17,7 @@ struct ViewDesignSystemSnapshotTests {
 			.dsCard()
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -28,7 +28,7 @@ struct ViewDesignSystemSnapshotTests {
 			.dsCard(padding: SpacingToken.xxl)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -39,7 +39,7 @@ struct ViewDesignSystemSnapshotTests {
 			.dsCard(cornerRadius: CornerRadiusToken.xl)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -50,7 +50,7 @@ struct ViewDesignSystemSnapshotTests {
 			.dsCard(shadowToken: .large)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -65,7 +65,7 @@ struct ViewDesignSystemSnapshotTests {
 			)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -76,7 +76,7 @@ struct ViewDesignSystemSnapshotTests {
 			.dsCard(shadowToken: .zero)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -85,17 +85,17 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCardWithComplexContent() {
 		let view = VStack(alignment: .leading, spacing: SpacingToken.sm) {
 			Text("Card Title")
-				.font(TextStyle.headline.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(DefaultTypography().font(for: .headline))
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 			Text("This is a description inside the card.")
-				.font(TextStyle.body.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(DefaultTypography().font(for: .body))
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 			DSButton("Action") {}
 		}
 		.dsCard()
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -106,7 +106,7 @@ struct ViewDesignSystemSnapshotTests {
 	func dsBackgroundDefault() {
 		let view = Text("Default Background")
 			.padding()
-			.dsBackground()
+			.dsBackground(DefaultColorPalette().backgroundPrimary)
 			.frame(width: 320, height: 100)
 
 		assertSnapshot(of: view, as: .image)
@@ -116,7 +116,7 @@ struct ViewDesignSystemSnapshotTests {
 	func dsBackgroundSecondary() {
 		let view = Text("Secondary Background")
 			.padding()
-			.dsBackground(ColorToken.backgroundSecondary)
+			.dsBackground(DefaultColorPalette().backgroundSecondary)
 			.frame(width: 320, height: 100)
 
 		assertSnapshot(of: view, as: .image)
@@ -126,7 +126,7 @@ struct ViewDesignSystemSnapshotTests {
 	func dsBackgroundTertiary() {
 		let view = Text("Tertiary Background")
 			.padding()
-			.dsBackground(ColorToken.backgroundTertiary)
+			.dsBackground(DefaultColorPalette().backgroundTertiary)
 			.frame(width: 320, height: 100)
 
 		assertSnapshot(of: view, as: .image)
@@ -136,9 +136,9 @@ struct ViewDesignSystemSnapshotTests {
 	func dsBackgroundSurface() {
 		let view = Text("Surface Background")
 			.padding()
-			.dsBackground(ColorToken.surfacePrimary)
+			.dsBackground(DefaultColorPalette().surfacePrimary)
 			.frame(width: 320, height: 100)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -149,11 +149,11 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCornerRadiusDefault() {
 		let view = Text("Default Corner Radius")
 			.padding()
-			.background(ColorToken.accent)
+			.background(DefaultColorPalette().accent)
 			.dsCornerRadius()
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -162,11 +162,11 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCornerRadiusSmall() {
 		let view = Text("Small Corner Radius")
 			.padding()
-			.background(ColorToken.accent)
+			.background(DefaultColorPalette().accent)
 			.dsCornerRadius(CornerRadiusToken.sm)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -175,11 +175,11 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCornerRadiusLarge() {
 		let view = Text("Large Corner Radius")
 			.padding()
-			.background(ColorToken.accent)
+			.background(DefaultColorPalette().accent)
 			.dsCornerRadius(CornerRadiusToken.lg)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -188,11 +188,11 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCornerRadiusFull() {
 		let view = Text("Full")
 			.padding()
-			.background(ColorToken.accent)
+			.background(DefaultColorPalette().accent)
 			.dsCornerRadius(CornerRadiusToken.full)
 			.padding()
 			.frame(width: 320)
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -207,17 +207,17 @@ struct ViewDesignSystemSnapshotTests {
 
 			Text("dsBackground")
 				.padding()
-				.dsBackground(ColorToken.surfacePrimary)
+				.dsBackground(DefaultColorPalette().surfacePrimary)
 				.dsCornerRadius()
 
 			Text("dsCornerRadius")
 				.padding()
-				.background(ColorToken.accent)
+				.background(DefaultColorPalette().accent)
 				.dsCornerRadius(CornerRadiusToken.lg)
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}

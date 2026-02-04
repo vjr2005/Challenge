@@ -8,6 +8,7 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 	let viewModel: ViewModel
 	let playbackMode: LottiePlaybackMode
 
+	@Environment(\.dsTheme) private var theme
 	@State private var showButton: Bool
 
 	init(
@@ -53,7 +54,7 @@ private extension HomeView {
 			Text(LocalizedStrings.goToCharacters)
 		}
 		.buttonStyle(.borderedProminent)
-		.tint(ColorToken.accent)
+		.tint(theme.colors.accent)
 		.accessibilityIdentifier(AccessibilityIdentifier.characterButton)
 		.opacity(showButton ? 1 : 0)
 		.scaleEffect(showButton ? 1 : 0.8)

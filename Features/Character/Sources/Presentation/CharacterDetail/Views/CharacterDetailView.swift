@@ -5,6 +5,7 @@ import SwiftUI
 
 struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 	@State private var viewModel: ViewModel
+	@Environment(\.dsTheme) private var theme
 
 	init(viewModel: ViewModel) {
 		_viewModel = State(initialValue: viewModel)
@@ -15,7 +16,7 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 			.onFirstAppear {
 				await viewModel.didAppear()
 			}
-			.background(ColorToken.backgroundSecondary)
+			.background(theme.colors.backgroundSecondary)
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarBackButtonHidden(true)
 			.toolbar {
@@ -35,9 +36,9 @@ private extension CharacterDetailView {
 		} label: {
 			HStack(spacing: SpacingToken.xs) {
 				Image(systemName: "chevron.left")
-					.font(TextStyle.body.font.weight(.semibold))
+					.font(theme.typography.font(for: .body).weight(.semibold))
 				Text(LocalizedStrings.back)
-					.font(TextStyle.body.font)
+					.font(theme.typography.font(for: .body))
 			}
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.backButton)
@@ -112,8 +113,8 @@ private extension CharacterDetailView {
 	func nameAndStatus(_ character: Character) -> some View {
 		VStack(spacing: SpacingToken.sm) {
 			Text(character.name)
-				.font(TextStyle.title.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(theme.typography.font(for: .title))
+				.foregroundStyle(theme.colors.textPrimary)
 				.multilineTextAlignment(.center)
                 .accessibilityIdentifier(AccessibilityIdentifier.name)
 
@@ -121,15 +122,15 @@ private extension CharacterDetailView {
 				DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
 				Text(character.status.rawValue)
-					.font(TextStyle.subheadline.font)
-					.foregroundStyle(ColorToken.textSecondary)
+					.font(theme.typography.font(for: .subheadline))
+					.foregroundStyle(theme.colors.textSecondary)
 
 				Text("•")
-					.foregroundStyle(ColorToken.textTertiary)
+					.foregroundStyle(theme.colors.textTertiary)
 
 				Text(character.species)
-					.font(TextStyle.subheadline.font)
-					.foregroundStyle(ColorToken.textSecondary)
+					.font(theme.typography.font(for: .subheadline))
+					.foregroundStyle(theme.colors.textSecondary)
 					.italic()
 			}
 		}
@@ -139,8 +140,8 @@ private extension CharacterDetailView {
 		DSCard(padding: SpacingToken.xl) {
 			VStack(alignment: .leading, spacing: SpacingToken.lg) {
 				Text(LocalizedStrings.information)
-					.font(TextStyle.headline.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(theme.typography.font(for: .headline))
+					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: SpacingToken.md) {
 					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
@@ -156,8 +157,8 @@ private extension CharacterDetailView {
 		DSCard(padding: SpacingToken.xl) {
 			VStack(alignment: .leading, spacing: SpacingToken.lg) {
 				Text(LocalizedStrings.locations)
-					.font(TextStyle.headline.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(theme.typography.font(for: .headline))
+					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: SpacingToken.md) {
 					DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)

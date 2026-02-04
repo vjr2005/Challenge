@@ -165,7 +165,7 @@ struct DSCardInfoRowSnapshotTests {
 				)
 			}
 			.padding()
-			.background(ColorToken.backgroundSecondary)
+			.background(DefaultColorPalette().backgroundSecondary)
 		}
 
 		assertSnapshot(of: controller, as: .image)

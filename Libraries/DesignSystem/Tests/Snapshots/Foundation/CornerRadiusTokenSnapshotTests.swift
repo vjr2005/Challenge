@@ -24,7 +24,7 @@ struct CornerRadiusTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -41,7 +41,7 @@ struct CornerRadiusTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -55,7 +55,7 @@ struct CornerRadiusTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -72,7 +72,7 @@ struct CornerRadiusTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -88,7 +88,7 @@ struct CornerRadiusTokenSnapshotTests {
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -100,15 +100,15 @@ struct CornerRadiusTokenSnapshotTests {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
 				.frame(width: 40, alignment: .leading)
-				.foregroundStyle(ColorToken.textPrimary)
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 
 			RoundedRectangle(cornerRadius: value)
-				.fill(ColorToken.accent)
+				.fill(DefaultColorPalette().accent)
 				.frame(width: 60, height: 40)
 
 			Text(value == 9999 ? "∞" : "\(Int(value))pt")
 				.font(.system(.caption, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 
 			Spacer()
 		}
@@ -117,11 +117,11 @@ struct CornerRadiusTokenSnapshotTests {
 	private func cornerBox(_ name: String, radius: CGFloat) -> some View {
 		VStack(spacing: SpacingToken.xs) {
 			RoundedRectangle(cornerRadius: radius)
-				.fill(ColorToken.accent)
+				.fill(DefaultColorPalette().accent)
 				.frame(width: 50, height: 50)
 			Text(name)
 				.font(.system(.caption2, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 		}
 	}
 
@@ -129,7 +129,7 @@ struct CornerRadiusTokenSnapshotTests {
 		HStack {
 			Text(label)
 				.font(.system(.caption, design: .monospaced))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 				.frame(width: 80, alignment: .leading)
 
 			Text("Button")
@@ -137,7 +137,7 @@ struct CornerRadiusTokenSnapshotTests {
 				.foregroundStyle(.white)
 				.padding(.horizontal, SpacingToken.lg)
 				.padding(.vertical, SpacingToken.sm)
-				.background(ColorToken.accent)
+				.background(DefaultColorPalette().accent)
 				.clipShape(RoundedRectangle(cornerRadius: radius))
 
 			Spacer()
@@ -148,15 +148,15 @@ struct CornerRadiusTokenSnapshotTests {
 		VStack(alignment: .leading, spacing: SpacingToken.xs) {
 			Text(label)
 				.font(.system(.caption, design: .rounded, weight: .semibold))
-				.foregroundStyle(ColorToken.textSecondary)
+				.foregroundStyle(DefaultColorPalette().textSecondary)
 
 			RoundedRectangle(cornerRadius: radius)
-				.fill(ColorToken.surfacePrimary)
+				.fill(DefaultColorPalette().surfacePrimary)
 				.frame(height: 60)
 				.overlay(
 					Text("Card Content")
 						.font(.system(.body, design: .rounded))
-						.foregroundStyle(ColorToken.textPrimary)
+						.foregroundStyle(DefaultColorPalette().textPrimary)
 				)
 		}
 	}

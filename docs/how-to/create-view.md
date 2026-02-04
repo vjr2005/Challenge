@@ -41,6 +41,7 @@ import SwiftUI
 
 struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     @State private var viewModel: ViewModel
+    @Environment(\.dsTheme) private var theme
 
     init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -51,7 +52,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
             .onFirstAppear {
                 await viewModel.didAppear()
             }
-            .background(ColorToken.backgroundSecondary)
+            .background(theme.colors.backgroundSecondary)
             .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -96,8 +97,8 @@ private extension {ScreenName}View {
             VStack(spacing: SpacingToken.lg) {
                 // Content using Design System components
                 Text(data.name)
-                    .font(TextStyle.title.font)
-                    .foregroundStyle(ColorToken.textPrimary)
+                    .font(theme.typography.font(for: .title))
+                    .foregroundStyle(theme.colors.textPrimary)
             }
             .padding(.horizontal, SpacingToken.lg)
         }
@@ -181,7 +182,7 @@ private extension {Name} {
 - `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
 - `.onFirstAppear { await viewModel.didAppear() }` for initial load (executes only once)
 - Switch on `viewModel.state` for all ViewState cases
-- Use Design System tokens (ColorToken, SpacingToken, TextStyle)
+- Use Design System tokens via `@Environment(\.dsTheme)` (theme.colors, theme.typography, SpacingToken)
 - Private `LocalizedStrings` enum for localization
 - Private `AccessibilityIdentifier` enum for UI testing
 - Previews commented out to avoid test coverage impact
@@ -204,6 +205,7 @@ import SwiftUI
 
 struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     @State private var viewModel: ViewModel
+    @Environment(\.dsTheme) private var theme
 
     init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -214,7 +216,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
             .onFirstAppear {
                 await viewModel.didAppear()
             }
-            .background(ColorToken.backgroundSecondary)
+            .background(theme.colors.backgroundSecondary)
             .navigationTitle(LocalizedStrings.title)
     }
 }
@@ -394,11 +396,13 @@ import SwiftUI
 struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     let viewModel: ViewModel
 
+    @Environment(\.dsTheme) private var theme
+
     var body: some View {
         VStack(spacing: SpacingToken.lg) {
             Text(LocalizedStrings.title)
-                .font(TextStyle.title.font)
-                .foregroundStyle(ColorToken.textPrimary)
+                .font(theme.typography.font(for: .title))
+                .foregroundStyle(theme.colors.textPrimary)
 
             Button(LocalizedStrings.actionButton) {
                 viewModel.didTapOn{Action}()
@@ -451,17 +455,19 @@ All Views must use Design System components and tokens:
 
 | Type | Usage |
 |------|-------|
-| **ColorToken** | `ColorToken.textPrimary`, `ColorToken.backgroundSecondary` |
+| **Colors** | `theme.colors.textPrimary`, `theme.colors.backgroundSecondary` |
+| **Typography** | `theme.typography.font(for: .title)`, `theme.typography.font(for: .body)` |
 | **SpacingToken** | `SpacingToken.lg`, `SpacingToken.md`, `SpacingToken.sm` |
-| **TextStyle** | `TextStyle.title.font`, `TextStyle.body.font` |
 | **CornerRadiusToken** | `CornerRadiusToken.lg`, `CornerRadiusToken.md` |
 | **DS Components** | `DSCard`, `DSAsyncImage`, `DSLoadingView`, `DSErrorView` |
 
 ```swift
+@Environment(\.dsTheme) private var theme
+
 // ✅ Correct - using design system
 Text(item.name)
-    .font(TextStyle.bodyLarge.font)
-    .foregroundStyle(ColorToken.textPrimary)
+    .font(theme.typography.font(for: .body))
+    .foregroundStyle(theme.colors.textPrimary)
     .padding(SpacingToken.md)
 
 // ❌ Wrong - hardcoded values

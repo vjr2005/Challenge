@@ -9,6 +9,8 @@ public struct DSEmptyState: View {
 	private let action: (() -> Void)?
 	private let accessibilityIdentifier: String?
 
+	@Environment(\.dsTheme) private var theme
+
 	/// Creates a DSEmptyState.
 	/// - Parameters:
 	///   - icon: SF Symbol name for the icon
@@ -37,20 +39,20 @@ public struct DSEmptyState: View {
 		VStack(spacing: SpacingToken.lg) {
 			Image(systemName: icon)
 				.font(.system(size: IconSizeToken.xxxl))
-				.foregroundStyle(ColorToken.textTertiary)
+				.foregroundStyle(theme.colors.textTertiary)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
 			VStack(spacing: SpacingToken.sm) {
 				Text(title)
-					.font(TextStyle.headline.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(theme.typography.font(for: .headline))
+					.foregroundStyle(theme.colors.textPrimary)
 					.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).title" } ?? "")
 
 				if let message {
 					Text(message)
-						.font(TextStyle.body.font)
-						.foregroundStyle(ColorToken.textSecondary)
+						.font(theme.typography.font(for: .body))
+						.foregroundStyle(theme.colors.textSecondary)
 						.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).message" } ?? "")
 						.multilineTextAlignment(.center)
 				}

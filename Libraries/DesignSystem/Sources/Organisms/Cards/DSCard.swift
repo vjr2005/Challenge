@@ -11,6 +11,8 @@ public struct DSCard<Content: View>: View {
 	private let cornerRadius: CGFloat
 	private let shadow: ShadowToken
 
+	@Environment(\.dsTheme) private var theme
+
 	/// Creates a DSCard.
 	/// - Parameters:
 	///   - padding: The internal padding (default: lg)
@@ -32,7 +34,7 @@ public struct DSCard<Content: View>: View {
 	public var body: some View {
 		content
 			.padding(padding)
-			.background(ColorToken.surfacePrimary)
+			.background(theme.colors.surfacePrimary)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
 			.shadow(shadow)
 	}

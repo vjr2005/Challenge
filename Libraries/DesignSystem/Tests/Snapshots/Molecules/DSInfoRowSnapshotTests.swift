@@ -26,7 +26,7 @@ struct DSInfoRowSnapshotTests {
 			icon: "heart.fill",
 			label: "Status",
 			value: "Alive",
-			iconColor: ColorToken.statusSuccess
+			iconColor: DefaultColorPalette().statusSuccess
 		)
 		.padding()
 		.frame(width: 320)
@@ -46,13 +46,13 @@ struct DSInfoRowSnapshotTests {
 				icon: "heart.fill",
 				label: "Status",
 				value: "Alive",
-				iconColor: ColorToken.statusSuccess
+				iconColor: DefaultColorPalette().statusSuccess
 			)
 			DSInfoRow(
 				icon: "exclamationmark.triangle.fill",
 				label: "Warning",
 				value: "Dangerous",
-				iconColor: ColorToken.statusWarning
+				iconColor: DefaultColorPalette().statusWarning
 			)
 		}
 		.padding()

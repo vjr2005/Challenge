@@ -16,16 +16,16 @@ struct DSCardSnapshotTests {
 		let view = DSCard {
 			VStack(alignment: .leading, spacing: SpacingToken.sm) {
 				Text("Card Title")
-					.font(TextStyle.headline.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(DefaultTypography().font(for: .headline))
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 				Text("This is the card content with some description text.")
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(DefaultTypography().font(for: .body))
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -36,12 +36,12 @@ struct DSCardSnapshotTests {
 	func noShadow() {
 		let view = DSCard(shadow: .zero) {
 			Text("No Shadow Card")
-				.font(TextStyle.body.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(DefaultTypography().font(for: .body))
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -50,12 +50,12 @@ struct DSCardSnapshotTests {
 	func smallShadow() {
 		let view = DSCard(shadow: .small) {
 			Text("Small Shadow Card")
-				.font(TextStyle.body.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(DefaultTypography().font(for: .body))
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -64,12 +64,12 @@ struct DSCardSnapshotTests {
 	func mediumShadow() {
 		let view = DSCard(shadow: .medium) {
 			Text("Medium Shadow Card")
-				.font(TextStyle.body.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(DefaultTypography().font(for: .body))
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -78,12 +78,12 @@ struct DSCardSnapshotTests {
 	func largeShadow() {
 		let view = DSCard(shadow: .large) {
 			Text("Large Shadow Card")
-				.font(TextStyle.body.font)
-				.foregroundStyle(ColorToken.textPrimary)
+				.font(DefaultTypography().font(for: .body))
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
@@ -95,28 +95,28 @@ struct DSCardSnapshotTests {
 		let view = VStack(spacing: SpacingToken.lg) {
 			DSCard(shadow: .zero) {
 				Text("Zero Shadow")
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(DefaultTypography().font(for: .body))
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 			DSCard(shadow: .small) {
 				Text("Small Shadow")
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(DefaultTypography().font(for: .body))
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 			DSCard(shadow: .medium) {
 				Text("Medium Shadow")
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(DefaultTypography().font(for: .body))
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 			DSCard(shadow: .large) {
 				Text("Large Shadow")
-					.font(TextStyle.body.font)
-					.foregroundStyle(ColorToken.textPrimary)
+					.font(DefaultTypography().font(for: .body))
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 		}
 		.padding()
 		.frame(width: 320)
-		.background(ColorToken.backgroundSecondary)
+		.background(DefaultColorPalette().backgroundSecondary)
 
 		assertSnapshot(of: view, as: .image)
 	}
