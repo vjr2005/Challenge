@@ -29,6 +29,7 @@ Libraries/DesignSystem/
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSCornerRadius.swift
 │   │   │   ├── DSDimensions.swift
+│   │   │   ├── DSOpacity.swift
 │   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
 │   │   │   ├── DSThemeEnvironment.swift
@@ -39,14 +40,13 @@ Libraries/DesignSystem/
 │   │   │       ├── DefaultColorPalette.swift
 │   │   │       ├── DefaultCornerRadius.swift
 │   │   │       ├── DefaultDimensions.swift
+│   │   │       ├── DefaultOpacity.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
 │   │   │   └── TextStyle.swift
-│   │   ├── Shadows/
-│   │   │   └── ShadowToken.swift
-│   │   └── Opacity/
-│   │       └── OpacityToken.swift
+│   │   └── Shadows/
+│   │       └── ShadowToken.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
 │   │   ├── Buttons/
@@ -78,7 +78,7 @@ Libraries/DesignSystem/
 
 ## Theming
 
-Colors, typography, spacing, dimensions, border widths, and corner radii are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (opacity, shadows) remain static.
+Colors, typography, spacing, dimensions, border widths, corner radii, and opacity are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (shadows) remain static.
 
 ### Reading the theme in a View
 
@@ -212,16 +212,16 @@ ShadowToken.medium  // Elevated elements
 ShadowToken.large   // Floating elements
 ```
 
-### OpacityToken
+## DSOpacity (via theme)
 
-Opacity values for consistent transparency:
+Opacity values accessed via `theme.opacity`:
 
 ```swift
-OpacityToken.subtle        // 0.1
-OpacityToken.light         // 0.15
-OpacityToken.medium        // 0.4
-OpacityToken.heavy         // 0.6
-OpacityToken.almostOpaque  // 0.8
+theme.opacity.subtle        // 0.1
+theme.opacity.light         // 0.15
+theme.opacity.medium        // 0.4
+theme.opacity.heavy         // 0.6
+theme.opacity.almostOpaque  // 0.8
 ```
 
 ---
@@ -506,7 +506,7 @@ import ChallengeDesignSystem
 - [ ] Use `theme.spacing.xxx` for spacing values
 - [ ] Use `theme.dimensions.xxx` for icon and element sizes
 - [ ] Use `theme.cornerRadius.xxx` for corner radii
-- [ ] Use `OpacityToken` for opacity values
+- [ ] Use `theme.opacity.xxx` for opacity values
 - [ ] Use `theme.borderWidth.xxx` for border widths
 - [ ] Use `DSCard` for card styling
 - [ ] Use `DSLoadingView`, `DSErrorView`, `DSEmptyState` for feedback states

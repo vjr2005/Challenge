@@ -1,10 +1,10 @@
 # ChallengeDesignSystem
 
-Atomic Design System providing reusable UI components and design tokens with themeable colors, typography, spacing, dimensions, border widths, and corner radii via SwiftUI Environment.
+Atomic Design System providing reusable UI components and design tokens with themeable colors, typography, spacing, dimensions, border widths, corner radii, and opacity via SwiftUI Environment.
 
 ## Overview
 
-ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, dimensions, border widths, corner radii, and other visual properties. Colors, typography, spacing, dimensions, border widths, and corner radii are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (opacity, shadows) remain static.
+ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, dimensions, border widths, corner radii, opacity, and other visual properties. Colors, typography, spacing, dimensions, border widths, corner radii, and opacity are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (shadows) remain static.
 
 ## Structure
 
@@ -17,6 +17,7 @@ DesignSystem/
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSCornerRadius.swift
 │   │   │   ├── DSDimensions.swift
+│   │   │   ├── DSOpacity.swift
 │   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
 │   │   │   ├── DSThemeEnvironment.swift
@@ -27,14 +28,13 @@ DesignSystem/
 │   │   │       ├── DefaultColorPalette.swift
 │   │   │       ├── DefaultCornerRadius.swift
 │   │   │       ├── DefaultDimensions.swift
+│   │   │       ├── DefaultOpacity.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
 │   │   │   └── TextStyle.swift
-│   │   ├── Shadows/
-│   │   │   └── ShadowToken.swift
-│   │   └── Opacity/
-│   │       └── OpacityToken.swift
+│   │   └── Shadows/
+│   │       └── ShadowToken.swift
 │   ├── Atoms/                # Basic components
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
@@ -73,17 +73,17 @@ DesignSystem/
 
 ## Theming
 
-Colors, typography, spacing, dimensions, border widths, and corner radii are accessed through the theme environment, enabling runtime theme switching.
+Colors, typography, spacing, dimensions, border widths, corner radii, and opacity are accessed through the theme environment, enabling runtime theme switching.
 
 ### Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                  DSTheme (struct, Sendable)                                  │
-│  ┌──────────────┐ ┌────────────┐ ┌─────────┐ ┌────────────┐ ┌─────────────┐ ┌──────────────┐ │
-│  │DSColorPalette│ │DSTypography│ │DSSpacing│ │DSDimensions│ │DSBorderWidth│ │DSCornerRadius│ │
-│  │ (protocol)   │ │ (protocol) │ │(protocol)│ │ (protocol) │ │ (protocol)  │ │ (protocol)   │ │
-│  └──────────────┘ └────────────┘ └─────────┘ └────────────┘ └─────────────┘ └──────────────┘ │
+│  ┌──────────────┐ ┌────────────┐ ┌─────────┐ ┌────────────┐ ┌─────────────┐ ┌──────────────┐ ┌─────────┐ │
+│  │DSColorPalette│ │DSTypography│ │DSSpacing│ │DSDimensions│ │DSBorderWidth│ │DSCornerRadius│ │DSOpacity│ │
+│  │ (protocol)   │ │ (protocol) │ │(protocol)│ │ (protocol) │ │ (protocol)  │ │ (protocol)   │ │(protocol)│ │
+│  └──────────────┘ └────────────┘ └─────────┘ └────────────┘ └─────────────┘ └──────────────┘ └─────────┘ │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
                     │
         SwiftUI Environment (.dsTheme)
@@ -127,7 +127,8 @@ let brandTheme = DSTheme(
     spacing: DefaultSpacing(),
     dimensions: DefaultDimensions(),
     borderWidth: DefaultBorderWidth(),
-    cornerRadius: DefaultCornerRadius()
+    cornerRadius: DefaultCornerRadius(),
+    opacity: DefaultOpacity()
 )
 ```
 
@@ -238,6 +239,18 @@ theme.cornerRadius.md    // 12pt
 theme.cornerRadius.lg    // 16pt
 theme.cornerRadius.xl    // 20pt
 theme.cornerRadius.full  // 9999pt
+```
+
+### DSOpacity (via theme)
+
+Opacity values accessed via `theme.opacity`:
+
+```swift
+theme.opacity.subtle        // 0.1
+theme.opacity.light         // 0.15
+theme.opacity.medium        // 0.4
+theme.opacity.heavy         // 0.6
+theme.opacity.almostOpaque  // 0.8
 ```
 
 ## Components

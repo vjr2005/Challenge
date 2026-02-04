@@ -1,8 +1,8 @@
-/// A design system theme combining colors, typography, spacing, dimensions, border widths, and corner radii.
+/// A design system theme combining colors, typography, spacing, dimensions, border widths, corner radii, and opacity.
 ///
 /// Use ``DSTheme/default`` for the standard theme, or create custom themes
 /// by providing different ``DSColorPalette``, ``DSTypography``, ``DSSpacing``,
-/// ``DSDimensions``, ``DSBorderWidth``, and ``DSCornerRadius`` implementations.
+/// ``DSDimensions``, ``DSBorderWidth``, ``DSCornerRadius``, and ``DSOpacity`` implementations.
 public struct DSTheme: Sendable {
 	/// The color palette for this theme
 	public let colors: DSColorPalette
@@ -22,7 +22,10 @@ public struct DSTheme: Sendable {
 	/// The corner radius values for this theme
 	public let cornerRadius: DSCornerRadius
 
-	/// Creates a new theme with the given color palette, typography, spacing, dimensions, border widths, and corner radii.
+	/// The opacity values for this theme
+	public let opacity: DSOpacity
+
+	/// Creates a new theme with the given color palette, typography, spacing, dimensions, border widths, corner radii, and opacity.
 	/// - Parameters:
 	///   - colors: The color palette
 	///   - typography: The typography
@@ -30,13 +33,15 @@ public struct DSTheme: Sendable {
 	///   - dimensions: The dimension values
 	///   - borderWidth: The border width values
 	///   - cornerRadius: The corner radius values
+	///   - opacity: The opacity values
 	public init(
 		colors: DSColorPalette,
 		typography: DSTypography,
 		spacing: DSSpacing,
 		dimensions: DSDimensions,
 		borderWidth: DSBorderWidth,
-		cornerRadius: DSCornerRadius
+		cornerRadius: DSCornerRadius,
+		opacity: DSOpacity
 	) {
 		self.colors = colors
 		self.typography = typography
@@ -44,6 +49,7 @@ public struct DSTheme: Sendable {
 		self.dimensions = dimensions
 		self.borderWidth = borderWidth
 		self.cornerRadius = cornerRadius
+		self.opacity = opacity
 	}
 
 	/// The default design system theme
@@ -53,6 +59,7 @@ public struct DSTheme: Sendable {
 		spacing: DefaultSpacing(),
 		dimensions: DefaultDimensions(),
 		borderWidth: DefaultBorderWidth(),
-		cornerRadius: DefaultCornerRadius()
+		cornerRadius: DefaultCornerRadius(),
+		opacity: DefaultOpacity()
 	)
 }
