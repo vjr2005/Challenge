@@ -1,10 +1,10 @@
 # ChallengeDesignSystem
 
-Atomic Design System providing reusable UI components and design tokens with themeable colors, typography, and spacing via SwiftUI Environment.
+Atomic Design System providing reusable UI components and design tokens with themeable colors, typography, spacing, and dimensions via SwiftUI Environment.
 
 ## Overview
 
-ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, and other visual properties. Colors, typography, and spacing are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (corners, borders, icons, opacity, shadows) remain static.
+ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, dimensions, and other visual properties. Colors, typography, spacing, and dimensions are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (corners, borders, opacity, shadows) remain static.
 
 ## Structure
 
@@ -14,13 +14,15 @@ DesignSystem/
 │   ├── Foundation/           # Design tokens
 │   │   ├── Theming/          # Theme contracts
 │   │   │   ├── DSColorPalette.swift
-│   │   │   ├── DSTypography.swift
+│   │   │   ├── DSDimensions.swift
 │   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
-│   │   │   └── DSThemeEnvironment.swift
+│   │   │   ├── DSThemeEnvironment.swift
+│   │   │   └── DSTypography.swift
 │   │   ├── Themes/           # Theme implementations
 │   │   │   └── Default/
 │   │   │       ├── DefaultColorPalette.swift
+│   │   │       ├── DefaultDimensions.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
@@ -29,8 +31,6 @@ DesignSystem/
 │   │   │   └── CornerRadiusToken.swift
 │   │   ├── Shadows/
 │   │   │   └── ShadowToken.swift
-│   │   ├── Icons/
-│   │   │   └── IconSizeToken.swift
 │   │   ├── Opacity/
 │   │   │   └── OpacityToken.swift
 │   │   └── Borders/
@@ -73,18 +73,18 @@ DesignSystem/
 
 ## Theming
 
-Colors and typography are accessed through the theme environment, enabling runtime theme switching.
+Colors, typography, spacing, and dimensions are accessed through the theme environment, enabling runtime theme switching.
 
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│         DSTheme (struct, Sendable)          │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────┐ │
-│  │DSColorPalette│ │ DSTypography │ │DSSpac│ │
-│  │ (protocol)   │ │ (protocol)   │ │(prot)│ │
-│  └──────────────┘ └──────────────┘ └──────┘ │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│               DSTheme (struct, Sendable)                    │
+│  ┌──────────────┐ ┌────────────┐ ┌────────┐ ┌────────────┐  │
+│  │DSColorPalette│ │DSTypography│ │DSSpacing│ │DSDimensions│  │
+│  │ (protocol)   │ │ (protocol) │ │(protocol)│ │ (protocol) │  │
+│  └──────────────┘ └────────────┘ └────────┘ └────────────┘  │
+└──────────────────────────────────────────────────────────────┘
                     │
         SwiftUI Environment (.dsTheme)
                     │
@@ -124,7 +124,8 @@ struct BrandColorPalette: DSColorPalette {
 let brandTheme = DSTheme(
     colors: BrandColorPalette(),
     typography: DefaultTypography(),
-    spacing: DefaultSpacing()
+    spacing: DefaultSpacing(),
+    dimensions: DefaultDimensions()
 )
 ```
 
@@ -196,6 +197,20 @@ theme.spacing.lg    // 16pt
 theme.spacing.xl    // 20pt
 theme.spacing.xxl   // 24pt
 theme.spacing.xxxl  // 32pt
+```
+
+### DSDimensions (via theme)
+
+Dimension values for icons and other sized elements, accessed via `theme.dimensions`:
+
+```swift
+theme.dimensions.xs    // 8pt
+theme.dimensions.sm    // 12pt
+theme.dimensions.md    // 16pt
+theme.dimensions.lg    // 24pt
+theme.dimensions.xl    // 32pt
+theme.dimensions.xxl   // 48pt
+theme.dimensions.xxxl  // 56pt
 ```
 
 ### CornerRadiusToken (static)

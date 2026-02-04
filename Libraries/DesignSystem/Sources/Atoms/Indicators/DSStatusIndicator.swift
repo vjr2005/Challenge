@@ -36,7 +36,7 @@ public enum DSStatus: String, CaseIterable, Sendable {
 /// A status indicator component that displays a colored circle.
 public struct DSStatusIndicator: View {
 	private let status: DSStatus
-	private let size: CGFloat
+	private let size: CGFloat?
 	private let accessibilityIdentifier: String?
 
 	@Environment(\.dsTheme) private var theme
@@ -44,11 +44,11 @@ public struct DSStatusIndicator: View {
 	/// Creates a DSStatusIndicator.
 	/// - Parameters:
 	///   - status: The status to display
-	///   - size: The size of the indicator (default: IconSizeToken.sm)
+	///   - size: The size of the indicator (default: theme.dimensions.sm)
 	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	public init(
 		status: DSStatus,
-		size: CGFloat = IconSizeToken.sm,
+		size: CGFloat? = nil,
 		accessibilityIdentifier: String? = nil
 	) {
 		self.status = status
@@ -57,9 +57,10 @@ public struct DSStatusIndicator: View {
 	}
 
 	public var body: some View {
+		let resolvedSize = size ?? theme.dimensions.sm
 		Circle()
 			.fill(status.color(in: theme.colors))
-			.frame(width: size, height: size)
+			.frame(width: resolvedSize, height: resolvedSize)
 			.accessibilityIdentifier(accessibilityIdentifier ?? "")
 			.accessibilityLabel(status.rawValue)
 	}
@@ -73,8 +74,8 @@ public struct DSStatusIndicator: View {
 		ForEach(DSStatus.allCases, id: \.self) { status in
 			VStack(spacing: SpacingToken.sm) {
 				DSStatusIndicator(status: status)
-				DSStatusIndicator(status: status, size: IconSizeToken.xs)
-				DSStatusIndicator(status: status, size: IconSizeToken.md)
+				DSStatusIndicator(status: status, size: 8)
+				DSStatusIndicator(status: status, size: 16)
 				Text(status.rawValue.capitalized)
 					.font(TextStyle.caption.font)
 					.foregroundStyle(ColorToken.textPrimary)

@@ -26,13 +26,15 @@ Libraries/DesignSystem/
 │   ├── Foundation/           # Design Tokens
 │   │   ├── Theming/          # Theme contracts
 │   │   │   ├── DSColorPalette.swift
-│   │   │   ├── DSTypography.swift
+│   │   │   ├── DSDimensions.swift
 │   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
-│   │   │   └── DSThemeEnvironment.swift
+│   │   │   ├── DSThemeEnvironment.swift
+│   │   │   └── DSTypography.swift
 │   │   ├── Themes/           # Theme implementations
 │   │   │   └── Default/
 │   │   │       ├── DefaultColorPalette.swift
+│   │   │       ├── DefaultDimensions.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
@@ -41,8 +43,6 @@ Libraries/DesignSystem/
 │   │   │   └── ShadowToken.swift
 │   │   ├── Corners/
 │   │   │   └── CornerRadiusToken.swift
-│   │   ├── Icons/
-│   │   │   └── IconSizeToken.swift
 │   │   ├── Opacity/
 │   │   │   └── OpacityToken.swift
 │   │   └── Borders/
@@ -78,7 +78,7 @@ Libraries/DesignSystem/
 
 ## Theming
 
-Colors, typography, and spacing are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (corners, borders, icons, opacity, shadows) remain static.
+Colors, typography, spacing, and dimensions are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (corners, borders, opacity, shadows) remain static.
 
 ### Reading the theme in a View
 
@@ -139,6 +139,22 @@ theme.spacing.xxxl  // 32pt
 
 ---
 
+## DSDimensions (via theme)
+
+Dimension values for icons and other sized elements, accessed via `theme.dimensions`:
+
+```swift
+theme.dimensions.xs    // 8pt
+theme.dimensions.sm    // 12pt
+theme.dimensions.md    // 16pt
+theme.dimensions.lg    // 24pt
+theme.dimensions.xl    // 32pt
+theme.dimensions.xxl   // 48pt
+theme.dimensions.xxxl  // 56pt
+```
+
+---
+
 ## Foundation: Static Design Tokens
 
 ### TextStyle
@@ -177,20 +193,6 @@ ShadowToken.zero    // No shadow
 ShadowToken.small   // Subtle card shadow
 ShadowToken.medium  // Elevated elements
 ShadowToken.large   // Floating elements
-```
-
-### IconSizeToken
-
-Consistent icon sizes:
-
-```swift
-IconSizeToken.xs    // 8pt
-IconSizeToken.sm    // 12pt
-IconSizeToken.md    // 16pt
-IconSizeToken.lg    // 24pt
-IconSizeToken.xl    // 32pt
-IconSizeToken.xxl   // 48pt
-IconSizeToken.xxxl  // 56pt
 ```
 
 ### OpacityToken
@@ -496,7 +498,7 @@ import ChallengeDesignSystem
 - [ ] Use `theme.colors.xxx` for colors
 - [ ] Use `theme.typography.font(for: .xxx)` for fonts
 - [ ] Use `theme.spacing.xxx` for spacing values
-- [ ] Use `IconSizeToken` for icon sizes
+- [ ] Use `theme.dimensions.xxx` for icon and element sizes
 - [ ] Use `OpacityToken` for opacity values
 - [ ] Use `BorderWidthToken` for border widths
 - [ ] Use `DSCard` for card styling

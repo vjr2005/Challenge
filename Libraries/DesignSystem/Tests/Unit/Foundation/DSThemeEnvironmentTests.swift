@@ -35,15 +35,32 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.spacing.xxl == spacing.xxl)
 	}
 
+	@Test("Default theme uses DefaultDimensions")
+	func defaultThemeUsesDefaultDimensions() {
+		let theme = DSTheme.default
+		let dimensions = DefaultDimensions()
+
+		#expect(theme.dimensions.sm == dimensions.sm)
+		#expect(theme.dimensions.lg == dimensions.lg)
+		#expect(theme.dimensions.xxl == dimensions.xxl)
+	}
+
 	@Test("Custom theme can be created with different palette")
 	func customThemeCanBeCreated() {
 		let customPalette = DefaultColorPalette()
 		let customTypography = DefaultTypography()
 		let customSpacing = DefaultSpacing()
-		let theme = DSTheme(colors: customPalette, typography: customTypography, spacing: customSpacing)
+		let customDimensions = DefaultDimensions()
+		let theme = DSTheme(
+			colors: customPalette,
+			typography: customTypography,
+			spacing: customSpacing,
+			dimensions: customDimensions
+		)
 
 		#expect(theme.colors.accent == customPalette.accent)
 		#expect(theme.typography.font(for: .body) == customTypography.font(for: .body))
 		#expect(theme.spacing.lg == customSpacing.lg)
+		#expect(theme.dimensions.lg == customDimensions.lg)
 	}
 }

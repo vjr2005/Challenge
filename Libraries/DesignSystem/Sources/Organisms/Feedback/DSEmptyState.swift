@@ -38,7 +38,7 @@ public struct DSEmptyState: View {
 	public var body: some View {
 		VStack(spacing: theme.spacing.lg) {
 			Image(systemName: icon)
-				.font(.system(size: IconSizeToken.xxxl))
+				.font(.system(size: theme.dimensions.xxxl))
 				.foregroundStyle(theme.colors.textTertiary)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)

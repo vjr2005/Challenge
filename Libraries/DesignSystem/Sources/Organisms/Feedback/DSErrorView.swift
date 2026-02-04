@@ -34,7 +34,7 @@ public struct DSErrorView: View {
 	public var body: some View {
 		VStack(spacing: theme.spacing.lg) {
 			Image(systemName: "exclamationmark.triangle.fill")
-				.font(.system(size: IconSizeToken.xxl))
+				.font(.system(size: theme.dimensions.xxl))
 				.foregroundStyle(theme.colors.statusError)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
