@@ -11,6 +11,7 @@ struct CharacterDetailViewModelTests {
     private let getCharacterDetailUseCaseMock = GetCharacterDetailUseCaseMock()
     private let refreshCharacterDetailUseCaseMock = RefreshCharacterDetailUseCaseMock()
     private let navigatorMock = CharacterDetailNavigatorMock()
+    private let trackerMock = CharacterDetailTrackerMock()
     private let sut: CharacterDetailViewModel
 
     // MARK: - Initialization
@@ -20,7 +21,8 @@ struct CharacterDetailViewModelTests {
             identifier: identifier,
             getCharacterDetailUseCase: getCharacterDetailUseCaseMock,
             refreshCharacterDetailUseCase: refreshCharacterDetailUseCaseMock,
-            navigator: navigatorMock
+            navigator: navigatorMock,
+            tracker: trackerMock
         )
     }
 
@@ -202,5 +204,65 @@ struct CharacterDetailViewModelTests {
         // Then
         #expect(statesDuringRefresh.count == 1)
         #expect(statesDuringRefresh.first == .loaded(loadedCharacter))
+    }
+
+    // MARK: - Tracking
+
+    @Test("didAppear tracks screen viewed with identifier")
+    func didAppearTracksScreenViewed() async {
+        // Given
+        getCharacterDetailUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedIdentifiers == [identifier])
+    }
+
+    @Test("didAppear does not track screen viewed when already loaded")
+    func didAppearDoesNotTrackScreenViewedWhenAlreadyLoaded() async {
+        // Given
+        getCharacterDetailUseCaseMock.result = .success(.stub())
+        await sut.didAppear()
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedIdentifiers == [identifier])
+    }
+
+    @Test("didTapOnRetryButton tracks retry button tapped")
+    func didTapOnRetryButtonTracksRetryButtonTapped() async {
+        // Given
+        getCharacterDetailUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didTapOnRetryButton()
+
+        // Then
+        #expect(trackerMock.retryButtonTappedCallCount == 1)
+    }
+
+    @Test("didPullToRefresh tracks pull to refresh triggered")
+    func didPullToRefreshTracksPullToRefreshTriggered() async {
+        // Given
+        refreshCharacterDetailUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
+    }
+
+    @Test("didTapOnBack tracks back button tapped")
+    func didTapOnBackTracksBackButtonTapped() {
+        // When
+        sut.didTapOnBack()
+
+        // Then
+        #expect(trackerMock.backButtonTappedCallCount == 1)
     }
 }

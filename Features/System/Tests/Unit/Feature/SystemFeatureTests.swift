@@ -7,7 +7,7 @@ import Testing
 struct SystemFeatureTests {
     // MARK: - Properties
 
-    private let sut = SystemFeature()
+    private let sut = SystemFeature(tracker: TrackerMock())
 
     // MARK: - Deep Link Handler
 

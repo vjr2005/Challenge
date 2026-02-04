@@ -47,9 +47,13 @@ Character/
 │       │   │   ├── CharacterListViewModel.swift
 │       │   │   ├── CharacterListViewModelContract.swift
 │       │   │   └── CharacterListViewState.swift
-│       │   └── Navigator/
-│       │       ├── CharacterListNavigator.swift
-│       │       └── CharacterListNavigatorContract.swift
+│       │   ├── Navigator/
+│       │   │   ├── CharacterListNavigator.swift
+│       │   │   └── CharacterListNavigatorContract.swift
+│       │   └── Tracker/
+│       │       ├── CharacterListTracker.swift
+│       │       ├── CharacterListTrackerContract.swift
+│       │       └── CharacterListEvent.swift
 │       └── CharacterDetail/
 │           ├── Views/
 │           │   └── CharacterDetailView.swift
@@ -57,9 +61,13 @@ Character/
 │           │   ├── CharacterDetailViewModel.swift
 │           │   ├── CharacterDetailViewModelContract.swift
 │           │   └── CharacterDetailViewState.swift
-│           └── Navigator/
-│               ├── CharacterDetailNavigator.swift
-│               └── CharacterDetailNavigatorContract.swift
+│           ├── Navigator/
+│           │   ├── CharacterDetailNavigator.swift
+│           │   └── CharacterDetailNavigatorContract.swift
+│           └── Tracker/
+│               ├── CharacterDetailTracker.swift
+│               ├── CharacterDetailTrackerContract.swift
+│               └── CharacterDetailEvent.swift
 └── Tests/
     └── ...
 ```
@@ -104,7 +112,7 @@ public enum CharacterIncomingNavigation: IncomingNavigationContract {
 ### Initialization
 
 ```swift
-let feature = CharacterFeature(httpClient: httpClient)
+let feature = CharacterFeature(httpClient: httpClient, tracker: tracker)
 ```
 
 ### Navigation

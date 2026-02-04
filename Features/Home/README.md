@@ -24,9 +24,13 @@ Home/
 │           ├── ViewModels/
 │           │   ├── HomeViewModel.swift
 │           │   └── HomeViewModelContract.swift
-│           └── Navigator/
-│               ├── HomeNavigator.swift
-│               └── HomeNavigatorContract.swift
+│           ├── Navigator/
+│           │   ├── HomeNavigator.swift
+│           │   └── HomeNavigatorContract.swift
+│           └── Tracker/
+│               ├── HomeTracker.swift
+│               ├── HomeTrackerContract.swift
+│               └── HomeEvent.swift
 └── Tests/
     └── ...
 ```
@@ -76,7 +80,7 @@ public enum HomeOutgoingNavigation: OutgoingNavigationContract {
 ### Initialization
 
 ```swift
-let feature = HomeFeature()
+let feature = HomeFeature(tracker: tracker)
 ```
 
 ### Navigation

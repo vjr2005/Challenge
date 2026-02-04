@@ -13,7 +13,7 @@ struct CharacterContainerTests {
     // MARK: - Initialization
 
     init() {
-        sut = CharacterContainer(httpClient: httpClientMock)
+        sut = CharacterContainer(httpClient: httpClientMock, tracker: TrackerMock())
     }
 
     // MARK: - Tests

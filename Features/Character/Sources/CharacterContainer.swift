@@ -6,14 +6,18 @@ public final class CharacterContainer: Sendable {
     // MARK: - Dependencies
 
     private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
 
     // MARK: - Init
 
-    /// Creates a new CharacterContainer with the given HTTP client.
-    /// - Parameter httpClient: The HTTP client used for network requests.
-    public init(httpClient: any HTTPClientContract) {
+    /// Creates a new CharacterContainer with the given dependencies.
+    /// - Parameters:
+    ///   - httpClient: The HTTP client used for network requests.
+    ///   - tracker: The tracker used to register analytics events.
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.httpClient = httpClient
+        self.tracker = tracker
     }
 
     // MARK: - Repository
@@ -32,7 +36,8 @@ public final class CharacterContainer: Sendable {
             getCharactersUseCase: GetCharactersUseCase(repository: repository),
             refreshCharactersUseCase: RefreshCharactersUseCase(repository: repository),
             searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
-            navigator: CharacterListNavigator(navigator: navigator)
+            navigator: CharacterListNavigator(navigator: navigator),
+            tracker: CharacterListTracker(tracker: tracker)
         )
     }
 
@@ -44,7 +49,8 @@ public final class CharacterContainer: Sendable {
             identifier: identifier,
             getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: repository),
             refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
-            navigator: CharacterDetailNavigator(navigator: navigator)
+            navigator: CharacterDetailNavigator(navigator: navigator),
+            tracker: CharacterDetailTracker(tracker: tracker)
         )
     }
 }

@@ -1,3 +1,4 @@
+import ChallengeCore
 import Foundation
 
 @Observable
@@ -8,33 +9,40 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     private let getCharacterDetailUseCase: GetCharacterDetailUseCaseContract
     private let refreshCharacterDetailUseCase: RefreshCharacterDetailUseCaseContract
     private let navigator: CharacterDetailNavigatorContract
+    private let tracker: CharacterDetailTrackerContract
 
     init(
         identifier: Int,
         getCharacterDetailUseCase: GetCharacterDetailUseCaseContract,
         refreshCharacterDetailUseCase: RefreshCharacterDetailUseCaseContract,
-        navigator: CharacterDetailNavigatorContract
+        navigator: CharacterDetailNavigatorContract,
+        tracker: CharacterDetailTrackerContract
     ) {
         self.identifier = identifier
         self.getCharacterDetailUseCase = getCharacterDetailUseCase
         self.refreshCharacterDetailUseCase = refreshCharacterDetailUseCase
         self.navigator = navigator
+        self.tracker = tracker
     }
 
     func didAppear() async {
         guard case .idle = state else { return }
+        tracker.trackScreenViewed(identifier: identifier)
         await load()
     }
 
     func didTapOnRetryButton() async {
+        tracker.trackRetryButtonTapped()
         await load()
     }
 
     func didPullToRefresh() async {
+        tracker.trackPullToRefreshTriggered()
         await refresh()
     }
 
     func didTapOnBack() {
+        tracker.trackBackButtonTapped()
         navigator.goBack()
     }
 }

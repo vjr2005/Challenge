@@ -1,5 +1,6 @@
 import Foundation
 
 protocol HomeViewModelContract {
-	func didTapOnCharacterButton()
+    func didAppear()
+    func didTapOnCharacterButton()
 }

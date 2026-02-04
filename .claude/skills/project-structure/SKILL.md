@@ -115,6 +115,10 @@ FeatureName/
 │       │   ├── Navigator/
 │       │   │   ├── {Name}ListNavigatorContract.swift
 │       │   │   └── {Name}ListNavigator.swift
+│       │   ├── Tracker/
+│       │   │   ├── {Name}ListTrackerContract.swift
+│       │   │   ├── {Name}ListTracker.swift
+│       │   │   └── {Name}ListEvent.swift
 │       │   ├── Views/
 │       │   │   └── {Name}ListView.swift
 │       │   └── ViewModels/
@@ -124,6 +128,10 @@ FeatureName/
 │           ├── Navigator/
 │           │   ├── {Name}DetailNavigatorContract.swift
 │           │   └── {Name}DetailNavigator.swift
+│           ├── Tracker/
+│           │   ├── {Name}DetailTrackerContract.swift
+│           │   ├── {Name}DetailTracker.swift
+│           │   └── {Name}DetailEvent.swift
 │           ├── Views/
 │           │   └── {Name}DetailView.swift
 │           └── ViewModels/
@@ -177,6 +185,10 @@ Presentation/
 │   ├── Navigator/
 │   │   ├── CharacterDetailNavigatorContract.swift
 │   │   └── CharacterDetailNavigator.swift
+│   ├── Tracker/
+│   │   ├── CharacterDetailTrackerContract.swift
+│   │   ├── CharacterDetailTracker.swift
+│   │   └── CharacterDetailEvent.swift
 │   ├── Views/
 │   │   └── CharacterDetailView.swift
 │   └── ViewModels/
@@ -186,6 +198,10 @@ Presentation/
 │   ├── Navigator/
 │   │   ├── CharacterListNavigatorContract.swift
 │   │   └── CharacterListNavigator.swift
+│   ├── Tracker/
+│   │   ├── CharacterListTrackerContract.swift
+│   │   ├── CharacterListTracker.swift
+│   │   └── CharacterListEvent.swift
 │   ├── Views/
 │   │   └── CharacterListView.swift
 │   └── ViewModels/
@@ -197,6 +213,7 @@ Presentation/
 **Naming conventions:**
 - Folder name matches the feature (e.g., `CharacterDetail`)
 - Navigator: `{Feature}Navigator.swift` and `{Feature}NavigatorContract.swift`
+- Tracker: `{Feature}Tracker.swift`, `{Feature}TrackerContract.swift`, and `{Feature}Event.swift`
 - View: `{Feature}View.swift`
 - ViewModel: `{Feature}ViewModel.swift`
 - ViewState: `{Feature}ViewState.swift`
@@ -330,16 +347,27 @@ Libraries/Core/
 │   │   ├── ImageLoaderContract.swift
 │   │   ├── CachedImageLoader.swift
 │   │   └── ImageLoaderEnvironment.swift
+│   ├── Tracking/
+│   │   ├── TrackerContract.swift
+│   │   ├── Tracker.swift
+│   │   ├── TrackingEvent.swift
+│   │   └── Providers/
+│   │       ├── TrackingProviderContract.swift
+│   │       └── ConsoleTrackingProvider.swift
 │   └── Extensions/
 │       └── ...
 ├── Tests/
 │   └── Unit/
 │       ├── AppEnvironment/
 │       │   └── AppEnvironmentTests.swift
-│       └── Navigation/
-│           └── NavigationCoordinatorTests.swift
+│       ├── Navigation/
+│       │   └── NavigationCoordinatorTests.swift
+│       └── Tracking/
+│           ├── TrackerTests.swift
+│           └── ConsoleTrackingProviderTests.swift
 └── Mocks/
     ├── NavigatorMock.swift
+    ├── TrackerMock.swift
     ├── ImageLoaderMock.swift
     └── Bundle+JSON.swift
 ```
@@ -482,6 +510,9 @@ AppKit/
 | DataSource | `{Name}{Type}DataSource.swift` | `CharacterRemoteDataSource.swift` |
 | Navigator | `{ScreenName}Navigator.swift` | `CharacterDetailNavigator.swift` |
 | NavigatorContract | `{ScreenName}NavigatorContract.swift` | `CharacterDetailNavigatorContract.swift` |
+| Tracker | `{ScreenName}Tracker.swift` | `CharacterDetailTracker.swift` |
+| TrackerContract | `{ScreenName}TrackerContract.swift` | `CharacterDetailTrackerContract.swift` |
+| Event | `{ScreenName}Event.swift` | `CharacterDetailEvent.swift` |
 | View | `{ScreenName}View.swift` | `CharacterDetailView.swift` |
 | ViewModel | `{ScreenName}ViewModel.swift` | `CharacterDetailViewModel.swift` |
 | ViewState | `{ScreenName}ViewState.swift` | `CharacterDetailViewState.swift` |
@@ -504,7 +535,7 @@ AppKit/
 - [ ] {Feature}Feature.swift as public entry point with `makeMainView()` and `resolve()`
 - [ ] Sources organized by layer: Domain, Data, Presentation
 - [ ] Navigation folder inside `Presentation/Navigation/`
-- [ ] Presentation organized by screen: {ScreenName}/Navigator/, {ScreenName}/Views/, {ScreenName}/ViewModels/
+- [ ] Presentation organized by screen: {ScreenName}/Navigator/, {ScreenName}/Tracker/, {ScreenName}/Views/, {ScreenName}/ViewModels/
 - [ ] Unit tests in `Tests/Unit/` mirroring Sources structure
 - [ ] Snapshot tests in `Tests/Snapshots/`
 - [ ] Feature tests in `Tests/Unit/Feature/`

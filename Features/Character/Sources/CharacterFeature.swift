@@ -10,9 +10,12 @@ public struct CharacterFeature: FeatureContract {
 
     // MARK: - Init
 
-    /// Creates the character feature with the given HTTP client.
-    public init(httpClient: any HTTPClientContract) {
-        self.container = CharacterContainer(httpClient: httpClient)
+    /// Creates the character feature with the given dependencies.
+    /// - Parameters:
+    ///   - httpClient: The HTTP client used for network requests.
+    ///   - tracker: The tracker used to register analytics events.
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+        self.container = CharacterContainer(httpClient: httpClient, tracker: tracker)
     }
 
     // MARK: - Feature Protocol

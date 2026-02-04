@@ -19,6 +19,7 @@ public struct AppContainer: Sendable {
     // MARK: - Shared Dependencies
 
     public let httpClient: any HTTPClientContract
+    public let tracker: any TrackerContract
 
     // MARK: - Features
 
@@ -32,14 +33,18 @@ public struct AppContainer: Sendable {
 
     // MARK: - Init
 
-    public init(httpClient: (any HTTPClientContract)? = nil) {
+    public init(
+        httpClient: (any HTTPClientContract)? = nil,
+        tracker: (any TrackerContract)? = nil
+    ) {
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
+        self.tracker = tracker ?? Tracker(providers: Self.makeTrackingProviders())
 
-        homeFeature = HomeFeature()
-        characterFeature = CharacterFeature(httpClient: self.httpClient)
-        systemFeature = SystemFeature()
+        homeFeature = HomeFeature(tracker: self.tracker)
+        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+        systemFeature = SystemFeature(tracker: self.tracker)
     }
 
     // MARK: - Navigation Resolution
@@ -74,6 +79,16 @@ public struct AppContainer: Sendable {
 
     public func makeRootView(navigator: any NavigatorContract) -> AnyView {
         homeFeature.makeMainView(navigator: navigator)
+    }
+}
+
+// MARK: - Tracking Providers
+
+private extension AppContainer {
+    static func makeTrackingProviders() -> [any TrackingProviderContract] {
+        [
+            ConsoleTrackingProvider()
+        ]
     }
 }
 ```
@@ -124,12 +139,14 @@ public final class CharacterContainer: Sendable {
     // MARK: - Dependencies
 
     private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
 
     // MARK: - Init
 
-    public init(httpClient: any HTTPClientContract) {
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.httpClient = httpClient
+        self.tracker = tracker
     }
 
     // MARK: - Repository
@@ -148,7 +165,8 @@ public final class CharacterContainer: Sendable {
             getCharactersUseCase: GetCharactersUseCase(repository: repository),
             refreshCharactersUseCase: RefreshCharactersUseCase(repository: repository),
             searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
-            navigator: CharacterListNavigator(navigator: navigator)
+            navigator: CharacterListNavigator(navigator: navigator),
+            tracker: CharacterListTracker(tracker: tracker)
         )
     }
 
@@ -160,7 +178,8 @@ public final class CharacterContainer: Sendable {
             identifier: identifier,
             getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: repository),
             refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
-            navigator: CharacterDetailNavigator(navigator: navigator)
+            navigator: CharacterDetailNavigator(navigator: navigator),
+            tracker: CharacterDetailTracker(tracker: tracker)
         )
     }
 }
@@ -199,8 +218,8 @@ public struct CharacterFeature: FeatureContract {
 
     // MARK: - Init
 
-    public init(httpClient: any HTTPClientContract) {
-        self.container = CharacterContainer(httpClient: httpClient)
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+        self.container = CharacterContainer(httpClient: httpClient, tracker: tracker)
     }
 
     // MARK: - Feature Protocol
@@ -302,14 +321,23 @@ public struct RootContainerView: View {
 import ChallengeCore
 
 public final class HomeContainer: Sendable {
+    // MARK: - Dependencies
+
+    private let tracker: any TrackerContract
+
     // MARK: - Init
 
-    public init() {}
+    public init(tracker: any TrackerContract) {
+        self.tracker = tracker
+    }
 
     // MARK: - Factories
 
     func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
-        HomeViewModel(navigator: HomeNavigator(navigator: navigator))
+        HomeViewModel(
+            navigator: HomeNavigator(navigator: navigator),
+            tracker: HomeTracker(tracker: tracker)
+        )
     }
 }
 ```
@@ -367,8 +395,8 @@ public struct HomeFeature: FeatureContract {
 
     // MARK: - Init
 
-    public init() {
-        self.container = HomeContainer()
+    public init(tracker: any TrackerContract) {
+        self.container = HomeContainer(tracker: tracker)
     }
 
     // MARK: - Feature Protocol
@@ -418,13 +446,14 @@ struct CharacterFeatureTests {
     // MARK: - Properties
 
     private let httpClientMock = HTTPClientMock()
+    private let trackerMock = TrackerMock()
     private let navigatorMock = NavigatorMock()
     private let sut: CharacterFeature
 
     // MARK: - Initialization
 
     init() {
-        sut = CharacterFeature(httpClient: httpClientMock)
+        sut = CharacterFeature(httpClient: httpClientMock, tracker: trackerMock)
     }
 
     // MARK: - Init
@@ -491,8 +520,15 @@ import Testing
 struct HomeFeatureTests {
     // MARK: - Properties
 
+    private let trackerMock = TrackerMock()
     private let navigatorMock = NavigatorMock()
-    private let sut = HomeFeature()
+    private let sut: HomeFeature
+
+    // MARK: - Initialization
+
+    init() {
+        sut = HomeFeature(tracker: trackerMock)
+    }
 
     // MARK: - Init
 
@@ -554,13 +590,14 @@ struct {Feature}FeatureTests {
     // MARK: - Properties
 
     private let httpClientMock = HTTPClientMock()
+    private let trackerMock = TrackerMock()
     private let navigatorMock = NavigatorMock()
     private let sut: {Feature}Feature
 
     // MARK: - Initialization
 
     init() {
-        sut = {Feature}Feature(httpClient: httpClientMock)
+        sut = {Feature}Feature(httpClient: httpClientMock, tracker: trackerMock)
     }
 
     // MARK: - Init

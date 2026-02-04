@@ -26,6 +26,7 @@ ChallengeApp
     └── AppContainer (Composition Root)
         │
         ├── httpClient: HTTPClientContract
+        ├── tracker: TrackerContract
         │
         └── features: [Feature]
             ├── CharacterFeature (navigation + deep links)
@@ -67,12 +68,20 @@ Features/{Feature}/
 │       │   ├── Navigator/
 │       │   │   ├── {Name}ListNavigatorContract.swift
 │       │   │   └── {Name}ListNavigator.swift
+│       │   ├── Tracker/
+│       │   │   ├── {Name}ListTrackerContract.swift
+│       │   │   ├── {Name}ListTracker.swift
+│       │   │   └── {Name}ListEvent.swift
 │       │   ├── Views/
 │       │   └── ViewModels/
 │       └── {Name}Detail/
 │           ├── Navigator/
 │           │   ├── {Name}DetailNavigatorContract.swift
 │           │   └── {Name}DetailNavigator.swift
+│           ├── Tracker/
+│           │   ├── {Name}DetailTrackerContract.swift
+│           │   ├── {Name}DetailTracker.swift
+│           │   └── {Name}DetailEvent.swift
 │           ├── Views/
 │           └── ViewModels/
 └── Tests/
@@ -81,7 +90,7 @@ Features/{Feature}/
 ```
 
 **Key Concepts:**
-- **AppContainer**: Composition Root - creates shared dependencies (HTTPClient) and all features
+- **AppContainer**: Composition Root - creates shared dependencies (HTTPClient, Tracker) and all features
 - **{Feature}Container**: Handles dependency composition (repositories, factories)
 - **{Feature}Feature**: Handles navigation and deep links, delegates DI to Container
 - Views receive **only ViewModel** via init
@@ -97,28 +106,39 @@ import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
 import ChallengeNetworking
+import ChallengeSystem
 import SwiftUI
 
 struct AppContainer: Sendable {
     // MARK: - Shared Dependencies
 
     let httpClient: any HTTPClientContract
+    let tracker: any TrackerContract
 
     // MARK: - Features
 
-    let features: [any FeatureContract]
+    private let homeFeature: HomeFeature
+    private let characterFeature: CharacterFeature
+    private let systemFeature: SystemFeature
+
+    var features: [any FeatureContract] {
+        [homeFeature, characterFeature, systemFeature]
+    }
 
     // MARK: - Init
 
-    init(httpClient: (any HTTPClientContract)? = nil) {
+    init(
+        httpClient: (any HTTPClientContract)? = nil,
+        tracker: (any TrackerContract)? = nil
+    ) {
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
+        self.tracker = tracker ?? Tracker(providers: Self.makeTrackingProviders())
 
-        self.features = [
-            CharacterFeature(httpClient: self.httpClient),
-            HomeFeature()
-        ]
+        homeFeature = HomeFeature(tracker: self.tracker)
+        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+        systemFeature = SystemFeature(tracker: self.tracker)
     }
 
     func handle(url: URL, navigator: any NavigatorContract) {
@@ -132,18 +152,29 @@ struct AppContainer: Sendable {
 
     // MARK: - Factory Methods
 
-    func makeRootView(navigator: any NavigatorContract) -> some View {
-        HomeFeature().makeHomeView(navigator: navigator)
+    func makeRootView(navigator: any NavigatorContract) -> AnyView {
+        homeFeature.makeMainView(navigator: navigator)
+    }
+}
+
+// MARK: - Tracking Providers
+
+private extension AppContainer {
+    static func makeTrackingProviders() -> [any TrackingProviderContract] {
+        [
+            ConsoleTrackingProvider()
+        ]
     }
 }
 ```
 
 **Rules:**
 - Centralizes ALL dependency injection in one place
-- Creates shared dependencies (HTTPClient, analytics, logger, etc.)
+- Creates shared dependencies (HTTPClient, Tracker, etc.)
 - Injects shared dependencies into features
 - Handles deep links via feature handlers
-- `features` is stored property (not computed) to maintain consistency
+- `features` is a computed property aggregating private feature instances
+- Tracking providers are registered via a static factory method (`makeTrackingProviders()`), as it is called during `init` before `self` is fully initialized
 
 ---
 
@@ -158,12 +189,14 @@ public final class {Feature}Container: Sendable {
     // MARK: - Dependencies
 
     private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
     private let memoryDataSource = {Name}MemoryDataSource()
 
     // MARK: - Init
 
-    public init(httpClient: any HTTPClientContract) {
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.httpClient = httpClient
+        self.tracker = tracker
     }
 
     // MARK: - Repository
@@ -181,7 +214,8 @@ public final class {Feature}Container: Sendable {
         {Name}ListViewModel(
             get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
             refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: repository),
-            navigator: {Name}ListNavigator(navigator: navigator)
+            navigator: {Name}ListNavigator(navigator: navigator),
+            tracker: {Name}ListTracker(tracker: tracker)
         )
     }
 
@@ -193,7 +227,8 @@ public final class {Feature}Container: Sendable {
             identifier: identifier,
             get{Name}DetailUseCase: Get{Name}DetailUseCase(repository: repository),
             refresh{Name}DetailUseCase: Refresh{Name}DetailUseCase(repository: repository),
-            navigator: {Name}DetailNavigator(navigator: navigator)
+            navigator: {Name}DetailNavigator(navigator: navigator),
+            tracker: {Name}DetailTracker(tracker: tracker)
         )
     }
 }
@@ -207,11 +242,12 @@ public final class {Feature}Container: Sendable {
 
 **Rules:**
 - **public final class** with `Sendable` conformance
-- Receives `httpClient` from Feature (injected by AppContainer)
+- Receives `httpClient` and `tracker` from Feature (injected by AppContainer)
 - Owns **stored memoryDataSource** (source of truth for caching)
 - Has **computed repository** (uses shared memoryDataSource)
 - Contains all **factory methods** for ViewModels
 - Factory methods receive `navigator: any NavigatorContract`
+- Factory methods create screen-specific trackers: `{Name}ListTracker(tracker: tracker)`
 
 ---
 
@@ -325,8 +361,8 @@ public struct {Feature}Feature: FeatureContract {
 
     // MARK: - Init
 
-    public init(httpClient: any HTTPClientContract) {
-        self.container = {Feature}Container(httpClient: httpClient)
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+        self.container = {Feature}Container(httpClient: httpClient, tracker: tracker)
     }
 
     // MARK: - Feature Protocol
@@ -365,7 +401,7 @@ public struct {Feature}Feature: FeatureContract {
 
 **Rules:**
 - **public struct** implementing `Feature` protocol
-- **Required httpClient** in init (injected by AppContainer)
+- **Required httpClient and tracker** in init (injected by AppContainer)
 - Creates and owns its **Container**
 - **deepLinkHandler** property (optional) - Returns handler instance if feature handles deep links
 - **makeMainView()** - Returns the default entry point view
@@ -387,8 +423,8 @@ public struct HomeFeature: FeatureContract {
 
     // MARK: - Init
 
-    public init() {
-        self.container = HomeContainer()
+    public init(tracker: any TrackerContract) {
+        self.container = HomeContainer(tracker: tracker)
     }
 
     // MARK: - Feature Protocol
@@ -421,14 +457,23 @@ public struct HomeFeature: FeatureContract {
 import ChallengeCore
 
 public final class HomeContainer: Sendable {
+    // MARK: - Dependencies
+
+    private let tracker: any TrackerContract
+
     // MARK: - Init
 
-    public init() {}
+    public init(tracker: any TrackerContract) {
+        self.tracker = tracker
+    }
 
     // MARK: - Factories
 
     func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
-        HomeViewModel(navigator: HomeNavigator(navigator: navigator))
+        HomeViewModel(
+            navigator: HomeNavigator(navigator: navigator),
+            tracker: HomeTracker(tracker: tracker)
+        )
     }
 }
 ```
@@ -442,10 +487,12 @@ public final class HomeContainer: Sendable {
 | Type | Pattern | Reason |
 |------|---------|--------|
 | HTTPClient | Required init parameter | Injected by AppContainer |
+| Tracker | Required init parameter | Injected by AppContainer |
 | Container | Created in Feature init | Owns dependency composition |
 | MemoryDataSource | Instance property in Container (`let`) | Maintains cache state |
 | Repository | Computed property in Container (`var`) | Uses shared memoryDataSource |
 | Navigator | Factory method (inline) | New instance per ViewModel |
+| Screen Tracker | Factory method (inline) | New instance per ViewModel |
 | ViewModel | Factory method | New instance per navigation |
 | UseCase | Created inline | Stateless |
 
@@ -467,6 +514,9 @@ public final class HomeContainer: Sendable {
 | {Feature}DeepLinkHandler | internal | Accessed via Feature.deepLinkHandler |
 | NavigatorContract | internal | Internal to feature |
 | Navigator | internal | Internal implementation |
+| TrackerContract | internal | Internal to feature |
+| Tracker | internal | Internal implementation |
+| Event | internal | Internal to feature |
 | Views | internal | Internal UI |
 
 ---
@@ -605,8 +655,8 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Create `RootContainerView.swift` in `AppKit/Sources/Presentation/Views/`
 - [ ] Create `{Feature}Container.swift` for dependency composition
 - [ ] Create `{Feature}Feature.swift` as struct implementing `Feature` protocol
-- [ ] Feature requires `httpClient` in init (no optional default)
-- [ ] Feature creates Container in init
+- [ ] Feature requires `httpClient` and `tracker` in init (no optional default)
+- [ ] Feature creates Container in init, passing `tracker`
 - [ ] Feature implements `FeatureContract` protocol
 - [ ] Feature implements `makeMainView(navigator:)` returning default entry point
 - [ ] Feature implements `resolve(_:navigator:)` returning view or `nil`
@@ -617,10 +667,13 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Create `{Feature}OutgoingNavigation.swift` for cross-feature navigation (if needed)
 - [ ] Create `{Feature}DeepLinkHandler.swift` (only if feature handles deep links)
 - [ ] Create Navigator for each screen in `Presentation/{Screen}/Navigator/`
+- [ ] Create Tracker for each screen in `Presentation/{Screen}/Tracker/`
 - [ ] Views only receive ViewModel
 - [ ] Add feature to `AppContainer.features` array
 - [ ] `AppContainer` has `resolve(_:navigator:)` iterating features
 - [ ] `AppContainer` has `handle(url:navigator:)` for deep links
+- [ ] `AppContainer` has `tracker: any TrackerContract` shared dependency
+- [ ] `AppContainer` has `makeTrackingProviders()` static factory method
 - [ ] `AppContainer` has `makeRootView(navigator:)` factory method
 - [ ] `ChallengeApp` imports `ChallengeAppKit` and uses `RootContainerView`
 - [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`

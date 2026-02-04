@@ -16,6 +16,9 @@ struct NotFoundView<ViewModel: NotFoundViewModelContract>: View {
             },
             accessibilityIdentifier: AccessibilityIdentifier.container
         )
+        .onAppear {
+            viewModel.didAppear()
+        }
     }
 }
 
@@ -42,6 +45,7 @@ private enum AccessibilityIdentifier {
 }
 
 private final class NotFoundViewModelPreviewStub: NotFoundViewModelContract {
+    func didAppear() {}
     func didTapGoBack() {}
 }
 #endif

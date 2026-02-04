@@ -20,9 +20,13 @@ Features/{Feature}/
 ├── Sources/
 │   └── Presentation/
 │       └── {ScreenName}/                           # Group by screen (e.g., CharacterDetail)
-│           ├── Navigation/
+│           ├── Navigator/
 │           │   ├── {ScreenName}NavigatorContract.swift  # Navigator protocol
 │           │   └── {ScreenName}Navigator.swift          # Navigator implementation
+│           ├── Tracker/
+│           │   ├── {ScreenName}TrackerContract.swift    # Tracker protocol
+│           │   ├── {ScreenName}Tracker.swift            # Tracker implementation
+│           │   └── {ScreenName}Event.swift              # Tracking events
 │           ├── Views/
 │           │   └── {ScreenName}View.swift
 │           └── ViewModels/
@@ -31,8 +35,11 @@ Features/{Feature}/
 └── Tests/
     └── Presentation/
         └── {ScreenName}/                           # Same structure as Sources
-            ├── Navigation/
+            ├── Navigator/
             │   └── {ScreenName}NavigatorTests.swift
+            ├── Tracker/
+            │   ├── {ScreenName}TrackerTests.swift
+            │   └── {ScreenName}EventTests.swift
             └── ViewModels/
                 └── {ScreenName}ViewModelTests.swift
 ```
@@ -186,9 +193,9 @@ private extension {Name}ListViewModel {
 
 ---
 
-## ViewModel Pattern (with Navigation)
+## ViewModel Pattern (with Navigation and Tracking)
 
-ViewModels that trigger navigation receive a **NavigatorContract**:
+ViewModels that trigger navigation receive a **NavigatorContract** and a **TrackerContract**:
 
 ```swift
 import Foundation
@@ -199,10 +206,16 @@ final class {Name}ListViewModel {
 
     private let get{Name}sUseCase: Get{Name}sUseCaseContract
     private let navigator: {Name}ListNavigatorContract
+    private let tracker: {Name}ListTrackerContract
 
-    init(get{Name}sUseCase: Get{Name}sUseCaseContract, navigator: {Name}ListNavigatorContract) {
+    init(
+        get{Name}sUseCase: Get{Name}sUseCaseContract,
+        navigator: {Name}ListNavigatorContract,
+        tracker: {Name}ListTrackerContract
+    ) {
         self.get{Name}sUseCase = get{Name}sUseCase
         self.navigator = navigator
+        self.tracker = tracker
     }
 
     func load() async {
@@ -228,10 +241,12 @@ final class {Name}ListViewModel {
 
 **Rules:**
 - Inject **NavigatorContract** (not RouterContract directly)
+- Inject **TrackerContract** for screen-specific tracking
 - Use **semantic method names**: `didTapOn...`, `didSelect...`
-- Never expose navigator to View
+- Never expose navigator or tracker to View
 - Navigator handles internal vs external navigation details
-- See `/router` skill for Navigator pattern documentation
+- Tracker handles event dispatching to the core tracker
+- See `/navigator` skill for Navigator pattern documentation
 
 ---
 
@@ -243,12 +258,19 @@ ViewModels that **only trigger navigation** (no observable state) don't need `@O
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class {Name}ViewModel {
     private let navigator: {Name}NavigatorContract
+    private let tracker: {Name}TrackerContract
 
-    init(navigator: {Name}NavigatorContract) {
+    init(navigator: {Name}NavigatorContract, tracker: {Name}TrackerContract) {
         self.navigator = navigator
+        self.tracker = tracker
+    }
+
+    func didAppear() {
+        tracker.trackScreenViewed()
     }
 
     func didTapOn{Action}() {
+        tracker.track{Action}ButtonTapped()
         navigator.navigateTo{Destination}()
     }
 }
@@ -256,7 +278,7 @@ final class {Name}ViewModel {
 
 **When to use:**
 - ViewModel has **no state** for the View to observe
-- ViewModel only exposes **action methods** (navigation, triggers)
+- ViewModel only exposes **action methods** (navigation, tracking, triggers)
 - View uses `let viewModel` instead of `@State private var viewModel`
 
 **Example: HomeViewModel**
@@ -265,12 +287,19 @@ final class {Name}ViewModel {
 /// Not @Observable: no state for the view to observe, only exposes actions.
 final class HomeViewModel {
     private let navigator: HomeNavigatorContract
+    private let tracker: HomeTrackerContract
 
-    init(navigator: HomeNavigatorContract) {
+    init(navigator: HomeNavigatorContract, tracker: HomeTrackerContract) {
         self.navigator = navigator
+        self.tracker = tracker
+    }
+
+    func didAppear() {
+        tracker.trackScreenViewed()
     }
 
     func didTapOnCharacterButton() {
+        tracker.trackCharacterButtonTapped()
         navigator.navigateToCharacters()
     }
 }
@@ -769,8 +798,11 @@ private extension CharacterListViewModel {
 |-----------|------------|----------|
 | ViewState | internal | `Sources/Presentation/{ScreenName}/ViewModels/` |
 | ViewModel | internal | `Sources/Presentation/{ScreenName}/ViewModels/` |
-| NavigatorContract | internal | `Sources/Presentation/{ScreenName}/Navigation/` |
-| Navigator | internal | `Sources/Presentation/{ScreenName}/Navigation/` |
+| NavigatorContract | internal | `Sources/Presentation/{ScreenName}/Navigator/` |
+| Navigator | internal | `Sources/Presentation/{ScreenName}/Navigator/` |
+| TrackerContract | internal | `Sources/Presentation/{ScreenName}/Tracker/` |
+| Tracker | internal | `Sources/Presentation/{ScreenName}/Tracker/` |
+| Event | internal | `Sources/Presentation/{ScreenName}/Tracker/` |
 
 ---
 
@@ -780,9 +812,12 @@ private extension CharacterListViewModel {
 - [ ] Create ViewModel class with @Observable
 - [ ] Inject UseCase via protocol (contract)
 - [ ] Inject NavigatorContract for navigation (not RouterContract)
+- [ ] Inject TrackerContract for screen-specific tracking
 - [ ] Implement `didAppear()` (only from `.idle`) and `didTapOnRetryButton()` (always) public, `load()` private
+- [ ] Add tracking calls in `didAppear()`, `didSelect()`, `didTapOn...()` methods
 - [ ] Guard observable properties with `oldValue` check in `didSet`
 - [ ] Create tests for initial state, success, error, and call verification
 - [ ] Create tests for `didAppear()` state transitions (loaded, empty, error) and `didTapOnRetryButton()` behavior
 - [ ] Create NavigatorMock for testing navigation
+- [ ] Create TrackerMock for testing tracking calls
 - [ ] Run tests

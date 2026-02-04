@@ -10,8 +10,10 @@ public struct SystemFeature: FeatureContract {
 
     // MARK: - Init
 
-    public init() {
-        self.container = SystemContainer()
+    /// Creates the system feature.
+    /// - Parameter tracker: The tracker used to register analytics events.
+    public init(tracker: any TrackerContract) {
+        self.container = SystemContainer(tracker: tracker)
     }
 
     // MARK: - Feature Protocol

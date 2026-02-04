@@ -9,6 +9,7 @@ public struct AppContainer: Sendable {
 	// MARK: - Shared Dependencies
 
 	public let httpClient: any HTTPClientContract
+	public let tracker: any TrackerContract
 
 	// MARK: - Features
 
@@ -22,14 +23,20 @@ public struct AppContainer: Sendable {
 
 	// MARK: - Init
 
-	public init(httpClient: (any HTTPClientContract)? = nil) {
+	public init(
+		httpClient: (any HTTPClientContract)? = nil,
+		tracker: (any TrackerContract)? = nil
+	) {
 		self.httpClient = httpClient ?? HTTPClient(
 			baseURL: AppEnvironment.current.rickAndMorty.baseURL
 		)
+		let providers = Self.makeTrackingProviders()
+		providers.forEach { $0.configure() }
+		self.tracker = tracker ?? Tracker(providers: providers)
 
-		homeFeature = HomeFeature()
-		characterFeature = CharacterFeature(httpClient: self.httpClient)
-		systemFeature = SystemFeature()
+		homeFeature = HomeFeature(tracker: self.tracker)
+		characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+		systemFeature = SystemFeature(tracker: self.tracker)
 	}
 
 	// MARK: - Navigation Resolution
@@ -66,5 +73,15 @@ public struct AppContainer: Sendable {
 
 	public func makeRootView(navigator: any NavigatorContract) -> AnyView {
 		homeFeature.makeMainView(navigator: navigator)
+	}
+}
+
+// MARK: - Tracking Providers
+
+private extension AppContainer {
+	static func makeTrackingProviders() -> [any TrackingProviderContract] {
+		[
+            ConsoleTrackingProvider()
+        ]
 	}
 }

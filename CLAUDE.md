@@ -28,6 +28,8 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **Code coherence is mandatory.** The same logic must be used to solve the same problem throughout the project. When refactoring or adding new code, analyze the entire project to identify similar patterns and ensure consistency. Never implement the same solution in different ways.
 >
+> **Documentation coherence is mandatory.** After any logic or structural change, review all project documentation to detect inconsistencies and update it if needed. Documentation includes all `.md` files in the project (feature READMEs, module READMEs), this `CLAUDE.md` file, and all skills (`.claude/skills/`). If any inconsistency is found, ask the user whether to proceed with the documentation update before making changes.
+>
 > **All code must follow SOLID principles:**
 > - **S**ingle Responsibility: Each class/struct should have only one reason to change
 > - **O**pen/Closed: Open for extension, closed for modification
@@ -154,6 +156,8 @@ Module/Tests/
 | Unit tests | Use Swift Testing (`@Test("description")`, `#expect`) |
 | Snapshot tests | Use SnapshotTesting library |
 | UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
+
+| Simulator | Tests run on **iPhone 17 Pro** simulator. The simulator language must be set to **English** to prevent snapshot test failures |
 
 For details, see `/testing` skill.
 

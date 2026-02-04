@@ -58,11 +58,22 @@ Composition root that creates and wires all dependencies:
 ```swift
 public struct AppContainer: Sendable {
     public let httpClient: any HTTPClientContract
+    public let tracker: any TrackerContract
     public var features: [any FeatureContract]
 
     public func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView
     public func handle(url: URL, navigator: any NavigatorContract)
     public func makeRootView(navigator: any NavigatorContract) -> AnyView
+}
+```
+
+Tracking providers are registered via a static factory method:
+
+```swift
+private extension AppContainer {
+    static func makeTrackingProviders() -> [any TrackingProviderContract] {
+        [ConsoleTrackingProvider()]
+    }
 }
 ```
 

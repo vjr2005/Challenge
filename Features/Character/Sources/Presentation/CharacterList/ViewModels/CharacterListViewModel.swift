@@ -1,3 +1,4 @@
+import ChallengeCore
 import Foundation
 
 @Observable
@@ -17,6 +18,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private let refreshCharactersUseCase: RefreshCharactersUseCaseContract
     private let searchCharactersUseCase: SearchCharactersUseCaseContract
     private let navigator: CharacterListNavigatorContract
+    private let tracker: CharacterListTrackerContract
     private var currentPage = 1
     private var isLoadingMore = false
     private var searchTask: Task<Void, Never>?
@@ -25,24 +27,29 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         getCharactersUseCase: GetCharactersUseCaseContract,
         refreshCharactersUseCase: RefreshCharactersUseCaseContract,
         searchCharactersUseCase: SearchCharactersUseCaseContract,
-        navigator: CharacterListNavigatorContract
+        navigator: CharacterListNavigatorContract,
+        tracker: CharacterListTrackerContract
     ) {
         self.getCharactersUseCase = getCharactersUseCase
         self.refreshCharactersUseCase = refreshCharactersUseCase
         self.searchCharactersUseCase = searchCharactersUseCase
         self.navigator = navigator
+        self.tracker = tracker
     }
 
     func didAppear() async {
         guard case .idle = state else { return }
+        tracker.trackScreenViewed()
         await load()
     }
 
     func didTapOnRetryButton() async {
+        tracker.trackRetryButtonTapped()
         await load()
     }
 
     func didPullToRefresh() async {
+        tracker.trackPullToRefreshTriggered()
         await refreshCharacters()
     }
 
@@ -53,12 +60,14 @@ final class CharacterListViewModel: CharacterListViewModelContract {
             return
         }
 
+        tracker.trackLoadMoreButtonTapped()
         isLoadingMore = true
         await fetchMoreCharacters(existingPage: page)
         isLoadingMore = false
     }
 
     func didSelect(_ character: Character) {
+        tracker.trackCharacterSelected(identifier: character.id)
         navigator.navigateToDetail(identifier: character.id)
     }
 }
@@ -76,6 +85,9 @@ private extension CharacterListViewModel {
         searchTask = Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(debounceMilliseconds))
             if !Task.isCancelled {
+                if let query = normalizedQuery {
+                    tracker.trackSearchPerformed(query: query)
+                }
                 await load()
             }
         }

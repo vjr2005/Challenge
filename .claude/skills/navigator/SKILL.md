@@ -653,7 +653,8 @@ Libraries/Core/
 │       ├── AnyNavigation.swift              # Type-erased wrapper for NavigationPath
 │       └── DeepLinkHandler.swift            # Protocol for deep links
 └── Mocks/
-    └── NavigatorMock.swift
+    ├── NavigatorMock.swift
+    └── TrackerMock.swift
 
 AppKit/Sources/                              # Note: AppKit, not App (for testability)
 ├── AppContainer.swift                       # resolve() and handle(url:)
@@ -673,15 +674,24 @@ Features/{Feature}/
 │       │   ├── {Feature}OutgoingNavigation.swift  # Destinations to other features (optional)
 │       │   └── {Feature}DeepLinkHandler.swift
 │       └── {Screen}/
-│           └── Navigator/
-│               ├── {Screen}NavigatorContract.swift
-│               └── {Screen}Navigator.swift
+│           ├── Navigator/
+│           │   ├── {Screen}NavigatorContract.swift
+│           │   └── {Screen}Navigator.swift
+│           └── Tracker/                     # Same pattern as Navigator
+│               ├── {Screen}TrackerContract.swift
+│               ├── {Screen}Tracker.swift
+│               └── {Screen}Event.swift
 └── Tests/
     └── Unit/
         └── Presentation/
-            └── Navigation/
-                ├── {Feature}DeepLinkHandlerTests.swift
-                └── {Screen}NavigatorTests.swift
+            ├── Navigation/
+            │   └── {Feature}DeepLinkHandlerTests.swift
+            └── {Screen}/
+                ├── Navigator/
+                │   └── {Screen}NavigatorTests.swift
+                └── Tracker/
+                    ├── {Screen}TrackerTests.swift
+                    └── {Screen}EventTests.swift
 ```
 
 ---
@@ -713,6 +723,7 @@ Features/{Feature}/
 - [ ] Feature implements `makeMainView(navigator:)` returning default entry point
 - [ ] Feature implements `resolve(_:navigator:)` returning view or nil
 - [ ] Each screen has `NavigatorContract` and `Navigator`
+- [ ] Each screen has `TrackerContract`, `Tracker`, and `Event` (same pattern as Navigator)
 - [ ] Navigator uses `IncomingNavigationContract` for internal, `OutgoingNavigationContract` for external
 - [ ] Container factories receive `navigator: any NavigatorContract`
 - [ ] ViewModel receives specific `NavigatorContract` (not generic)

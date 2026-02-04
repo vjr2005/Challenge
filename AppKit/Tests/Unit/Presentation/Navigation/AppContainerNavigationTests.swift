@@ -16,7 +16,7 @@ struct AppContainerNavigationTests {
 	// MARK: - Initialization
 
 	init() {
-		sut = AppContainer(httpClient: HTTPClientMock())
+		sut = AppContainer(httpClient: HTTPClientMock(), tracker: TrackerMock())
 	}
 
 	// MARK: - Resolve

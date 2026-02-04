@@ -14,7 +14,7 @@ struct CharacterFeatureTests {
     // MARK: - Initialization
 
     init() {
-        sut = CharacterFeature(httpClient: httpClientMock)
+        sut = CharacterFeature(httpClient: httpClientMock, tracker: TrackerMock())
     }
 
     // MARK: - Deep Link Handler

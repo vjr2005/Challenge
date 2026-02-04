@@ -11,6 +11,7 @@ struct CharacterListViewModelTests {
     private let refreshCharactersUseCaseMock = RefreshCharactersUseCaseMock()
     private let searchCharactersUseCaseMock = SearchCharactersUseCaseMock()
     private let navigatorMock = CharacterListNavigatorMock()
+    private let trackerMock = CharacterListTrackerMock()
     private let sut: CharacterListViewModel
 
     // MARK: - Initialization
@@ -20,7 +21,8 @@ struct CharacterListViewModelTests {
             getCharactersUseCase: getCharactersUseCaseMock,
             refreshCharactersUseCase: refreshCharactersUseCaseMock,
             searchCharactersUseCase: searchCharactersUseCaseMock,
-            navigator: navigatorMock
+            navigator: navigatorMock,
+            tracker: trackerMock
         )
     }
 
@@ -477,5 +479,124 @@ struct CharacterListViewModelTests {
 
         // Then
         #expect(sut.state == .error(.loadFailed))
+    }
+
+    // MARK: - Tracking
+
+    @Test("didAppear tracks screen viewed")
+    func didAppearTracksScreenViewed() async {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedCallCount == 1)
+    }
+
+    @Test("didAppear does not track screen viewed when already loaded")
+    func didAppearDoesNotTrackScreenViewedWhenAlreadyLoaded() async {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+        await sut.didAppear()
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.screenViewedCallCount == 1)
+    }
+
+    @Test("Selecting character tracks character selected with identifier")
+    func didSelectTracksCharacterSelected() {
+        // Given
+        let character = Character.stub(id: 42)
+
+        // When
+        sut.didSelect(character)
+
+        // Then
+        #expect(trackerMock.selectedIdentifiers == [42])
+    }
+
+    @Test("Search query change tracks search performed after debounce")
+    func searchQueryChangeTracksSearchPerformed() async throws {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(trackerMock.searchedQueries == ["Rick"])
+    }
+
+    @Test("Empty search query does not track search performed")
+    func emptySearchQueryDoesNotTrackSearchPerformed() async throws {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(100))
+        sut.searchQuery = ""
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(trackerMock.searchedQueries.isEmpty)
+    }
+
+    @Test("didTapOnRetryButton tracks retry button tapped")
+    func didTapOnRetryButtonTracksRetryButtonTapped() async {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didTapOnRetryButton()
+
+        // Then
+        #expect(trackerMock.retryButtonTappedCallCount == 1)
+    }
+
+    @Test("didPullToRefresh tracks pull to refresh triggered")
+    func didPullToRefreshTracksPullToRefreshTriggered() async {
+        // Given
+        refreshCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
+    }
+
+    @Test("didTapOnLoadMoreButton tracks load more button tapped")
+    func didTapOnLoadMoreButtonTracksLoadMoreButtonTapped() async {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        getCharactersUseCaseMock.result = .success(firstPage)
+        await sut.didAppear()
+
+        // When
+        await sut.didTapOnLoadMoreButton()
+
+        // Then
+        #expect(trackerMock.loadMoreButtonTappedCallCount == 1)
+    }
+
+    @Test("didTapOnLoadMoreButton does not track when no next page")
+    func didTapOnLoadMoreButtonDoesNotTrackWhenNoNextPage() async {
+        // Given
+        let lastPage = CharactersPage.stub(hasNextPage: false)
+        getCharactersUseCaseMock.result = .success(lastPage)
+        await sut.didAppear()
+
+        // When
+        await sut.didTapOnLoadMoreButton()
+
+        // Then
+        #expect(trackerMock.loadMoreButtonTappedCallCount == 0)
     }
 }

@@ -10,8 +10,9 @@ public struct HomeFeature: FeatureContract {
     // MARK: - Init
 
     /// Creates the home feature.
-    public init() {
-        self.container = HomeContainer()
+    /// - Parameter tracker: The tracker used to register analytics events.
+    public init(tracker: any TrackerContract) {
+        self.container = HomeContainer(tracker: tracker)
     }
 
     // MARK: - Feature Protocol

@@ -20,9 +20,13 @@ System/
 │           ├── ViewModels/
 │           │   ├── NotFoundViewModel.swift
 │           │   └── NotFoundViewModelContract.swift
-│           └── Navigator/
-│               ├── NotFoundNavigator.swift
-│               └── NotFoundNavigatorContract.swift
+│           ├── Navigator/
+│           │   ├── NotFoundNavigator.swift
+│           │   └── NotFoundNavigatorContract.swift
+│           └── Tracker/
+│               ├── NotFoundTracker.swift
+│               ├── NotFoundTrackerContract.swift
+│               └── NotFoundEvent.swift
 └── Tests/
     └── ...
 ```
@@ -48,7 +52,7 @@ System/
 ### Initialization
 
 ```swift
-let feature = SystemFeature()
+let feature = SystemFeature(tracker: tracker)
 ```
 
 ### As Fallback

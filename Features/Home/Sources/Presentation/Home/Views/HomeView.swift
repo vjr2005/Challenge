@@ -24,6 +24,9 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 			lottieAnimation
 			characterButton
 		}
+		.onAppear {
+			viewModel.didAppear()
+		}
 	}
 }
 
@@ -78,6 +81,7 @@ private enum AccessibilityIdentifier {
 }
 
 private final class HomeViewModelPreviewStub: HomeViewModelContract {
+	func didAppear() {}
 	func didTapOnCharacterButton() {}
 }
 #endif

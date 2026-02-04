@@ -16,7 +16,7 @@ struct RootViewSnapshotTests {
 	func initialState() {
 		// Given
 		let httpClientMock = HTTPClientMock()
-		let appContainer = AppContainer(httpClient: httpClientMock)
+		let appContainer = AppContainer(httpClient: httpClientMock, tracker: TrackerMock())
 
 		// When
 		let view = RootContainerView(appContainer: appContainer)

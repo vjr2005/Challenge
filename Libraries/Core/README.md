@@ -27,12 +27,20 @@ Core/
 │   │   ├── NavigationRedirectContract.swift
 │   │   ├── NavigatorContract.swift
 │   │   └── UnknownNavigation.swift
+│   ├── Tracking/
+│   │   ├── TrackerContract.swift
+│   │   ├── Tracker.swift
+│   │   ├── TrackingEvent.swift
+│   │   └── Providers/
+│   │       ├── TrackingProviderContract.swift
+│   │       └── ConsoleTrackingProvider.swift
 │   └── Extensions/
 │       └── URL+QueryParameter.swift
 ├── Mocks/
 │   ├── Bundle+JSON.swift
 │   ├── ImageLoaderMock.swift
 │   ├── NavigatorMock.swift
+│   ├── TrackerMock.swift
 │   ├── URLProtocolMock.swift
 │   └── URLSession+Mock.swift
 └── Tests/
@@ -108,6 +116,58 @@ public protocol FeatureContract {
 }
 ```
 
+### Tracking
+
+#### TrackerContract
+
+Protocol defining tracking capabilities:
+
+```swift
+public protocol TrackerContract: Sendable {
+    func track(_ event: any TrackingEvent)
+}
+```
+
+#### Tracker
+
+Implementation that dispatches events to registered providers:
+
+```swift
+public struct Tracker: TrackerContract {
+    public init(providers: [any TrackingProviderContract])
+    public func track(_ event: any TrackingEvent)
+}
+```
+
+#### TrackingEvent
+
+Protocol for tracking events with optional properties:
+
+```swift
+public protocol TrackingEvent: Sendable {
+    var name: String { get }
+    var properties: [String: String] { get }
+}
+```
+
+A default extension provides an empty dictionary for `properties`, so events without properties can omit the implementation.
+
+#### TrackingProviderContract
+
+Protocol for tracking backends. Inherits from `TrackerContract` and adds lifecycle management:
+
+```swift
+public protocol TrackingProviderContract: TrackerContract {
+    func configure()
+}
+```
+
+A default extension provides an empty `configure()` implementation for providers that don't need initialization.
+
+#### ConsoleTrackingProvider
+
+Development provider that logs events to the console using `os_log`.
+
 ### App Environment
 
 Global configuration for the application (API URLs, environment settings).
@@ -139,6 +199,7 @@ Available in `ChallengeCoreMocks` target for testing:
 | Mock | Purpose |
 |------|---------|
 | `NavigatorMock` | Captures navigation calls |
+| `TrackerMock` | Captures tracked events |
 | `ImageLoaderMock` | Returns stub images |
 | `Bundle+JSON` | Loads JSON fixtures from test bundles |
 

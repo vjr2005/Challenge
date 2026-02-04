@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import ChallengeNetworkingMocks
 import Testing
 
@@ -8,7 +9,7 @@ struct RootContainerViewTests {
 	func initializesWithAppContainer() {
 		// Given
 		let httpClientMock = HTTPClientMock()
-		let appContainer = AppContainer(httpClient: httpClientMock)
+		let appContainer = AppContainer(httpClient: httpClientMock, tracker: TrackerMock())
 
 		// When
 		let sut = RootContainerView(appContainer: appContainer)
