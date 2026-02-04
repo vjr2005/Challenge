@@ -557,7 +557,7 @@ struct CharacterListViewModelTests {
         useCaseMock.result = .success(expected)
 
         // When
-        await sut.loadIfNeeded()
+        await sut.didAppear()
 
         // Then
         #expect(sut.state == .loaded(expected))

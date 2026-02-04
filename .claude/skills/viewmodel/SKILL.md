@@ -158,7 +158,6 @@ final class {Name}ListViewModel {
     }
 
     func didAppear() async {
-        guard case .idle = state else { return }
         await load()
     }
 
@@ -189,7 +188,7 @@ private extension {Name}ListViewModel {
 - Inject UseCases via **protocol (contract)**
 - State is `private(set)` - only ViewModel mutates it
 - Inject `NavigatorContract` for navigation (see `/router` skill)
-- Use `didAppear()` (only from `.idle`) and `didTapOnRetryButton()` (always) public, `load()` private (see "Protocol Method Naming Convention")
+- `didAppear()` and `didTapOnRetryButton()` are public, `load()` is private (see "Protocol Method Naming Convention")
 
 ---
 
@@ -337,7 +336,7 @@ All protocol methods describe the **UI event** that triggers them, using the `di
 
 ### Behavior Rules
 
-- **`didAppear()`**: Only loads if state is `.idle` (first appearance). Does nothing from `.error`, `.loaded`, `.loading`, or `.empty`. This prevents reloads when returning from navigation.
+- **`didAppear()`**: Called once via `.onFirstAppear` in the View. The `.onFirstAppear` modifier guarantees single execution, so the ViewModel does not need to guard against re-execution.
 - **`didTapOnRetryButton()`**: Always calls `load()` unconditionally. The user has explicitly decided to retry.
 - **`didPullToRefresh()`**: Always calls the refresh use case. Resets pagination to page 1.
 - **`didTapOnLoadMoreButton()`**: Only loads if there is a next page and not already loading more.
@@ -346,7 +345,7 @@ All protocol methods describe the **UI event** that triggers them, using the `di
 
 ## Preventing Unnecessary Reloads
 
-The `.onFirstAppear` modifier (from `ChallengeCore`) executes only once when the view first appears, preventing unnecessary data reloads when returning from navigation. As defense in depth, the ViewModel also guards against re-execution:
+The `.onFirstAppear` modifier (from `ChallengeCore`) executes only once when the view first appears, preventing unnecessary data reloads when returning from navigation. The ViewModel does not need to guard against re-execution because `.onFirstAppear` guarantees single invocation.
 
 ### Pattern: didAppear() + didTapOnRetryButton() + private load()
 
@@ -355,9 +354,8 @@ The `.onFirstAppear` modifier (from `ChallengeCore`) executes only once when the
 final class {Name}ListViewModel {
     private(set) var state: {Name}ListViewState = .idle
 
-    // Public: View calls this from .onFirstAppear - only loads on first appearance
+    // Public: View calls this from .onFirstAppear - executes once
     func didAppear() async {
-        guard case .idle = state else { return }
         await load()
     }
 
@@ -377,10 +375,10 @@ private extension {Name}ListViewModel {
 ```
 
 **Rules:**
-- `didAppear()` is **public** - called by View in `.onFirstAppear`, only loads from `.idle`
+- `didAppear()` is **public** - called by View in `.onFirstAppear`, guaranteed to execute once
 - `didTapOnRetryButton()` is **public** - called by View in error retry button, always loads
 - `load()` is **private** - encapsulates loading logic
-- `didAppear()` only loads from `.idle` (first appearance)
+- Single execution is guaranteed by `.onFirstAppear` in the View layer
 - Error retry is the user's explicit choice via `didTapOnRetryButton()`
 
 ### View Integration
@@ -416,48 +414,9 @@ var searchQuery: String = "" {
 
 ### Testing didAppear() and didTapOnRetryButton()
 
-Test all state transitions:
+Test state transitions:
 
 ```swift
-@Test("didAppear does nothing when already loaded")
-func didAppearDoesNothingWhenLoaded() async {
-    // Given
-    useCaseMock.result = .success(.stub())
-    await sut.didAppear()
-
-    // When
-    await sut.didAppear()
-
-    // Then
-    #expect(useCaseMock.executeCallCount == 1)
-}
-
-@Test("didAppear does nothing when empty state")
-func didAppearDoesNothingWhenEmpty() async {
-    // Given
-    useCaseMock.result = .success([])
-    await sut.didAppear()
-
-    // When
-    await sut.didAppear()
-
-    // Then
-    #expect(useCaseMock.executeCallCount == 1)
-}
-
-@Test("didAppear does nothing when in error state")
-func didAppearDoesNothingWhenError() async {
-    // Given
-    useCaseMock.result = .failure(.loadFailed)
-    await sut.didAppear()
-
-    // When
-    await sut.didAppear()
-
-    // Then
-    #expect(useCaseMock.executeCallCount == 1)
-}
-
 @Test("didTapOnRetryButton retries loading when in error state")
 func didTapOnRetryButtonRetriesWhenError() async {
     // Given
@@ -793,7 +752,6 @@ final class CharacterListViewModel {
 
     func didAppear() async {
         tracker.trackScreenViewed()
-        guard case .idle = state else { return }
         await load()
     }
 
@@ -846,11 +804,11 @@ private extension CharacterListViewModel {
 - [ ] Inject UseCase via protocol (contract)
 - [ ] Inject NavigatorContract for navigation (not RouterContract)
 - [ ] Inject TrackerContract for screen-specific tracking
-- [ ] Implement `didAppear()` (only from `.idle`) and `didTapOnRetryButton()` (always) public, `load()` private
+- [ ] Implement `didAppear()` and `didTapOnRetryButton()` as public, `load()` as private
 - [ ] Add tracking calls in `didAppear()`, `didSelect()`, `didTapOn...()` methods
 - [ ] Guard observable properties with `oldValue` check in `didSet`
 - [ ] Create tests for initial state, success, error, and call verification
-- [ ] Create tests for `didAppear()` state transitions (loaded, empty, error) and `didTapOnRetryButton()` behavior
+- [ ] Create tests for `didAppear()` and `didTapOnRetryButton()` behavior
 - [ ] Create NavigatorMock for testing navigation
 - [ ] Create TrackerMock for testing tracking calls
 - [ ] Run tests

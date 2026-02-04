@@ -7,6 +7,7 @@
 | `./setup.sh` | Initial setup - installs brew, mise, and project tools |
 | `./generate.sh` | Install dependencies and generate the Xcode project |
 | `./generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
+| `./reset-simulators.sh` | Full simulator reset - fixes corrupted simulator state |
 | `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
 
 ## Setup Script
@@ -46,6 +47,23 @@ This clears the Tuist cache before generating, useful when:
 - Switching branches with different dependencies
 - Resolving cached state issues
 - Starting fresh after major changes
+
+## Reset Simulators Script
+
+Performs a deep reset of all iOS simulators. Use this script when you suspect the simulator has corrupted data (e.g., `LaunchServicesDataMismatch` errors, apps crashing immediately after launch, UI tests timing out unexpectedly):
+
+```bash
+./reset-simulators.sh
+```
+
+This script will:
+- Kill all running Simulator and CoreSimulator processes
+- Shut down and erase all simulator devices
+- Remove CoreSimulator caches (`~/Library/Caches/com.apple.CoreSimulator`)
+- Remove CoreSimulator logs (`~/Library/Logs/CoreSimulator`)
+- Restart the CoreSimulator service to regenerate the LaunchServices database
+
+> **Important:** After running this script, **restart Xcode** before launching the app or running tests. Xcode holds a connection to the CoreSimulator service that becomes invalid after the reset.
 
 ## SwiftLint Script
 

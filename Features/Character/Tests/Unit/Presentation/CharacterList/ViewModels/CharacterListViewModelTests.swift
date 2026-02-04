@@ -87,46 +87,6 @@ struct CharacterListViewModelTests {
         #expect(getCharactersUseCaseMock.lastRequestedPage == 1)
     }
 
-    @Test("didAppear does nothing when already loaded")
-    func didAppearDoesNothingWhenLoaded() async {
-        // Given
-        getCharactersUseCaseMock.result = .success(.stub())
-        await sut.didAppear()
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-    }
-
-    @Test("didAppear does nothing when empty state")
-    func didAppearDoesNothingWhenEmpty() async {
-        // Given
-        let emptyPage = CharactersPage.stub(characters: [])
-        getCharactersUseCaseMock.result = .success(emptyPage)
-        await sut.didAppear()
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-    }
-
-    @Test("didAppear does nothing when in error state")
-    func didAppearDoesNothingWhenError() async {
-        // Given
-        getCharactersUseCaseMock.result = .failure(.loadFailed)
-        await sut.didAppear()
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-    }
-
     // MARK: - didTapOnRetryButton
 
     @Test("didTapOnRetryButton retries loading when in error state")
@@ -487,19 +447,6 @@ struct CharacterListViewModelTests {
     func didAppearTracksScreenViewed() async {
         // Given
         getCharactersUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(trackerMock.screenViewedCallCount == 1)
-    }
-
-    @Test("didAppear does not track screen viewed when already loaded")
-    func didAppearDoesNotTrackScreenViewedWhenAlreadyLoaded() async {
-        // Given
-        getCharactersUseCaseMock.result = .success(.stub())
-        await sut.didAppear()
 
         // When
         await sut.didAppear()

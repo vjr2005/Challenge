@@ -26,7 +26,6 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     }
 
     func didAppear() async {
-        guard case .idle = state else { return }
         tracker.trackScreenViewed(identifier: identifier)
         await load()
     }

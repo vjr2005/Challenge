@@ -118,6 +118,15 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 | SwiftLint | Code linting | `mise x -- swiftlint` |
 | Periphery | Dead code detection | `mise x -- periphery scan` |
 
+### Scripts
+
+| Script | Purpose | Command |
+|--------|---------|---------|
+| `generate.sh` | Project generation (with optional `--clean`) | `./generate.sh [--clean]` |
+| `reset-simulators.sh` | Deep simulator reset when corrupted data is suspected | `./reset-simulators.sh` |
+
+> **Note:** After running `reset-simulators.sh`, restart Xcode before launching the app or running tests. See [Scripts](docs/Scripts.md) for details.
+
 **Policy:** Prefer native implementations. No external dependencies unless strictly necessary.
 
 ---

@@ -1,3 +1,4 @@
+import ChallengeCore
 import ChallengeDesignSystem
 import ChallengeResources
 import SwiftUI
@@ -16,7 +17,7 @@ struct NotFoundView<ViewModel: NotFoundViewModelContract>: View {
             },
             accessibilityIdentifier: AccessibilityIdentifier.container
         )
-        .onAppear {
+        .onFirstAppear {
             viewModel.didAppear()
         }
     }

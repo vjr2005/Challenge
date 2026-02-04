@@ -38,7 +38,6 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     func didAppear() async {
-        guard case .idle = state else { return }
         tracker.trackScreenViewed()
         await load()
     }
@@ -88,7 +87,7 @@ private extension CharacterListViewModel {
                 if let query = normalizedQuery {
                     tracker.trackSearchPerformed(query: query)
                 }
-                await load()
+                await fetchCharacters()
             }
         }
     }

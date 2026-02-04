@@ -49,7 +49,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     var body: some View {
         content
             .onFirstAppear {
-                await viewModel.loadIfNeeded()
+                await viewModel.didAppear()
             }
             .background(ColorToken.backgroundSecondary)
             .navigationBarTitleDisplayMode(.inline)
@@ -84,7 +84,7 @@ private extension {ScreenName}View {
             retryTitle: LocalizedStrings.Common.tryAgain,
             retryAction: {
                 Task {
-                    await viewModel.loadIfNeeded()
+                    await viewModel.didAppear()
                 }
             },
             accessibilityIdentifier: AccessibilityIdentifier.errorView
@@ -159,7 +159,7 @@ private final class {ScreenName}ViewModelPreviewStub: {ScreenName}ViewModelContr
         self.state = state
     }
 
-    func loadIfNeeded() async {}
+    func didAppear() async {}
     func refresh() async {}
     func didTapOnBack() {}
 }
@@ -179,7 +179,7 @@ private extension {Name} {
 **Key patterns:**
 - Generic over `ViewModel: {ScreenName}ViewModelContract` for testability
 - `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
-- `.onFirstAppear { await viewModel.loadIfNeeded() }` for initial load (executes only once)
+- `.onFirstAppear { await viewModel.didAppear() }` for initial load (executes only once)
 - Switch on `viewModel.state` for all ViewState cases
 - Use Design System tokens (ColorToken, SpacingToken, TextStyle)
 - Private `LocalizedStrings` enum for localization
@@ -212,7 +212,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     var body: some View {
         content
             .onFirstAppear {
-                await viewModel.loadIfNeeded()
+                await viewModel.didAppear()
             }
             .background(ColorToken.backgroundSecondary)
             .navigationTitle(LocalizedStrings.title)
@@ -258,7 +258,7 @@ private extension {ScreenName}View {
             retryTitle: LocalizedStrings.Common.tryAgain,
             retryAction: {
                 Task {
-                    await viewModel.loadIfNeeded()
+                    await viewModel.didAppear()
                 }
             },
             accessibilityIdentifier: AccessibilityIdentifier.errorView
@@ -359,7 +359,7 @@ private final class {ScreenName}ViewModelPreviewStub: {ScreenName}ViewModelContr
         self.state = state
     }
 
-    func loadIfNeeded() async {}
+    func didAppear() async {}
     func didSelect(_ item: {Name}) {}
 }
 

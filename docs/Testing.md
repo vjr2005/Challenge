@@ -142,6 +142,20 @@ The impact of `.serialized` is minimal (~2-3s), not the main cause of degradatio
 - When UI tests exceed **15-20 classes** to amortize simulator boot overhead
 - When migrating to CI with more powerful runners (more CPU = less relative overhead)
 
+## Troubleshooting
+
+### Corrupted Simulator State
+
+If UI tests fail with `Simulator device failed to launch` or `LaunchServicesDataMismatch` errors, the simulator data is likely corrupted. This typically manifests as apps crashing immediately after launch or tests timing out unexpectedly.
+
+Run the reset script and restart Xcode:
+
+```bash
+./reset-simulators.sh
+```
+
+See [Scripts](Scripts.md#reset-simulators-script) for details.
+
 ## Coverage
 
 The project achieves **100% code coverage** across all modules.

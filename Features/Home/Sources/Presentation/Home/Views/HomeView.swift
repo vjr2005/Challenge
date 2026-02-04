@@ -1,3 +1,4 @@
+import ChallengeCore
 import ChallengeDesignSystem
 import ChallengeResources
 import Lottie
@@ -24,7 +25,7 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 			lottieAnimation
 			characterButton
 		}
-		.onAppear {
+		.onFirstAppear {
 			viewModel.didAppear()
 		}
 	}
