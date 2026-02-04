@@ -11,8 +11,8 @@ ChallengeDesignSystem implements the Atomic Design methodology, organizing compo
 ```
 DesignSystem/
 ├── Sources/
-│   ├── Foundation/           # Design tokens
-│   │   ├── Theming/          # Theme contracts
+│   ├── Theme/                # Theming system
+│   │   ├── Contracts/        # Theme protocols
 │   │   │   ├── DSBorderWidth.swift
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSCornerRadius.swift
@@ -23,16 +23,15 @@ DesignSystem/
 │   │   │   ├── DSTheme.swift
 │   │   │   ├── DSThemeEnvironment.swift
 │   │   │   └── DSTypography.swift
-│   │   ├── Themes/           # Theme implementations
-│   │   │   └── Default/
-│   │   │       ├── DefaultBorderWidth.swift
-│   │   │       ├── DefaultColorPalette.swift
-│   │   │       ├── DefaultCornerRadius.swift
-│   │   │       ├── DefaultDimensions.swift
-│   │   │       ├── DefaultOpacity.swift
-│   │   │       ├── DefaultShadow.swift
-│   │   │       ├── DefaultSpacing.swift
-│   │   │       └── DefaultTypography.swift
+│   │   └── Default/          # Default theme implementation
+│   │       ├── DefaultBorderWidth.swift
+│   │       ├── DefaultColorPalette.swift
+│   │       ├── DefaultCornerRadius.swift
+│   │       ├── DefaultDimensions.swift
+│   │       ├── DefaultOpacity.swift
+│   │       ├── DefaultShadow.swift
+│   │       ├── DefaultSpacing.swift
+│   │       └── DefaultTypography.swift
 │   ├── Atoms/                # Basic components
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift

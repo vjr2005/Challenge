@@ -4,7 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct DefaultSpacingSnapshotTests {
+struct DSSpacingSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 	}

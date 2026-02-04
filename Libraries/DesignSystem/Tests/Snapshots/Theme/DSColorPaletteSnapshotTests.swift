@@ -4,7 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct DefaultColorPaletteSnapshotTests {
+struct DSColorPaletteSnapshotTests {
 	private let palette = DefaultColorPalette()
 
 	init() {

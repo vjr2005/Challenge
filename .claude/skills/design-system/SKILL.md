@@ -23,8 +23,8 @@ Guide for using the Atomic Design System to build consistent SwiftUI interfaces.
 ```
 Libraries/DesignSystem/
 ├── Sources/
-│   ├── Foundation/           # Design Tokens
-│   │   ├── Theming/          # Theme contracts
+│   ├── Theme/                # Theming system
+│   │   ├── Contracts/        # Theme protocols
 │   │   │   ├── DSBorderWidth.swift
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSCornerRadius.swift
@@ -35,16 +35,15 @@ Libraries/DesignSystem/
 │   │   │   ├── DSTheme.swift
 │   │   │   ├── DSThemeEnvironment.swift
 │   │   │   └── DSTypography.swift
-│   │   ├── Themes/           # Theme implementations
-│   │   │   └── Default/
-│   │   │       ├── DefaultBorderWidth.swift
-│   │   │       ├── DefaultColorPalette.swift
-│   │   │       ├── DefaultCornerRadius.swift
-│   │   │       ├── DefaultDimensions.swift
-│   │   │       ├── DefaultOpacity.swift
-│   │   │       ├── DefaultShadow.swift
-│   │   │       ├── DefaultSpacing.swift
-│   │   │       └── DefaultTypography.swift
+│   │   └── Default/          # Default theme implementation
+│   │       ├── DefaultBorderWidth.swift
+│   │       ├── DefaultColorPalette.swift
+│   │       ├── DefaultCornerRadius.swift
+│   │       ├── DefaultDimensions.swift
+│   │       ├── DefaultOpacity.swift
+│   │       ├── DefaultShadow.swift
+│   │       ├── DefaultSpacing.swift
+│   │       └── DefaultTypography.swift
 │   │
 │   ├── Atoms/                # Basic building blocks
 │   │   ├── Buttons/

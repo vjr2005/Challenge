@@ -4,7 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct DefaultCornerRadiusSnapshotTests {
+struct DSCornerRadiusSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 	}
