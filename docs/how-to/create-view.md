@@ -458,7 +458,7 @@ All Views must use Design System components and tokens:
 | **Colors** | `theme.colors.textPrimary`, `theme.colors.backgroundSecondary` |
 | **Typography** | `theme.typography.font(for: .title)`, `theme.typography.font(for: .body)` |
 | **Spacing** | `theme.spacing.lg`, `theme.spacing.md`, `theme.spacing.sm` |
-| **CornerRadiusToken** | `CornerRadiusToken.lg`, `CornerRadiusToken.md` |
+| **Corner Radius** | `theme.cornerRadius.lg`, `theme.cornerRadius.md` |
 | **DS Components** | `DSCard`, `DSAsyncImage`, `DSLoadingView`, `DSErrorView` |
 
 ```swift

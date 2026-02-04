@@ -8,7 +8,7 @@ import SwiftUI
 public struct DSCard<Content: View>: View {
 	private let content: Content
 	private let padding: CGFloat?
-	private let cornerRadius: CGFloat
+	private let cornerRadius: CGFloat?
 	private let shadow: ShadowToken
 
 	@Environment(\.dsTheme) private var theme
@@ -16,12 +16,12 @@ public struct DSCard<Content: View>: View {
 	/// Creates a DSCard.
 	/// - Parameters:
 	///   - padding: The internal padding (default: theme lg spacing)
-	///   - cornerRadius: The corner radius (default: lg)
+	///   - cornerRadius: The corner radius (default: theme lg corner radius)
 	///   - shadow: The shadow style (default: small)
 	///   - content: The content view builder
 	public init(
 		padding: CGFloat? = nil,
-		cornerRadius: CGFloat = CornerRadiusToken.lg,
+		cornerRadius: CGFloat? = nil,
 		shadow: ShadowToken = .small,
 		@ViewBuilder content: () -> Content
 	) {
@@ -35,7 +35,7 @@ public struct DSCard<Content: View>: View {
 		content
 			.padding(padding ?? theme.spacing.lg)
 			.background(theme.colors.surfacePrimary)
-			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+			.clipShape(RoundedRectangle(cornerRadius: cornerRadius ?? theme.cornerRadius.lg))
 			.shadow(shadow)
 	}
 }

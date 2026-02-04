@@ -55,6 +55,16 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.borderWidth.thick == borderWidth.thick)
 	}
 
+	@Test("Default theme uses DefaultCornerRadius")
+	func defaultThemeUsesDefaultCornerRadius() {
+		let theme = DSTheme.default
+		let cornerRadius = DefaultCornerRadius()
+
+		#expect(theme.cornerRadius.sm == cornerRadius.sm)
+		#expect(theme.cornerRadius.lg == cornerRadius.lg)
+		#expect(theme.cornerRadius.full == cornerRadius.full)
+	}
+
 	@Test("Custom theme can be created with different palette")
 	func customThemeCanBeCreated() {
 		let customPalette = DefaultColorPalette()
@@ -62,12 +72,14 @@ struct DSThemeEnvironmentTests {
 		let customSpacing = DefaultSpacing()
 		let customDimensions = DefaultDimensions()
 		let customBorderWidth = DefaultBorderWidth()
+		let customCornerRadius = DefaultCornerRadius()
 		let theme = DSTheme(
 			colors: customPalette,
 			typography: customTypography,
 			spacing: customSpacing,
 			dimensions: customDimensions,
-			borderWidth: customBorderWidth
+			borderWidth: customBorderWidth,
+			cornerRadius: customCornerRadius
 		)
 
 		#expect(theme.colors.accent == customPalette.accent)
@@ -75,5 +87,6 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.spacing.lg == customSpacing.lg)
 		#expect(theme.dimensions.lg == customDimensions.lg)
 		#expect(theme.borderWidth.thin == customBorderWidth.thin)
+		#expect(theme.cornerRadius.lg == customCornerRadius.lg)
 	}
 }

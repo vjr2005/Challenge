@@ -4,7 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct CornerRadiusTokenSnapshotTests {
+struct DefaultCornerRadiusSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 	}
@@ -14,13 +14,13 @@ struct CornerRadiusTokenSnapshotTests {
 	@Test("Renders gallery of all corner radius tokens")
 	func cornerRadiusGallery() {
 		let view = VStack(spacing: DefaultSpacing().lg) {
-			cornerRadiusRow("zero", value: CornerRadiusToken.zero)
-			cornerRadiusRow("xs", value: CornerRadiusToken.xs)
-			cornerRadiusRow("sm", value: CornerRadiusToken.sm)
-			cornerRadiusRow("md", value: CornerRadiusToken.md)
-			cornerRadiusRow("lg", value: CornerRadiusToken.lg)
-			cornerRadiusRow("xl", value: CornerRadiusToken.xl)
-			cornerRadiusRow("full", value: CornerRadiusToken.full)
+			cornerRadiusRow("zero", value: DefaultCornerRadius().zero)
+			cornerRadiusRow("xs", value: DefaultCornerRadius().xs)
+			cornerRadiusRow("sm", value: DefaultCornerRadius().sm)
+			cornerRadiusRow("md", value: DefaultCornerRadius().md)
+			cornerRadiusRow("lg", value: DefaultCornerRadius().lg)
+			cornerRadiusRow("xl", value: DefaultCornerRadius().xl)
+			cornerRadiusRow("full", value: DefaultCornerRadius().full)
 		}
 		.padding()
 		.frame(width: 320)
@@ -34,10 +34,10 @@ struct CornerRadiusTokenSnapshotTests {
 	@Test("Renders visual comparison of small corner radius values")
 	func cornerRadiusComparison() {
 		let view = HStack(spacing: DefaultSpacing().md) {
-			cornerBox("zero", radius: CornerRadiusToken.zero)
-			cornerBox("xs", radius: CornerRadiusToken.xs)
-			cornerBox("sm", radius: CornerRadiusToken.sm)
-			cornerBox("md", radius: CornerRadiusToken.md)
+			cornerBox("zero", radius: DefaultCornerRadius().zero)
+			cornerBox("xs", radius: DefaultCornerRadius().xs)
+			cornerBox("sm", radius: DefaultCornerRadius().sm)
+			cornerBox("md", radius: DefaultCornerRadius().md)
 		}
 		.padding()
 		.frame(width: 320)
@@ -49,9 +49,9 @@ struct CornerRadiusTokenSnapshotTests {
 	@Test("Renders visual comparison of large corner radius values")
 	func cornerRadiusLargeComparison() {
 		let view = HStack(spacing: DefaultSpacing().md) {
-			cornerBox("lg", radius: CornerRadiusToken.lg)
-			cornerBox("xl", radius: CornerRadiusToken.xl)
-			cornerBox("full", radius: CornerRadiusToken.full)
+			cornerBox("lg", radius: DefaultCornerRadius().lg)
+			cornerBox("xl", radius: DefaultCornerRadius().xl)
+			cornerBox("full", radius: DefaultCornerRadius().full)
 		}
 		.padding()
 		.frame(width: 320)
@@ -65,10 +65,10 @@ struct CornerRadiusTokenSnapshotTests {
 	@Test("Renders corner radius tokens applied to button context")
 	func cornerRadiusButtonContext() {
 		let view = VStack(spacing: DefaultSpacing().md) {
-			buttonExample("xs (4pt)", radius: CornerRadiusToken.xs)
-			buttonExample("sm (8pt)", radius: CornerRadiusToken.sm)
-			buttonExample("md (12pt)", radius: CornerRadiusToken.md)
-			buttonExample("full", radius: CornerRadiusToken.full)
+			buttonExample("xs (4pt)", radius: DefaultCornerRadius().xs)
+			buttonExample("sm (8pt)", radius: DefaultCornerRadius().sm)
+			buttonExample("md (12pt)", radius: DefaultCornerRadius().md)
+			buttonExample("full", radius: DefaultCornerRadius().full)
 		}
 		.padding()
 		.frame(width: 320)
@@ -82,9 +82,9 @@ struct CornerRadiusTokenSnapshotTests {
 	@Test("Renders corner radius tokens applied to card context")
 	func cornerRadiusCardContext() {
 		let view = VStack(spacing: DefaultSpacing().lg) {
-			cardExample("sm (8pt)", radius: CornerRadiusToken.sm)
-			cardExample("md (12pt)", radius: CornerRadiusToken.md)
-			cardExample("lg (16pt)", radius: CornerRadiusToken.lg)
+			cardExample("sm (8pt)", radius: DefaultCornerRadius().sm)
+			cardExample("md (12pt)", radius: DefaultCornerRadius().md)
+			cardExample("lg (16pt)", radius: DefaultCornerRadius().lg)
 		}
 		.padding()
 		.frame(width: 320)

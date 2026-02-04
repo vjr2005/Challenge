@@ -36,7 +36,7 @@ struct ViewDesignSystemSnapshotTests {
 	@Test("Renders dsCard extension with custom corner radius")
 	func dsCardCustomCornerRadius() {
 		let view = Text("Custom Corner Radius")
-			.dsCard(cornerRadius: CornerRadiusToken.xl)
+			.dsCard(cornerRadius: DefaultCornerRadius().xl)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
@@ -60,7 +60,7 @@ struct ViewDesignSystemSnapshotTests {
 		let view = Text("Fully Customized")
 			.dsCard(
 				padding: DefaultSpacing().xl,
-				cornerRadius: CornerRadiusToken.md,
+				cornerRadius: DefaultCornerRadius().md,
 				shadowToken: .medium
 			)
 			.padding()
@@ -163,7 +163,7 @@ struct ViewDesignSystemSnapshotTests {
 		let view = Text("Small Corner Radius")
 			.padding()
 			.background(DefaultColorPalette().accent)
-			.dsCornerRadius(CornerRadiusToken.sm)
+			.dsCornerRadius(DefaultCornerRadius().sm)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
@@ -176,7 +176,7 @@ struct ViewDesignSystemSnapshotTests {
 		let view = Text("Large Corner Radius")
 			.padding()
 			.background(DefaultColorPalette().accent)
-			.dsCornerRadius(CornerRadiusToken.lg)
+			.dsCornerRadius(DefaultCornerRadius().lg)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
@@ -189,7 +189,7 @@ struct ViewDesignSystemSnapshotTests {
 		let view = Text("Full")
 			.padding()
 			.background(DefaultColorPalette().accent)
-			.dsCornerRadius(CornerRadiusToken.full)
+			.dsCornerRadius(DefaultCornerRadius().full)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
@@ -213,7 +213,7 @@ struct ViewDesignSystemSnapshotTests {
 			Text("dsCornerRadius")
 				.padding()
 				.background(DefaultColorPalette().accent)
-				.dsCornerRadius(CornerRadiusToken.lg)
+				.dsCornerRadius(DefaultCornerRadius().lg)
 		}
 		.padding()
 		.frame(width: 320)

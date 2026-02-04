@@ -66,10 +66,10 @@ public struct DSButton: View {
 			.padding(.vertical, verticalPadding)
 			.frame(maxWidth: variant == .primary ? .infinity : nil)
 			.background(backgroundColor)
-			.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+			.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
 			.overlay {
 				if variant == .secondary {
-					RoundedRectangle(cornerRadius: CornerRadiusToken.md)
+					RoundedRectangle(cornerRadius: theme.cornerRadius.md)
 						.stroke(theme.colors.accent, lineWidth: theme.borderWidth.thin)
 				}
 			}

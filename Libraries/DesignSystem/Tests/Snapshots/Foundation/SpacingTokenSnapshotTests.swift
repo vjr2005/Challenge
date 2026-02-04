@@ -108,7 +108,7 @@ struct DefaultSpacingSnapshotTests {
 
 			HStack(spacing: spacing) {
 				ForEach(0..<4, id: \.self) { _ in
-					RoundedRectangle(cornerRadius: CornerRadiusToken.xs)
+					RoundedRectangle(cornerRadius: DefaultCornerRadius().xs)
 						.fill(DefaultColorPalette().accent)
 						.frame(width: 40, height: 30)
 				}

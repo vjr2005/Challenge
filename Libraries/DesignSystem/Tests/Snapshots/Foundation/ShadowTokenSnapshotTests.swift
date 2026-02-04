@@ -86,7 +86,7 @@ struct ShadowTokenSnapshotTests {
 				.foregroundStyle(DefaultColorPalette().textSecondary)
 				.frame(width: 60, alignment: .leading)
 
-			RoundedRectangle(cornerRadius: CornerRadiusToken.md)
+			RoundedRectangle(cornerRadius: DefaultCornerRadius().md)
 				.fill(DefaultColorPalette().surfacePrimary)
 				.frame(width: 160, height: 50)
 				.shadow(token)
@@ -97,7 +97,7 @@ struct ShadowTokenSnapshotTests {
 
 	private func shadowBox(_ name: String, token: ShadowToken) -> some View {
 		VStack(spacing: DefaultSpacing().sm) {
-			RoundedRectangle(cornerRadius: CornerRadiusToken.sm)
+			RoundedRectangle(cornerRadius: DefaultCornerRadius().sm)
 				.fill(DefaultColorPalette().surfacePrimary)
 				.frame(width: 60, height: 60)
 				.shadow(token)
@@ -147,7 +147,7 @@ struct ShadowTokenSnapshotTests {
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.padding()
 		.background(DefaultColorPalette().surfacePrimary)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+		.clipShape(RoundedRectangle(cornerRadius: DefaultCornerRadius().md))
 		.shadow(token)
 	}
 }

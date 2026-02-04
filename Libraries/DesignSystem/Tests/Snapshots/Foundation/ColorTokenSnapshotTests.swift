@@ -158,11 +158,11 @@ struct DefaultColorPaletteSnapshotTests {
 
 	private func colorSwatch(_ name: String, color: Color) -> some View {
 		HStack {
-			RoundedRectangle(cornerRadius: CornerRadiusToken.sm)
+			RoundedRectangle(cornerRadius: DefaultCornerRadius().sm)
 				.fill(color)
 				.frame(width: 40, height: 40)
 				.overlay(
-					RoundedRectangle(cornerRadius: CornerRadiusToken.sm)
+					RoundedRectangle(cornerRadius: DefaultCornerRadius().sm)
 						.stroke(Color.gray.opacity(0.3), lineWidth: 1)
 				)
 			Text(name)

@@ -70,7 +70,7 @@ private extension DSCardInfoRow {
 			accessibilityIdentifier: accessibilityIdentifier.map { "\($0).image" }
 		)
 		.frame(width: 70, height: 70)
-		.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+		.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
 	}
 
 	var textContent: some View {

@@ -262,11 +262,11 @@ Text("Caption")
     .foregroundStyle(theme.colors.textSecondary)
 ```
 
-### Corners (static)
+### Corners (via theme)
 
 ```swift
-.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
-.clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.lg))
+.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
+.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.lg))
 ```
 
 ### Shadows (static)

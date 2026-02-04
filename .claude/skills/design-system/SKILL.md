@@ -27,6 +27,7 @@ Libraries/DesignSystem/
 │   │   ├── Theming/          # Theme contracts
 │   │   │   ├── DSBorderWidth.swift
 │   │   │   ├── DSColorPalette.swift
+│   │   │   ├── DSCornerRadius.swift
 │   │   │   ├── DSDimensions.swift
 │   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
@@ -36,6 +37,7 @@ Libraries/DesignSystem/
 │   │   │   └── Default/
 │   │   │       ├── DefaultBorderWidth.swift
 │   │   │       ├── DefaultColorPalette.swift
+│   │   │       ├── DefaultCornerRadius.swift
 │   │   │       ├── DefaultDimensions.swift
 │   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
@@ -43,8 +45,6 @@ Libraries/DesignSystem/
 │   │   │   └── TextStyle.swift
 │   │   ├── Shadows/
 │   │   │   └── ShadowToken.swift
-│   │   ├── Corners/
-│   │   │   └── CornerRadiusToken.swift
 │   │   └── Opacity/
 │   │       └── OpacityToken.swift
 │   │
@@ -78,7 +78,7 @@ Libraries/DesignSystem/
 
 ## Theming
 
-Colors, typography, spacing, dimensions, and border widths are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (corners, opacity, shadows) remain static.
+Colors, typography, spacing, dimensions, border widths, and corner radii are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (opacity, shadows) remain static.
 
 ### Reading the theme in a View
 
@@ -168,6 +168,22 @@ theme.borderWidth.thick     // 4pt
 
 ---
 
+## DSCornerRadius (via theme)
+
+Corner radius values accessed via `theme.cornerRadius`:
+
+```swift
+theme.cornerRadius.zero  // 0pt
+theme.cornerRadius.xs    // 4pt
+theme.cornerRadius.sm    // 8pt
+theme.cornerRadius.md    // 12pt
+theme.cornerRadius.lg    // 16pt
+theme.cornerRadius.xl    // 20pt
+theme.cornerRadius.full  // 9999pt
+```
+
+---
+
 ## Foundation: Static Design Tokens
 
 ### TextStyle
@@ -185,18 +201,6 @@ TextStyle.subheadline // .serif
 TextStyle.footnote    // .rounded
 TextStyle.caption     // .rounded
 TextStyle.caption2    // .monospaced
-```
-
-### CornerRadiusToken
-
-```swift
-CornerRadiusToken.zero  // 0pt
-CornerRadiusToken.xs    // 4pt
-CornerRadiusToken.sm    // 8pt
-CornerRadiusToken.md    // 12pt
-CornerRadiusToken.lg    // 16pt
-CornerRadiusToken.xl    // 20pt
-CornerRadiusToken.full  // 9999pt (circular)
 ```
 
 ### ShadowToken
@@ -218,17 +222,6 @@ OpacityToken.light         // 0.15
 OpacityToken.medium        // 0.4
 OpacityToken.heavy         // 0.6
 OpacityToken.almostOpaque  // 0.8
-```
-
-### DSBorderWidth (via theme)
-
-Border width values accessed via `theme.borderWidth`:
-
-```swift
-theme.borderWidth.hairline  // 0.5pt
-theme.borderWidth.thin      // 1pt
-theme.borderWidth.medium    // 2pt
-theme.borderWidth.thick     // 4pt
 ```
 
 ---
@@ -311,7 +304,7 @@ Async image with caching support (replaces `AsyncImage` for snapshot testing). U
 ```swift
 DSAsyncImage(url: character.imageURL)
     .frame(width: 70, height: 70)
-    .clipShape(RoundedRectangle(cornerRadius: CornerRadiusToken.md))
+    .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
 ```
 
 Default behavior: shows `ProgressView` while loading, error placeholder on failure, and `image.resizable().scaledToFill()` on success.
@@ -512,6 +505,7 @@ import ChallengeDesignSystem
 - [ ] Use `theme.typography.font(for: .xxx)` for fonts
 - [ ] Use `theme.spacing.xxx` for spacing values
 - [ ] Use `theme.dimensions.xxx` for icon and element sizes
+- [ ] Use `theme.cornerRadius.xxx` for corner radii
 - [ ] Use `OpacityToken` for opacity values
 - [ ] Use `theme.borderWidth.xxx` for border widths
 - [ ] Use `DSCard` for card styling
