@@ -328,7 +328,7 @@ All protocol methods describe the **UI event** that triggers them, using the `di
 
 | UI Event | Protocol Method |
 |---|---|
-| View appears (`.task {}`) | `didAppear()` |
+| View appears (`.onFirstAppear {}`) | `didAppear()` |
 | Tap on retry button | `didTapOnRetryButton()` |
 | Pull to refresh (`.refreshable {}`) | `didPullToRefresh()` |
 | Tap on "Load More" button | `didTapOnLoadMoreButton()` |
@@ -346,7 +346,7 @@ All protocol methods describe the **UI event** that triggers them, using the `di
 
 ## Preventing Unnecessary Reloads
 
-SwiftUI's `.task` modifier executes every time the view appears, including when returning from navigation. To prevent unnecessary data reloads:
+The `.onFirstAppear` modifier (from `ChallengeCore`) executes only once when the view first appears, preventing unnecessary data reloads when returning from navigation. As defense in depth, the ViewModel also guards against re-execution:
 
 ### Pattern: didAppear() + didTapOnRetryButton() + private load()
 
@@ -355,7 +355,7 @@ SwiftUI's `.task` modifier executes every time the view appears, including when 
 final class {Name}ListViewModel {
     private(set) var state: {Name}ListViewState = .idle
 
-    // Public: View calls this from .task - only loads on first appearance
+    // Public: View calls this from .onFirstAppear - only loads on first appearance
     func didAppear() async {
         guard case .idle = state else { return }
         await load()
@@ -377,7 +377,7 @@ private extension {Name}ListViewModel {
 ```
 
 **Rules:**
-- `didAppear()` is **public** - called by View in `.task`, only loads from `.idle`
+- `didAppear()` is **public** - called by View in `.onFirstAppear`, only loads from `.idle`
 - `didTapOnRetryButton()` is **public** - called by View in error retry button, always loads
 - `load()` is **private** - encapsulates loading logic
 - `didAppear()` only loads from `.idle` (first appearance)
@@ -391,7 +391,7 @@ struct {Name}ListView: View {
 
     var body: some View {
         content
-            .task {
+            .onFirstAppear {
                 await viewModel.didAppear()
             }
     }

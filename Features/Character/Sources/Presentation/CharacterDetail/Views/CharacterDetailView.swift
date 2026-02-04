@@ -12,7 +12,7 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 
 	var body: some View {
 		content
-			.task {
+			.onFirstAppear {
 				await viewModel.didAppear()
 			}
 			.background(ColorToken.backgroundSecondary)

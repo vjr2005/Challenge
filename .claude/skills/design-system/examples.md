@@ -17,7 +17,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 
     var body: some View {
         content
-            .task { await viewModel.load() }
+            .onFirstAppear { await viewModel.load() }
             .navigationTitle(LocalizedStrings.title)
     }
 

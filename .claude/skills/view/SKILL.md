@@ -54,7 +54,7 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
     var body: some View {
         content
-            .task { await viewModel.didAppear() }
+            .onFirstAppear { await viewModel.didAppear() }
     }
 
     @ViewBuilder
@@ -109,7 +109,7 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 - **Not generic over ViewModel** - receives `AppContainer` directly
 - **No LocalizedStrings** - doesn't display user-facing text
 - **No AccessibilityIdentifier** - navigation container, not interactive UI
-- **No `.task` modifier** - manages navigation, not data loading
+- **No `.onFirstAppear` modifier** - manages navigation, not data loading
 - **Location:** `AppKit/Sources/Presentation/Views/`
 
 These containers orchestrate navigation and feature composition, not user interface rendering.
@@ -379,11 +379,11 @@ When passing `accessibilityIdentifier:` to DS components, identifiers propagate 
 
 ### Stateful Views (with ViewState)
 - [ ] Use `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
-- [ ] Implement `body` with `.task { await viewModel.didAppear() }`
+- [ ] Implement `body` with `.onFirstAppear { await viewModel.didAppear() }`
 - [ ] Implement `content` with switch on `viewModel.state`
 - [ ] Handle all ViewState cases
 
 ### Stateless Views (navigation only, no async data)
 - [ ] Use `let viewModel` (no `@State` needed)
-- [ ] No `.task` modifier needed (no async data loading)
+- [ ] No `.onFirstAppear` modifier needed (no async data loading)
 - [ ] No `didAppear()` method in ViewModel

@@ -270,7 +270,7 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
     var body: some View {
         content
-            .task { await viewModel.load() }
+            .onFirstAppear { await viewModel.load() }
     }
 
     @ViewBuilder

@@ -48,7 +48,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
 
     var body: some View {
         content
-            .task {
+            .onFirstAppear {
                 await viewModel.loadIfNeeded()
             }
             .background(ColorToken.backgroundSecondary)
@@ -179,7 +179,7 @@ private extension {Name} {
 **Key patterns:**
 - Generic over `ViewModel: {ScreenName}ViewModelContract` for testability
 - `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
-- `.task { await viewModel.loadIfNeeded() }` for initial load
+- `.onFirstAppear { await viewModel.loadIfNeeded() }` for initial load (executes only once)
 - Switch on `viewModel.state` for all ViewState cases
 - Use Design System tokens (ColorToken, SpacingToken, TextStyle)
 - Private `LocalizedStrings` enum for localization
@@ -211,7 +211,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
 
     var body: some View {
         content
-            .task {
+            .onFirstAppear {
                 await viewModel.loadIfNeeded()
             }
             .background(ColorToken.backgroundSecondary)
@@ -440,7 +440,7 @@ private final class {ScreenName}ViewModelPreviewStub: {ScreenName}ViewModelContr
 
 **Key patterns:**
 - `let viewModel` instead of `@State private var viewModel`
-- No `.task` modifier (no async data loading)
+- No `.onFirstAppear` modifier (no async data loading)
 - ViewModel only has action methods
 
 ---

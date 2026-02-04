@@ -20,7 +20,7 @@ struct CharacterListView: View {
 
     var body: some View {
         content
-            .task {
+            .onFirstAppear {
                 await viewModel.didAppear()
             }
             .navigationTitle(LocalizedStrings.title)
@@ -187,7 +187,7 @@ struct CharacterDetailView: View {
 
     var body: some View {
         content
-            .task {
+            .onFirstAppear {
                 await viewModel.didAppear()
             }
     }
