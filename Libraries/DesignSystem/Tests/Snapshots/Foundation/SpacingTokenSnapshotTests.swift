@@ -4,7 +4,7 @@ import Testing
 
 @testable import ChallengeDesignSystem
 
-struct SpacingTokenSnapshotTests {
+struct DefaultSpacingSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 	}
@@ -13,15 +13,15 @@ struct SpacingTokenSnapshotTests {
 
 	@Test("Renders gallery of all spacing tokens with values")
 	func spacingGallery() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
-			spacingRow("xxs", value: SpacingToken.xxs)
-			spacingRow("xs", value: SpacingToken.xs)
-			spacingRow("sm", value: SpacingToken.sm)
-			spacingRow("md", value: SpacingToken.md)
-			spacingRow("lg", value: SpacingToken.lg)
-			spacingRow("xl", value: SpacingToken.xl)
-			spacingRow("xxl", value: SpacingToken.xxl)
-			spacingRow("xxxl", value: SpacingToken.xxxl)
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().md) {
+			spacingRow("xxs", value: DefaultSpacing().xxs)
+			spacingRow("xs", value: DefaultSpacing().xs)
+			spacingRow("sm", value: DefaultSpacing().sm)
+			spacingRow("md", value: DefaultSpacing().md)
+			spacingRow("lg", value: DefaultSpacing().lg)
+			spacingRow("xl", value: DefaultSpacing().xl)
+			spacingRow("xxl", value: DefaultSpacing().xxl)
+			spacingRow("xxxl", value: DefaultSpacing().xxxl)
 		}
 		.padding()
 		.frame(width: 320)
@@ -34,15 +34,15 @@ struct SpacingTokenSnapshotTests {
 
 	@Test("Renders visual comparison of spacing token heights")
 	func spacingComparison() {
-		let view = HStack(alignment: .bottom, spacing: SpacingToken.md) {
-			spacingBar("xxs", value: SpacingToken.xxs)
-			spacingBar("xs", value: SpacingToken.xs)
-			spacingBar("sm", value: SpacingToken.sm)
-			spacingBar("md", value: SpacingToken.md)
-			spacingBar("lg", value: SpacingToken.lg)
-			spacingBar("xl", value: SpacingToken.xl)
-			spacingBar("xxl", value: SpacingToken.xxl)
-			spacingBar("xxxl", value: SpacingToken.xxxl)
+		let view = HStack(alignment: .bottom, spacing: DefaultSpacing().md) {
+			spacingBar("xxs", value: DefaultSpacing().xxs)
+			spacingBar("xs", value: DefaultSpacing().xs)
+			spacingBar("sm", value: DefaultSpacing().sm)
+			spacingBar("md", value: DefaultSpacing().md)
+			spacingBar("lg", value: DefaultSpacing().lg)
+			spacingBar("xl", value: DefaultSpacing().xl)
+			spacingBar("xxl", value: DefaultSpacing().xxl)
+			spacingBar("xxxl", value: DefaultSpacing().xxxl)
 		}
 		.padding()
 		.frame(width: 320, height: 180)
@@ -55,11 +55,11 @@ struct SpacingTokenSnapshotTests {
 
 	@Test("Renders spacing tokens applied to real UI context")
 	func spacingInContext() {
-		let view = VStack(spacing: SpacingToken.lg) {
-			contextExample("xxs (2pt)", spacing: SpacingToken.xxs)
-			contextExample("sm (8pt)", spacing: SpacingToken.sm)
-			contextExample("md (12pt)", spacing: SpacingToken.md)
-			contextExample("lg (16pt)", spacing: SpacingToken.lg)
+		let view = VStack(spacing: DefaultSpacing().lg) {
+			contextExample("xxs (2pt)", spacing: DefaultSpacing().xxs)
+			contextExample("sm (8pt)", spacing: DefaultSpacing().sm)
+			contextExample("md (12pt)", spacing: DefaultSpacing().md)
+			contextExample("lg (16pt)", spacing: DefaultSpacing().lg)
 		}
 		.padding()
 		.frame(width: 320)
@@ -71,7 +71,7 @@ struct SpacingTokenSnapshotTests {
 	// MARK: - Helpers
 
 	private func spacingRow(_ name: String, value: CGFloat) -> some View {
-		HStack(spacing: SpacingToken.md) {
+		HStack(spacing: DefaultSpacing().md) {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
 				.frame(width: 40, alignment: .leading)
@@ -90,7 +90,7 @@ struct SpacingTokenSnapshotTests {
 	}
 
 	private func spacingBar(_ name: String, value: CGFloat) -> some View {
-		VStack(spacing: SpacingToken.xs) {
+		VStack(spacing: DefaultSpacing().xs) {
 			Rectangle()
 				.fill(DefaultColorPalette().accent)
 				.frame(width: 24, height: value * 3)
@@ -101,7 +101,7 @@ struct SpacingTokenSnapshotTests {
 	}
 
 	private func contextExample(_ label: String, spacing: CGFloat) -> some View {
-		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+		VStack(alignment: .leading, spacing: DefaultSpacing().xs) {
 			Text(label)
 				.font(.system(.caption, design: .rounded, weight: .semibold))
 				.foregroundStyle(DefaultColorPalette().textSecondary)

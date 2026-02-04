@@ -16,7 +16,7 @@ struct TextStyleSnapshotTests {
 
 	@Test("Renders gallery of all text styles with default colors")
 	func typographyGallery() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().md) {
 			Text("Large Title")
 				.font(typography.font(for: .largeTitle))
 				.foregroundStyle(typography.defaultColor(for: .largeTitle, in: palette))
@@ -68,7 +68,7 @@ struct TextStyleSnapshotTests {
 
 	@Test("Renders text styles with monospaced labels for reference")
 	func typographyWithLabels() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.lg) {
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().lg) {
 			typographyRow("largeTitle", style: .largeTitle)
 			typographyRow("title", style: .title)
 			typographyRow("title2", style: .title2)
@@ -91,8 +91,8 @@ struct TextStyleSnapshotTests {
 
 	@Test("Renders comparison of rounded, serif, and monospaced designs")
 	func fontDesignComparison() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.lg) {
-			VStack(alignment: .leading, spacing: SpacingToken.xs) {
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().lg) {
+			VStack(alignment: .leading, spacing: DefaultSpacing().xs) {
 				Text("Rounded (titles, body)")
 					.font(.system(.caption, design: .rounded, weight: .semibold))
 					.foregroundStyle(palette.textSecondary)
@@ -101,7 +101,7 @@ struct TextStyleSnapshotTests {
 					.foregroundStyle(palette.textPrimary)
 			}
 
-			VStack(alignment: .leading, spacing: SpacingToken.xs) {
+			VStack(alignment: .leading, spacing: DefaultSpacing().xs) {
 				Text("Serif (subheadline)")
 					.font(.system(.caption, design: .rounded, weight: .semibold))
 					.foregroundStyle(palette.textSecondary)
@@ -110,7 +110,7 @@ struct TextStyleSnapshotTests {
 					.foregroundStyle(palette.textSecondary)
 			}
 
-			VStack(alignment: .leading, spacing: SpacingToken.xs) {
+			VStack(alignment: .leading, spacing: DefaultSpacing().xs) {
 				Text("Monospaced (caption2)")
 					.font(.system(.caption, design: .rounded, weight: .semibold))
 					.foregroundStyle(palette.textSecondary)
@@ -130,7 +130,7 @@ struct TextStyleSnapshotTests {
 
 	@Test("Renders typography hierarchy example with real content")
 	func typographyHierarchy() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.md) {
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().md) {
 			Text("Page Title")
 				.font(typography.font(for: .largeTitle))
 				.foregroundStyle(typography.defaultColor(for: .largeTitle, in: palette))

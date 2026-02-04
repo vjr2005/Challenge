@@ -48,7 +48,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 
     func characterList(page: CharactersPage) -> some View {
         ScrollView {
-            LazyVStack(spacing: SpacingToken.lg) {
+            LazyVStack(spacing: theme.spacing.lg) {
                 headerView(totalCount: page.totalCount)
 
                 ForEach(page.characters, id: \.id) { character in
@@ -76,14 +76,14 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
                     .accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
                 }
             }
-            .padding(.horizontal, SpacingToken.lg)
+            .padding(.horizontal, theme.spacing.lg)
         }
         .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
         .background(theme.colors.backgroundSecondary)
     }
 
     func headerView(totalCount: Int) -> some View {
-        VStack(alignment: .leading, spacing: SpacingToken.xs) {
+        VStack(alignment: .leading, spacing: theme.spacing.xs) {
             Text(LocalizedStrings.headerTitle)
                 .font(theme.typography.font(for: .largeTitle))
                 .foregroundStyle(theme.colors.textPrimary)
@@ -116,13 +116,13 @@ private enum AccessibilityIdentifier {
 @Environment(\.dsTheme) private var theme
 
 func infoCard(_ character: Character) -> some View {
-    DSCard(padding: SpacingToken.xl) {
-        VStack(alignment: .leading, spacing: SpacingToken.lg) {
+    DSCard(padding: theme.spacing.xl) {
+        VStack(alignment: .leading, spacing: theme.spacing.lg) {
             Text(LocalizedStrings.information)
                 .font(theme.typography.font(for: .headline))
                 .foregroundStyle(theme.colors.textPrimary)
 
-            VStack(spacing: SpacingToken.md) {
+            VStack(spacing: theme.spacing.md) {
                 DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
                 Divider()
                 DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
@@ -133,13 +133,13 @@ func infoCard(_ character: Character) -> some View {
 }
 
 func locationCard(_ character: Character) -> some View {
-    DSCard(padding: SpacingToken.xl) {
-        VStack(alignment: .leading, spacing: SpacingToken.lg) {
+    DSCard(padding: theme.spacing.xl) {
+        VStack(alignment: .leading, spacing: theme.spacing.lg) {
             Text(LocalizedStrings.locations)
                 .font(theme.typography.font(for: .headline))
                 .foregroundStyle(theme.colors.textPrimary)
 
-            VStack(spacing: SpacingToken.md) {
+            VStack(spacing: theme.spacing.md) {
                 DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)
                 Divider()
                 DSInfoRow(icon: "mappin.circle.fill", label: "Last Known", value: character.location.name)
@@ -158,8 +158,8 @@ func locationCard(_ character: Character) -> some View {
 @Environment(\.dsTheme) private var theme
 
 func headerSection(_ character: Character) -> some View {
-    DSCard(padding: SpacingToken.xl) {
-        VStack(spacing: SpacingToken.lg) {
+    DSCard(padding: theme.spacing.xl) {
+        VStack(spacing: theme.spacing.lg) {
             characterImage(character)
             nameAndStatus(character)
         }
@@ -168,13 +168,13 @@ func headerSection(_ character: Character) -> some View {
 }
 
 func nameAndStatus(_ character: Character) -> some View {
-    VStack(spacing: SpacingToken.sm) {
+    VStack(spacing: theme.spacing.sm) {
         Text(character.name)
             .font(theme.typography.font(for: .title))
             .foregroundStyle(theme.colors.textPrimary)
             .multilineTextAlignment(.center)
 
-        HStack(spacing: SpacingToken.sm) {
+        HStack(spacing: theme.spacing.sm) {
             DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
             Text(character.status.rawValue)
@@ -227,15 +227,17 @@ var errorView: some View {
 .foregroundStyle(theme.colors.statusSuccess)
 ```
 
-### Spacing (static)
+### Spacing (via theme)
 
 ```swift
-.padding(SpacingToken.lg)
-.padding(.horizontal, SpacingToken.lg)
-.padding(.vertical, SpacingToken.sm)
+@Environment(\.dsTheme) private var theme
 
-VStack(spacing: SpacingToken.md) { }
-HStack(spacing: SpacingToken.sm) { }
+.padding(theme.spacing.lg)
+.padding(.horizontal, theme.spacing.lg)
+.padding(.vertical, theme.spacing.sm)
+
+VStack(spacing: theme.spacing.md) { }
+HStack(spacing: theme.spacing.sm) { }
 ```
 
 ### Typography (via theme)

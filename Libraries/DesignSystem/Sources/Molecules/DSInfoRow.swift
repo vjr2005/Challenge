@@ -32,15 +32,15 @@ public struct DSInfoRow: View {
 	}
 
 	public var body: some View {
-		HStack(spacing: SpacingToken.md) {
+		HStack(spacing: theme.spacing.md) {
 			Image(systemName: icon)
 				.font(theme.typography.font(for: .body))
 				.foregroundStyle(iconColor ?? theme.colors.accent)
-				.frame(width: SpacingToken.xxl)
+				.frame(width: theme.spacing.xxl)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
-			VStack(alignment: .leading, spacing: SpacingToken.xxs) {
+			VStack(alignment: .leading, spacing: theme.spacing.xxs) {
 				Text(label)
 					.font(theme.typography.font(for: .caption))
 					.foregroundStyle(theme.colors.textSecondary)

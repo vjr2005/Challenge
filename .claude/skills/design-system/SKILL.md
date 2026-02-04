@@ -27,16 +27,16 @@ Libraries/DesignSystem/
 │   │   ├── Theming/          # Theme contracts
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSTypography.swift
+│   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
 │   │   │   └── DSThemeEnvironment.swift
 │   │   ├── Themes/           # Theme implementations
 │   │   │   └── Default/
 │   │   │       ├── DefaultColorPalette.swift
+│   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
 │   │   │   └── TextStyle.swift
-│   │   ├── Spacing/
-│   │   │   └── SpacingToken.swift
 │   │   ├── Shadows/
 │   │   │   └── ShadowToken.swift
 │   │   ├── Corners/
@@ -78,7 +78,7 @@ Libraries/DesignSystem/
 
 ## Theming
 
-Colors and typography are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (spacing, corners, borders, icons, opacity, shadows) remain static.
+Colors, typography, and spacing are accessed through the SwiftUI Environment via `@Environment(\.dsTheme)`. All DS components read the theme automatically. Geometric tokens (corners, borders, icons, opacity, shadows) remain static.
 
 ### Reading the theme in a View
 
@@ -122,22 +122,24 @@ theme.colors.accentSubtle         // Accent with opacity
 
 ---
 
-## Foundation: Static Design Tokens
+## DSSpacing (via theme)
 
-### SpacingToken
-
-Consistent spacing values:
+Spacing values accessed via `theme.spacing`:
 
 ```swift
-SpacingToken.xxs   // 2pt
-SpacingToken.xs    // 4pt
-SpacingToken.sm    // 8pt
-SpacingToken.md    // 12pt
-SpacingToken.lg    // 16pt
-SpacingToken.xl    // 20pt
-SpacingToken.xxl   // 24pt
-SpacingToken.xxxl  // 32pt
+theme.spacing.xxs   // 2pt
+theme.spacing.xs    // 4pt
+theme.spacing.sm    // 8pt
+theme.spacing.md    // 12pt
+theme.spacing.lg    // 16pt
+theme.spacing.xl    // 20pt
+theme.spacing.xxl   // 24pt
+theme.spacing.xxxl  // 32pt
 ```
+
+---
+
+## Foundation: Static Design Tokens
 
 ### TextStyle
 
@@ -363,7 +365,7 @@ DSCard {
 }
 
 // Customized
-DSCard(padding: SpacingToken.xl, shadow: .medium) {
+DSCard(padding: theme.spacing.xl, shadow: .medium) {
     // content
 }
 ```
@@ -493,7 +495,7 @@ import ChallengeDesignSystem
 - [ ] Add `@Environment(\.dsTheme) private var theme`
 - [ ] Use `theme.colors.xxx` for colors
 - [ ] Use `theme.typography.font(for: .xxx)` for fonts
-- [ ] Use `SpacingToken` for spacing values
+- [ ] Use `theme.spacing.xxx` for spacing values
 - [ ] Use `IconSizeToken` for icon sizes
 - [ ] Use `OpacityToken` for opacity values
 - [ ] Use `BorderWidthToken` for border widths

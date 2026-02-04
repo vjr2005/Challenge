@@ -4,12 +4,12 @@ import SwiftUI
 public extension View {
 	/// Applies standard card styling to the view.
 	/// - Parameters:
-	///   - padding: The internal padding (default: lg)
+	///   - padding: The internal padding (default: theme lg spacing)
 	///   - cornerRadius: The corner radius (default: lg)
 	///   - shadowToken: The shadow style (default: small)
 	/// - Returns: A view with card styling applied
 	func dsCard(
-		padding: CGFloat = SpacingToken.lg,
+		padding: CGFloat? = nil,
 		cornerRadius: CGFloat = CornerRadiusToken.lg,
 		shadowToken: ShadowToken = .small
 	) -> some View {
@@ -32,7 +32,7 @@ public extension View {
 }
 
 private struct DSCardModifier: ViewModifier {
-	let padding: CGFloat
+	let padding: CGFloat?
 	let cornerRadius: CGFloat
 	let shadowToken: ShadowToken
 
@@ -40,7 +40,7 @@ private struct DSCardModifier: ViewModifier {
 
 	func body(content: Content) -> some View {
 		content
-			.padding(padding)
+			.padding(padding ?? theme.spacing.lg)
 			.background(theme.colors.surfacePrimary)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
 			.shadow(shadowToken)

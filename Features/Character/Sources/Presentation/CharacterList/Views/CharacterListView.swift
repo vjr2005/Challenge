@@ -70,14 +70,14 @@ private extension CharacterListView {
                 await viewModel.didTapOnLoadMoreButton()
             }
         }
-        .padding(.vertical, SpacingToken.sm)
+        .padding(.vertical, theme.spacing.sm)
     }
 
     func footerView(page: CharactersPage) -> some View {
         Text(LocalizedStrings.pageIndicator(page.currentPage, page.totalPages))
             .font(theme.typography.font(for: .caption2))
             .foregroundStyle(theme.colors.textPrimary)
-            .padding(.bottom, SpacingToken.lg)
+            .padding(.bottom, theme.spacing.lg)
     }
 
     var emptyView: some View {
@@ -100,7 +100,7 @@ private extension CharacterListView {
 
 	func characterList(page: CharactersPage) -> some View {
 		ScrollView {
-			LazyVStack(spacing: SpacingToken.lg) {
+			LazyVStack(spacing: theme.spacing.lg) {
 				headerView(totalCount: page.totalCount)
 
 				ForEach(page.characters, id: \.id) { character in
@@ -125,7 +125,7 @@ private extension CharacterListView {
 
 				footerView(page: page)
 			}
-			.padding(.horizontal, SpacingToken.lg)
+			.padding(.horizontal, theme.spacing.lg)
 		}
 		.refreshable {
 			await viewModel.didPullToRefresh()
@@ -135,7 +135,7 @@ private extension CharacterListView {
 	}
 
 	func headerView(totalCount: Int) -> some View {
-		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+		VStack(alignment: .leading, spacing: theme.spacing.xs) {
 			Text(LocalizedStrings.headerTitle)
 				.font(theme.typography.font(for: .largeTitle))
 				.foregroundStyle(theme.colors.textPrimary)
@@ -146,7 +146,7 @@ private extension CharacterListView {
 				.italic()
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
-		.padding(.vertical, SpacingToken.sm)
+		.padding(.vertical, theme.spacing.sm)
 	}
 
 	func errorView(error: CharacterError) -> some View {

@@ -13,7 +13,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	@Test("Renders gallery of all corner radius tokens")
 	func cornerRadiusGallery() {
-		let view = VStack(spacing: SpacingToken.lg) {
+		let view = VStack(spacing: DefaultSpacing().lg) {
 			cornerRadiusRow("zero", value: CornerRadiusToken.zero)
 			cornerRadiusRow("xs", value: CornerRadiusToken.xs)
 			cornerRadiusRow("sm", value: CornerRadiusToken.sm)
@@ -33,7 +33,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	@Test("Renders visual comparison of small corner radius values")
 	func cornerRadiusComparison() {
-		let view = HStack(spacing: SpacingToken.md) {
+		let view = HStack(spacing: DefaultSpacing().md) {
 			cornerBox("zero", radius: CornerRadiusToken.zero)
 			cornerBox("xs", radius: CornerRadiusToken.xs)
 			cornerBox("sm", radius: CornerRadiusToken.sm)
@@ -48,7 +48,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	@Test("Renders visual comparison of large corner radius values")
 	func cornerRadiusLargeComparison() {
-		let view = HStack(spacing: SpacingToken.md) {
+		let view = HStack(spacing: DefaultSpacing().md) {
 			cornerBox("lg", radius: CornerRadiusToken.lg)
 			cornerBox("xl", radius: CornerRadiusToken.xl)
 			cornerBox("full", radius: CornerRadiusToken.full)
@@ -64,7 +64,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	@Test("Renders corner radius tokens applied to button context")
 	func cornerRadiusButtonContext() {
-		let view = VStack(spacing: SpacingToken.md) {
+		let view = VStack(spacing: DefaultSpacing().md) {
 			buttonExample("xs (4pt)", radius: CornerRadiusToken.xs)
 			buttonExample("sm (8pt)", radius: CornerRadiusToken.sm)
 			buttonExample("md (12pt)", radius: CornerRadiusToken.md)
@@ -81,7 +81,7 @@ struct CornerRadiusTokenSnapshotTests {
 
 	@Test("Renders corner radius tokens applied to card context")
 	func cornerRadiusCardContext() {
-		let view = VStack(spacing: SpacingToken.lg) {
+		let view = VStack(spacing: DefaultSpacing().lg) {
 			cardExample("sm (8pt)", radius: CornerRadiusToken.sm)
 			cardExample("md (12pt)", radius: CornerRadiusToken.md)
 			cardExample("lg (16pt)", radius: CornerRadiusToken.lg)
@@ -96,7 +96,7 @@ struct CornerRadiusTokenSnapshotTests {
 	// MARK: - Helpers
 
 	private func cornerRadiusRow(_ name: String, value: CGFloat) -> some View {
-		HStack(spacing: SpacingToken.md) {
+		HStack(spacing: DefaultSpacing().md) {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
 				.frame(width: 40, alignment: .leading)
@@ -115,7 +115,7 @@ struct CornerRadiusTokenSnapshotTests {
 	}
 
 	private func cornerBox(_ name: String, radius: CGFloat) -> some View {
-		VStack(spacing: SpacingToken.xs) {
+		VStack(spacing: DefaultSpacing().xs) {
 			RoundedRectangle(cornerRadius: radius)
 				.fill(DefaultColorPalette().accent)
 				.frame(width: 50, height: 50)
@@ -135,8 +135,8 @@ struct CornerRadiusTokenSnapshotTests {
 			Text("Button")
 				.font(.system(.body, design: .rounded, weight: .medium))
 				.foregroundStyle(.white)
-				.padding(.horizontal, SpacingToken.lg)
-				.padding(.vertical, SpacingToken.sm)
+				.padding(.horizontal, DefaultSpacing().lg)
+				.padding(.vertical, DefaultSpacing().sm)
 				.background(DefaultColorPalette().accent)
 				.clipShape(RoundedRectangle(cornerRadius: radius))
 
@@ -145,7 +145,7 @@ struct CornerRadiusTokenSnapshotTests {
 	}
 
 	private func cardExample(_ label: String, radius: CGFloat) -> some View {
-		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+		VStack(alignment: .leading, spacing: DefaultSpacing().xs) {
 			Text(label)
 				.font(.system(.caption, design: .rounded, weight: .semibold))
 				.foregroundStyle(DefaultColorPalette().textSecondary)

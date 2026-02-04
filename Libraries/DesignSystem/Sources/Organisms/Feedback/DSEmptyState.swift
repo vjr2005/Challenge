@@ -36,14 +36,14 @@ public struct DSEmptyState: View {
 	}
 
 	public var body: some View {
-		VStack(spacing: SpacingToken.lg) {
+		VStack(spacing: theme.spacing.lg) {
 			Image(systemName: icon)
 				.font(.system(size: IconSizeToken.xxxl))
 				.foregroundStyle(theme.colors.textTertiary)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).icon" } ?? "")
 				.accessibilityHidden(true)
 
-			VStack(spacing: SpacingToken.sm) {
+			VStack(spacing: theme.spacing.sm) {
 				Text(title)
 					.font(theme.typography.font(for: .headline))
 					.foregroundStyle(theme.colors.textPrimary)
@@ -67,7 +67,7 @@ public struct DSEmptyState: View {
 				)
 			}
 		}
-		.padding(SpacingToken.xl)
+		.padding(theme.spacing.xl)
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 }

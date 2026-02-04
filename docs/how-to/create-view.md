@@ -94,13 +94,13 @@ private extension {ScreenName}View {
 
     func loadedContent(_ data: {Name}) -> some View {
         ScrollView {
-            VStack(spacing: SpacingToken.lg) {
+            VStack(spacing: theme.spacing.lg) {
                 // Content using Design System components
                 Text(data.name)
                     .font(theme.typography.font(for: .title))
                     .foregroundStyle(theme.colors.textPrimary)
             }
-            .padding(.horizontal, SpacingToken.lg)
+            .padding(.horizontal, theme.spacing.lg)
         }
         .refreshable {
             await viewModel.refresh()
@@ -182,7 +182,7 @@ private extension {Name} {
 - `@State private var viewModel` with `_viewModel = State(initialValue:)` in init
 - `.onFirstAppear { await viewModel.didAppear() }` for initial load (executes only once)
 - Switch on `viewModel.state` for all ViewState cases
-- Use Design System tokens via `@Environment(\.dsTheme)` (theme.colors, theme.typography, SpacingToken)
+- Use Design System tokens via `@Environment(\.dsTheme)` (theme.colors, theme.typography, theme.spacing)
 - Private `LocalizedStrings` enum for localization
 - Private `AccessibilityIdentifier` enum for UI testing
 - Previews commented out to avoid test coverage impact
@@ -269,12 +269,12 @@ private extension {ScreenName}View {
 
     func listContent(_ items: [{Name}]) -> some View {
         ScrollView {
-            LazyVStack(spacing: SpacingToken.md) {
+            LazyVStack(spacing: theme.spacing.md) {
                 ForEach(items) { item in
                     itemRow(item)
                 }
             }
-            .padding(.horizontal, SpacingToken.lg)
+            .padding(.horizontal, theme.spacing.lg)
         }
         .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
     }
@@ -399,7 +399,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
     @Environment(\.dsTheme) private var theme
 
     var body: some View {
-        VStack(spacing: SpacingToken.lg) {
+        VStack(spacing: theme.spacing.lg) {
             Text(LocalizedStrings.title)
                 .font(theme.typography.font(for: .title))
                 .foregroundStyle(theme.colors.textPrimary)
@@ -410,7 +410,7 @@ struct {ScreenName}View<ViewModel: {ScreenName}ViewModelContract>: View {
             .buttonStyle(.borderedProminent)
             .accessibilityIdentifier(AccessibilityIdentifier.actionButton)
         }
-        .padding(SpacingToken.lg)
+        .padding(theme.spacing.lg)
     }
 }
 
@@ -457,7 +457,7 @@ All Views must use Design System components and tokens:
 |------|-------|
 | **Colors** | `theme.colors.textPrimary`, `theme.colors.backgroundSecondary` |
 | **Typography** | `theme.typography.font(for: .title)`, `theme.typography.font(for: .body)` |
-| **SpacingToken** | `SpacingToken.lg`, `SpacingToken.md`, `SpacingToken.sm` |
+| **Spacing** | `theme.spacing.lg`, `theme.spacing.md`, `theme.spacing.sm` |
 | **CornerRadiusToken** | `CornerRadiusToken.lg`, `CornerRadiusToken.md` |
 | **DS Components** | `DSCard`, `DSAsyncImage`, `DSLoadingView`, `DSErrorView` |
 
@@ -468,7 +468,7 @@ All Views must use Design System components and tokens:
 Text(item.name)
     .font(theme.typography.font(for: .body))
     .foregroundStyle(theme.colors.textPrimary)
-    .padding(SpacingToken.md)
+    .padding(theme.spacing.md)    // via @Environment(\.dsTheme)
 
 // ❌ Wrong - hardcoded values
 Text(item.name)

@@ -13,13 +13,13 @@ struct ShadowTokenSnapshotTests {
 
 	@Test("Renders gallery of all shadow tokens on cards")
 	func shadowGallery() {
-		let view = VStack(spacing: SpacingToken.xxl) {
+		let view = VStack(spacing: DefaultSpacing().xxl) {
 			shadowCard("zero", token: .zero)
 			shadowCard("small", token: .small)
 			shadowCard("medium", token: .medium)
 			shadowCard("large", token: .large)
 		}
-		.padding(SpacingToken.xl)
+		.padding(DefaultSpacing().xl)
 		.frame(width: 320)
 		.background(DefaultColorPalette().backgroundSecondary)
 
@@ -30,13 +30,13 @@ struct ShadowTokenSnapshotTests {
 
 	@Test("Renders side-by-side comparison of shadow intensities")
 	func shadowComparison() {
-		let view = HStack(spacing: SpacingToken.lg) {
+		let view = HStack(spacing: DefaultSpacing().lg) {
 			shadowBox("zero", token: .zero)
 			shadowBox("small", token: .small)
 			shadowBox("medium", token: .medium)
 			shadowBox("large", token: .large)
 		}
-		.padding(SpacingToken.xl)
+		.padding(DefaultSpacing().xl)
 		.frame(width: 360)
 		.background(DefaultColorPalette().backgroundSecondary)
 
@@ -47,7 +47,7 @@ struct ShadowTokenSnapshotTests {
 
 	@Test("Renders shadow tokens with property values displayed")
 	func shadowProperties() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.lg) {
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().lg) {
 			shadowPropertyRow("zero", token: .zero)
 			shadowPropertyRow("small", token: .small)
 			shadowPropertyRow("medium", token: .medium)
@@ -64,13 +64,13 @@ struct ShadowTokenSnapshotTests {
 
 	@Test("Renders shadow tokens applied to real card context")
 	func shadowCardContext() {
-		let view = VStack(spacing: SpacingToken.xxl) {
+		let view = VStack(spacing: DefaultSpacing().xxl) {
 			contextCard("Flat Card", token: .zero)
 			contextCard("Subtle Elevation", token: .small)
 			contextCard("Standard Card", token: .medium)
 			contextCard("Floating Element", token: .large)
 		}
-		.padding(SpacingToken.xl)
+		.padding(DefaultSpacing().xl)
 		.frame(width: 320)
 		.background(DefaultColorPalette().backgroundSecondary)
 
@@ -96,7 +96,7 @@ struct ShadowTokenSnapshotTests {
 	}
 
 	private func shadowBox(_ name: String, token: ShadowToken) -> some View {
-		VStack(spacing: SpacingToken.sm) {
+		VStack(spacing: DefaultSpacing().sm) {
 			RoundedRectangle(cornerRadius: CornerRadiusToken.sm)
 				.fill(DefaultColorPalette().surfacePrimary)
 				.frame(width: 60, height: 60)
@@ -109,7 +109,7 @@ struct ShadowTokenSnapshotTests {
 	}
 
 	private func shadowPropertyRow(_ name: String, token: ShadowToken) -> some View {
-		HStack(spacing: SpacingToken.md) {
+		HStack(spacing: DefaultSpacing().md) {
 			Text(name)
 				.font(.system(.footnote, design: .monospaced))
 				.foregroundStyle(DefaultColorPalette().textPrimary)
@@ -135,7 +135,7 @@ struct ShadowTokenSnapshotTests {
 	}
 
 	private func contextCard(_ title: String, token: ShadowToken) -> some View {
-		VStack(alignment: .leading, spacing: SpacingToken.sm) {
+		VStack(alignment: .leading, spacing: DefaultSpacing().sm) {
 			Text(title)
 				.font(.system(.headline, design: .rounded))
 				.foregroundStyle(DefaultColorPalette().textPrimary)

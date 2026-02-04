@@ -1,10 +1,10 @@
 # ChallengeDesignSystem
 
-Atomic Design System providing reusable UI components and design tokens with themeable colors and typography via SwiftUI Environment.
+Atomic Design System providing reusable UI components and design tokens with themeable colors, typography, and spacing via SwiftUI Environment.
 
 ## Overview
 
-ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, and other visual properties. Colors and typography are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (spacing, corners, borders, icons, opacity, shadows) remain static.
+ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, and other visual properties. Colors, typography, and spacing are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`), while geometric tokens (corners, borders, icons, opacity, shadows) remain static.
 
 ## Structure
 
@@ -15,16 +15,16 @@ DesignSystem/
 │   │   ├── Theming/          # Theme contracts
 │   │   │   ├── DSColorPalette.swift
 │   │   │   ├── DSTypography.swift
+│   │   │   ├── DSSpacing.swift
 │   │   │   ├── DSTheme.swift
 │   │   │   └── DSThemeEnvironment.swift
 │   │   ├── Themes/           # Theme implementations
 │   │   │   └── Default/
 │   │   │       ├── DefaultColorPalette.swift
+│   │   │       ├── DefaultSpacing.swift
 │   │   │       └── DefaultTypography.swift
 │   │   ├── Typography/
 │   │   │   └── TextStyle.swift
-│   │   ├── Spacing/
-│   │   │   └── SpacingToken.swift
 │   │   ├── Corners/
 │   │   │   └── CornerRadiusToken.swift
 │   │   ├── Shadows/
@@ -80,10 +80,10 @@ Colors and typography are accessed through the theme environment, enabling runti
 ```
 ┌─────────────────────────────────────────────┐
 │         DSTheme (struct, Sendable)          │
-│  ┌───────────────┐  ┌───────────────────┐   │
-│  │ DSColorPalette│  │  DSTypography     │   │
-│  │  (protocol)   │  │  (protocol)       │   │
-│  └───────────────┘  └───────────────────┘   │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────┐ │
+│  │DSColorPalette│ │ DSTypography │ │DSSpac│ │
+│  │ (protocol)   │ │ (protocol)   │ │(prot)│ │
+│  └──────────────┘ └──────────────┘ └──────┘ │
 └─────────────────────────────────────────────┘
                     │
         SwiftUI Environment (.dsTheme)
@@ -123,7 +123,8 @@ struct BrandColorPalette: DSColorPalette {
 
 let brandTheme = DSTheme(
     colors: BrandColorPalette(),
-    typography: DefaultTypography()
+    typography: DefaultTypography(),
+    spacing: DefaultSpacing()
 )
 ```
 
@@ -182,17 +183,19 @@ TextStyle.caption      // .rounded
 TextStyle.caption2     // .monospaced
 ```
 
-### SpacingToken (static)
+### DSSpacing (via theme)
+
+Spacing values accessed via `theme.spacing`:
 
 ```swift
-SpacingToken.xxs   // 2pt
-SpacingToken.xs    // 4pt
-SpacingToken.sm    // 8pt
-SpacingToken.md    // 12pt
-SpacingToken.lg    // 16pt
-SpacingToken.xl    // 20pt
-SpacingToken.xxl   // 24pt
-SpacingToken.xxxl  // 32pt
+theme.spacing.xxs   // 2pt
+theme.spacing.xs    // 4pt
+theme.spacing.sm    // 8pt
+theme.spacing.md    // 12pt
+theme.spacing.lg    // 16pt
+theme.spacing.xl    // 20pt
+theme.spacing.xxl   // 24pt
+theme.spacing.xxxl  // 32pt
 ```
 
 ### CornerRadiusToken (static)

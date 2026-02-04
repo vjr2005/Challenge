@@ -82,7 +82,7 @@ struct DSButtonSnapshotTests {
 
 	@Test("Renders gallery of all button variants and states")
 	func allVariantsGallery() {
-		let view = VStack(spacing: SpacingToken.lg) {
+		let view = VStack(spacing: DefaultSpacing().lg) {
 			DSButton("Primary Button") {}
 			DSButton("With Icon", icon: "arrow.right") {}
 			DSButton("Secondary", variant: .secondary) {}

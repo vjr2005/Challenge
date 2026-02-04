@@ -47,8 +47,8 @@ public struct DSCardInfoRow: View {
 	}
 
 	public var body: some View {
-		DSCard(padding: SpacingToken.lg) {
-			HStack(spacing: SpacingToken.lg) {
+		DSCard {
+			HStack(spacing: theme.spacing.lg) {
 				imageView
 				textContent
 				Spacer()
@@ -74,7 +74,7 @@ private extension DSCardInfoRow {
 	}
 
 	var textContent: some View {
-		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+		VStack(alignment: .leading, spacing: theme.spacing.xs) {
 			Text(title)
 				.font(theme.typography.font(for: .headline))
 				.foregroundStyle(theme.colors.textPrimary)
@@ -95,7 +95,7 @@ private extension DSCardInfoRow {
 	}
 
 	func captionView(_ text: String) -> some View {
-		HStack(spacing: SpacingToken.xs) {
+		HStack(spacing: theme.spacing.xs) {
 			if let captionIcon {
 				Image(systemName: captionIcon)
 					.font(.caption2)
@@ -110,7 +110,7 @@ private extension DSCardInfoRow {
 	}
 
 	var statusView: some View {
-		VStack(spacing: SpacingToken.xs) {
+		VStack(spacing: theme.spacing.xs) {
 			if let status {
 				DSStatusIndicator(
 					status: status,

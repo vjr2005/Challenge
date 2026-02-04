@@ -25,13 +25,25 @@ struct DSThemeEnvironmentTests {
 		#expect(theme.typography.font(for: .caption2) == typography.font(for: .caption2))
 	}
 
+	@Test("Default theme uses DefaultSpacing")
+	func defaultThemeUsesDefaultSpacing() {
+		let theme = DSTheme.default
+		let spacing = DefaultSpacing()
+
+		#expect(theme.spacing.sm == spacing.sm)
+		#expect(theme.spacing.lg == spacing.lg)
+		#expect(theme.spacing.xxl == spacing.xxl)
+	}
+
 	@Test("Custom theme can be created with different palette")
 	func customThemeCanBeCreated() {
 		let customPalette = DefaultColorPalette()
 		let customTypography = DefaultTypography()
-		let theme = DSTheme(colors: customPalette, typography: customTypography)
+		let customSpacing = DefaultSpacing()
+		let theme = DSTheme(colors: customPalette, typography: customTypography, spacing: customSpacing)
 
 		#expect(theme.colors.accent == customPalette.accent)
 		#expect(theme.typography.font(for: .body) == customTypography.font(for: .body))
+		#expect(theme.spacing.lg == customSpacing.lg)
 	}
 }

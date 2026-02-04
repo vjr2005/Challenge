@@ -139,7 +139,7 @@ struct DSCardInfoRowSnapshotTests {
 	@Test("Renders gallery of row cards with various configurations")
 	func rowCardGallery() {
 		let controller = makeHostedView(width: 375, height: 500) {
-			VStack(spacing: SpacingToken.lg) {
+			VStack(spacing: DefaultSpacing().lg) {
 				DSCardInfoRow(
 					imageURL: URL(string: "https://example.com/1.jpg"),
 					title: "Rick Sanchez",

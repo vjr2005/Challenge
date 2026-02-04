@@ -34,7 +34,7 @@ private extension CharacterDetailView {
 		Button {
 			viewModel.didTapOnBack()
 		} label: {
-			HStack(spacing: SpacingToken.xs) {
+			HStack(spacing: theme.spacing.xs) {
 				Image(systemName: "chevron.left")
 					.font(theme.typography.font(for: .body).weight(.semibold))
 				Text(LocalizedStrings.back)
@@ -78,14 +78,14 @@ private extension CharacterDetailView {
 
 	func characterContent(_ character: Character) -> some View {
 		ScrollView {
-			VStack(spacing: SpacingToken.xl) {
+			VStack(spacing: theme.spacing.xl) {
 				headerSection(character)
 				infoCard(character)
 				locationCard(character)
 			}
-			.padding(.horizontal, SpacingToken.lg)
-			.padding(.top, SpacingToken.sm)
-			.padding(.bottom, SpacingToken.xxl)
+			.padding(.horizontal, theme.spacing.lg)
+			.padding(.top, theme.spacing.sm)
+			.padding(.bottom, theme.spacing.xxl)
 		}
 		.refreshable {
 			await viewModel.didPullToRefresh()
@@ -94,8 +94,8 @@ private extension CharacterDetailView {
 	}
 
 	func headerSection(_ character: Character) -> some View {
-		DSCard(padding: SpacingToken.xl) {
-			VStack(spacing: SpacingToken.lg) {
+		DSCard(padding: theme.spacing.xl) {
+			VStack(spacing: theme.spacing.lg) {
 				characterImage(character)
 				nameAndStatus(character)
 			}
@@ -111,14 +111,14 @@ private extension CharacterDetailView {
 	}
 
 	func nameAndStatus(_ character: Character) -> some View {
-		VStack(spacing: SpacingToken.sm) {
+		VStack(spacing: theme.spacing.sm) {
 			Text(character.name)
 				.font(theme.typography.font(for: .title))
 				.foregroundStyle(theme.colors.textPrimary)
 				.multilineTextAlignment(.center)
                 .accessibilityIdentifier(AccessibilityIdentifier.name)
 
-			HStack(spacing: SpacingToken.sm) {
+			HStack(spacing: theme.spacing.sm) {
 				DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
 				Text(character.status.rawValue)
@@ -137,13 +137,13 @@ private extension CharacterDetailView {
 	}
 
 	func infoCard(_ character: Character) -> some View {
-		DSCard(padding: SpacingToken.xl) {
-			VStack(alignment: .leading, spacing: SpacingToken.lg) {
+		DSCard(padding: theme.spacing.xl) {
+			VStack(alignment: .leading, spacing: theme.spacing.lg) {
 				Text(LocalizedStrings.information)
 					.font(theme.typography.font(for: .headline))
 					.foregroundStyle(theme.colors.textPrimary)
 
-				VStack(spacing: SpacingToken.md) {
+				VStack(spacing: theme.spacing.md) {
 					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
 					Divider()
 					DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
@@ -154,13 +154,13 @@ private extension CharacterDetailView {
 	}
 
 	func locationCard(_ character: Character) -> some View {
-		DSCard(padding: SpacingToken.xl) {
-			VStack(alignment: .leading, spacing: SpacingToken.lg) {
+		DSCard(padding: theme.spacing.xl) {
+			VStack(alignment: .leading, spacing: theme.spacing.lg) {
 				Text(LocalizedStrings.locations)
 					.font(theme.typography.font(for: .headline))
 					.foregroundStyle(theme.colors.textPrimary)
 
-				VStack(spacing: SpacingToken.md) {
+				VStack(spacing: theme.spacing.md) {
 					DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)
 					Divider()
 					DSInfoRow(icon: "mappin.circle.fill", label: "Last Known", value: character.location.name)

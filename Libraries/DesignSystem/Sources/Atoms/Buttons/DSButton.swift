@@ -49,7 +49,7 @@ public struct DSButton: View {
 
 	public var body: some View {
 		Button(action: action) {
-			HStack(spacing: SpacingToken.sm) {
+			HStack(spacing: theme.spacing.sm) {
 				if isLoading {
 					ProgressView()
 						.tint(foregroundColor)
@@ -101,18 +101,18 @@ public struct DSButton: View {
 	private var horizontalPadding: CGFloat {
 		switch variant {
 		case .primary:
-			SpacingToken.lg
+			theme.spacing.lg
 		case .secondary, .tertiary:
-			SpacingToken.md
+			theme.spacing.md
 		}
 	}
 
 	private var verticalPadding: CGFloat {
 		switch variant {
 		case .primary:
-			SpacingToken.md
+			theme.spacing.md
 		case .secondary, .tertiary:
-			SpacingToken.sm
+			theme.spacing.sm
 		}
 	}
 }

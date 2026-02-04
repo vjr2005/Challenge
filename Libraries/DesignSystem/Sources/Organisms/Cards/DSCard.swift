@@ -7,7 +7,7 @@ import SwiftUI
 /// will automatically receive it with their default suffixes.
 public struct DSCard<Content: View>: View {
 	private let content: Content
-	private let padding: CGFloat
+	private let padding: CGFloat?
 	private let cornerRadius: CGFloat
 	private let shadow: ShadowToken
 
@@ -15,12 +15,12 @@ public struct DSCard<Content: View>: View {
 
 	/// Creates a DSCard.
 	/// - Parameters:
-	///   - padding: The internal padding (default: lg)
+	///   - padding: The internal padding (default: theme lg spacing)
 	///   - cornerRadius: The corner radius (default: lg)
 	///   - shadow: The shadow style (default: small)
 	///   - content: The content view builder
 	public init(
-		padding: CGFloat = SpacingToken.lg,
+		padding: CGFloat? = nil,
 		cornerRadius: CGFloat = CornerRadiusToken.lg,
 		shadow: ShadowToken = .small,
 		@ViewBuilder content: () -> Content
@@ -33,7 +33,7 @@ public struct DSCard<Content: View>: View {
 
 	public var body: some View {
 		content
-			.padding(padding)
+			.padding(padding ?? theme.spacing.lg)
 			.background(theme.colors.surfacePrimary)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
 			.shadow(shadow)

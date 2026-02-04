@@ -20,7 +20,7 @@ public struct DSLoadingView: View {
 	}
 
 	public var body: some View {
-		VStack(spacing: SpacingToken.lg) {
+		VStack(spacing: theme.spacing.lg) {
 			ProgressView()
 				.scaleEffect(1.5)
 				.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).indicator" } ?? "")

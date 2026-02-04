@@ -15,7 +15,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders background color tokens palette")
 	func backgroundColors() {
-		let view = VStack(spacing: SpacingToken.sm) {
+		let view = VStack(spacing: DefaultSpacing().sm) {
 			colorSwatch("backgroundPrimary", color: palette.backgroundPrimary)
 			colorSwatch("backgroundSecondary", color: palette.backgroundSecondary)
 			colorSwatch("backgroundTertiary", color: palette.backgroundTertiary)
@@ -31,7 +31,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders surface color tokens palette")
 	func surfaceColors() {
-		let view = VStack(spacing: SpacingToken.sm) {
+		let view = VStack(spacing: DefaultSpacing().sm) {
 			colorSwatch("surfacePrimary", color: palette.surfacePrimary)
 			colorSwatch("surfaceSecondary", color: palette.surfaceSecondary)
 		}
@@ -46,7 +46,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders text color tokens palette")
 	func textColors() {
-		let view = VStack(spacing: SpacingToken.sm) {
+		let view = VStack(spacing: DefaultSpacing().sm) {
 			colorSwatch("textPrimary", color: palette.textPrimary)
 			colorSwatch("textSecondary", color: palette.textSecondary)
 			colorSwatch("textTertiary", color: palette.textTertiary)
@@ -63,7 +63,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders status color tokens palette")
 	func statusColors() {
-		let view = VStack(spacing: SpacingToken.sm) {
+		let view = VStack(spacing: DefaultSpacing().sm) {
 			colorSwatch("statusSuccess", color: palette.statusSuccess)
 			colorSwatch("statusError", color: palette.statusError)
 			colorSwatch("statusWarning", color: palette.statusWarning)
@@ -80,7 +80,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders interactive color tokens palette")
 	func interactiveColors() {
-		let view = VStack(spacing: SpacingToken.sm) {
+		let view = VStack(spacing: DefaultSpacing().sm) {
 			colorSwatch("accent", color: palette.accent)
 			colorSwatch("accentSubtle", color: palette.accentSubtle)
 			colorSwatch("disabled", color: palette.disabled)
@@ -96,7 +96,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders separator color tokens palette")
 	func separatorColors() {
-		let view = VStack(spacing: SpacingToken.sm) {
+		let view = VStack(spacing: DefaultSpacing().sm) {
 			colorSwatch("separator", color: palette.separator)
 			colorSwatch("separatorOpaque", color: palette.separatorOpaque)
 		}
@@ -111,7 +111,7 @@ struct DefaultColorPaletteSnapshotTests {
 
 	@Test("Renders complete gallery of all color tokens organized by category")
 	func fullColorGallery() {
-		let view = VStack(spacing: SpacingToken.lg) {
+		let view = VStack(spacing: DefaultSpacing().lg) {
 			colorSection("Background") {
 				colorSwatch("backgroundPrimary", color: palette.backgroundPrimary)
 				colorSwatch("backgroundSecondary", color: palette.backgroundSecondary)
@@ -176,11 +176,11 @@ struct DefaultColorPaletteSnapshotTests {
 		_ title: String,
 		@ViewBuilder content: () -> Content
 	) -> some View {
-		VStack(alignment: .leading, spacing: SpacingToken.xs) {
+		VStack(alignment: .leading, spacing: DefaultSpacing().xs) {
 			Text(title)
 				.font(.system(.caption, design: .rounded, weight: .semibold))
 				.foregroundStyle(palette.textSecondary)
-			VStack(spacing: SpacingToken.xs) {
+			VStack(spacing: DefaultSpacing().xs) {
 				content()
 			}
 		}

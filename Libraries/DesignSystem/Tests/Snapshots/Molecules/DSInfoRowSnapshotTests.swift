@@ -38,7 +38,7 @@ struct DSInfoRowSnapshotTests {
 
 	@Test("Renders gallery of info rows with various configurations")
 	func infoRowGallery() {
-		let view = VStack(spacing: SpacingToken.md) {
+		let view = VStack(spacing: DefaultSpacing().md) {
 			DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
 			DSInfoRow(icon: "location.fill", label: "Location", value: "Citadel of Ricks")
 			DSInfoRow(icon: "globe", label: "Origin", value: "Earth (C-137)")

@@ -25,7 +25,7 @@ struct ViewDesignSystemSnapshotTests {
 	@Test("Renders dsCard extension with custom padding")
 	func dsCardCustomPadding() {
 		let view = Text("Custom Padding")
-			.dsCard(padding: SpacingToken.xxl)
+			.dsCard(padding: DefaultSpacing().xxl)
 			.padding()
 			.frame(width: 320)
 			.background(DefaultColorPalette().backgroundSecondary)
@@ -59,7 +59,7 @@ struct ViewDesignSystemSnapshotTests {
 	func dsCardFullCustomization() {
 		let view = Text("Fully Customized")
 			.dsCard(
-				padding: SpacingToken.xl,
+				padding: DefaultSpacing().xl,
 				cornerRadius: CornerRadiusToken.md,
 				shadowToken: .medium
 			)
@@ -83,7 +83,7 @@ struct ViewDesignSystemSnapshotTests {
 
 	@Test("Renders dsCard extension with complex nested content")
 	func dsCardWithComplexContent() {
-		let view = VStack(alignment: .leading, spacing: SpacingToken.sm) {
+		let view = VStack(alignment: .leading, spacing: DefaultSpacing().sm) {
 			Text("Card Title")
 				.font(DefaultTypography().font(for: .headline))
 				.foregroundStyle(DefaultColorPalette().textPrimary)
@@ -201,7 +201,7 @@ struct ViewDesignSystemSnapshotTests {
 
 	@Test("Renders gallery of all design system view extensions")
 	func combinedExtensionsGallery() {
-		let view = VStack(spacing: SpacingToken.lg) {
+		let view = VStack(spacing: DefaultSpacing().lg) {
 			Text("dsCard")
 				.dsCard()
 

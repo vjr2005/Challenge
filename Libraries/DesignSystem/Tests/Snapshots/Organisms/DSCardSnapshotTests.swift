@@ -14,7 +14,7 @@ struct DSCardSnapshotTests {
 	@Test("Renders basic card with title and description")
 	func basicCard() {
 		let view = DSCard {
-			VStack(alignment: .leading, spacing: SpacingToken.sm) {
+			VStack(alignment: .leading, spacing: DefaultSpacing().sm) {
 				Text("Card Title")
 					.font(DefaultTypography().font(for: .headline))
 					.foregroundStyle(DefaultColorPalette().textPrimary)
@@ -92,7 +92,7 @@ struct DSCardSnapshotTests {
 
 	@Test("Renders gallery of all card shadow variants")
 	func shadowGallery() {
-		let view = VStack(spacing: SpacingToken.lg) {
+		let view = VStack(spacing: DefaultSpacing().lg) {
 			DSCard(shadow: .zero) {
 				Text("Zero Shadow")
 					.font(DefaultTypography().font(for: .body))
