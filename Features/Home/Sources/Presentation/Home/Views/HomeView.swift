@@ -64,14 +64,14 @@ private extension HomeView {
 // MARK: - LocalizedStrings
 
 private enum LocalizedStrings {
-    static var goToCharacters: String { "home.goToCharacters".localized() }
+	static var goToCharacters: String { "home.goToCharacters".localized() }
 }
 
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-    static let logoAnimation = "home.logoAnimation"
-    static let characterButton = "home.characterButton"
+	static let logoAnimation = "home.logoAnimation"
+	static let characterButton = "home.characterButton"
 }
 
 /*

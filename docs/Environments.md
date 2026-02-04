@@ -96,13 +96,14 @@ extension AppEnvironment {
 
 ### Environment Variable Override
 
-For UI testing with a mock server, the API URL can be overridden using the `API_BASE_URL` environment variable:
+For UI testing with a mock server, the API URL can be overridden using the `API_BASE_URL` environment variable. This is handled centrally by `LaunchEnvironment` in `AppKit/Sources/Data/LaunchEnvironment.swift`:
 
 ```swift
-if let overrideURL = ProcessInfo.processInfo.environment["API_BASE_URL"] {
-    // Use override URL instead of environment-specific URL
-}
+let configuration = LaunchEnvironment()
+// configuration.apiBaseURL returns the override URL if API_BASE_URL is set
 ```
+
+`AppContainer` uses `LaunchEnvironment.apiBaseURL` as the override for the HTTP client base URL when available.
 
 ## Build Configurations
 

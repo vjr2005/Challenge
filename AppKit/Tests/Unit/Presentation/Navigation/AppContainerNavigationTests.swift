@@ -1,6 +1,7 @@
 import ChallengeCore
 import ChallengeCoreMocks
 import ChallengeHome
+import ChallengeNetworking
 import ChallengeNetworkingMocks
 import Foundation
 import Testing
@@ -17,6 +18,20 @@ struct AppContainerNavigationTests {
 
 	init() {
 		sut = AppContainer(httpClient: HTTPClientMock(), tracker: TrackerMock())
+	}
+
+	// MARK: - Init
+
+	@Test("Creates HTTPClient with environment baseURL when apiBaseURL is nil")
+	func createsHTTPClientWithEnvironmentBaseURL() {
+		// Given
+		let launchEnvironment = LaunchEnvironment(environment: [:])
+
+		// When
+		let container = AppContainer(launchEnvironment: launchEnvironment, tracker: TrackerMock())
+
+		// Then
+		#expect(container.httpClient is HTTPClient)
 	}
 
 	// MARK: - Resolve

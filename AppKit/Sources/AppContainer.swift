@@ -8,6 +8,7 @@ import SwiftUI
 public struct AppContainer: Sendable {
 	// MARK: - Shared Dependencies
 
+	public let launchEnvironment: LaunchEnvironment
 	public let httpClient: any HTTPClientContract
 	public let tracker: any TrackerContract
 
@@ -24,11 +25,13 @@ public struct AppContainer: Sendable {
 	// MARK: - Init
 
 	public init(
+		launchEnvironment: LaunchEnvironment = LaunchEnvironment(),
 		httpClient: (any HTTPClientContract)? = nil,
 		tracker: (any TrackerContract)? = nil
 	) {
+		self.launchEnvironment = launchEnvironment
 		self.httpClient = httpClient ?? HTTPClient(
-			baseURL: AppEnvironment.current.rickAndMorty.baseURL
+			baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL
 		)
 		let providers = Self.makeTrackingProviders()
 		providers.forEach { $0.configure() }
