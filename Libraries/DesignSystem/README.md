@@ -12,6 +12,8 @@ ChallengeDesignSystem implements the Atomic Design methodology, organizing compo
 DesignSystem/
 ├── Sources/
 │   ├── Theme/                # Theming system
+│   │   ├── DSTheme.swift     # Theme struct
+│   │   ├── DSThemeEnvironment.swift  # SwiftUI Environment
 │   │   ├── Contracts/        # Theme protocols
 │   │   │   ├── DSBorderWidth.swift
 │   │   │   ├── DSColorPalette.swift
@@ -20,8 +22,6 @@ DesignSystem/
 │   │   │   ├── DSOpacity.swift
 │   │   │   ├── DSShadow.swift
 │   │   │   ├── DSSpacing.swift
-│   │   │   ├── DSTheme.swift
-│   │   │   ├── DSThemeEnvironment.swift
 │   │   │   └── DSTypography.swift
 │   │   └── Default/          # Default theme implementation
 │   │       ├── DefaultBorderWidth.swift
