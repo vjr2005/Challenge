@@ -121,7 +121,7 @@ public struct DSButton: View {
 // MARK: - Previews
 
 #Preview("DSButton Variants") {
-	VStack(spacing: SpacingToken.lg) {
+	VStack(spacing: DefaultSpacing().lg) {
 		DSButton("Primary Button") {}
 		DSButton("With Icon", icon: "arrow.right") {}
 		DSButton("Secondary", variant: .secondary) {}

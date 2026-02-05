@@ -132,7 +132,7 @@ private extension DSCardInfoRow {
 // MARK: - Preview
 
 #Preview("DSCardInfoRow") {
-	VStack(spacing: SpacingToken.lg) {
+	VStack(spacing: DefaultSpacing().lg) {
 		DSCardInfoRow(
 			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"),
 			title: "Rick Sanchez",
@@ -157,6 +157,6 @@ private extension DSCardInfoRow {
 		)
 	}
 	.padding()
-	.background(ColorToken.backgroundSecondary)
+	.background(DefaultColorPalette().backgroundSecondary)
 }
 */

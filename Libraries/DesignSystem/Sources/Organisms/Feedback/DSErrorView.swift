@@ -73,7 +73,7 @@ public struct DSErrorView: View {
 // MARK: - Previews
 
 #Preview("DSErrorView") {
-	VStack(spacing: SpacingToken.xxl) {
+	VStack(spacing: DefaultSpacing().xxl) {
 		DSErrorView(title: "Something went wrong")
 
 		DSErrorView(

@@ -76,7 +76,7 @@ public struct DSEmptyState: View {
 // MARK: - Previews
 
 #Preview("DSEmptyState") {
-	VStack(spacing: SpacingToken.xxl) {
+	VStack(spacing: DefaultSpacing().xxl) {
 		DSEmptyState(
 			icon: "magnifyingglass",
 			title: "No Results"

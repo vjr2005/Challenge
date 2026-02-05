@@ -40,7 +40,7 @@ public struct DSLoadingView: View {
 // MARK: - Previews
 
 #Preview("DSLoadingView") {
-	VStack(spacing: SpacingToken.xxl) {
+	VStack(spacing: DefaultSpacing().xxl) {
 		DSLoadingView()
 			.frame(height: 100)
 

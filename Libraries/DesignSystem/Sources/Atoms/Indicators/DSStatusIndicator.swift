@@ -70,15 +70,15 @@ public struct DSStatusIndicator: View {
 // MARK: - Previews
 
 #Preview("DSStatusIndicator") {
-	HStack(spacing: SpacingToken.lg) {
+	HStack(spacing: DefaultSpacing().lg) {
 		ForEach(DSStatus.allCases, id: \.self) { status in
-			VStack(spacing: SpacingToken.sm) {
+			VStack(spacing: DefaultSpacing().sm) {
 				DSStatusIndicator(status: status)
 				DSStatusIndicator(status: status, size: 8)
 				DSStatusIndicator(status: status, size: 16)
 				Text(status.rawValue.capitalized)
 					.font(DefaultTypography().caption)
-					.foregroundStyle(ColorToken.textPrimary)
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 		}
 	}

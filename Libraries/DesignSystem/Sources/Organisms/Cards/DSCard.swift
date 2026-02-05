@@ -44,35 +44,35 @@ public struct DSCard<Content: View>: View {
 // MARK: - Previews
 
 #Preview("DSCard") {
-	VStack(spacing: SpacingToken.lg) {
+	VStack(spacing: DefaultSpacing().lg) {
 		DSCard {
-			VStack(alignment: .leading, spacing: SpacingToken.sm) {
+			VStack(alignment: .leading, spacing: DefaultSpacing().sm) {
 				Text("Card Title")
 					.font(DefaultTypography().headline)
-					.foregroundStyle(ColorToken.textPrimary)
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 				Text("This is the card content with some description text.")
 					.font(DefaultTypography().body)
-					.foregroundStyle(ColorToken.textPrimary)
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 			}
 		}
 
-		DSCard(shadow: .medium) {
+		DSCard(shadow: DefaultShadow().medium) {
 			HStack {
 				Text("Medium Shadow")
 					.font(DefaultTypography().body)
-					.foregroundStyle(ColorToken.textPrimary)
+					.foregroundStyle(DefaultColorPalette().textPrimary)
 				Spacer()
 				Image(systemName: "arrow.right")
 			}
 		}
 
-		DSCard(shadow: .zero) {
+		DSCard(shadow: DefaultShadow().zero) {
 			Text("No Shadow Card")
 				.font(DefaultTypography().body)
-				.foregroundStyle(ColorToken.textPrimary)
+				.foregroundStyle(DefaultColorPalette().textPrimary)
 		}
 	}
 	.padding()
-	.background(ColorToken.backgroundSecondary)
+	.background(DefaultColorPalette().backgroundSecondary)
 }
 */
