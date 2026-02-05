@@ -1,4 +1,3 @@
-import ChallengeCore
 import Foundation
 
 @Observable
