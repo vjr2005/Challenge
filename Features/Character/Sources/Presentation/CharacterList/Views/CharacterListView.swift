@@ -22,6 +22,30 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 						),
 						prompt: LocalizedStrings.searchPlaceholder
 					)
+					.searchSuggestions {
+						if viewModel.searchQuery.isEmpty {
+							ForEach(viewModel.recentSearches, id: \.self) { query in
+								Button {
+									Task {
+										await viewModel.didSelectRecentSearch(query)
+									}
+								} label: {
+									Label(query, systemImage: "clock.arrow.circlepath")
+								}
+								.accessibilityIdentifier(AccessibilityIdentifier.recentSearch(query: query))
+								.swipeActions(edge: .trailing) {
+									Button(role: .destructive) {
+										viewModel.didDeleteRecentSearch(query)
+									} label: {
+										Label(
+											LocalizedStrings.deleteAction,
+											systemImage: "trash"
+										)
+									}
+								}
+							}
+						}
+					}
 			} else {
 				content
 			}
@@ -172,6 +196,7 @@ private enum LocalizedStrings {
 	static var searchPlaceholder: String { "characterList.searchPlaceholder".localized() }
 	static var headerTitle: String { "characterList.headerTitle".localized() }
 	static func headerSubtitle(_ count: Int) -> String { "characterList.headerSubtitle %lld".localized(count) }
+	static var deleteAction: String { "common.delete".localized() }
 	static var loadMore: String { "characterList.loadMore".localized() }
 	static var pageIndicator: (Int, Int) -> String = { current, total in
 		"characterList.pageIndicator %lld %lld".localized(current, total)
@@ -207,6 +232,10 @@ private enum AccessibilityIdentifier {
 
 	static func row(identifier: Int) -> String {
 		"characterList.row.\(identifier)"
+	}
+
+	static func recentSearch(query: String) -> String {
+		"characterList.recentSearch.\(query)"
 	}
 }
 

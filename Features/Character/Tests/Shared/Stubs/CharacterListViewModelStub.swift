@@ -8,6 +8,7 @@ import Foundation
 final class CharacterListViewModelStub: CharacterListViewModelContract {
 	var state: CharacterListViewState
 	var searchQuery: String = ""
+	var recentSearches: [String] = []
 
 	init(state: CharacterListViewState) {
 		self.state = state
@@ -31,5 +32,13 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 
 	func didSelect(_ character: Character) {
 		// No-op: navigation not tested in snapshots
+	}
+
+	func didSelectRecentSearch(_ query: String) async {
+		// No-op: recent searches not tested in snapshots
+	}
+
+	func didDeleteRecentSearch(_ query: String) {
+		// No-op: recent searches not tested in snapshots
 	}
 }

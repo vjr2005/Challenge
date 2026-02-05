@@ -78,6 +78,7 @@ final class CharacterFlowUITests: UITestCase {
 			robot.typeSearch(text: "NonExistent")
 			robot.verifyEmptySearchStateIsVisible()
 			robot.clearSearch()
+			robot.cancelSearch()
 			robot.verifyCharacterExists(identifier: 1)
 		}
 	}
@@ -115,6 +116,64 @@ final class CharacterFlowUITests: UITestCase {
 
 		home { robot in
 			robot.verifyIsVisible()
+		}
+	}
+
+	@MainActor
+	func testRecentSearchAppearsClearSearchAndTapSuggestionLoadsResults() async throws {
+		// Given
+		try await givenCharacterListSucceeds()
+
+		// When
+		launch()
+
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
+
+		characterList { robot in
+			// Search to save a recent search
+			robot.verifyIsVisible()
+			robot.typeSearch(text: "Rick")
+			robot.verifyCharacterExists(identifier: 1)
+
+			// Clear search — suggestions appear immediately since search field is active
+			robot.clearSearch()
+			robot.verifyRecentSearchExists(query: "Rick")
+
+			// Tap the suggestion and verify results load
+			robot.tapRecentSearch(query: "Rick")
+			robot.verifyCharacterExists(identifier: 1)
+		}
+	}
+
+	@MainActor
+	func testRecentSearchCanBeDeleted() async throws {
+		// Given
+		try await givenCharacterListSucceeds()
+
+		// When
+		launch()
+
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
+
+		characterList { robot in
+			// Search to save a recent search
+			robot.verifyIsVisible()
+			robot.typeSearch(text: "Rick")
+			robot.verifyCharacterExists(identifier: 1)
+
+			// Clear search — suggestions appear immediately
+			robot.clearSearch()
+			robot.verifyRecentSearchExists(query: "Rick")
+
+			// Delete the suggestion and verify it disappears
+			robot.deleteRecentSearch(query: "Rick")
+			robot.verifyRecentSearchDoesNotExist(query: "Rick")
 		}
 	}
 

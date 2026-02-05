@@ -5,6 +5,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private let debounceMilliseconds = 300
 
     private(set) var state: CharacterListViewState = .idle
+    private(set) var recentSearches: [String] = []
     var searchQuery: String = "" {
         didSet {
             if searchQuery != oldValue {
@@ -16,6 +17,9 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private let getCharactersUseCase: GetCharactersUseCaseContract
     private let refreshCharactersUseCase: RefreshCharactersUseCaseContract
     private let searchCharactersUseCase: SearchCharactersUseCaseContract
+    private let getRecentSearchesUseCase: GetRecentSearchesUseCaseContract
+    private let saveRecentSearchUseCase: SaveRecentSearchUseCaseContract
+    private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private let tracker: CharacterListTrackerContract
     private var currentPage = 1
@@ -26,18 +30,25 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         getCharactersUseCase: GetCharactersUseCaseContract,
         refreshCharactersUseCase: RefreshCharactersUseCaseContract,
         searchCharactersUseCase: SearchCharactersUseCaseContract,
+        getRecentSearchesUseCase: GetRecentSearchesUseCaseContract,
+        saveRecentSearchUseCase: SaveRecentSearchUseCaseContract,
+        deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract,
         navigator: CharacterListNavigatorContract,
         tracker: CharacterListTrackerContract
     ) {
         self.getCharactersUseCase = getCharactersUseCase
         self.refreshCharactersUseCase = refreshCharactersUseCase
         self.searchCharactersUseCase = searchCharactersUseCase
+        self.getRecentSearchesUseCase = getRecentSearchesUseCase
+        self.saveRecentSearchUseCase = saveRecentSearchUseCase
+        self.deleteRecentSearchUseCase = deleteRecentSearchUseCase
         self.navigator = navigator
         self.tracker = tracker
     }
 
     func didAppear() async {
         tracker.trackScreenViewed()
+        loadRecentSearches()
         await load()
     }
 
@@ -68,6 +79,20 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         tracker.trackCharacterSelected(identifier: character.id)
         navigator.navigateToDetail(identifier: character.id)
     }
+
+    func didSelectRecentSearch(_ query: String) async {
+        searchQuery = query
+        searchTask?.cancel()
+        saveRecentSearchUseCase.execute(query: query)
+        loadRecentSearches()
+        tracker.trackSearchPerformed(query: query)
+        await fetchCharacters()
+    }
+
+    func didDeleteRecentSearch(_ query: String) {
+        deleteRecentSearchUseCase.execute(query: query)
+        loadRecentSearches()
+    }
 }
 
 // MARK: - Private
@@ -85,6 +110,8 @@ private extension CharacterListViewModel {
             if !Task.isCancelled {
                 if let query = normalizedQuery {
                     tracker.trackSearchPerformed(query: query)
+                    saveRecentSearchUseCase.execute(query: query)
+                    loadRecentSearches()
                 }
                 await fetchCharacters()
             }
@@ -153,5 +180,9 @@ private extension CharacterListViewModel {
         } catch {
             currentPage -= 1
         }
+    }
+
+    func loadRecentSearches() {
+        recentSearches = getRecentSearchesUseCase.execute()
     }
 }

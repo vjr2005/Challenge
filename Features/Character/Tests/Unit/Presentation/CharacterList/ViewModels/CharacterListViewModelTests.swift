@@ -10,6 +10,9 @@ struct CharacterListViewModelTests {
     private let getCharactersUseCaseMock = GetCharactersUseCaseMock()
     private let refreshCharactersUseCaseMock = RefreshCharactersUseCaseMock()
     private let searchCharactersUseCaseMock = SearchCharactersUseCaseMock()
+    private let getRecentSearchesUseCaseMock = GetRecentSearchesUseCaseMock()
+    private let saveRecentSearchUseCaseMock = SaveRecentSearchUseCaseMock()
+    private let deleteRecentSearchUseCaseMock = DeleteRecentSearchUseCaseMock()
     private let navigatorMock = CharacterListNavigatorMock()
     private let trackerMock = CharacterListTrackerMock()
     private let sut: CharacterListViewModel
@@ -21,6 +24,9 @@ struct CharacterListViewModelTests {
             getCharactersUseCase: getCharactersUseCaseMock,
             refreshCharactersUseCase: refreshCharactersUseCaseMock,
             searchCharactersUseCase: searchCharactersUseCaseMock,
+            getRecentSearchesUseCase: getRecentSearchesUseCaseMock,
+            saveRecentSearchUseCase: saveRecentSearchUseCaseMock,
+            deleteRecentSearchUseCase: deleteRecentSearchUseCaseMock,
             navigator: navigatorMock,
             tracker: trackerMock
         )
@@ -545,5 +551,151 @@ struct CharacterListViewModelTests {
 
         // Then
         #expect(trackerMock.loadMoreButtonTappedCallCount == 0)
+    }
+
+    // MARK: - Recent Searches
+
+    @Test("Initial recentSearches is empty array")
+    func initialRecentSearchesIsEmpty() {
+        // Then
+        #expect(sut.recentSearches == [])
+    }
+
+    @Test("didAppear loads recent searches")
+    func didAppearLoadsRecentSearches() async {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+        getRecentSearchesUseCaseMock.searches = ["Rick", "Morty"]
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(sut.recentSearches == ["Rick", "Morty"])
+    }
+
+    @Test("Search saves to recent searches after debounce")
+    func searchSavesToRecentSearchesAfterDebounce() async throws {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(saveRecentSearchUseCaseMock.savedQueries == ["Rick"])
+    }
+
+    @Test("Empty search query does not save to recent searches")
+    func emptySearchQueryDoesNotSave() async throws {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        sut.searchQuery = ""
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(saveRecentSearchUseCaseMock.executeCallCount == 0)
+    }
+
+    @Test("Whitespace-only search query does not save to recent searches")
+    func whitespaceOnlySearchQueryDoesNotSave() async throws {
+        // Given
+        getCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        sut.searchQuery = "   "
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(saveRecentSearchUseCaseMock.executeCallCount == 0)
+    }
+
+    @Test("Recent searches refreshed after save")
+    func recentSearchesRefreshedAfterSave() async throws {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+        getRecentSearchesUseCaseMock.searches = ["Rick"]
+
+        // When
+        sut.searchQuery = "Rick"
+        try await Task.sleep(for: .milliseconds(400))
+
+        // Then
+        #expect(sut.recentSearches == ["Rick"])
+        #expect(getRecentSearchesUseCaseMock.executeCallCount >= 1)
+    }
+
+    @Test("didSelectRecentSearch sets search query")
+    func didSelectRecentSearchSetsSearchQuery() async {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didSelectRecentSearch("Rick")
+
+        // Then
+        #expect(sut.searchQuery == "Rick")
+    }
+
+    @Test("didSelectRecentSearch triggers immediate search")
+    func didSelectRecentSearchTriggersImmediateSearch() async {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didSelectRecentSearch("Rick")
+
+        // Then
+        #expect(searchCharactersUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersUseCaseMock.lastRequestedQuery == "Rick")
+    }
+
+    @Test("didSelectRecentSearch saves the query")
+    func didSelectRecentSearchSavesQuery() async {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didSelectRecentSearch("Morty")
+
+        // Then
+        #expect(saveRecentSearchUseCaseMock.savedQueries == ["Morty"])
+    }
+
+    @Test("didSelectRecentSearch tracks search performed")
+    func didSelectRecentSearchTracksSearchPerformed() async {
+        // Given
+        searchCharactersUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didSelectRecentSearch("Summer")
+
+        // Then
+        #expect(trackerMock.searchedQueries == ["Summer"])
+    }
+
+    @Test("didDeleteRecentSearch calls delete use case with correct query")
+    func didDeleteRecentSearchCallsDeleteUseCase() {
+        // When
+        sut.didDeleteRecentSearch("Rick")
+
+        // Then
+        #expect(deleteRecentSearchUseCaseMock.deletedQueries == ["Rick"])
+    }
+
+    @Test("didDeleteRecentSearch refreshes recent searches list")
+    func didDeleteRecentSearchRefreshesList() {
+        // Given
+        getRecentSearchesUseCaseMock.searches = ["Morty"]
+
+        // When
+        sut.didDeleteRecentSearch("Rick")
+
+        // Then
+        #expect(sut.recentSearches == ["Morty"])
+        #expect(getRecentSearchesUseCaseMock.executeCallCount >= 1)
     }
 }
