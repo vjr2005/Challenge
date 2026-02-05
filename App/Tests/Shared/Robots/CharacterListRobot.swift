@@ -43,6 +43,14 @@ extension CharacterListRobot {
 	}
 
 	@discardableResult
+	func cancelSearch(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let closeButton = app.buttons["close"]
+		XCTAssertTrue(closeButton.waitForExistence(timeout: 5), file: file, line: line)
+		closeButton.tap()
+		return self
+	}
+
+	@discardableResult
 	func tapLoadMore(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let button = app.buttons[AccessibilityIdentifier.loadMoreButton]
 		XCTAssertTrue(button.waitForExistence(timeout: 10), file: file, line: line)
@@ -65,6 +73,35 @@ extension CharacterListRobot {
 		let retryButton = app.buttons[AccessibilityIdentifier.retryButton]
 		XCTAssertTrue(retryButton.waitForExistence(timeout: 5), file: file, line: line)
 		retryButton.tap()
+		return self
+	}
+
+	@discardableResult
+	func tapSearchField(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let searchField = app.searchFields.firstMatch
+		XCTAssertTrue(searchField.waitForExistence(timeout: 5), file: file, line: line)
+		searchField.tap()
+		return self
+	}
+
+	@discardableResult
+	func tapRecentSearch(query: String, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = AccessibilityIdentifier.recentSearch(query: query)
+		let suggestion = app.buttons[identifier].firstMatch
+		XCTAssertTrue(suggestion.waitForExistence(timeout: 5), file: file, line: line)
+		suggestion.tap()
+		return self
+	}
+
+	@discardableResult
+	func deleteRecentSearch(query: String, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let identifier = AccessibilityIdentifier.recentSearch(query: query)
+		let suggestion = app.buttons[identifier].firstMatch
+		XCTAssertTrue(suggestion.waitForExistence(timeout: 5), file: file, line: line)
+		suggestion.swipeLeft()
+		let deleteButton = app.buttons["Delete"].firstMatch
+		XCTAssertTrue(deleteButton.waitForExistence(timeout: 5), file: file, line: line)
+		deleteButton.tap()
 		return self
 	}
 }
@@ -123,6 +160,40 @@ extension CharacterListRobot {
 		XCTAssertTrue(errorTitle.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
+
+	@discardableResult
+	func verifyRecentSearchExists(
+		query: String,
+		file: StaticString = #filePath,
+		line: UInt = #line
+	) -> Self {
+		let identifier = AccessibilityIdentifier.recentSearch(query: query)
+		let suggestion = app.buttons[identifier].firstMatch
+		XCTAssertTrue(
+			suggestion.waitForExistence(timeout: 5),
+			"Recent search '\(query)' should exist",
+			file: file,
+			line: line
+		)
+		return self
+	}
+
+	@discardableResult
+	func verifyRecentSearchDoesNotExist(
+		query: String,
+		file: StaticString = #filePath,
+		line: UInt = #line
+	) -> Self {
+		let identifier = AccessibilityIdentifier.recentSearch(query: query)
+		let suggestion = app.buttons[identifier].firstMatch
+		XCTAssertFalse(
+			suggestion.waitForExistence(timeout: 2),
+			"Recent search '\(query)' should not exist",
+			file: file,
+			line: line
+		)
+		return self
+	}
 }
 
 // MARK: - AccessibilityIdentifiers
@@ -137,5 +208,9 @@ private enum AccessibilityIdentifier {
 
 	static func row(identifier: Int) -> String {
 		"characterList.row.\(identifier)"
+	}
+
+	static func recentSearch(query: String) -> String {
+		"characterList.recentSearch.\(query)"
 	}
 }

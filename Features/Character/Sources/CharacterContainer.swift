@@ -8,6 +8,7 @@ public final class CharacterContainer: Sendable {
     private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
+    private let recentSearchesDataSource = RecentSearchesLocalDataSource()
 
     // MARK: - Init
 
@@ -36,6 +37,9 @@ public final class CharacterContainer: Sendable {
             getCharactersUseCase: GetCharactersUseCase(repository: repository),
             refreshCharactersUseCase: RefreshCharactersUseCase(repository: repository),
             searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
+            getRecentSearchesUseCase: GetRecentSearchesUseCase(dataSource: recentSearchesDataSource),
+            saveRecentSearchUseCase: SaveRecentSearchUseCase(dataSource: recentSearchesDataSource),
+            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(dataSource: recentSearchesDataSource),
             navigator: CharacterListNavigator(navigator: navigator),
             tracker: CharacterListTracker(tracker: tracker)
         )
