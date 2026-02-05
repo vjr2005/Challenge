@@ -4,7 +4,7 @@
 Challenge/
 ├── .github/
 │   └── workflows/
-│       └── pull-request-checks.yml  # GitHub Actions CI workflow
+│       └── quality-checks.yml  # GitHub Actions CI workflow
 ├── App/                             # Main application target
 │   ├── Sources/
 │   └── Tests/

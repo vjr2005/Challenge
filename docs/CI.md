@@ -9,11 +9,11 @@ The project uses [GitHub Actions](https://github.com/features/actions) to run qu
 | Trigger | When |
 |---------|------|
 | `pull_request` | Automatically on every PR targeting `main` |
-| `workflow_dispatch` | Manually from **Actions** > **Pull Request Checks** > **Run workflow** |
+| `workflow_dispatch` | Manually from **Actions** > **Quality Checks** > **Run workflow** |
 
 ### Steps
 
-The CI workflow (`.github/workflows/pull-request-checks.yml`) runs a single job on `macos-15` with the following steps:
+The CI workflow (`.github/workflows/quality-checks.yml`) runs a single job on `macos-15` with the following steps:
 
 | Step | Description |
 |------|-------------|
