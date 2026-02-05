@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Conforming types provide corner radius values for all design system components.
 /// Each property maps to a semantic size (zero, extra-small, small, medium, large, etc.).
-public protocol DSCornerRadius: Sendable {
+public protocol DSCornerRadiusContract: Sendable {
 	/// No corner radius (0pt)
 	var zero: CGFloat { get }
 

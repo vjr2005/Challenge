@@ -1,6 +1,6 @@
 import ChallengeCore
 
-enum CharacterDetailEvent: TrackingEvent {
+enum CharacterDetailEvent: TrackingEventContract {
     case screenViewed(identifier: Int)
     case retryButtonTapped
     case pullToRefreshTriggered

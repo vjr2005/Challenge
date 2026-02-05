@@ -37,7 +37,7 @@ struct {Name}TrackingProvider: TrackingProviderContract {
         // Initialize the analytics SDK
     }
 
-    func track(_ event: any TrackingEvent) {
+    func track(_ event: any TrackingEventContract) {
         // Forward the event to the analytics backend
     }
 }
@@ -49,7 +49,7 @@ Called once at app startup before any `track(_:)` call. Use it to initialize the
 
 ### `track(_:)`
 
-Called for every event dispatched through `Tracker`. Maps `TrackingEvent.name` and `TrackingEvent.properties` to the backend's API.
+Called for every event dispatched through `Tracker`. Maps `TrackingEventContract.name` and `TrackingEventContract.properties` to the backend's API.
 
 ---
 
@@ -111,7 +111,7 @@ struct {Name}TrackingProviderTests {
 
 // MARK: - Test Helpers
 
-private struct TestEvent: TrackingEvent {
+private struct TestEvent: TrackingEventContract {
     let name: String
     var properties: [String: String] = [:]
 }
@@ -148,7 +148,7 @@ struct AmplitudeTrackingProvider: TrackingProviderContract {
         // e.g. setting user properties or default event properties.
     }
 
-    func track(_ event: any TrackingEvent) {
+    func track(_ event: any TrackingEventContract) {
         amplitude.track(
             eventType: event.name,
             eventProperties: event.properties

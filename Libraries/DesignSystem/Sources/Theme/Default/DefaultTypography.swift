@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The default typography with rounded, serif, and monospaced font designs.
-public struct DefaultTypography: DSTypography {
+public struct DefaultTypography: DSTypographyContract {
 	/// Creates a new default typography
 	public init() {}
 

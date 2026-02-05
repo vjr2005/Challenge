@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// Conforming types provide font values for each text style.
 /// Each property maps to a semantic text style (large title, title, headline, body, etc.).
-public protocol DSTypography: Sendable {
+public protocol DSTypographyContract: Sendable {
 	/// Large title font - prominent page headers
 	var largeTitle: Font { get }
 

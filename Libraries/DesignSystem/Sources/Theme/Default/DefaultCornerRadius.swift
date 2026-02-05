@@ -1,7 +1,7 @@
 import Foundation
 
 /// Default corner radius implementation matching the standard design system scale.
-public struct DefaultCornerRadius: DSCornerRadius {
+public struct DefaultCornerRadius: DSCornerRadiusContract {
 	public init() {}
 
 	public var zero: CGFloat { 0 }

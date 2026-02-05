@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Default shadow implementation matching the standard design system scale.
-public struct DefaultShadow: DSShadow {
+public struct DefaultShadow: DSShadowContract {
 	public init() {}
 
 	public var zero: DSShadowValue {

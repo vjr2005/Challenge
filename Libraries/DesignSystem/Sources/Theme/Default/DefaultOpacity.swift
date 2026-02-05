@@ -1,7 +1,7 @@
 import Foundation
 
 /// Default opacity implementation matching the standard design system scale.
-public struct DefaultOpacity: DSOpacity {
+public struct DefaultOpacity: DSOpacityContract {
 	public init() {}
 
 	public var subtle: Double { 0.1 }

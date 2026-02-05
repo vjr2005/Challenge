@@ -10,7 +10,7 @@ final class TrackingProviderMock: TrackingProviderContract, @unchecked Sendable 
         configureCallCount += 1
     }
 
-    func track(_ event: any TrackingEvent) {
+    func track(_ event: any TrackingEventContract) {
         trackedEvents.append((name: event.name, properties: event.properties))
     }
 }

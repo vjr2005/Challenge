@@ -1,32 +1,32 @@
 /// A design system theme combining colors, typography, spacing, dimensions, border widths, corner radii, opacity, and shadows.
 ///
 /// Use ``DSTheme/default`` for the standard theme, or create custom themes
-/// by providing different ``DSColorPalette``, ``DSTypography``, ``DSSpacing``,
-/// ``DSDimensions``, ``DSBorderWidth``, ``DSCornerRadius``, ``DSOpacity``, and ``DSShadow`` implementations.
+/// by providing different ``DSColorPaletteContract``, ``DSTypographyContract``, ``DSSpacingContract``,
+/// ``DSDimensionsContract``, ``DSBorderWidthContract``, ``DSCornerRadiusContract``, ``DSOpacityContract``, and ``DSShadowContract`` implementations.
 public struct DSTheme: Sendable {
 	/// The color palette for this theme
-	public let colors: DSColorPalette
+	public let colors: DSColorPaletteContract
 
 	/// The typography for this theme
-	public let typography: DSTypography
+	public let typography: DSTypographyContract
 
 	/// The spacing values for this theme
-	public let spacing: DSSpacing
+	public let spacing: DSSpacingContract
 
 	/// The dimension values for this theme
-	public let dimensions: DSDimensions
+	public let dimensions: DSDimensionsContract
 
 	/// The border width values for this theme
-	public let borderWidth: DSBorderWidth
+	public let borderWidth: DSBorderWidthContract
 
 	/// The corner radius values for this theme
-	public let cornerRadius: DSCornerRadius
+	public let cornerRadius: DSCornerRadiusContract
 
 	/// The opacity values for this theme
-	public let opacity: DSOpacity
+	public let opacity: DSOpacityContract
 
 	/// The shadow values for this theme
-	public let shadow: DSShadow
+	public let shadow: DSShadowContract
 
 	/// Creates a new theme with the given color palette, typography, spacing, dimensions, border widths, corner radii, opacity, and shadows.
 	/// - Parameters:
@@ -39,14 +39,14 @@ public struct DSTheme: Sendable {
 	///   - opacity: The opacity values
 	///   - shadow: The shadow values
 	public init(
-		colors: DSColorPalette,
-		typography: DSTypography,
-		spacing: DSSpacing,
-		dimensions: DSDimensions,
-		borderWidth: DSBorderWidth,
-		cornerRadius: DSCornerRadius,
-		opacity: DSOpacity,
-		shadow: DSShadow
+		colors: DSColorPaletteContract,
+		typography: DSTypographyContract,
+		spacing: DSSpacingContract,
+		dimensions: DSDimensionsContract,
+		borderWidth: DSBorderWidthContract,
+		cornerRadius: DSCornerRadiusContract,
+		opacity: DSOpacityContract,
+		shadow: DSShadowContract
 	) {
 		self.colors = colors
 		self.typography = typography

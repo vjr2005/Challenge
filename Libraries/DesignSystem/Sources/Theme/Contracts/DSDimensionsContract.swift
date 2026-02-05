@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Conforming types provide dimension values for icons and other sized elements.
 /// Each property maps to a semantic size (extra-small, small, medium, large, etc.).
-public protocol DSDimensions: Sendable {
+public protocol DSDimensionsContract: Sendable {
 	/// Extra small dimension (8pt)
 	var xs: CGFloat { get }
 

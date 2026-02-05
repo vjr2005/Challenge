@@ -36,7 +36,7 @@ struct ConsoleTrackingProviderTests {
 
 // MARK: - Test Helpers
 
-private struct TestEvent: TrackingEvent {
+private struct TestEvent: TrackingEventContract {
     let name: String
     var properties: [String: String] = [:]
 }

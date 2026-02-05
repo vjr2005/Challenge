@@ -8,7 +8,7 @@ public struct ConsoleTrackingProvider: TrackingProviderContract {
 
     public init() {}
 
-    public func track(_ event: any TrackingEvent) {
+    public func track(_ event: any TrackingEventContract) {
         if event.properties.isEmpty {
             logger.info("[\(event.name)]")
         } else {

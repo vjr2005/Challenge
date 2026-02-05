@@ -2,7 +2,7 @@ import Foundation
 
 /// Protocol that defines a tracking event.
 /// Each feature creates enums conforming to this protocol.
-public protocol TrackingEvent: Sendable {
+public protocol TrackingEventContract: Sendable {
     /// The name of the event.
     var name: String { get }
 
@@ -10,6 +10,6 @@ public protocol TrackingEvent: Sendable {
     var properties: [String: String] { get }
 }
 
-public extension TrackingEvent {
+public extension TrackingEventContract {
     var properties: [String: String] { [:] }
 }

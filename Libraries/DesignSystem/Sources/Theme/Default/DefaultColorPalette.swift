@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The default color palette matching the original ``ColorToken`` values.
-public struct DefaultColorPalette: DSColorPalette {
+public struct DefaultColorPalette: DSColorPaletteContract {
 	/// Creates a new default color palette
 	public init() {}
 

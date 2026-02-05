@@ -1,7 +1,7 @@
 import Foundation
 
 /// Default spacing implementation matching the standard design system scale.
-public struct DefaultSpacing: DSSpacing {
+public struct DefaultSpacing: DSSpacingContract {
 	public init() {}
 
 	public var xxs: CGFloat { 2 }

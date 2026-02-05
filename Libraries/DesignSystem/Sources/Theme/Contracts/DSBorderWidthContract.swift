@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Conforming types provide border width values for all design system components.
 /// Each property maps to a semantic thickness (hairline, thin, medium, thick).
-public protocol DSBorderWidth: Sendable {
+public protocol DSBorderWidthContract: Sendable {
 	/// Hairline border (0.5pt)
 	var hairline: CGFloat { get }
 

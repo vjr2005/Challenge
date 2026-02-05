@@ -1,7 +1,7 @@
 import Foundation
 
 /// Default border width implementation matching the standard design system scale.
-public struct DefaultBorderWidth: DSBorderWidth {
+public struct DefaultBorderWidth: DSBorderWidthContract {
 	public init() {}
 
 	public var hairline: CGFloat { 0.5 }

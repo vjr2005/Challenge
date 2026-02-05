@@ -29,7 +29,7 @@ public struct DSShadowValue: Sendable, Equatable {
 ///
 /// Conforming types provide shadow values for all design system components.
 /// Each property maps to a semantic shadow level from zero to large.
-public protocol DSShadow: Sendable {
+public protocol DSShadowContract: Sendable {
 	/// No shadow
 	var zero: DSShadowValue { get }
 

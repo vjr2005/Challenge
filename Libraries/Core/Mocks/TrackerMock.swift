@@ -28,7 +28,7 @@ public final class TrackerMock: TrackerContract, @unchecked Sendable {
     public init() {}
 
     /// Records the event for later assertion.
-    public func track(_ event: any TrackingEvent) {
+    public func track(_ event: any TrackingEventContract) {
         trackedEvents.append(TrackedEvent(name: event.name, properties: event.properties))
     }
 }

@@ -27,14 +27,14 @@ Libraries/DesignSystem/
 │   │   ├── DSTheme.swift     # Theme struct
 │   │   ├── DSThemeEnvironment.swift  # SwiftUI Environment
 │   │   ├── Contracts/        # Theme protocols
-│   │   │   ├── DSBorderWidth.swift
-│   │   │   ├── DSColorPalette.swift
-│   │   │   ├── DSCornerRadius.swift
-│   │   │   ├── DSDimensions.swift
-│   │   │   ├── DSOpacity.swift
-│   │   │   ├── DSShadow.swift
-│   │   │   ├── DSSpacing.swift
-│   │   │   └── DSTypography.swift
+│   │   │   ├── DSBorderWidthContract.swift
+│   │   │   ├── DSColorPaletteContract.swift
+│   │   │   ├── DSCornerRadiusContract.swift
+│   │   │   ├── DSDimensionsContract.swift
+│   │   │   ├── DSOpacityContract.swift
+│   │   │   ├── DSShadowContract.swift
+│   │   │   ├── DSSpacingContract.swift
+│   │   │   └── DSTypographyContract.swift
 │   │   └── Default/          # Default theme implementation
 │   │       ├── DefaultBorderWidth.swift
 │   │       ├── DefaultColorPalette.swift
@@ -98,7 +98,7 @@ ContentView()
     .dsTheme(customTheme)
 ```
 
-### DSColorPalette (protocol)
+### DSColorPaletteContract (protocol)
 
 Accessed via `theme.colors`:
 
@@ -119,7 +119,7 @@ theme.colors.accentSubtle         // Accent with opacity
 
 ---
 
-## DSSpacing (via theme)
+## DSSpacingContract (via theme)
 
 Spacing values accessed via `theme.spacing`:
 
@@ -136,7 +136,7 @@ theme.spacing.xxxl  // 32pt
 
 ---
 
-## DSDimensions (via theme)
+## DSDimensionsContract (via theme)
 
 Dimension values for icons and other sized elements, accessed via `theme.dimensions`:
 
@@ -152,7 +152,7 @@ theme.dimensions.xxxl  // 56pt
 
 ---
 
-## DSBorderWidth (via theme)
+## DSBorderWidthContract (via theme)
 
 Border width values accessed via `theme.borderWidth`:
 
@@ -165,7 +165,7 @@ theme.borderWidth.thick     // 4pt
 
 ---
 
-## DSCornerRadius (via theme)
+## DSCornerRadiusContract (via theme)
 
 Corner radius values accessed via `theme.cornerRadius`:
 
@@ -181,7 +181,7 @@ theme.cornerRadius.full  // 9999pt
 
 ---
 
-## DSTypography (via theme)
+## DSTypographyContract (via theme)
 
 Typography accessed via `theme.typography`:
 
@@ -198,7 +198,7 @@ theme.typography.caption      // .rounded
 theme.typography.caption2     // .monospaced
 ```
 
-## DSOpacity (via theme)
+## DSOpacityContract (via theme)
 
 Opacity values accessed via `theme.opacity`:
 
@@ -212,7 +212,7 @@ theme.opacity.almostOpaque  // 0.8
 
 ---
 
-## DSShadow (via theme)
+## DSShadowContract (via theme)
 
 Shadow values accessed via `theme.shadow`. Each level returns a `DSShadowValue` with `color`, `radius`, `x`, and `y`:
 

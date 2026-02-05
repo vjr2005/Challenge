@@ -14,7 +14,7 @@ public enum DSStatus: String, CaseIterable, Sendable {
 	/// Returns the color for this status in the given palette.
 	/// - Parameter palette: The color palette to use
 	/// - Returns: The color associated with this status
-	public func color(in palette: DSColorPalette) -> Color {
+	public func color(in palette: DSColorPaletteContract) -> Color {
 		switch self {
 		case .alive:
 			palette.statusSuccess

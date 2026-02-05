@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Conforming types provide opacity values for all design system components.
 /// Each property maps to a semantic opacity level from subtle to almost opaque.
-public protocol DSOpacity: Sendable {
+public protocol DSOpacityContract: Sendable {
 	/// Subtle opacity (0.1)
 	var subtle: Double { get }
 

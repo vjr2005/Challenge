@@ -30,7 +30,7 @@ Core/
 │   ├── Tracking/
 │   │   ├── TrackerContract.swift
 │   │   ├── Tracker.swift
-│   │   ├── TrackingEvent.swift
+│   │   ├── TrackingEventContract.swift
 │   │   └── Providers/
 │   │       ├── TrackingProviderContract.swift
 │   │       └── ConsoleTrackingProvider.swift
@@ -124,7 +124,7 @@ Protocol defining tracking capabilities:
 
 ```swift
 public protocol TrackerContract: Sendable {
-    func track(_ event: any TrackingEvent)
+    func track(_ event: any TrackingEventContract)
 }
 ```
 
@@ -135,16 +135,16 @@ Implementation that dispatches events to registered providers:
 ```swift
 public struct Tracker: TrackerContract {
     public init(providers: [any TrackingProviderContract])
-    public func track(_ event: any TrackingEvent)
+    public func track(_ event: any TrackingEventContract)
 }
 ```
 
-#### TrackingEvent
+#### TrackingEventContract
 
 Protocol for tracking events with optional properties:
 
 ```swift
-public protocol TrackingEvent: Sendable {
+public protocol TrackingEventContract: Sendable {
     var name: String { get }
     var properties: [String: String] { get }
 }

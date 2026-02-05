@@ -48,7 +48,7 @@ Protocol that screen trackers use to dispatch events:
 
 ```swift
 public protocol TrackerContract: Sendable {
-    func track(_ event: any TrackingEvent)
+    func track(_ event: any TrackingEventContract)
 }
 ```
 
@@ -64,7 +64,7 @@ public final class Tracker: TrackerContract, Sendable {
         self.providers = providers
     }
 
-    public func track(_ event: any TrackingEvent) {
+    public func track(_ event: any TrackingEventContract) {
         for provider in providers {
             provider.track(event)
         }
@@ -72,17 +72,17 @@ public final class Tracker: TrackerContract, Sendable {
 }
 ```
 
-### TrackingEvent
+### TrackingEventContract
 
 Protocol for tracking events with a name and optional properties:
 
 ```swift
-public protocol TrackingEvent: Sendable {
+public protocol TrackingEventContract: Sendable {
     var name: String { get }
     var properties: [String: String] { get }
 }
 
-public extension TrackingEvent {
+public extension TrackingEventContract {
     var properties: [String: String] { [:] }
 }
 ```
@@ -134,7 +134,7 @@ Development provider that logs events to the console using `os_log`:
 public struct ConsoleTrackingProvider: TrackingProviderContract {
     private let logger = Logger(subsystem: "com.challenge", category: "Tracking")
 
-    public func track(_ event: any TrackingEvent) {
+    public func track(_ event: any TrackingEventContract) {
         if event.properties.isEmpty {
             logger.info("[\(event.name)]")
         } else {
@@ -199,7 +199,7 @@ Type-safe events with computed `name` and `properties`:
 ```swift
 import ChallengeCore
 
-enum CharacterListEvent: TrackingEvent {
+enum CharacterListEvent: TrackingEventContract {
     case screenViewed
     case characterSelected(identifier: Int)
     case searchPerformed(query: String)

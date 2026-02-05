@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// Conforming types provide semantic color values for all design system components.
 /// Each property maps to a semantic purpose (background, text, status, etc.).
-public protocol DSColorPalette: Sendable {
+public protocol DSColorPaletteContract: Sendable {
 	// MARK: - Background Colors
 
 	/// Primary background color

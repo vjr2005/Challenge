@@ -1,6 +1,6 @@
 import ChallengeCore
 
-enum HomeEvent: TrackingEvent {
+enum HomeEvent: TrackingEventContract {
     case screenViewed
     case characterButtonTapped
 

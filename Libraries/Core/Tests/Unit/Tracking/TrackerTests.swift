@@ -93,7 +93,7 @@ struct TrackerTests {
 
 // MARK: - Test Helpers
 
-private struct TestTrackingEvent: TrackingEvent {
+private struct TestTrackingEvent: TrackingEventContract {
     let name: String
     let properties: [String: String]
 }

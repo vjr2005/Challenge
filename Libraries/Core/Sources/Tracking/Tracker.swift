@@ -10,7 +10,7 @@ public final class Tracker: TrackerContract, Sendable {
     }
 
     /// Dispatches the event to all registered providers.
-    public func track(_ event: any TrackingEvent) {
+    public func track(_ event: any TrackingEventContract) {
         for provider in providers {
             provider.track(event)
         }

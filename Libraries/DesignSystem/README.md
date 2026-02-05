@@ -15,14 +15,14 @@ DesignSystem/
 │   │   ├── DSTheme.swift     # Theme struct
 │   │   ├── DSThemeEnvironment.swift  # SwiftUI Environment
 │   │   ├── Contracts/        # Theme protocols
-│   │   │   ├── DSBorderWidth.swift
-│   │   │   ├── DSColorPalette.swift
-│   │   │   ├── DSCornerRadius.swift
-│   │   │   ├── DSDimensions.swift
-│   │   │   ├── DSOpacity.swift
-│   │   │   ├── DSShadow.swift
-│   │   │   ├── DSSpacing.swift
-│   │   │   └── DSTypography.swift
+│   │   │   ├── DSBorderWidthContract.swift
+│   │   │   ├── DSColorPaletteContract.swift
+│   │   │   ├── DSCornerRadiusContract.swift
+│   │   │   ├── DSDimensionsContract.swift
+│   │   │   ├── DSOpacityContract.swift
+│   │   │   ├── DSShadowContract.swift
+│   │   │   ├── DSSpacingContract.swift
+│   │   │   └── DSTypographyContract.swift
 │   │   └── Default/          # Default theme implementation
 │   │       ├── DefaultBorderWidth.swift
 │   │       ├── DefaultColorPalette.swift
@@ -78,8 +78,8 @@ Colors, typography, spacing, dimensions, border widths, corner radii, opacity, a
 ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                  DSTheme (struct, Sendable)                                  │
 │  ┌──────────────┐ ┌────────────┐ ┌─────────┐ ┌────────────┐ ┌─────────────┐ ┌──────────────┐ ┌─────────┐ │
-│  │DSColorPalette│ │DSTypography│ │DSSpacing│ │DSDimensions│ │DSBorderWidth│ │DSCornerRadius│ │DSOpacity│ │DSShadow│ │
-│  │ (protocol)   │ │ (protocol) │ │(protocol)│ │ (protocol) │ │ (protocol)  │ │ (protocol)   │ │(protocol)│ │(protocol)│ │
+│  │DSColorPaletteContract│ │DSTypographyContract│ │DSSpacingContract│ │DSDimensionsContract│ │DSBorderWidthContract│ │DSCornerRadiusContract│ │DSOpacityContract│ │DSShadowContract│ │
+│  │ (protocol)           │ │ (protocol)         │ │(protocol)       │ │ (protocol)         │ │ (protocol)          │ │ (protocol)           │ │(protocol)       │ │(protocol)      │ │
 │  └──────────────┘ └────────────┘ └─────────┘ └────────────┘ └─────────────┘ └──────────────┘ └─────────┘ └────────┘ │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
                     │
@@ -113,7 +113,7 @@ struct MyView: View {
 ### Creating a Custom Theme
 
 ```swift
-struct BrandColorPalette: DSColorPalette {
+struct BrandColorPalette: DSColorPaletteContract {
     var accent: Color { .blue }
     // ... implement all 18 color properties
 }
@@ -132,7 +132,7 @@ let brandTheme = DSTheme(
 
 ## Design Tokens
 
-### DSColorPalette (via theme)
+### DSColorPaletteContract (via theme)
 
 Semantic color definitions accessed via `theme.colors`:
 
@@ -161,7 +161,7 @@ theme.colors.accentSubtle
 theme.colors.disabled
 ```
 
-### DSTypography (via theme)
+### DSTypographyContract (via theme)
 
 Typography accessed via `theme.typography`:
 
@@ -178,7 +178,7 @@ theme.typography.caption      // .rounded
 theme.typography.caption2     // .monospaced
 ```
 
-### DSSpacing (via theme)
+### DSSpacingContract (via theme)
 
 Spacing values accessed via `theme.spacing`:
 
@@ -193,7 +193,7 @@ theme.spacing.xxl   // 24pt
 theme.spacing.xxxl  // 32pt
 ```
 
-### DSDimensions (via theme)
+### DSDimensionsContract (via theme)
 
 Dimension values for icons and other sized elements, accessed via `theme.dimensions`:
 
@@ -207,7 +207,7 @@ theme.dimensions.xxl   // 48pt
 theme.dimensions.xxxl  // 56pt
 ```
 
-### DSBorderWidth (via theme)
+### DSBorderWidthContract (via theme)
 
 Border width values accessed via `theme.borderWidth`:
 
@@ -218,7 +218,7 @@ theme.borderWidth.medium    // 2pt
 theme.borderWidth.thick     // 4pt
 ```
 
-### DSCornerRadius (via theme)
+### DSCornerRadiusContract (via theme)
 
 Corner radius values accessed via `theme.cornerRadius`:
 
@@ -232,7 +232,7 @@ theme.cornerRadius.xl    // 20pt
 theme.cornerRadius.full  // 9999pt
 ```
 
-### DSOpacity (via theme)
+### DSOpacityContract (via theme)
 
 Opacity values accessed via `theme.opacity`:
 
@@ -244,7 +244,7 @@ theme.opacity.heavy         // 0.6
 theme.opacity.almostOpaque  // 0.8
 ```
 
-### DSShadow (via theme)
+### DSShadowContract (via theme)
 
 Shadow values accessed via `theme.shadow`:
 

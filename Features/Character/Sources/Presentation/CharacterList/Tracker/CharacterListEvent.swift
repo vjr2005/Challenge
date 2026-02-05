@@ -1,6 +1,6 @@
 import ChallengeCore
 
-enum CharacterListEvent: TrackingEvent {
+enum CharacterListEvent: TrackingEventContract {
     case screenViewed
     case characterSelected(identifier: Int)
     case searchPerformed(query: String)

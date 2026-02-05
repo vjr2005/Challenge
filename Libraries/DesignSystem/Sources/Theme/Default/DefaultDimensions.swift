@@ -1,7 +1,7 @@
 import Foundation
 
 /// Default dimensions implementation matching the standard design system scale.
-public struct DefaultDimensions: DSDimensions {
+public struct DefaultDimensions: DSDimensionsContract {
 	public init() {}
 
 	public var xs: CGFloat { 8 }

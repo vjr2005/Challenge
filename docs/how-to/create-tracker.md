@@ -74,7 +74,7 @@ Create `Sources/Presentation/{ScreenName}/Tracker/{ScreenName}Event.swift`:
 ```swift
 import ChallengeCore
 
-enum {ScreenName}Event: TrackingEvent {
+enum {ScreenName}Event: TrackingEventContract {
     case screenViewed
 
     var name: String {
@@ -91,7 +91,7 @@ For events with properties:
 ```swift
 import ChallengeCore
 
-enum {ScreenName}Event: TrackingEvent {
+enum {ScreenName}Event: TrackingEventContract {
     case screenViewed
     case {action}({param}: {Type})
 
@@ -115,7 +115,7 @@ enum {ScreenName}Event: TrackingEvent {
 }
 ```
 
-> **Note:** Events without properties don't need to implement `properties` — the `TrackingEvent` protocol provides a default empty dictionary.
+> **Note:** Events without properties don't need to implement `properties` — the `TrackingEventContract` protocol provides a default empty dictionary.
 
 ---
 

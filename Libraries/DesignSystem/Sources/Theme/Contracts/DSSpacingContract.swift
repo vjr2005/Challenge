@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Conforming types provide spacing values for all design system components.
 /// Each property maps to a semantic size (extra-small, small, medium, large, etc.).
-public protocol DSSpacing: Sendable {
+public protocol DSSpacingContract: Sendable {
 	/// Extra extra small spacing (2pt)
 	var xxs: CGFloat { get }
 

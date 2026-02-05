@@ -1,6 +1,6 @@
 import ChallengeCore
 
-enum NotFoundEvent: TrackingEvent {
+enum NotFoundEvent: TrackingEventContract {
     case screenViewed
     case goBackButtonTapped
 

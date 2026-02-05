@@ -350,7 +350,7 @@ Libraries/Core/
 │   ├── Tracking/
 │   │   ├── TrackerContract.swift
 │   │   ├── Tracker.swift
-│   │   ├── TrackingEvent.swift
+│   │   ├── TrackingEventContract.swift
 │   │   └── Providers/
 │   │       ├── TrackingProviderContract.swift
 │   │       └── ConsoleTrackingProvider.swift
