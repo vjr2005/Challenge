@@ -27,7 +27,7 @@ The CI workflow (`.github/workflows/quality-checks.yml`) runs a single job on `m
 | Upload xcresult | On failure: uploads `test_output` as artifact preserving `.xcresult` bundle |
 | Test results summary | On failure: parses failures and writes markdown to **Actions Summary** + step output |
 | Comment PR (test failure) | On failure (PR only): posts the test summary as a PR comment |
-| Detect dead code | `mise x -- periphery scan` (informational, never blocks CI) |
+| Detect dead code | `mise x -- periphery scan --skip-build` reusing the test build index (informational, never blocks CI) |
 | Periphery summary | Parses Periphery output and writes markdown to **Actions Summary** + step output |
 | Comment PR (Periphery) | PR only: posts the Periphery summary as a PR comment |
 

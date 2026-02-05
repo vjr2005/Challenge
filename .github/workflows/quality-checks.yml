@@ -22,6 +22,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
+      TUIST_TEST_DERIVED_DATA_PATH: derived_data
       RESULT_BUNDLE_PATH: test_output/Challenge.xcresult
 
     steps:
@@ -166,7 +167,14 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          OUTPUT=$(mise x -- periphery scan 2>&1)
+          INDEX_STORE="${TUIST_TEST_DERIVED_DATA_PATH}/Index.noindex/DataStore"
+          if [ -d "$INDEX_STORE" ]; then
+            echo "Reusing index store: $INDEX_STORE"
+            OUTPUT=$(mise x -- periphery scan --skip-build --index-store-path "$INDEX_STORE" 2>&1)
+          else
+            echo "Index store not found, running full build"
+            OUTPUT=$(mise x -- periphery scan 2>&1)
+          fi
           echo "$OUTPUT"
           echo 'PERIPHERY_OUTPUT<<PERIPHERY_EOF' >> "$GITHUB_ENV"
           echo "$OUTPUT" >> "$GITHUB_ENV"
