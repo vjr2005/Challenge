@@ -22,8 +22,18 @@ Execute the following steps in order:
 
 ### Step 1: Run Periphery Scan
 
+If a recent build exists, reuse its index store to skip the build step:
+
 ```bash
-mise x -- periphery scan
+# Find the index store from the most recent build
+INDEX_STORE=$(find ~/Library/Developer/Xcode/DerivedData/Challenge-*/Index.noindex/DataStore -maxdepth 0 2>/dev/null | head -1)
+
+# Skip build if index store exists, otherwise run full scan
+if [ -n "$INDEX_STORE" ]; then
+  mise x -- periphery scan --skip-build --index-store-path "$INDEX_STORE"
+else
+  mise x -- periphery scan
+fi
 ```
 
 Analyze the output to identify unused code. The scan excludes:
@@ -79,30 +89,13 @@ After removing code, run SwiftLint to auto-correct formatting issues:
 mise x -- swiftlint --fix --quiet
 ```
 
-### Step 5: Verify Build (Full Workspace)
+### Step 5: Run Tests (Full Workspace)
 
-Ensure the **entire workspace** compiles, including all test targets:
-
-```bash
-mise x -- tuist build {AppName}-Workspace
-```
-
-**Important:** Use `{AppName}-Workspace`, not `{AppName} (Dev)`. The workspace includes all test targets that might reference removed code.
-
-If build fails:
-- Review the error messages
-- Fix any missing references in tests/mocks
-- Re-run the build
-
-### Step 6: Run Tests (Full Workspace)
-
-Execute **all tests** in the workspace:
+Build and execute **all tests** in the workspace:
 
 ```bash
-mise x -- tuist test {AppName}-Workspace
+mise x -- tuist test
 ```
-
-**Important:** Use `{AppName}-Workspace` to run all unit tests, not just UI tests.
 
 If tests fail:
 - Check if failed tests were testing removed code → delete them
@@ -110,12 +103,13 @@ If tests fail:
 - If unrelated failure → investigate and fix
 - Re-run tests until all pass
 
-### Step 7: Final Verification
+### Step 6: Final Verification
 
-Run Periphery again to confirm no unused code remains:
+Run Periphery again to confirm no unused code remains. The `tuist test` build from the previous step provides a fresh index store:
 
 ```bash
-mise x -- periphery scan
+INDEX_STORE=$(find ~/Library/Developer/Xcode/DerivedData/Challenge-*/Index.noindex/DataStore -maxdepth 0 2>/dev/null | head -1)
+mise x -- periphery scan --skip-build --index-store-path "$INDEX_STORE"
 ```
 
 Expected output: `* No unused code detected.`
@@ -230,6 +224,5 @@ If a Domain Model property is unused:
 - [ ] Related tests deleted or updated
 - [ ] Equatable extensions created in Tests/Extensions/ if needed
 - [ ] SwiftLint auto-fix executed
-- [ ] `{AppName}-Workspace` build succeeds
-- [ ] `{AppName}-Workspace` tests pass
+- [ ] `tuist test` passes (build + tests)
 - [ ] Final Periphery scan shows no unused code
