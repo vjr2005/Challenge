@@ -1,8 +1,17 @@
 # Continuous Integration
 
-The project uses [GitHub Actions](https://github.com/features/actions) to run quality checks on every pull request targeting `main`.
+The project uses [GitHub Actions](https://github.com/features/actions) to run quality checks on every pull request targeting `main` and on-demand via manual trigger.
 
 ## Workflow Overview
+
+### Triggers
+
+| Trigger | When |
+|---------|------|
+| `pull_request` | Automatically on every PR targeting `main` |
+| `workflow_dispatch` | Manually from **Actions** > **Pull Request Checks** > **Run workflow** |
+
+### Steps
 
 The CI workflow (`.github/workflows/pull-request-checks.yml`) runs a single job on `macos-15` with the following steps:
 
@@ -16,34 +25,43 @@ The CI workflow (`.github/workflows/pull-request-checks.yml`) runs a single job 
 | Prepare simulator | Shutdown stale simulators and pre-boot the target device |
 | Run tests | `mise x -- tuist test` (includes SwiftLint as build phase, 25 min timeout) |
 | Upload xcresult | On failure: uploads `test_output` as artifact preserving `.xcresult` bundle |
-| Comment PR (test failure) | On failure: posts a PR comment with a download link to the `.xcresult` artifact |
+| Test results summary | On failure: parses failures and writes markdown to **Actions Summary** + step output |
+| Comment PR (test failure) | On failure (PR only): posts the test summary as a PR comment |
 | Detect dead code | `mise x -- periphery scan` (informational, never blocks CI) |
-| Comment PR (Periphery) | Posts Periphery results as a PR comment |
+| Periphery summary | Parses Periphery output and writes markdown to **Actions Summary** + step output |
+| Comment PR (Periphery) | PR only: posts the Periphery summary as a PR comment |
+
+## Feedback Output
+
+Test failures and Periphery results are always written to **`GITHUB_STEP_SUMMARY`**, which is visible in the **Actions** > run > **Summary** tab regardless of the trigger. When the workflow is triggered by a pull request, the same content is also posted as a PR comment.
+
+| Output | Trigger | Where |
+|--------|---------|-------|
+| `GITHUB_STEP_SUMMARY` | PR + Manual | Actions > run > Summary |
+| PR comment | PR only | Pull request conversation |
 
 ## Test Failure Artifacts
 
 When tests fail, the workflow:
 
 1. **Uploads the `.xcresult` bundle** as a GitHub artifact (`test-results`), retained for 7 days
-2. **Posts a PR comment** with a direct download link to the artifact
+2. **Writes a summary** to the Actions Summary tab with a table of failed tests and a download link
+3. **Posts a PR comment** (PR trigger only) with the same content
 
 <img src="screenshots/test-failure-comment.png" width="100%">
 
 The artifact uploads the `test_output` directory (not the bundle itself) so that the `.xcresult` directory name is preserved when extracted from the zip. To inspect failures, download the artifact, extract it, and open `Challenge.xcresult` in Xcode.
 
-Successive pushes update the same comment instead of creating duplicates.
+## Periphery Results
 
-## Periphery PR Comments
-
-Periphery runs with `continue-on-error: true` so it never blocks the pipeline. After execution, the workflow parses the output and posts a comment on the PR with:
+Periphery runs with `continue-on-error: true` so it never blocks the pipeline. After execution, the workflow parses the output and writes a summary to the Actions Summary tab with:
 
 - A table of unused code occurrences (file, line, description)
-- The full Periphery output in a collapsible section
 - If no issues are found, a success message
 
-<img src="screenshots/periphery-comment.png" width="100%">
+When triggered by a PR, the same summary is posted as a PR comment.
 
-Successive pushes update the same comment instead of creating duplicates.
+<img src="screenshots/periphery-comment.png" width="100%">
 
 ## GitHub Configuration
 
@@ -89,6 +107,8 @@ After pushing the workflow file, configure the repository:
 
 - **Single job**: All steps run in one macOS job to minimize runner overhead. macOS minutes are billed at 10x in private repos.
 - **Concurrency group**: Concurrent runs on the same branch are cancelled automatically, saving CI minutes.
-- **Separate steps**: Individual CI steps are used instead of a single composite command to allow `continue-on-error` on Periphery and capture its output for PR comments.
+- **Step summaries**: Test failures and Periphery results write to `GITHUB_STEP_SUMMARY` so feedback is visible on every run. PR comment steps reuse the summary output instead of duplicating markdown generation logic.
+- **Manual trigger**: `workflow_dispatch` allows running the full pipeline without creating a PR. PR-specific steps (comments) are skipped automatically.
+- **Separate steps**: Individual CI steps are used instead of a single composite command to allow `continue-on-error` on Periphery and capture its output.
 - **Test timeout**: The test step has a 25-minute timeout to prevent frozen UI tests from blocking the pipeline indefinitely.
 - **Simulator preparation**: The target simulator is shut down and re-booted before tests to prevent "Application failed preflight checks" errors caused by stale simulator state. For local development, if the simulator becomes corrupted, use `./reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
