@@ -12,4 +12,8 @@ final class HomeViewModelStub: HomeViewModelContract {
 	func didTapOnCharacterButton() {
 		// No-op: navigation not tested in snapshots
 	}
+
+	func didTapOnInfoButton() {
+		// No-op: navigation not tested in snapshots
+	}
 }

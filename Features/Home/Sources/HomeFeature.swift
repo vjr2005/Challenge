@@ -35,6 +35,10 @@ public struct HomeFeature: FeatureContract {
         switch navigation {
         case .main:
             return makeMainView(navigator: navigator)
+        case .about:
+            return AnyView(AboutView(
+                viewModel: container.makeAboutViewModel(navigator: navigator)
+            ))
         }
     }
 }

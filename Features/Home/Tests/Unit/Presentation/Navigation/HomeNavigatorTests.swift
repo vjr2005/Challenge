@@ -30,4 +30,17 @@ struct HomeNavigatorTests {
         let destination = navigatorMock.navigatedDestinations.first as? HomeOutgoingNavigation
         #expect(destination == expected)
     }
+
+    @Test("Present about uses correct navigation and style")
+    func presentAboutUsesCorrectNavigationAndStyle() {
+        // When
+        sut.presentAbout()
+
+        // Then
+        #expect(navigatorMock.presentedModals.count == 1)
+        let modal = navigatorMock.presentedModals.first
+        let destination = modal?.destination as? HomeIncomingNavigation
+        #expect(destination == .about)
+        #expect(modal?.style == .sheet(detents: [.medium, .large]))
+    }
 }

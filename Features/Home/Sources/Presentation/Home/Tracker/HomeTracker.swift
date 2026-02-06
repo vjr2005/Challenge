@@ -14,4 +14,8 @@ struct HomeTracker: HomeTrackerContract {
     func trackCharacterButtonTapped() {
         tracker.track(HomeEvent.characterButtonTapped)
     }
+
+    func trackInfoButtonTapped() {
+        tracker.track(HomeEvent.infoButtonTapped)
+    }
 }

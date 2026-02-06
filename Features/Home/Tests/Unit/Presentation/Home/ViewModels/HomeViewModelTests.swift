@@ -45,4 +45,24 @@ struct HomeViewModelTests {
         // Then
         #expect(trackerMock.characterButtonTappedCallCount == 1)
     }
+
+    // MARK: - Info Button
+
+    @Test("Tap on info button presents about")
+    func didTapOnInfoButtonCallsNavigator() {
+        // When
+        sut.didTapOnInfoButton()
+
+        // Then
+        #expect(navigatorMock.presentAboutCallCount == 1)
+    }
+
+    @Test("didTapOnInfoButton tracks info button tapped")
+    func didTapOnInfoButtonTracksInfoButtonTapped() {
+        // When
+        sut.didTapOnInfoButton()
+
+        // Then
+        #expect(trackerMock.infoButtonTappedCallCount == 1)
+    }
 }

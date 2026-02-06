@@ -19,4 +19,8 @@ public final class HomeContainer: Sendable {
     func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
         HomeViewModel(navigator: HomeNavigator(navigator: navigator), tracker: HomeTracker(tracker: tracker))
     }
+
+    func makeAboutViewModel(navigator: any NavigatorContract) -> AboutViewModel {
+        AboutViewModel(navigator: AboutNavigator(navigator: navigator), tracker: AboutTracker(tracker: tracker))
+    }
 }

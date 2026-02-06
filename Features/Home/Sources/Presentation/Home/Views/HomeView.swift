@@ -26,6 +26,16 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 			lottieAnimation
 			characterButton
 		}
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Button {
+					viewModel.didTapOnInfoButton()
+				} label: {
+					Image(systemName: "info.circle")
+				}
+				.accessibilityIdentifier(AccessibilityIdentifier.infoButton)
+			}
+		}
 		.onFirstAppear {
 			viewModel.didAppear()
 		}
@@ -72,6 +82,7 @@ private enum LocalizedStrings {
 private enum AccessibilityIdentifier {
 	static let logoAnimation = "home.logoAnimation"
 	static let characterButton = "home.characterButton"
+	static let infoButton = "home.infoButton"
 }
 
 /*

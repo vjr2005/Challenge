@@ -15,4 +15,9 @@ final class HomeViewModel: HomeViewModelContract {
         tracker.trackCharacterButtonTapped()
         navigator.navigateToCharacters()
     }
+
+    func didTapOnInfoButton() {
+        tracker.trackInfoButtonTapped()
+        navigator.presentAbout()
+    }
 }

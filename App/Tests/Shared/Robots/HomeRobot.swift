@@ -14,6 +14,14 @@ extension HomeRobot {
 		button.tap()
 		return self
 	}
+
+	@discardableResult
+	func tapInfoButton(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let button = app.buttons[AccessibilityIdentifier.infoButton]
+		XCTAssertTrue(button.waitForExistence(timeout: 5), file: file, line: line)
+		button.tap()
+		return self
+	}
 }
 
 // MARK: - Verifications
@@ -31,4 +39,5 @@ extension HomeRobot {
 
 private enum AccessibilityIdentifier {
 	static let characterButton = "home.characterButton"
+	static let infoButton = "home.infoButton"
 }

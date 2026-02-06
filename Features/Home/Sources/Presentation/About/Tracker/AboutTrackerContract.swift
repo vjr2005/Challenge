@@ -1,0 +1,3 @@
+protocol AboutTrackerContract {
+    func trackScreenViewed()
+}

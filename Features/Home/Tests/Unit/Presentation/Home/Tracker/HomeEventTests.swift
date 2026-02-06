@@ -42,4 +42,24 @@ struct HomeEventTests {
         // Then
         #expect(sut.properties == [:])
     }
+
+    // MARK: - infoButtonTapped
+
+    @Test("Info button tapped event has correct name")
+    func infoButtonTappedEventHasCorrectName() {
+        // Given
+        let sut = HomeEvent.infoButtonTapped
+
+        // Then
+        #expect(sut.name == "home_info_button_tapped")
+    }
+
+    @Test("Info button tapped event has empty properties")
+    func infoButtonTappedEventHasEmptyProperties() {
+        // Given
+        let sut = HomeEvent.infoButtonTapped
+
+        // Then
+        #expect(sut.properties == [:])
+    }
 }

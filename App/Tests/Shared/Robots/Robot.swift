@@ -72,4 +72,9 @@ nonisolated class UITestCase: XCTestCase {
 	func notFound(actions: (NotFoundRobot) -> Void) {
 		actions(NotFoundRobot(app: app))
 	}
+
+	@MainActor
+	func about(actions: (AboutRobot) -> Void) {
+		actions(AboutRobot(app: app))
+	}
 }

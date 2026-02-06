@@ -1,0 +1,3 @@
+protocol AboutNavigatorContract {
+    func dismiss()
+}

@@ -62,6 +62,20 @@ struct HomeFeatureTests {
         // Then
         #expect(result == nil)
     }
+
+    @Test("Resolve returns view for about navigation")
+    func resolveReturnsViewForAboutNavigation() {
+        // Given
+        let navigatorMock = NavigatorMock()
+
+        // When
+        let result = sut.resolve(HomeIncomingNavigation.about, navigator: navigatorMock)
+
+        // Then
+        #expect(result != nil)
+        let viewName = String(describing: result)
+        #expect(viewName.contains("AboutView"))
+    }
 }
 
 // MARK: - Test Helpers

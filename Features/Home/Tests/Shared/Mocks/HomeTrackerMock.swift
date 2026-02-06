@@ -3,6 +3,7 @@
 final class HomeTrackerMock: HomeTrackerContract {
     private(set) var screenViewedCallCount = 0
     private(set) var characterButtonTappedCallCount = 0
+    private(set) var infoButtonTappedCallCount = 0
 
     func trackScreenViewed() {
         screenViewedCallCount += 1
@@ -10,5 +11,9 @@ final class HomeTrackerMock: HomeTrackerContract {
 
     func trackCharacterButtonTapped() {
         characterButtonTappedCallCount += 1
+    }
+
+    func trackInfoButtonTapped() {
+        infoButtonTappedCallCount += 1
     }
 }
