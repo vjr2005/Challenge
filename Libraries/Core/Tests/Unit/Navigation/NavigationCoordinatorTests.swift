@@ -235,7 +235,7 @@ struct NavigationCoordinatorTests {
     func dismissCallsOnDismissWhenNoModals() {
         // Given
         var onDismissCalled = false
-        let sutWithOnDismiss = NavigationCoordinator(onDismiss: { onDismissCalled = true })
+        let sutWithOnDismiss = NavigationCoordinator { onDismissCalled = true }
 
         // When
         sutWithOnDismiss.dismiss()
@@ -259,7 +259,7 @@ struct NavigationCoordinatorTests {
     }
 
     @Test("Sheet detents are preserved in modal navigation")
-    func sheetDetentsArePreserved() {
+    func sheetDetentsArePreserved() throws {
         // Given
         let detents: Set<PresentationDetent> = [.medium, .large]
 
@@ -267,8 +267,8 @@ struct NavigationCoordinatorTests {
         sut.present(TestIncomingNavigationContract.screen1, style: .sheet(detents: detents))
 
         // Then
-        let modal = try? #require(sut.sheetNavigation)
-        #expect(modal?.detents == detents)
+        let modal = try #require(sut.sheetNavigation)
+        #expect(modal.detents == detents)
     }
 
     @Test("Initial modal state is nil")

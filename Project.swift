@@ -71,7 +71,7 @@ let appUITestsScheme = Scheme.scheme(
 		["\(appName)UITests"],
 		options: .options(
 			coverage: true,
-			codeCoverageTargets: AppKitModule.targetReferences
+			codeCoverageTargets: Modules.codeCoverageTargets
 		)
 	)
 )
