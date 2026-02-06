@@ -134,6 +134,7 @@ After pushing the workflow file, configure the repository:
 
 ## Design Decisions
 
+- **Composite actions**: Shared setup steps (Xcode selection, mise, caching, SPM dependencies, project generation, simulator boot) and test reporting steps (artifact upload, failure summary, PR comment) are extracted into reusable composite actions (`.github/actions/setup/` and `.github/actions/test-report/`). This eliminates duplication between the unit+snapshot and UI test jobs. The `if: failure()` condition is applied to the step that invokes the test-report action in the workflow, since composite action steps inherit the job's failure state.
 - **Parallel jobs**: Unit+snapshot tests and UI tests run in separate macOS jobs to reduce total CI time. Total time = `max(unit+snapshot, UI)` instead of `sum()`.
 - **Quality Gate**: A lightweight `ubuntu-latest` job aggregates results from both test jobs. This is the single required status check for branch protection.
 - **Periphery in unit tests job**: Periphery reuses the index store from the test build, so it runs in the same job as unit+snapshot tests.

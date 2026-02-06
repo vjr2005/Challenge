@@ -1,0 +1,101 @@
+name: Test Report
+description: Upload xcresult artifact, generate test failure summary, and comment on PR
+
+inputs:
+  title:
+    description: Header title for the summary (e.g., "Unit & Snapshot Test Results")
+    required: true
+  artifact-name:
+    description: Name for the uploaded artifact (e.g., "unit-snapshot-results")
+    required: true
+  result-bundle-path:
+    description: Path to the .xcresult bundle
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve upload path
+      id: resolve-path
+      shell: bash
+      run: echo "dir=$(dirname '${{ inputs.result-bundle-path }}')" >> "$GITHUB_OUTPUT"
+
+    - name: Upload xcresult
+      id: upload-xcresult
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.resolve-path.outputs.dir }}
+        retention-days: 7
+
+    - name: Test results summary
+      id: test-summary
+      shell: bash
+      run: |
+        python3 << 'PYEOF'
+        import json, subprocess, os
+
+        result_bundle = os.environ['RESULT_BUNDLE_PATH']
+        xcresult_url = os.environ.get('XCRESULT_URL', '')
+        title = os.environ['REPORT_TITLE']
+
+        failures = []
+        if os.path.isdir(result_bundle):
+            result = subprocess.run(
+                ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
+                 '--path', result_bundle],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                data = json.loads(result.stdout)
+
+                def walk(node, parts):
+                    name = node.get('name', '')
+                    node_type = node.get('nodeType', '')
+                    if node_type == 'Test Plan':
+                        for child in node.get('children', []):
+                            walk(child, [])
+                        return
+                    current = parts + [name] if name else parts
+                    if node.get('result') == 'Failed' and node_type == 'Test Case':
+                        failures.append('/'.join(current))
+                    for child in node.get('children', []):
+                        walk(child, current)
+
+                for node in data.get('testNodes', []):
+                    walk(node, [])
+
+        lines = [f'## {title}', '', ':x: **Tests failed.**']
+        if failures:
+            lines += ['', '| | Test |', '|---|------|']
+            lines += [f'| :x: | `{f}` |' for f in failures]
+        if xcresult_url:
+            lines += ['', f'[:arrow_down: Download xcresult]({xcresult_url})', '',
+                      '_Open the `.xcresult` file in Xcode to inspect failures._']
+
+        body = '\n'.join(lines)
+
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+            summary.write(body + '\n')
+
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write('body<<TEST_BODY_EOF\n')
+            output.write(body + '\n')
+            output.write('TEST_BODY_EOF\n')
+        PYEOF
+      env:
+        RESULT_BUNDLE_PATH: ${{ inputs.result-bundle-path }}
+        XCRESULT_URL: ${{ steps.upload-xcresult.outputs.artifact-url }}
+        REPORT_TITLE: ${{ inputs.title }}
+
+    - name: Comment PR with test failures
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `${{ steps.test-summary.outputs.body }}`
+          });
