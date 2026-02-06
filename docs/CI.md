@@ -23,20 +23,23 @@ The CI workflow (`.github/workflows/quality-checks.yml`) runs three jobs in para
 
 Unit & Snapshot Tests and UI Tests run **in parallel** on separate macOS runners. The Quality Gate job waits for both to complete before reporting the final status.
 
+### Composite Actions
+
+Both test jobs share common steps extracted into reusable composite actions:
+
+| Action | Path | Description |
+|--------|------|-------------|
+| **Setup** | `.github/actions/setup/` | Select Xcode, install mise tools, cache and install SPM dependencies, generate Xcode project, boot simulator |
+| **Test Report** | `.github/actions/test-report/` | Upload `.xcresult` artifact, parse failures into markdown summary, comment on PR |
+
 ### Unit & Snapshot Tests Steps
 
 | Step | Description |
 |------|-------------|
 | Checkout | Clone the repository |
-| Select Xcode 26 | Use the latest Xcode 26.x available on the runner |
-| Install mise tools | Install tuist, swiftlint, and periphery via mise (cached) |
-| Install SPM dependencies | `mise x -- tuist install` (cached) |
-| Generate Xcode project | `mise x -- tuist generate` |
-| Prepare simulator | Shutdown stale simulators and pre-boot the target device |
+| Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
 | Run unit and snapshot tests | `mise x -- tuist test "Challenge (Dev)"` (15 min timeout) |
-| Upload xcresult | On failure: uploads `test_output` as artifact |
-| Test results summary | On failure: parses failures and writes markdown to Actions Summary |
-| Comment PR (test failure) | On failure (PR only): posts the test summary as a PR comment |
+| Test report | On failure: composite action that uploads artifact, generates summary, and comments on PR |
 | Detect dead code | `mise x -- periphery scan --skip-build` reusing the test build index (informational, never blocks CI) |
 | Periphery summary | Parses Periphery output and writes markdown to Actions Summary |
 | Comment PR (Periphery) | PR only: posts the Periphery summary as a PR comment |
@@ -46,15 +49,9 @@ Unit & Snapshot Tests and UI Tests run **in parallel** on separate macOS runners
 | Step | Description |
 |------|-------------|
 | Checkout | Clone the repository |
-| Select Xcode 26 | Use the latest Xcode 26.x available on the runner |
-| Install mise tools | Install tuist, swiftlint, and periphery via mise (cached) |
-| Install SPM dependencies | `mise x -- tuist install` (cached) |
-| Generate Xcode project | `mise x -- tuist generate` |
-| Prepare simulator | Shutdown stale simulators and pre-boot the target device |
+| Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
 | Run UI tests | `mise x -- tuist test "ChallengeUITests"` (25 min timeout) |
-| Upload xcresult | On failure: uploads `test_output` as artifact |
-| Test results summary | On failure: parses failures and writes markdown to Actions Summary |
-| Comment PR (test failure) | On failure (PR only): posts the test summary as a PR comment |
+| Test report | On failure: composite action that uploads artifact, generates summary, and comments on PR |
 
 ### Quality Gate
 

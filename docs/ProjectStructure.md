@@ -3,6 +3,9 @@
 ```
 Challenge/
 ├── .github/
+│   ├── actions/
+│   │   ├── setup/              # Composite action: Xcode, mise, caching, SPM, simulator
+│   │   └── test-report/        # Composite action: artifact upload, summary, PR comment
 │   └── workflows/
 │       └── quality-checks.yml  # GitHub Actions CI workflow
 ├── App/                             # Main application target
