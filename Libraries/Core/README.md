@@ -22,6 +22,8 @@ Core/
 │   ├── Navigation/
 │   │   ├── AnyNavigation.swift
 │   │   ├── DeepLinkHandler.swift
+│   │   ├── ModalNavigation.swift
+│   │   ├── ModalPresentationStyle.swift
 │   │   ├── Navigation.swift
 │   │   ├── NavigationCoordinator.swift
 │   │   ├── NavigationRedirectContract.swift
@@ -61,18 +63,44 @@ Core/
 
 #### NavigatorContract
 
-Protocol defining navigation capabilities:
+Protocol defining push and modal navigation capabilities:
 
 ```swift
 public protocol NavigatorContract {
     func navigate(to destination: any NavigationContract)
+    func present(_ destination: any NavigationContract, style: ModalPresentationStyle)
+    func dismiss()
     func goBack()
+}
+```
+
+#### ModalPresentationStyle
+
+Defines how a modal is presented:
+
+```swift
+public enum ModalPresentationStyle: Hashable, Sendable {
+    case sheet(detents: Set<PresentationDetent> = [.large])
+    case fullScreenCover
+}
+```
+
+#### ModalNavigation
+
+Wraps a navigation destination with its presentation style, used as the `item` for SwiftUI's `.sheet(item:)` and `.fullScreenCover(item:)`:
+
+```swift
+public struct ModalNavigation: Identifiable {
+    public let id: UUID
+    public let navigation: AnyNavigation
+    public let style: ModalPresentationStyle
+    public var detents: Set<PresentationDetent>
 }
 ```
 
 #### NavigationCoordinator
 
-`@Observable` implementation using `NavigationPath` that manages the navigation stack and handles redirects.
+`@Observable` implementation using `NavigationPath` that manages the navigation stack, modal presentations, and handles redirects. Exposes `sheetNavigation` and `fullScreenCoverNavigation` for SwiftUI bindings.
 
 #### NavigationContract
 
@@ -177,10 +205,17 @@ Global configuration for the application (API URLs, environment settings).
 ### Navigation
 
 ```swift
-// Navigate to a destination
+// Push navigation
 navigator.navigate(to: CharacterIncomingNavigation.list)
 
-// Go back
+// Modal presentation
+navigator.present(CharacterIncomingNavigation.filter, style: .sheet(detents: [.medium, .large]))
+navigator.present(CharacterIncomingNavigation.settings, style: .fullScreenCover)
+
+// Dismiss current modal (or call parent onDismiss if no modals)
+navigator.dismiss()
+
+// Go back (pop from NavigationStack)
 navigator.goBack()
 ```
 
@@ -198,7 +233,7 @@ Available in `ChallengeCoreMocks` target for testing:
 
 | Mock | Purpose |
 |------|---------|
-| `NavigatorMock` | Captures navigation calls |
+| `NavigatorMock` | Captures navigation, modal, and dismiss calls |
 | `TrackerMock` | Captures tracked events |
 | `ImageLoaderMock` | Returns stub images |
 | `Bundle+JSON` | Loads JSON fixtures from test bundles |

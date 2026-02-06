@@ -4,7 +4,7 @@ Application infrastructure module providing the composition root and navigation 
 
 ## Overview
 
-ChallengeAppKit contains the `AppContainer` (composition root), `RootContainerView`, and cross-feature navigation redirect. It's separated from the App target to enable unit testing without `TEST_HOST`.
+ChallengeAppKit contains the `AppContainer` (composition root), navigation container infrastructure (`NavigationContainerView`, `ModalContainerView`, `RootContainerView`), and cross-feature navigation redirect. It's separated from the App target to enable unit testing without `TEST_HOST`.
 
 ## Structure
 
@@ -18,6 +18,8 @@ AppKit/
 │       ├── Navigation/
 │       │   └── AppNavigationRedirect.swift
 │       └── Views/
+│           ├── NavigationContainerView.swift
+│           ├── ModalContainerView.swift
 │           └── RootContainerView.swift
 └── Tests/
     ├── Unit/
@@ -87,14 +89,103 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 }
 ```
 
+### NavigationContainerView
+
+Reusable generic view that encapsulates `NavigationStack` with push destinations and modal bindings (`.sheet`, `.fullScreenCover`). Used by both `RootContainerView` and `ModalContainerView` to avoid duplicating navigation infrastructure.
+
+**How it works step by step:**
+
+1. Receives a `NavigationCoordinator` and `AppContainer` as parameters, plus a `@ViewBuilder` content closure
+2. Wraps the content in a `NavigationStack` bound to the coordinator's `path`
+3. Registers `.navigationDestination(for: AnyNavigation.self)` to resolve push destinations via `appContainer.resolve()`
+4. Binds `.sheet(item: $coordinator.sheetNavigation)` — when `sheetNavigation` becomes non-nil, presents a `ModalContainerView`
+5. Binds `.fullScreenCover(item: $coordinator.fullScreenCoverNavigation)` — same for full-screen modals
+6. Each modal's `onDismiss` closure nils the parent coordinator's state, enabling programmatic dismiss from within the modal
+
+```swift
+struct NavigationContainerView<Content: View>: View {
+    @Bindable var navigationCoordinator: NavigationCoordinator
+    let appContainer: AppContainer
+    @ViewBuilder let content: Content
+}
+```
+
+### ModalContainerView
+
+Recursive container that creates its own `NavigationCoordinator` for each modal presentation. This enables push navigation within modals and nested modal presentations (modals inside modals).
+
+**How it works step by step:**
+
+1. Receives a `ModalNavigation` (the destination + style), an `AppContainer`, and an `onDismiss` closure
+2. Creates a **new** `NavigationCoordinator` with:
+   - `redirector: AppNavigationRedirect()` — so cross-feature navigation works inside modals
+   - `onDismiss: onDismiss` — when `dismiss()` is called inside the modal with no sub-modals, this closure fires, which nils the parent's modal state
+3. Delegates to `NavigationContainerView`, passing the modal's resolved view as content
+4. Because `NavigationContainerView` itself binds `.sheet` and `.fullScreenCover`, the modal can present nested modals — the structure is **recursive**
+
+```
+RootContainerView
+  └── NavigationContainerView (root coordinator)
+        ├── NavigationStack (push navigation)
+        ├── .sheet → ModalContainerView (own coordinator)
+        │     └── NavigationContainerView (modal coordinator)
+        │           ├── NavigationStack (push inside modal)
+        │           ├── .sheet → ModalContainerView (nested)
+        │           └── .fullScreenCover → ModalContainerView (nested)
+        └── .fullScreenCover → ModalContainerView (own coordinator)
+              └── NavigationContainerView (modal coordinator)
+                    └── ...
+```
+
+**Dismiss chain:** When code inside a modal calls `navigator.dismiss()`:
+1. The modal's coordinator checks: do I have a fullScreenCover? → dismiss it
+2. Do I have a sheet? → dismiss it
+3. No modals? → call `onDismiss()`, which nils the **parent's** modal state, causing SwiftUI to dismiss this modal
+
+```swift
+struct ModalContainerView: View {
+    let modal: ModalNavigation
+    let appContainer: AppContainer
+    let onDismiss: () -> Void
+    @State private var navigationCoordinator: NavigationCoordinator
+}
+```
+
+### Why `onDismiss` nils the parent's modal state
+
+In `NavigationContainerView`, each modal's `onDismiss` closure explicitly sets `navigationCoordinator.sheetNavigation = nil` or `navigationCoordinator.fullScreenCoverNavigation = nil`. This is necessary because there are **two ways** to close a modal, and each requires different handling:
+
+**1. User swipe-dismiss (interactive gesture)**
+
+SwiftUI handles this automatically. When the user drags a sheet down, SwiftUI sets the `.sheet(item:)` binding to `nil` internally. No action needed from our side.
+
+**2. Programmatic dismiss (`navigator.dismiss()` from inside the modal)**
+
+This is where the `onDismiss` closure is essential. The modal has its **own** `NavigationCoordinator` which is independent from the parent's. When code inside the modal calls `navigator.dismiss()`:
+
+```
+Code inside modal calls: navigator.dismiss()
+    ↓
+Modal's NavigationCoordinator: no sub-modals → onDismiss()
+    ↓
+onDismiss = { navigationCoordinator.sheetNavigation = nil }  ← parent's coordinator
+    ↓
+Parent's binding changes to nil → SwiftUI dismisses the sheet
+```
+
+Without this closure, the programmatic dismiss from inside the modal would have **no way to communicate** to the parent coordinator that the modal should close. The child coordinator doesn't have a reference to the parent — the `onDismiss` closure is the bridge between them.
+
+**In summary:** SwiftUI handles the swipe-dismiss path. The `onDismiss` closure handles the programmatic dismiss path by propagating the intent from the child coordinator to the parent's state.
+
 ### RootContainerView
 
-Root navigation view using `NavigationStack`:
+Root navigation view. Uses `NavigationContainerView` and adds `.onOpenURL` for deep link handling:
 
 ```swift
 public struct RootContainerView: View {
     public let appContainer: AppContainer
     // Uses NavigationCoordinator with AppNavigationRedirect
+    // Delegates to NavigationContainerView + .onOpenURL
 }
 ```
 

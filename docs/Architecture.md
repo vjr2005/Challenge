@@ -358,3 +358,55 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 | **Flexible** | Change routing in one place (AppNavigationRedirect) |
 | **Scalable** | Add new features without modifying existing ones |
 | **Type-safe** | Compiler ensures all cases are handled |
+
+## Modal Navigation
+
+In addition to push navigation, the system supports **modal presentations** (sheet and fullScreenCover). Each modal gets its own `NavigationStack`, enabling push navigation within modals and recursive nesting (modals inside modals).
+
+### Modal Presentation Styles
+
+| Style | Description |
+|-------|-------------|
+| `.sheet(detents:)` | Partial or full sheet with configurable detents (default: `[.large]`) |
+| `.fullScreenCover` | Full-screen cover |
+
+### Modal Navigation Flow
+
+```
+1. User taps "Filter" in CharacterListView
+                    │
+                    ▼
+2. CharacterListNavigator.presentFilter()
+                    │
+                    ▼
+3. navigator.present(CharacterIncomingNavigation.filter, style: .sheet(detents: [.medium, .large]))
+                    │
+                    ▼
+4. NavigationCoordinator.present() → sheetNavigation = ModalNavigation(...)
+                    │
+                    ▼
+5. NavigationContainerView .sheet(item:) activates
+                    │
+                    ▼
+6. ModalContainerView creates its own NavigationCoordinator + NavigationContainerView
+                    │
+                    ▼
+7. FilterView renders inside the modal's own NavigationStack
+   (can push internally or present nested modals)
+```
+
+### Dismiss Chain
+
+When code inside a modal calls `navigator.dismiss()`:
+
+1. The modal's `NavigationCoordinator` checks: do I have a `fullScreenCover`? → close it
+2. Do I have a `sheet`? → close it
+3. No modals of my own? → call `onDismiss()` → nils the **parent's** modal state → SwiftUI dismisses this modal
+
+### Navigation Infrastructure (AppKit)
+
+| Component | Responsibility |
+|-----------|---------------|
+| `NavigationContainerView` | Reusable `NavigationStack` + push destinations + `.sheet`/`.fullScreenCover` bindings |
+| `ModalContainerView` | Creates its own `NavigationCoordinator`, delegates to `NavigationContainerView` |
+| `RootContainerView` | Uses `NavigationContainerView` + `.onOpenURL` for deep links |

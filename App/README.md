@@ -47,6 +47,10 @@ struct ChallengeApp: App {
 }
 ```
 
+`RootContainerView` is the root of the navigation container hierarchy. It delegates to `NavigationContainerView`, which encapsulates the `NavigationStack` with push destinations and modal bindings (`.sheet`, `.fullScreenCover`). Each modal creates its own `NavigationCoordinator`, enabling push navigation within modals and recursive modal nesting.
+
+> **Important:** The modal dismiss mechanism relies on explicit `onDismiss` closures that nil the parent coordinator's modal state. This is necessary because programmatic dismiss (via `navigator.dismiss()`) cannot communicate to the parent without this bridge. For a detailed explanation of how this works and why it's needed, see [AppKit README — Why `onDismiss` nils the parent's modal state](../AppKit/README.md#why-ondismiss-nils-the-parents-modal-state).
+
 ## UI Tests
 
 UI tests use [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) for HTTP mocking and the Robot pattern for UI interactions.

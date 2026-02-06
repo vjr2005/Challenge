@@ -364,6 +364,119 @@ struct AppNavigationRedirectTests {
 
 ---
 
+## Option D: Modal Navigation (present/dismiss)
+
+For presenting screens as modals (sheet or fullScreenCover).
+
+### 1. Create Navigator Contract
+
+Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}NavigatorContract.swift`:
+
+```swift
+protocol {ScreenName}NavigatorContract {
+    func presentFilter()
+    func dismiss()
+}
+```
+
+### 2. Create Navigator
+
+Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}Navigator.swift`:
+
+```swift
+import ChallengeCore
+
+struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
+    private let navigator: NavigatorContract
+
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
+    }
+
+    func presentFilter() {
+        navigator.present(
+            {Feature}IncomingNavigation.filter,
+            style: .sheet(detents: [.medium, .large])
+        )
+    }
+
+    func dismiss() {
+        navigator.dismiss()
+    }
+}
+```
+
+> **Note:** `present(_:style:)` supports two styles:
+> - `.sheet(detents:)` — partial or full sheet (default detents: `[.large]`)
+> - `.fullScreenCover` — full-screen modal
+>
+> `dismiss()` closes the topmost modal. Priority: fullScreenCover > sheet > parent onDismiss.
+
+### 3. Create Mock
+
+Create `Tests/Shared/Mocks/{ScreenName}NavigatorMock.swift`:
+
+```swift
+@testable import Challenge{Feature}
+
+final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
+    private(set) var presentFilterCallCount = 0
+    private(set) var dismissCallCount = 0
+
+    func presentFilter() {
+        presentFilterCallCount += 1
+    }
+
+    func dismiss() {
+        dismissCallCount += 1
+    }
+}
+```
+
+### 4. Create tests
+
+Create `Tests/Unit/Presentation/Navigation/{ScreenName}NavigatorTests.swift`:
+
+```swift
+import ChallengeCoreMocks
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {ScreenName}NavigatorTests {
+    private let navigatorMock = NavigatorMock()
+    private let sut: {ScreenName}Navigator
+
+    init() {
+        sut = {ScreenName}Navigator(navigator: navigatorMock)
+    }
+
+    @Test("Present filter presents sheet with correct detents")
+    func presentFilterPresentsSheet() {
+        // When
+        sut.presentFilter()
+
+        // Then
+        #expect(navigatorMock.presentedModals.count == 1)
+        let modal = navigatorMock.presentedModals.first
+        let destination = modal?.destination as? {Feature}IncomingNavigation
+        #expect(destination == .filter)
+        #expect(modal?.style == .sheet(detents: [.medium, .large]))
+    }
+
+    @Test("Dismiss calls navigator dismiss")
+    func dismissCallsNavigatorDismiss() {
+        // When
+        sut.dismiss()
+
+        // Then
+        #expect(navigatorMock.dismissCallCount == 1)
+    }
+}
+```
+
+---
+
 ## Wire Navigator in Container
 
 Add factory method in the Container to create the Navigator:
