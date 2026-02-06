@@ -32,3 +32,25 @@ public struct DSBadge<Content: View>: View {
 			}
 	}
 }
+
+/*
+// MARK: - Previews
+
+#Preview {
+    HStack(spacing: DefaultSpacing().xl) {
+        DSBadge(count: 0) {
+            Image(systemName: "bell")
+        }
+        DSBadge(count: 1) {
+            Image(systemName: "bell")
+        }
+        DSBadge(count: 9) {
+            Image(systemName: "bell")
+        }
+        DSBadge(count: 42) {
+            Image(systemName: "bell")
+        }
+    }
+    .padding()
+}
+*/
