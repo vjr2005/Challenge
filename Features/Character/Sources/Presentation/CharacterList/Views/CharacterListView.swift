@@ -198,18 +198,9 @@ private extension CharacterListView {
 		Button {
 			viewModel.didTapAdvancedSearchButton()
 		} label: {
-			Image(systemName: "line.3.horizontal.decrease.circle")
-				.overlay(alignment: .topTrailing) {
-					if viewModel.activeFilterCount > 0 {
-						Text("\(viewModel.activeFilterCount)")
-							.font(theme.typography.caption2)
-							.foregroundStyle(theme.colors.textInverted)
-							.frame(width: theme.dimensions.md, height: theme.dimensions.md)
-							.background(theme.colors.accent)
-							.clipShape(Circle())
-							.offset(x: theme.spacing.sm, y: -theme.spacing.sm)
-					}
-				}
+			DSBadge(count: viewModel.activeFilterCount) {
+				Image(systemName: "line.3.horizontal.decrease.circle")
+			}
 		}
 		.accessibilityIdentifier(AccessibilityIdentifier.filterButton)
 	}
