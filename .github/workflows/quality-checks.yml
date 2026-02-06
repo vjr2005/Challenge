@@ -42,6 +42,13 @@ jobs:
             --os "$TUIST_TEST_OS" \
             --result-bundle-path "$RESULT_BUNDLE_PATH"
 
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-snapshot-coverage
+          path: test_output
+          retention-days: 1
+
       - name: Test report
         if: failure()
         uses: ./.github/actions/test-report
@@ -155,6 +162,13 @@ jobs:
             --os "$TUIST_TEST_OS" \
             --result-bundle-path "$RESULT_BUNDLE_PATH"
 
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-coverage
+          path: test_output
+          retention-days: 1
+
       - name: Test report
         if: failure()
         uses: ./.github/actions/test-report
@@ -165,10 +179,13 @@ jobs:
 
   quality-gate:
     name: Quality Gate
-    runs-on: ubuntu-latest
+    runs-on: macos-15
     needs: [unit-and-snapshot-tests, ui-tests]
     if: always()
-    timeout-minutes: 5
+    timeout-minutes: 10
+
+    env:
+      COVERAGE_THRESHOLD: 80
 
     steps:
       - name: Check job results
@@ -176,6 +193,90 @@ jobs:
           echo "Unit & Snapshot Tests: ${{ needs.unit-and-snapshot-tests.result }}"
           echo "UI Tests: ${{ needs.ui-tests.result }}"
           if [ "${{ needs.unit-and-snapshot-tests.result }}" != "success" ] || [ "${{ needs.ui-tests.result }}" != "success" ]; then
-            echo "::error::One or more jobs failed"
+            echo "::error::One or more test jobs failed"
             exit 1
           fi
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-coverage'
+
+      - name: Merge coverage data
+        run: |
+          xcrun xcresulttool merge \
+            unit-snapshot-coverage/UnitSnapshot.xcresult \
+            ui-test-coverage/UITests.xcresult \
+            --output-path merged.xcresult
+          xcrun xccov view --report --json merged.xcresult > coverage.json
+
+      - name: Coverage report
+        id: coverage
+        uses: actions/github-script@v7
+        env:
+          THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('coverage.json', 'utf8'));
+            const THRESHOLD = parseInt(process.env.THRESHOLD, 10);
+
+            const targets = report.targets.filter(t =>
+              t.name.endsWith('.framework') &&
+              !t.name.includes('Mock') &&
+              !t.name.includes('Test')
+            );
+
+            let totalCovered = 0;
+            let totalExecutable = 0;
+
+            const rows = targets
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map(t => {
+                totalCovered += t.coveredLines;
+                totalExecutable += t.executableLines;
+                const pct = (t.lineCoverage * 100).toFixed(1);
+                const icon = parseFloat(pct) >= THRESHOLD ? ':white_check_mark:' : ':x:';
+                const name = t.name.replace('.framework', '');
+                return `| ${icon} | ${name} | ${t.coveredLines} / ${t.executableLines} | ${pct}% |`;
+              });
+
+            const totalPct = totalExecutable > 0
+              ? (totalCovered / totalExecutable * 100)
+              : 0;
+            const totalIcon = totalPct >= THRESHOLD ? ':white_check_mark:' : ':x:';
+
+            const body = [
+              '## Code Coverage',
+              '',
+              '| | Module | Lines | Coverage |',
+              '|---|--------|-------|----------|',
+              ...rows,
+              `| **${totalIcon}** | **Total** | **${totalCovered} / ${totalExecutable}** | **${totalPct.toFixed(1)}%** |`,
+              '',
+              `Minimum required: ${THRESHOLD}%`
+            ].join('\n');
+
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, body + '\n');
+
+            core.setOutput('body', body);
+            core.setOutput('total', totalPct.toFixed(1));
+            core.setOutput('passed', totalPct >= THRESHOLD ? 'true' : 'false');
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `${{ steps.coverage.outputs.body }}`
+            });
+
+      - name: Enforce coverage threshold
+        if: steps.coverage.outputs.passed == 'false'
+        run: |
+          echo "::error::Code coverage (${{ steps.coverage.outputs.total }}%) is below the minimum threshold (${{ env.COVERAGE_THRESHOLD }}%)"
+          exit 1
