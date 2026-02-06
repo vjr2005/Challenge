@@ -11,7 +11,7 @@ struct Character: Equatable, Hashable {
 	let imageURL: URL?
 }
 
-enum CharacterStatus: String {
+enum CharacterStatus: String, CaseIterable {
 	case alive = "Alive"
 	case dead = "Dead"
 	case unknown
@@ -21,7 +21,7 @@ enum CharacterStatus: String {
 	}
 }
 
-enum CharacterGender: String {
+enum CharacterGender: String, CaseIterable {
 	case female = "Female"
 	case male = "Male"
 	case genderless = "Genderless"

@@ -142,7 +142,7 @@ private extension CharacterListView {
 						caption: character.location.name,
 						captionIcon: "mappin.circle.fill",
 						status: DSStatus.from(character.status.rawValue),
-						statusLabel: character.status.rawValue,
+						statusLabel: character.status.localizedName,
 						accessibilityIdentifier: AccessibilityIdentifier.row(identifier: character.id)
 					)
 					.onTapGesture {

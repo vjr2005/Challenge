@@ -121,7 +121,7 @@ private extension CharacterDetailView {
 			HStack(spacing: theme.spacing.sm) {
 				DSStatusIndicator(status: DSStatus.from(character.status.rawValue), size: 10)
 
-				Text(character.status.rawValue)
+				Text(character.status.localizedName)
 					.font(theme.typography.subheadline)
 					.foregroundStyle(theme.colors.textSecondary)
 
@@ -144,7 +144,7 @@ private extension CharacterDetailView {
 					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: theme.spacing.md) {
-					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.rawValue)
+					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.localizedName)
 					Divider()
 					DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
 				}

@@ -57,11 +57,7 @@ private extension AdvancedSearchView {
     var statusChipGroup: some View {
         DSChipGroup(
             LocalizedStrings.status,
-            options: [
-                (id: CharacterStatus.alive, label: CharacterStatus.alive.rawValue),
-                (id: CharacterStatus.dead, label: CharacterStatus.dead.rawValue),
-                (id: CharacterStatus.unknown, label: LocalizedStrings.unknown)
-            ],
+            options: CharacterStatus.allCases.map { (id: $0, label: $0.localizedName) },
             selectedID: viewModel.localFilterState.status,
             accessibilityIdentifier: AccessibilityIdentifier.statusGroup
         ) { selected in
@@ -72,12 +68,7 @@ private extension AdvancedSearchView {
     var genderChipGroup: some View {
         DSChipGroup(
             LocalizedStrings.gender,
-            options: [
-                (id: CharacterGender.female, label: CharacterGender.female.rawValue),
-                (id: CharacterGender.male, label: CharacterGender.male.rawValue),
-                (id: CharacterGender.genderless, label: CharacterGender.genderless.rawValue),
-                (id: CharacterGender.unknown, label: LocalizedStrings.unknown)
-            ],
+            options: CharacterGender.allCases.map { (id: $0, label: $0.localizedName) },
             selectedID: viewModel.localFilterState.gender,
             accessibilityIdentifier: AccessibilityIdentifier.genderGroup
         ) { selected in
@@ -141,7 +132,6 @@ private enum LocalizedStrings {
     static var typePlaceholder: String { "advancedSearch.typePlaceholder".localized() }
     static var apply: String { "advancedSearch.apply".localized() }
     static var reset: String { "advancedSearch.reset".localized() }
-    static var unknown: String { "advancedSearch.unknown".localized() }
 }
 
 // MARK: - AccessibilityIdentifiers
