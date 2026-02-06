@@ -396,6 +396,69 @@ struct {Name}ListView: View {
 }
 ```
 
+### Debounced Search Pattern
+
+ViewModels with search functionality use a debounced task to avoid excessive API calls:
+
+```swift
+@Observable
+final class {Name}ListViewModel {
+    var searchQuery: String = "" {
+        didSet {
+            if searchQuery != oldValue {
+                searchQueryDidChange()
+            }
+        }
+    }
+
+    private let debounceInterval: Duration
+    private(set) var searchTask: Task<Void, Never>?
+
+    init(
+        // ...other dependencies...
+        debounceInterval: Duration = .milliseconds(300)
+    ) {
+        self.debounceInterval = debounceInterval
+    }
+}
+
+private extension {Name}ListViewModel {
+    func searchQueryDidChange() {
+        searchTask?.cancel()
+        searchTask = Task { @MainActor in
+            try? await Task.sleep(for: debounceInterval)
+            if !Task.isCancelled {
+                await fetchResults()
+            }
+        }
+    }
+}
+```
+
+**Rules:**
+- Inject `debounceInterval: Duration` with a default of `.milliseconds(300)`
+- Expose `searchTask` as `private(set)` so tests can use `await sut.searchTask?.value` for deterministic waiting
+- Cancel the previous task before creating a new one
+- Check `Task.isCancelled` after the sleep to avoid stale executions
+
+**Testing debounced search:**
+
+```swift
+// In test init: inject zero debounce
+sut = {Name}ListViewModel(
+    // ...other dependencies...
+    debounceInterval: .zero
+)
+
+// In tests: wait for the debounce task deterministically
+sut.searchQuery = "Rick"
+await sut.searchTask?.value
+
+#expect(searchUseCaseMock.lastRequestedQuery == "Rick")
+```
+
+> **Important:** Never use `Task.sleep` in tests to wait for debounce. Use `await sut.searchTask?.value` instead — it is deterministic and verified stable at 1000 iterations.
+
 ### Observable Properties with Guards
 
 When using observable properties that trigger actions (like search), guard against unchanged values:
