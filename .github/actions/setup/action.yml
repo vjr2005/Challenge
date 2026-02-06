@@ -1,0 +1,62 @@
+name: Setup Environment
+description: Install tools, resolve dependencies, generate project, and boot simulator
+
+inputs:
+  device:
+    description: Simulator device name
+    required: false
+    default: iPhone 17 Pro
+
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode 26.1.1
+      shell: bash
+      run: |
+        sudo xcode-select -s /Applications/Xcode_26.1.1.app
+        xcodebuild -version
+
+    - name: Install mise tools
+      uses: jdx/mise-action@v2
+      with:
+        cache: true
+
+    - name: Cache Tuist and SPM dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          Tuist/.build
+          Derived/
+        key: tuist-${{ runner.os }}-${{ hashFiles('Tuist/Package.resolved') }}
+        restore-keys: |
+          tuist-${{ runner.os }}-
+
+    - name: Install SPM dependencies
+      shell: bash
+      run: mise x -- tuist install
+
+    - name: Generate Xcode project
+      shell: bash
+      run: mise x -- tuist generate
+
+    - name: Prepare simulator
+      shell: bash
+      run: |
+        xcrun simctl shutdown all
+        DEVICE_UDID=$(xcrun simctl list devices available -j | python3 -c "
+        import json, sys
+        data = json.load(sys.stdin)
+        for runtime, devices in data['devices'].items():
+            for d in devices:
+                if d['name'] == '${{ inputs.device }}' and d['isAvailable']:
+                    print(d['udid'])
+                    sys.exit(0)
+        ")
+        if [ -n "$DEVICE_UDID" ]; then
+          echo "Booting simulator: $DEVICE_UDID"
+          xcrun simctl boot "$DEVICE_UDID"
+          echo "Waiting for simulator to be ready..."
+          sleep 5
+        else
+          echo "Warning: Target simulator not found, will rely on Tuist to create it"
+        fi
