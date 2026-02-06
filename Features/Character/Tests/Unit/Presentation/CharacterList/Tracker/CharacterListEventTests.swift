@@ -122,4 +122,24 @@ struct CharacterListEventTests {
         // Then
         #expect(sut.properties == [:])
     }
+
+    // MARK: - advancedSearchButtonTapped
+
+    @Test("Advanced search button tapped event has correct name")
+    func advancedSearchButtonTappedEventHasCorrectName() {
+        // Given
+        let sut = CharacterListEvent.advancedSearchButtonTapped
+
+        // Then
+        #expect(sut.name == "character_list_advanced_search_tapped")
+    }
+
+    @Test("Advanced search button tapped event has empty properties")
+    func advancedSearchButtonTappedEventHasEmptyProperties() {
+        // Given
+        let sut = CharacterListEvent.advancedSearchButtonTapped
+
+        // Then
+        #expect(sut.properties == [:])
+    }
 }

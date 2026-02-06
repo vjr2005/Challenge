@@ -5,4 +5,5 @@ protocol CharacterListTrackerContract {
     func trackRetryButtonTapped()
     func trackPullToRefreshTriggered()
     func trackLoadMoreButtonTapped()
+    func trackAdvancedSearchButtonTapped()
 }

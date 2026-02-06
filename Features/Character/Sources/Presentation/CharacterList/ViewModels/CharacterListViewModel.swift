@@ -12,6 +12,14 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         }
     }
 
+    var activeFilterCount: Int {
+        filterState.filter.activeFilterCount
+    }
+
+    var advancedFilterSnapshot: CharacterFilter {
+        filterState.filter
+    }
+
     private let getCharactersUseCase: GetCharactersUseCaseContract
     private let refreshCharactersUseCase: RefreshCharactersUseCaseContract
     private let searchCharactersUseCase: SearchCharactersUseCaseContract
@@ -20,6 +28,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private let tracker: CharacterListTrackerContract
+    private let filterState: CharacterFilterState
     private let debounceInterval: Duration
     private var currentPage = 1
     private var isLoadingMore = false
@@ -34,6 +43,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract,
         navigator: CharacterListNavigatorContract,
         tracker: CharacterListTrackerContract,
+        filterState: CharacterFilterState,
         debounceInterval: Duration = .milliseconds(300)
     ) {
         self.getCharactersUseCase = getCharactersUseCase
@@ -44,6 +54,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         self.deleteRecentSearchUseCase = deleteRecentSearchUseCase
         self.navigator = navigator
         self.tracker = tracker
+        self.filterState = filterState
         self.debounceInterval = debounceInterval
     }
 
@@ -94,6 +105,15 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         deleteRecentSearchUseCase.execute(query: query)
         loadRecentSearches()
     }
+
+    func didTapAdvancedSearchButton() {
+        tracker.trackAdvancedSearchButtonTapped()
+        navigator.presentAdvancedSearch()
+    }
+
+    func didChangeAdvancedFilters() async {
+        await fetchCharacters()
+    }
 }
 
 // MARK: - Private
@@ -104,14 +124,24 @@ private extension CharacterListViewModel {
         return trimmed.isEmpty ? nil : trimmed
     }
 
+    var currentFilter: CharacterFilter {
+        CharacterFilter(
+            name: normalizedQuery,
+            status: filterState.status,
+            species: filterState.filter.species,
+            type: filterState.filter.type,
+            gender: filterState.gender
+        )
+    }
+
     func searchQueryDidChange() {
         searchTask?.cancel()
         searchTask = Task { @MainActor in
             try? await Task.sleep(for: debounceInterval)
             if !Task.isCancelled {
-                if let query = normalizedQuery {
-                    tracker.trackSearchPerformed(query: query)
-                    saveRecentSearchUseCase.execute(query: query)
+                if let name = normalizedQuery {
+                    tracker.trackSearchPerformed(query: name)
+                    saveRecentSearchUseCase.execute(query: name)
                     loadRecentSearches()
                 }
                 await fetchCharacters()
@@ -127,15 +157,16 @@ private extension CharacterListViewModel {
     func fetchCharacters() async {
         do {
             currentPage = 1
+            let filter = currentFilter
             let result: CharactersPage
-            if let query = normalizedQuery {
-                result = try await searchCharactersUseCase.execute(page: currentPage, query: query)
-            } else {
+            if filter.isEmpty {
                 result = try await getCharactersUseCase.execute(page: currentPage)
+            } else {
+                result = try await searchCharactersUseCase.execute(page: currentPage, filter: filter)
             }
 
             if result.characters.isEmpty {
-                state = normalizedQuery != nil ? .emptySearch : .empty
+                state = filter.isEmpty ? .empty : .emptySearch
             } else {
                 state = .loaded(result)
             }
@@ -161,11 +192,12 @@ private extension CharacterListViewModel {
     func fetchMoreCharacters(existingPage: CharactersPage) async {
         do {
             currentPage += 1
+            let filter = currentFilter
             let result: CharactersPage
-            if let query = normalizedQuery {
-                result = try await searchCharactersUseCase.execute(page: currentPage, query: query)
-            } else {
+            if filter.isEmpty {
                 result = try await getCharactersUseCase.execute(page: currentPage)
+            } else {
+                result = try await searchCharactersUseCase.execute(page: currentPage, filter: filter)
             }
 
             let combinedCharacters = existingPage.characters + result.characters

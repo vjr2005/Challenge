@@ -12,7 +12,7 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 	private(set) var lastRequestedIdentifier: Int?
 	private(set) var lastRequestedPage: Int?
 	private(set) var lastSearchedPage: Int?
-	private(set) var lastSearchedQuery: String?
+	private(set) var lastSearchedFilter: CharacterFilter?
 	private(set) var lastCharacterDetailCachePolicy: CachePolicy?
 	private(set) var lastCharactersCachePolicy: CachePolicy?
 
@@ -30,10 +30,10 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 		return try charactersResult.get()
 	}
 
-	func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharacterError) -> CharactersPage {
 		searchCharactersCallCount += 1
 		lastSearchedPage = page
-		lastSearchedQuery = query
+		lastSearchedFilter = filter
 		return try searchResult.get()
 	}
 }

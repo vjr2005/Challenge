@@ -1,0 +1,38 @@
+import Foundation
+
+struct CharacterFilter: Equatable {
+    let name: String?
+    let status: CharacterStatus?
+    let species: String?
+    let type: String?
+    let gender: CharacterGender?
+
+    init(
+        name: String? = nil,
+        status: CharacterStatus? = nil,
+        species: String? = nil,
+        type: String? = nil,
+        gender: CharacterGender? = nil
+    ) {
+        self.name = name
+        self.status = status
+        self.species = species
+        self.type = type
+        self.gender = gender
+    }
+
+    var isEmpty: Bool {
+        name == nil && status == nil && species == nil && type == nil && gender == nil
+    }
+
+    var activeFilterCount: Int {
+        var count = 0
+        if status != nil { count += 1 }
+        if species != nil { count += 1 }
+        if type != nil { count += 1 }
+        if gender != nil { count += 1 }
+        return count
+    }
+
+    static let empty = CharacterFilter()
+}

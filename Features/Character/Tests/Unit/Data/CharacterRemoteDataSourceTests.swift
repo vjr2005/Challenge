@@ -85,7 +85,7 @@ struct CharacterRemoteDataSourceTests {
         httpClientMock.result = .success(jsonData)
 
         // When
-        _ = try await sut.fetchCharacters(page: 1, query: nil)
+        _ = try await sut.fetchCharacters(page: 1, filter: .empty)
 
         // Then
         let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -100,7 +100,7 @@ struct CharacterRemoteDataSourceTests {
         httpClientMock.result = .success(jsonData)
 
         // When
-        _ = try await sut.fetchCharacters(page: 5, query: nil)
+        _ = try await sut.fetchCharacters(page: 5, filter: .empty)
 
         // Then
         let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -115,7 +115,7 @@ struct CharacterRemoteDataSourceTests {
         httpClientMock.result = .success(jsonData)
 
         // When
-        _ = try await sut.fetchCharacters(page: 1, query: "Rick")
+        _ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
         let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -130,7 +130,7 @@ struct CharacterRemoteDataSourceTests {
         httpClientMock.result = .success(jsonData)
 
         // When
-        _ = try await sut.fetchCharacters(page: 1, query: nil)
+        _ = try await sut.fetchCharacters(page: 1, filter: .empty)
 
         // Then
         let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -145,12 +145,99 @@ struct CharacterRemoteDataSourceTests {
         httpClientMock.result = .success(jsonData)
 
         // When
-        _ = try await sut.fetchCharacters(page: 1, query: "")
+        _ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(name: ""))
 
         // Then
         let endpoint = try #require(httpClientMock.requestedEndpoints.first)
         let nameItem = endpoint.queryItems?.first { $0.name == "name" }
         #expect(nameItem == nil)
+    }
+
+    @Test("Fetch characters includes status query parameter when provided")
+    func fetchCharactersIncludesStatusQueryParameter() async throws {
+        // Given
+        let jsonData = try loadJSONData("characters_response")
+        httpClientMock.result = .success(jsonData)
+
+        // When
+        _ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(status: .alive))
+
+        // Then
+        let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+        let statusItem = try #require(endpoint.queryItems?.first { $0.name == "status" })
+        #expect(statusItem.value == "alive")
+    }
+
+    @Test("Fetch characters includes species query parameter when provided")
+    func fetchCharactersIncludesSpeciesQueryParameter() async throws {
+        // Given
+        let jsonData = try loadJSONData("characters_response")
+        httpClientMock.result = .success(jsonData)
+
+        // When
+        _ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(species: "Human"))
+
+        // Then
+        let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+        let speciesItem = try #require(endpoint.queryItems?.first { $0.name == "species" })
+        #expect(speciesItem.value == "Human")
+    }
+
+    @Test("Fetch characters includes type query parameter when provided")
+    func fetchCharactersIncludesTypeQueryParameter() async throws {
+        // Given
+        let jsonData = try loadJSONData("characters_response")
+        httpClientMock.result = .success(jsonData)
+
+        // When
+        _ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(type: "Parasite"))
+
+        // Then
+        let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+        let typeItem = try #require(endpoint.queryItems?.first { $0.name == "type" })
+        #expect(typeItem.value == "Parasite")
+    }
+
+    @Test("Fetch characters includes gender query parameter when provided")
+    func fetchCharactersIncludesGenderQueryParameter() async throws {
+        // Given
+        let jsonData = try loadJSONData("characters_response")
+        httpClientMock.result = .success(jsonData)
+
+        // When
+        _ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(gender: .female))
+
+        // Then
+        let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+        let genderItem = try #require(endpoint.queryItems?.first { $0.name == "gender" })
+        #expect(genderItem.value == "female")
+    }
+
+    @Test("Fetch characters includes all filter parameters when provided")
+    func fetchCharactersIncludesAllFilterParameters() async throws {
+        // Given
+        let jsonData = try loadJSONData("characters_response")
+        httpClientMock.result = .success(jsonData)
+        let filter = CharacterFilter(
+            name: "Rick",
+            status: .alive,
+            species: "Human",
+            type: "Scientist",
+            gender: .male
+        )
+
+        // When
+        _ = try await sut.fetchCharacters(page: 1, filter: filter)
+
+        // Then
+        let endpoint = try #require(httpClientMock.requestedEndpoints.first)
+        let queryItems = try #require(endpoint.queryItems)
+        #expect(queryItems.contains { $0.name == "page" && $0.value == "1" })
+        #expect(queryItems.contains { $0.name == "name" && $0.value == "Rick" })
+        #expect(queryItems.contains { $0.name == "status" && $0.value == "alive" })
+        #expect(queryItems.contains { $0.name == "species" && $0.value == "Human" })
+        #expect(queryItems.contains { $0.name == "type" && $0.value == "Scientist" })
+        #expect(queryItems.contains { $0.name == "gender" && $0.value == "male" })
     }
 
     @Test("Fetch characters decodes response correctly")
@@ -160,7 +247,7 @@ struct CharacterRemoteDataSourceTests {
         httpClientMock.result = .success(jsonData)
 
         // When
-        let value = try await sut.fetchCharacters(page: 1, query: nil)
+        let value = try await sut.fetchCharacters(page: 1, filter: .empty)
 
         // Then
         #expect(value.info.count == 826)
@@ -176,7 +263,7 @@ struct CharacterRemoteDataSourceTests {
 
         // When / Then
         await #expect(throws: TestError.network) {
-            _ = try await sut.fetchCharacters(page: 1, query: nil)
+            _ = try await sut.fetchCharacters(page: 1, filter: .empty)
         }
     }
 }

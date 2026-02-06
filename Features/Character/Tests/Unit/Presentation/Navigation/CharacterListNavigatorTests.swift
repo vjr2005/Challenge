@@ -30,4 +30,17 @@ struct CharacterListNavigatorTests {
         let destination = navigatorMock.navigatedDestinations.first as? CharacterIncomingNavigation
         #expect(destination == expected)
     }
+
+    @Test("Present advanced search presents full screen cover")
+    func presentAdvancedSearchPresentsFullScreenCover() {
+        // When
+        sut.presentAdvancedSearch()
+
+        // Then
+        #expect(navigatorMock.presentedModals.count == 1)
+        let modal = navigatorMock.presentedModals.first
+        let destination = modal?.destination as? CharacterIncomingNavigation
+        #expect(destination == .advancedSearch)
+        #expect(modal?.style == .fullScreenCover)
+    }
 }

@@ -30,4 +30,8 @@ struct CharacterListTracker: CharacterListTrackerContract {
     func trackLoadMoreButtonTapped() {
         tracker.track(CharacterListEvent.loadMoreButtonTapped)
     }
+
+    func trackAdvancedSearchButtonTapped() {
+        tracker.track(CharacterListEvent.advancedSearchButtonTapped)
+    }
 }

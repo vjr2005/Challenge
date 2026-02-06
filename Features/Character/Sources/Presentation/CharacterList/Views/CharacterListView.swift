@@ -16,10 +16,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 			if viewModel.state.isSearchAvailable {
 				content
 					.searchable(
-						text: Binding(
-							get: { viewModel.searchQuery },
-							set: { viewModel.searchQuery = $0 }
-						),
+						text: $viewModel.searchQuery,
 						prompt: LocalizedStrings.searchPlaceholder
 					)
 					.searchSuggestions {
@@ -53,8 +50,18 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 		.onFirstAppear {
 			await viewModel.didAppear()
 		}
+		.onChange(of: viewModel.advancedFilterSnapshot) {
+			Task {
+				await viewModel.didChangeAdvancedFilters()
+			}
+		}
 		.navigationTitle(LocalizedStrings.title)
 		.navigationBarTitleDisplayMode(.large)
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				filterButton
+			}
+		}
 	}
 }
 
@@ -186,6 +193,26 @@ private extension CharacterListView {
 			accessibilityIdentifier: AccessibilityIdentifier.errorView
 		)
 	}
+
+	var filterButton: some View {
+		Button {
+			viewModel.didTapAdvancedSearchButton()
+		} label: {
+			Image(systemName: "line.3.horizontal.decrease.circle")
+				.overlay(alignment: .topTrailing) {
+					if viewModel.activeFilterCount > 0 {
+						Text("\(viewModel.activeFilterCount)")
+							.font(theme.typography.caption2)
+							.foregroundStyle(theme.colors.textInverted)
+							.frame(width: theme.dimensions.md, height: theme.dimensions.md)
+							.background(theme.colors.accent)
+							.clipShape(Circle())
+							.offset(x: theme.spacing.sm, y: -theme.spacing.sm)
+					}
+				}
+		}
+		.accessibilityIdentifier(AccessibilityIdentifier.filterButton)
+	}
 }
 
 // MARK: - LocalizedStrings
@@ -229,6 +256,7 @@ private enum AccessibilityIdentifier {
 	static let emptyState = "characterList.emptyState"
 	static let emptySearchState = "characterList.emptySearchState"
 	static let errorView = "characterList.errorView"
+	static let filterButton = "characterList.filter.button"
 
 	static func row(identifier: Int) -> String {
 		"characterList.row.\(identifier)"
@@ -238,92 +266,3 @@ private enum AccessibilityIdentifier {
 		"characterList.recentSearch.\(query)"
 	}
 }
-
-/*
-// MARK: - Previews
-
-#if DEBUG
-#Preview("Idle") {
-    NavigationStack {
-        CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .idle))
-    }
-}
-
-#Preview("Loading") {
-	NavigationStack {
-		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loading))
-	}
-}
-
-#Preview("Loaded") {
-	NavigationStack {
-		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loaded(.previewStub())))
-	}
-}
-
-#Preview("Empty") {
-	NavigationStack {
-		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .empty))
-	}
-}
-
-#Preview("Error") {
-	NavigationStack {
-		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(.loadFailed)))
-	}
-}
-@Observable
-private final class CharacterListViewModelPreviewStub: CharacterListViewModelContract {
-	var state: CharacterListViewState
-	var searchQuery: String = ""
-
-	init(state: CharacterListViewState) {
-		self.state = state
-	}
-
-	func didAppear() async {}
-	func didTapOnRetryButton() async {}
-	func didPullToRefresh() async {}
-	func didTapOnLoadMoreButton() async {}
-	func didSelect(_ character: Character) {}
-}
-
-private extension CharactersPage {
-	static func previewStub() -> CharactersPage {
-		CharactersPage(
-			characters: [
-				.previewStub(id: 1, name: "Rick Sanchez", status: .alive),
-				.previewStub(id: 2, name: "Morty Smith", status: .alive),
-				.previewStub(id: 3, name: "Summer Smith", status: .dead)
-			],
-			currentPage: 1,
-			totalPages: 42,
-			totalCount: 826,
-			hasNextPage: true,
-			hasPreviousPage: false
-		)
-	}
-}
-
-private extension Character {
-	static func previewStub(
-		id: Int = 1,
-		name: String = "Rick Sanchez",
-		status: CharacterStatus = .alive,
-		species: String = "Human",
-		gender: CharacterGender = .male
-	) -> Character {
-		Character(
-			id: id,
-			name: name,
-			status: status,
-			species: species,
-			gender: gender,
-			origin: Location(name: "Earth (C-137)", url: nil),
-			location: Location(name: "Citadel of Ricks", url: nil),
-			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
-		)
-	}
-}
-#endif
-*/

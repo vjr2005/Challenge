@@ -10,4 +10,11 @@ struct CharacterListNavigator: CharacterListNavigatorContract {
     func navigateToDetail(identifier: Int) {
         navigator.navigate(to: CharacterIncomingNavigation.detail(identifier: identifier))
     }
+
+    func presentAdvancedSearch() {
+        navigator.present(
+            CharacterIncomingNavigation.advancedSearch,
+            style: .fullScreenCover
+        )
+    }
 }

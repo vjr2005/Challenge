@@ -41,4 +41,16 @@ struct CharacterContainerTests {
         // Then
         #expect(viewModel.state == .idle)
     }
+
+    @Test("Make advanced search view model returns configured instance")
+    func makeAdvancedSearchViewModelReturnsConfiguredInstance() {
+        // Given
+        let navigatorMock = NavigatorMock()
+
+        // When
+        let viewModel = sut.makeAdvancedSearchViewModel(navigator: navigatorMock)
+
+        // Then
+        #expect(!viewModel.hasActiveFilters)
+    }
 }

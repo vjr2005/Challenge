@@ -7,6 +7,7 @@ enum CharacterListEvent: TrackingEventContract {
     case retryButtonTapped
     case pullToRefreshTriggered
     case loadMoreButtonTapped
+    case advancedSearchButtonTapped
 
     var name: String {
         switch self {
@@ -22,6 +23,8 @@ enum CharacterListEvent: TrackingEventContract {
             "character_list_pull_to_refresh"
         case .loadMoreButtonTapped:
             "character_list_load_more_tapped"
+        case .advancedSearchButtonTapped:
+            "character_list_advanced_search_tapped"
         }
     }
 

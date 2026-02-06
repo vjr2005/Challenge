@@ -9,6 +9,7 @@ public final class CharacterContainer: Sendable {
     private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
     private let recentSearchesDataSource = RecentSearchesLocalDataSource()
+    private let filterState = CharacterFilterState()
 
     // MARK: - Init
 
@@ -41,7 +42,8 @@ public final class CharacterContainer: Sendable {
             saveRecentSearchUseCase: SaveRecentSearchUseCase(dataSource: recentSearchesDataSource),
             deleteRecentSearchUseCase: DeleteRecentSearchUseCase(dataSource: recentSearchesDataSource),
             navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker)
+            tracker: CharacterListTracker(tracker: tracker),
+            filterState: filterState
         )
     }
 
@@ -55,6 +57,14 @@ public final class CharacterContainer: Sendable {
             refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
             navigator: CharacterDetailNavigator(navigator: navigator),
             tracker: CharacterDetailTracker(tracker: tracker)
+        )
+    }
+
+    func makeAdvancedSearchViewModel(navigator: any NavigatorContract) -> AdvancedSearchViewModel {
+        AdvancedSearchViewModel(
+            filterState: filterState,
+            navigator: AdvancedSearchNavigator(navigator: navigator),
+            tracker: AdvancedSearchTracker(tracker: tracker)
         )
     }
 }

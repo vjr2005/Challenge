@@ -7,6 +7,7 @@ final class CharacterListTrackerMock: CharacterListTrackerContract {
     private(set) var retryButtonTappedCallCount = 0
     private(set) var pullToRefreshTriggeredCallCount = 0
     private(set) var loadMoreButtonTappedCallCount = 0
+    private(set) var advancedSearchButtonTappedCallCount = 0
 
     func trackScreenViewed() {
         screenViewedCallCount += 1
@@ -30,5 +31,9 @@ final class CharacterListTrackerMock: CharacterListTrackerContract {
 
     func trackLoadMoreButtonTapped() {
         loadMoreButtonTappedCallCount += 1
+    }
+
+    func trackAdvancedSearchButtonTapped() {
+        advancedSearchButtonTappedCallCount += 1
     }
 }

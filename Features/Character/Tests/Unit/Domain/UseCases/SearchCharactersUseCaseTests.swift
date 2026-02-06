@@ -25,24 +25,25 @@ struct SearchCharactersUseCaseTests {
         repositoryMock.searchResult = .success(expected)
 
         // When
-        let value = try await sut.execute(page: 1, query: "Rick")
+        let value = try await sut.execute(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(value == expected)
     }
 
-    @Test("Execute calls repository with correct page and query")
-    func executeCallsRepositoryWithCorrectPageAndQuery() async throws {
+    @Test("Execute calls repository with correct page and filter")
+    func executeCallsRepositoryWithCorrectPageAndFilter() async throws {
         // Given
         repositoryMock.searchResult = .success(.stub())
+        let filter = CharacterFilter(name: "Morty", status: .alive)
 
         // When
-        _ = try await sut.execute(page: 3, query: "Morty")
+        _ = try await sut.execute(page: 3, filter: filter)
 
         // Then
         #expect(repositoryMock.searchCharactersCallCount == 1)
         #expect(repositoryMock.lastSearchedPage == 3)
-        #expect(repositoryMock.lastSearchedQuery == "Morty")
+        #expect(repositoryMock.lastSearchedFilter == filter)
     }
 
     @Test("Execute propagates repository error")
@@ -52,7 +53,7 @@ struct SearchCharactersUseCaseTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.execute(page: 1, query: "Rick")
+            _ = try await sut.execute(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
 }

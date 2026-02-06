@@ -35,9 +35,9 @@ struct CharacterRepository: CharacterRepositoryContract {
 		}
 	}
 
-	func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharacterError) -> CharactersPage {
 		do {
-			let response = try await remoteDataSource.fetchCharacters(page: page, query: query)
+			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filter)
 			return response.toDomain(currentPage: page)
 		} catch let error as HTTPError {
 			if case .statusCode(404, _) = error {
@@ -63,9 +63,9 @@ private extension CharacterRepository {
 		}
 	}
 
-	func fetchCharactersFromRemote(page: Int, query: String? = nil) async throws(CharacterError) -> CharactersResponseDTO {
+	func fetchCharactersFromRemote(page: Int, filter: CharacterFilter = .empty) async throws(CharacterError) -> CharactersResponseDTO {
 		do {
-			return try await remoteDataSource.fetchCharacters(page: page, query: query)
+			return try await remoteDataSource.fetchCharacters(page: page, filter: filter)
 		} catch let error as HTTPError {
 			throw mapHTTPError(error, page: page)
 		} catch {

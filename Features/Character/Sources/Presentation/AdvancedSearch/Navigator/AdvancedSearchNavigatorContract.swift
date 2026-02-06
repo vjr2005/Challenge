@@ -1,0 +1,3 @@
+protocol AdvancedSearchNavigatorContract {
+    func dismiss()
+}

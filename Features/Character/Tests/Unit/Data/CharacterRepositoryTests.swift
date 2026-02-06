@@ -574,7 +574,7 @@ struct CharacterRepositoryTests {
         memoryDataSourceMock.pageToReturn = responseDTO
 
         // When
-        _ = try await sut.searchCharacters(page: 1, query: "Rick")
+        _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(remoteDataSourceMock.fetchCharactersCallCount == 1)
@@ -587,7 +587,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.searchCharacters(page: 1, query: "Rick")
+        _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 0)
@@ -600,10 +600,10 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.searchCharacters(page: 1, query: "Morty")
+        _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Morty"))
 
         // Then
-        #expect(remoteDataSourceMock.lastFetchedQuery == "Morty")
+        #expect(remoteDataSourceMock.lastFetchedFilter == CharacterFilter(name: "Morty"))
     }
 
     @Test("Search characters passes page number to remote data source")
@@ -613,7 +613,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.searchCharacters(page: 3, query: "Rick")
+        _ = try await sut.searchCharacters(page: 3, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(remoteDataSourceMock.lastFetchedPage == 3)
@@ -625,7 +625,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
 
         // When
-        let result = try await sut.searchCharacters(page: 1, query: "NonExistentCharacter")
+        let result = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "NonExistentCharacter"))
 
         // Then
         #expect(result == .empty(currentPage: 1))
@@ -638,7 +638,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.searchCharacters(page: 1, query: "Rick")
+            _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
 
@@ -649,7 +649,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.searchCharacters(page: 1, query: "Rick")
+            _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
 

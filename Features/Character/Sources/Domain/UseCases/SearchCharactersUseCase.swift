@@ -1,7 +1,7 @@
 import Foundation
 
 protocol SearchCharactersUseCaseContract: Sendable {
-	func execute(page: Int, query: String) async throws(CharacterError) -> CharactersPage
+	func execute(page: Int, filter: CharacterFilter) async throws(CharacterError) -> CharactersPage
 }
 
 struct SearchCharactersUseCase: SearchCharactersUseCaseContract {
@@ -11,7 +11,7 @@ struct SearchCharactersUseCase: SearchCharactersUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
-		try await repository.searchCharacters(page: page, query: query)
+	func execute(page: Int, filter: CharacterFilter) async throws(CharacterError) -> CharactersPage {
+		try await repository.searchCharacters(page: page, filter: filter)
 	}
 }
