@@ -77,6 +77,14 @@ extension CharacterListRobot {
 	}
 
 	@discardableResult
+	func tapFilterButton(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let button = app.buttons[AccessibilityIdentifier.filterButton]
+		XCTAssertTrue(button.waitForExistence(timeout: 5), file: file, line: line)
+		button.tap()
+		return self
+	}
+
+	@discardableResult
 	func tapSearchField(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let searchField = app.searchFields.firstMatch
 		XCTAssertTrue(searchField.waitForExistence(timeout: 5), file: file, line: line)
@@ -205,6 +213,7 @@ private enum AccessibilityIdentifier {
 	static let emptySearchStateTitle = "characterList.emptySearchState.title"
 	static let errorTitle = "characterList.errorView.title"
 	static let retryButton = "characterList.errorView.button"
+	static let filterButton = "characterList.filter.button"
 
 	static func row(identifier: Int) -> String {
 		"characterList.row.\(identifier)"
