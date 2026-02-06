@@ -175,6 +175,108 @@ struct NavigationCoordinatorTests {
         // Then
         #expect(sut.path.count == 1)
     }
+
+    // MARK: - Modal Presentation
+
+    @Test("Present sheet sets sheetNavigation")
+    func presentSheetSetsSheetNavigation() {
+        // Given
+        let destination = TestIncomingNavigationContract.screen1
+
+        // When
+        sut.present(destination, style: .sheet())
+
+        // Then
+        #expect(sut.sheetNavigation != nil)
+        #expect(sut.fullScreenCoverNavigation == nil)
+    }
+
+    @Test("Present fullScreenCover sets fullScreenCoverNavigation")
+    func presentFullScreenCoverSetsFullScreenCoverNavigation() {
+        // Given
+        let destination = TestIncomingNavigationContract.screen1
+
+        // When
+        sut.present(destination, style: .fullScreenCover)
+
+        // Then
+        #expect(sut.fullScreenCoverNavigation != nil)
+        #expect(sut.sheetNavigation == nil)
+    }
+
+    @Test("Dismiss fullScreenCover first when both modals are presented")
+    func dismissFullScreenCoverFirst() {
+        // Given
+        sut.present(TestIncomingNavigationContract.screen1, style: .sheet())
+        sut.present(TestIncomingNavigationContract.screen2, style: .fullScreenCover)
+
+        // When
+        sut.dismiss()
+
+        // Then
+        #expect(sut.fullScreenCoverNavigation == nil)
+        #expect(sut.sheetNavigation != nil)
+    }
+
+    @Test("Dismiss sheet when no fullScreenCover is presented")
+    func dismissSheetWhenNoFullScreenCover() {
+        // Given
+        sut.present(TestIncomingNavigationContract.screen1, style: .sheet())
+
+        // When
+        sut.dismiss()
+
+        // Then
+        #expect(sut.sheetNavigation == nil)
+        #expect(sut.fullScreenCoverNavigation == nil)
+    }
+
+    @Test("Dismiss calls onDismiss when no modals are presented")
+    func dismissCallsOnDismissWhenNoModals() {
+        // Given
+        var onDismissCalled = false
+        let sutWithOnDismiss = NavigationCoordinator(onDismiss: { onDismissCalled = true })
+
+        // When
+        sutWithOnDismiss.dismiss()
+
+        // Then
+        #expect(onDismissCalled)
+    }
+
+    @Test("Present with outgoing navigation applies redirect")
+    func presentWithOutgoingNavigationAppliesRedirect() {
+        // Given
+        let redirector = TestRedirector(result: TestIncomingNavigationContract.screen2)
+        let sutWithRedirector = NavigationCoordinator(redirector: redirector)
+
+        // When
+        sutWithRedirector.present(TestOutgoingNavigationContract.external, style: .sheet())
+
+        // Then
+        #expect(sutWithRedirector.sheetNavigation != nil)
+        #expect(redirector.redirectedNavigations.count == 1)
+    }
+
+    @Test("Sheet detents are preserved in modal navigation")
+    func sheetDetentsArePreserved() {
+        // Given
+        let detents: Set<PresentationDetent> = [.medium, .large]
+
+        // When
+        sut.present(TestIncomingNavigationContract.screen1, style: .sheet(detents: detents))
+
+        // Then
+        let modal = try? #require(sut.sheetNavigation)
+        #expect(modal?.detents == detents)
+    }
+
+    @Test("Initial modal state is nil")
+    func initialModalStateIsNil() {
+        // Then
+        #expect(sut.sheetNavigation == nil)
+        #expect(sut.fullScreenCoverNavigation == nil)
+    }
 }
 
 // MARK: - Test Helpers

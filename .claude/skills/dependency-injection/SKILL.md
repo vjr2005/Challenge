@@ -51,7 +51,9 @@ App/
 │   │   └── AppNavigationRedirect.swift # Connects features via redirects
 │   └── Presentation/
 │       └── Views/
-│           └── RootContainerView.swift # Root navigation view
+│           ├── NavigationContainerView.swift    # Reusable NavigationStack + push + modal bindings
+│           ├── RootContainerView.swift      # Root level, uses NavigationContainerView + onOpenURL
+│           └── ModalContainerView.swift     # Creates own coordinator, uses NavigationContainerView
 
 Features/{Feature}/
 ├── Sources/
@@ -554,19 +556,15 @@ import SwiftUI
 public struct RootContainerView: View {
     public let appContainer: AppContainer
 
-    @State private var navigationCoordinator: NavigationCoordinator
+    @State private var navigationCoordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
 
     public init(appContainer: AppContainer) {
         self.appContainer = appContainer
-        _navigationCoordinator = State(initialValue: NavigationCoordinator(redirector: AppNavigationRedirect()))
     }
 
     public var body: some View {
-        NavigationStack(path: $navigationCoordinator.path) {
+        NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
             appContainer.makeRootView(navigator: navigationCoordinator)
-                .navigationDestination(for: AnyNavigation.self) { navigation in
-                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
-                }
         }
         .onOpenURL { url in
             appContainer.handle(url: url, navigator: navigationCoordinator)
@@ -581,10 +579,10 @@ public struct RootContainerView: View {
 */
 ```
 
-**Key Changes:**
+**Key Points:**
 - Located in `AppKit` module (not `App`) for testability without TEST_HOST
-- Uses `AnyNavigation` wrapper for type-erased navigation
-- `appContainer.resolve()` iterates features to find handler
+- Uses `NavigationContainerView` for NavigationStack + push destinations + modal bindings
+- Only adds `.onOpenURL` on top of `NavigationContainerView`
 
 ---
 
@@ -677,4 +675,7 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] `AppContainer` has `makeRootView(navigator:)` factory method
 - [ ] `ChallengeApp` imports `ChallengeAppKit` and uses `RootContainerView`
 - [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`
+- [ ] `NavigationContainerView` in `AppKit/Sources/Presentation/Views/` (NavigationStack + push + modals)
+- [ ] `RootContainerView` uses `NavigationContainerView` + `.onOpenURL`
+- [ ] `ModalContainerView` in `AppKit/Sources/Presentation/Views/`
 - [ ] **Create feature tests**

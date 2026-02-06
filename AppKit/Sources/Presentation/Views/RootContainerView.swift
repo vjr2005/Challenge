@@ -11,11 +11,8 @@ public struct RootContainerView: View {
 	}
 
 	public var body: some View {
-		NavigationStack(path: $navigationCoordinator.path) {
+		NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
 			appContainer.makeRootView(navigator: navigationCoordinator)
-				.navigationDestination(for: AnyNavigation.self) { navigation in
-					appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
-				}
 		}
 		.onOpenURL { url in
 			appContainer.handle(url: url, navigator: navigationCoordinator)

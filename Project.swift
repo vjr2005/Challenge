@@ -67,7 +67,13 @@ let appUITestsTarget = Target.target(
 let appUITestsScheme = Scheme.scheme(
 	name: "\(appName)UITests",
 	buildAction: .buildAction(targets: [.target(appName), .target("\(appName)UITests")]),
-	testAction: .targets(["\(appName)UITests"])
+	testAction: .targets(
+		["\(appName)UITests"],
+		options: .options(
+			coverage: true,
+			codeCoverageTargets: AppKitModule.targetReferences
+		)
+	)
 )
 
 // MARK: - Project

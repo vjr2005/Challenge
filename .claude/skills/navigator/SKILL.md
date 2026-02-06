@@ -26,16 +26,25 @@ Guide for implementing navigation using NavigationCoordinator with SwiftUI Navig
 │  │  )                                                              │    │
 │  └─────────────────────────────────────────────────────────────────┘    │
 │                                │                                        │
-│  NavigationStack(path: $coordinator.path) {                             │
-│      Features receive coordinator (NavigatorContract)                   │
+│  NavigationStack(path: $coordinator.path) { ... }                       │
+│  .sheet(item: $coordinator.sheetNavigation) { modal in                  │
+│      ModalContainerView(modal:appContainer:onDismiss:)                  │
 │  }                                                                      │
+│  .fullScreenCover(item: $coordinator.fullScreenCoverNavigation) { ... } │
 └─────────────────────────────────────────────────────────────────────────┘
 
-Navigation Flow:
+Push Navigation Flow:
 1. HomeNavigator.navigateToCharacters()
 2. coordinator.navigate(to: HomeOutgoingNavigation.characters)
 3. AppNavigationRedirect.redirect() → CharacterIncomingNavigation.list
 4. NavigationStack shows CharacterListView
+
+Modal Navigation Flow:
+1. Navigator.presentFilter()
+2. coordinator.present(Navigation.filter, style: .sheet(detents: [.medium, .large]))
+3. sheetNavigation is set → .sheet(item:) activates
+4. ModalContainerView creates its own NavigationCoordinator + NavigationStack
+5. Modal can push internally or present nested modals
 ```
 
 ---
@@ -62,6 +71,8 @@ import Foundation
 
 public protocol NavigatorContract {
     func navigate(to destination: any NavigationContract)
+    func present(_ destination: any NavigationContract, style: ModalPresentationStyle)
+    func dismiss()
     func goBack()
 }
 ```
@@ -75,6 +86,43 @@ nonisolated public protocol IncomingNavigationContract: NavigationContract {}
 nonisolated public protocol OutgoingNavigationContract: NavigationContract {}
 ```
 
+### ModalPresentationStyle
+
+```swift
+// Libraries/Core/Sources/Navigation/ModalPresentationStyle.swift
+import SwiftUI
+
+public enum ModalPresentationStyle: Hashable, Sendable {
+    case sheet(detents: Set<PresentationDetent> = [.large])
+    case fullScreenCover
+}
+```
+
+### ModalNavigation
+
+```swift
+// Libraries/Core/Sources/Navigation/ModalNavigation.swift
+import SwiftUI
+
+public struct ModalNavigation: Identifiable {
+    public let id = UUID()
+    public let navigation: AnyNavigation
+    public let style: ModalPresentationStyle
+
+    public init(navigation: any NavigationContract, style: ModalPresentationStyle) {
+        self.navigation = AnyNavigation(navigation)
+        self.style = style
+    }
+
+    public var detents: Set<PresentationDetent> {
+        if case .sheet(let detents) = style {
+            return detents
+        }
+        return []
+    }
+}
+```
+
 ### NavigationCoordinator (Implementation)
 
 ```swift
@@ -85,16 +133,44 @@ import SwiftUI
 @Observable
 public final class NavigationCoordinator: NavigatorContract {
     public var path = NavigationPath()
+    public var sheetNavigation: ModalNavigation?
+    public var fullScreenCoverNavigation: ModalNavigation?
 
-    private let redirector: (any NavigationContractRedirectContract)?
+    private let redirector: (any NavigationRedirectContract)?
+    private let onDismiss: (() -> Void)?
 
-    public init(redirector: (any NavigationContractRedirectContract)? = nil) {
+    public init(
+        redirector: (any NavigationRedirectContract)? = nil,
+        onDismiss: (() -> Void)? = nil
+    ) {
         self.redirector = redirector
+        self.onDismiss = onDismiss
     }
 
     public func navigate(to destination: any NavigationContract) {
-        let resolved = redirector?.redirect(destination) ?? destination
-        path.append(resolved)
+        let resolved = resolveRedirect(destination)
+        path.append(AnyNavigation(resolved))
+    }
+
+    public func present(_ destination: any NavigationContract, style: ModalPresentationStyle) {
+        let resolved = resolveRedirect(destination)
+        let modal = ModalNavigation(navigation: resolved, style: style)
+        switch style {
+        case .sheet:
+            sheetNavigation = modal
+        case .fullScreenCover:
+            fullScreenCoverNavigation = modal
+        }
+    }
+
+    public func dismiss() {
+        if fullScreenCoverNavigation != nil {
+            fullScreenCoverNavigation = nil
+        } else if sheetNavigation != nil {
+            sheetNavigation = nil
+        } else {
+            onDismiss?()
+        }
     }
 
     public func goBack() {
@@ -102,6 +178,18 @@ public final class NavigationCoordinator: NavigatorContract {
             return
         }
         path.removeLast()
+    }
+
+    // MARK: - Private
+
+    private func resolveRedirect(_ destination: any NavigationContract) -> any NavigationContract {
+        if destination is any OutgoingNavigationContract {
+            if let redirected = redirector?.redirect(destination) {
+                return redirected
+            }
+            return UnknownNavigation.notFound
+        }
+        return destination
     }
 }
 ```
@@ -167,6 +255,8 @@ import Foundation
 
 public final class NavigatorMock: NavigatorContract {
     public private(set) var navigatedDestinations: [any NavigationContract] = []
+    public private(set) var presentedModals: [(destination: any NavigationContract, style: ModalPresentationStyle)] = []
+    public private(set) var dismissCallCount = 0
     public private(set) var goBackCallCount = 0
 
     public init() {}
@@ -175,9 +265,162 @@ public final class NavigatorMock: NavigatorContract {
         navigatedDestinations.append(destination)
     }
 
+    public func present(_ destination: any NavigationContract, style: ModalPresentationStyle) {
+        presentedModals.append((destination: destination, style: style))
+    }
+
+    public func dismiss() {
+        dismissCallCount += 1
+    }
+
     public func goBack() {
         goBackCallCount += 1
     }
+}
+```
+
+---
+
+## Modal Navigation
+
+Modals are presented via `present(_:style:)` and dismissed via `dismiss()`. Each modal gets its own `NavigationStack` for push navigation within the modal. Modals can present other modals recursively.
+
+### ModalPresentationStyle
+
+| Style | Description |
+|-------|-------------|
+| `.sheet(detents:)` | Presents as a sheet with configurable detents (default: `[.large]`) |
+| `.fullScreenCover` | Presents as a full-screen cover |
+
+### Present / Dismiss Behavior
+
+- `present(_:style:)` — sets `sheetNavigation` or `fullScreenCoverNavigation` on the coordinator
+- `dismiss()` — priority: fullScreenCover > sheet > parent onDismiss
+
+### Navigator Example with Modal
+
+```swift
+protocol FilterNavigatorContract {
+    func presentFilter()
+    func dismiss()
+}
+
+struct FilterNavigator: FilterNavigatorContract {
+    private let navigator: NavigatorContract
+
+    init(navigator: NavigatorContract) {
+        self.navigator = navigator
+    }
+
+    func presentFilter() {
+        navigator.present(
+            FeatureIncomingNavigation.filter,
+            style: .sheet(detents: [.medium, .large])
+        )
+    }
+
+    func dismiss() {
+        navigator.dismiss()
+    }
+}
+```
+
+### NavigationContainerView (AppKit)
+
+Reusable container that encapsulates `NavigationStack` + push destinations + modal bindings. Used by both `RootContainerView` and `ModalContainerView`:
+
+```swift
+// AppKit/Sources/Presentation/Views/NavigationContainerView.swift
+
+struct NavigationContainerView<Content: View>: View {
+    @Bindable var navigationCoordinator: NavigationCoordinator
+    let appContainer: AppContainer
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        NavigationStack(path: $navigationCoordinator.path) {
+            content
+                .navigationDestination(for: AnyNavigation.self) { navigation in
+                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+                }
+        }
+        .sheet(item: $navigationCoordinator.sheetNavigation) { modal in
+            ModalContainerView(modal: modal, appContainer: appContainer) {
+                navigationCoordinator.sheetNavigation = nil
+            }
+            .presentationDetents(modal.detents)
+        }
+        .fullScreenCover(item: $navigationCoordinator.fullScreenCoverNavigation) { modal in
+            ModalContainerView(modal: modal, appContainer: appContainer) {
+                navigationCoordinator.fullScreenCoverNavigation = nil
+            }
+        }
+    }
+}
+```
+
+### ModalContainerView (AppKit)
+
+Creates its own `NavigationCoordinator` and delegates to `NavigationContainerView`:
+
+```swift
+// AppKit/Sources/Presentation/Views/ModalContainerView.swift
+
+struct ModalContainerView: View {
+    let modal: ModalNavigation
+    let appContainer: AppContainer
+    let onDismiss: () -> Void
+
+    @State private var navigationCoordinator: NavigationCoordinator
+
+    init(modal: ModalNavigation, appContainer: AppContainer, onDismiss: @escaping () -> Void) {
+        self.modal = modal
+        self.appContainer = appContainer
+        self.onDismiss = onDismiss
+        _navigationCoordinator = State(initialValue: NavigationCoordinator(
+            redirector: AppNavigationRedirect(),
+            onDismiss: onDismiss
+        ))
+    }
+
+    var body: some View {
+        NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
+            appContainer.resolve(modal.navigation.wrapped, navigator: navigationCoordinator)
+        }
+    }
+}
+```
+
+### Testing Modal Navigation
+
+```swift
+@Test("Present filter presents sheet with correct detents")
+func presentFilterPresentsSheet() {
+    // Given
+    let navigatorMock = NavigatorMock()
+    let sut = FilterNavigator(navigator: navigatorMock)
+
+    // When
+    sut.presentFilter()
+
+    // Then
+    let modal = navigatorMock.presentedModals.first
+    let destination = modal?.destination as? FeatureIncomingNavigation
+    #expect(destination == .filter)
+    #expect(modal?.style == .sheet(detents: [.medium, .large]))
+}
+
+@Test("Dismiss calls navigator dismiss")
+func dismissCallsNavigatorDismiss() {
+    // Given
+    let navigatorMock = NavigatorMock()
+    let sut = FilterNavigator(navigator: navigatorMock)
+
+    // When
+    sut.dismiss()
+
+    // Then
+    #expect(navigatorMock.dismissCallCount == 1)
 }
 ```
 
@@ -296,19 +539,15 @@ import SwiftUI
 public struct RootContainerView: View {
     public let appContainer: AppContainer
 
-    @State private var navigationCoordinator: NavigationCoordinator
+    @State private var navigationCoordinator = NavigationCoordinator(redirector: AppNavigationRedirect())
 
     public init(appContainer: AppContainer) {
         self.appContainer = appContainer
-        _navigationCoordinator = State(initialValue: NavigationCoordinator(redirector: AppNavigationRedirect()))
     }
 
     public var body: some View {
-        NavigationStack(path: $navigationCoordinator.path) {
+        NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
             appContainer.makeRootView(navigator: navigationCoordinator)
-                .navigationDestination(for: AnyNavigation.self) { navigation in
-                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
-                }
         }
         .onOpenURL { url in
             appContainer.handle(url: url, navigator: navigationCoordinator)
@@ -323,10 +562,10 @@ public struct RootContainerView: View {
 */
 ```
 
-**Key Changes:**
-- Uses `AnyNavigation` wrapper for type-erased navigation in `NavigationPath`
-- `appContainer.resolve()` iterates through features to find the handler
+**Key Points:**
+- Uses `NavigationContainerView` for NavigationStack + push destinations + modal bindings
 - Located in `AppKit` module (not `App`) for testability
+- Only adds `.onOpenURL` on top of `NavigationContainerView`
 
 ### AppContainer (Navigation Resolution)
 
@@ -646,11 +885,13 @@ Libraries/Core/
 │   ├── Feature/
 │   │   └── Feature.swift                    # Feature protocol
 │   └── Navigation/
-│       ├── NavigationCoordinator.swift      # @Observable, manages path + redirects
-│       ├── NavigatorContract.swift          # Protocol for navigation
+│       ├── NavigationCoordinator.swift      # @Observable, manages path + modals + redirects
+│       ├── NavigatorContract.swift          # Protocol for navigation (push + modal)
 │       ├── NavigationRedirectContract.swift # Protocol for redirects
 │       ├── Navigation.swift                 # Base protocol
 │       ├── AnyNavigation.swift              # Type-erased wrapper for NavigationPath
+│       ├── ModalPresentationStyle.swift     # Sheet/fullScreenCover enum
+│       ├── ModalNavigation.swift            # Modal state (Identifiable)
 │       └── DeepLinkHandler.swift            # Protocol for deep links
 └── Mocks/
     ├── NavigatorMock.swift
@@ -662,7 +903,9 @@ AppKit/Sources/                              # Note: AppKit, not App (for testab
     ├── Navigation/
     │   └── AppNavigationRedirect.swift      # Connects features via redirects
     └── Views/
-        └── RootContainerView.swift          # Creates NavigationCoordinator
+        ├── NavigationContainerView.swift        # Reusable NavigationStack + push + modal bindings
+        ├── RootContainerView.swift          # Root level, uses NavigationContainerView + onOpenURL
+        └── ModalContainerView.swift         # Creates own NavigationCoordinator, uses NavigationContainerView
 
 Features/{Feature}/
 ├── Sources/
@@ -699,20 +942,25 @@ Features/{Feature}/
 ## Checklist
 
 ### Core Setup
-- [ ] Core has `NavigatorContract` protocol
+- [ ] Core has `NavigatorContract` protocol (navigate, present, dismiss, goBack)
 - [ ] Core has `NavigationRedirectContract` protocol
-- [ ] Core has `NavigationCoordinator` (@Observable, manages path + redirects)
+- [ ] Core has `NavigationCoordinator` (@Observable, manages path + modals + redirects)
 - [ ] Core has `NavigationContract` protocol
 - [ ] Core has `AnyNavigation` type-erased wrapper
+- [ ] Core has `ModalPresentationStyle` enum (sheet, fullScreenCover)
+- [ ] Core has `ModalNavigation` struct (Identifiable, wraps navigation + style)
 - [ ] Core has `DeepLinkHandlerContract` protocol
 - [ ] Core has `FeatureContract` protocol with `makeMainView()` and `resolve()` methods
-- [ ] Core has `NavigatorMock` for testing
+- [ ] Core has `NavigatorMock` for testing (tracks navigatedDestinations, presentedModals, dismissCallCount, goBackCallCount)
 
 ### AppKit Configuration
 - [ ] `Project.swift` has `CFBundleURLTypes` with URL scheme (e.g., `challenge`)
 - [ ] `AppNavigationRedirect` in `AppKit/Sources/Presentation/Navigation/`
 - [ ] `RootContainerView` in `AppKit/Sources/Presentation/Views/`
 - [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`
+- [ ] `NavigationContainerView` in `AppKit/Sources/Presentation/Views/` (NavigationStack + push + modals)
+- [ ] `RootContainerView` uses `NavigationContainerView` + `.onOpenURL`
+- [ ] `ModalContainerView` in `AppKit/Sources/Presentation/Views/` (creates own coordinator, uses `NavigationContainerView`)
 - [ ] `AppContainer.resolve()` iterates features and falls back to NotFoundView
 - [ ] `AppContainer.handle(url:navigator:)` resolves deep links via feature handlers
 
