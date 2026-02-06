@@ -160,7 +160,12 @@ public struct FrameworkModule: @unchecked Sendable {
 				dependencies: testsDependencies + testDependencies
 			)
 			targets.append(tests)
-			testableTargets.append("\(testsTargetName)")
+			testableTargets.append(
+				.testableTarget(
+					target: .target(testsTargetName),
+					parallelization: .swiftTestingOnly
+				)
+			)
 			buildTargets.append(.target(testsTargetName))
 		}
 
@@ -186,7 +191,12 @@ public struct FrameworkModule: @unchecked Sendable {
 				dependencies: testsDependencies + [.external(name: "SnapshotTesting")] + snapshotTestDependencies
 			)
 			targets.append(snapshotTests)
-			testableTargets.append("\(snapshotTestsTargetName)")
+			testableTargets.append(
+				.testableTarget(
+					target: .target(snapshotTestsTargetName),
+					parallelization: .swiftTestingOnly
+				)
+			)
 			buildTargets.append(.target(snapshotTestsTargetName))
 		}
 

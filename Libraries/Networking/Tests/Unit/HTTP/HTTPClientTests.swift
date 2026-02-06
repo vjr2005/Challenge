@@ -6,25 +6,12 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct HTTPClientTests {
-    // MARK: - Properties
-
-    private let baseURL: URL
-    private let session: URLSession
-    private let sut: HTTPClient
-
-    // MARK: - Initialization
-
-    init() throws {
-        baseURL = try #require(URL(string: "https://test.example.com"))
-        session = URLSession.mockSession()
-        sut = HTTPClient(baseURL: baseURL, session: session)
-    }
-
     // MARK: - Tests
 
     @Test("Builds correct URL from base URL and endpoint path")
     func buildsCorrectURLFromEndpoint() async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-builds-url")
         let endpoint = Endpoint(path: "/users")
         let expectedBaseURL = baseURL
 
@@ -42,6 +29,7 @@ struct HTTPClientTests {
     @Test("Includes query items in URL when provided")
     func includesQueryItemsInURL() async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-query-items")
         let endpoint = Endpoint(
             path: "/users",
             queryItems: [
@@ -65,6 +53,7 @@ struct HTTPClientTests {
     @Test("Includes headers in request when provided")
     func includesHeadersInRequest() async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-headers")
         let endpoint = Endpoint(
             path: "/users",
             headers: [
@@ -87,6 +76,7 @@ struct HTTPClientTests {
     @Test("Includes body in POST request when provided")
     func includesBodyInRequest() async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-body")
         let body = Data("{\"name\":\"test\"}".utf8)
         let endpoint = Endpoint(
             path: "/users",
@@ -108,6 +98,7 @@ struct HTTPClientTests {
     @Test("Returns data on successful response")
     func returnsDataOnSuccess() async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-returns-data")
         let expectedData = Data("{\"id\":1}".utf8)
         let fallbackURL = baseURL
 
@@ -125,6 +116,7 @@ struct HTTPClientTests {
     @Test("Decodes JSON response to specified type")
     func decodesResponseToType() async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-decodes-json")
         let responseData = Data("{\"id\":1,\"name\":\"John\"}".utf8)
         let fallbackURL = baseURL
 
@@ -143,6 +135,7 @@ struct HTTPClientTests {
     @Test(arguments: [400, 401, 403, 404, 500, 502, 503])
     func throwsStatusCodeErrorForHTTPErrors(_ statusCode: Int) async throws {
         // Given
+        let (sut, baseURL) = try makeSUT(host: "test-status-\(statusCode)")
         let errorData = Data("Error".utf8)
         let fallbackURL = baseURL
 
@@ -161,7 +154,7 @@ struct HTTPClientTests {
         // Given
         // Use custom URL scheme to prevent URLSession from auto-converting to HTTPURLResponse
         let customBaseURL = try #require(URL(string: "custom://test-invalid-response.example.com"))
-        let customSut = HTTPClient(baseURL: customBaseURL, session: session)
+        let customSut = HTTPClient(baseURL: customBaseURL, session: URLSession.mockSession())
 
         URLProtocolMock.setHandler({ request in
             let response = URLResponse(
@@ -188,6 +181,12 @@ private struct TestUser: Decodable {
 }
 
 private extension HTTPClientTests {
+    func makeSUT(host: String) throws -> (HTTPClient, URL) {
+        let baseURL = try #require(URL(string: "https://\(host).example.com"))
+        let sut = HTTPClient(baseURL: baseURL, session: URLSession.mockSession())
+        return (sut, baseURL)
+    }
+
     static func mockResponse(url: URL?, statusCode: Int = 200) -> HTTPURLResponse {
         guard let url,
             let response = HTTPURLResponse.withStatus(statusCode, url: url)

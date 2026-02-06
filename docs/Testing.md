@@ -95,9 +95,26 @@ See the `/ui-tests` skill for Robot implementation details.
 
 ## Test Parallelization
 
-Tests run **serially** (parallelization disabled). A benchmark study was conducted and parallelization resulted in **~49% slower** execution times due to simulator cloning overhead and CPU contention.
+The project uses a **three-level parallelization strategy** to optimize test execution:
 
-### Benchmark Results
+| Level | Mechanism | Status | Impact |
+|-------|-----------|--------|--------|
+| **Intra-target** | Swift Testing runs tests in parallel within each target | Active (`.swiftTestingOnly`) | Moderate — free parallelism within each target |
+| **Inter-target** | Xcode clones simulators and distributes targets | Disabled | Negative at current volume (see benchmark below) |
+| **CI-level** | Unit+snapshot and UI tests run in parallel GitHub Actions jobs | Active | **High** — total CI time = `max(unit+snapshot, UI)` instead of `sum()` |
+
+### Intra-target Parallelism
+
+All test targets use `parallelization: .swiftTestingOnly` in their Tuist scheme configuration. This allows Swift Testing to run tests in parallel within each target while keeping XCTest-based tests (snapshot tests) serial.
+
+To support safe parallel execution:
+- **`HTTPClientTests`** uses unique hosts per test (e.g., `test-builds-url.example.com`) to prevent `URLProtocolMock` handler collisions.
+- **`CachedImageLoaderTests`** uses unique hosts per test — no `.serialized` trait needed.
+- **`CharacterListViewModelTests`** accepts an injectable `debounceInterval` (set to `.zero` in tests) to eliminate timing sensitivity.
+
+### Inter-target Benchmark
+
+A benchmark study found inter-target parallelization (simulator cloning) is **~49% slower** for the current test volume:
 
 | Test Type | Serial | Parallel | Change |
 |-----------|--------|----------|--------|
@@ -107,36 +124,12 @@ Tests run **serially** (parallelization disabled). A benchmark study was conduct
 
 > Measured on iPhone 17 Pro simulator, Tuist 4.129.0 (February 2026).
 
-### Why Parallelization Is Slower
+**Why inter-target parallelization is slower:**
 
-**Unit + Snapshot Tests:**
-The scheme has 12 test targets (7 unit + 5 snapshot), each running in its own xctest process in both serial and parallel modes. The difference is execution strategy:
+- **Unit + Snapshot Tests:** 12 test targets compete for CPU/GPU when running concurrently on a cloned simulator. Simulator cloning overhead, cold caches, and rendering contention nearly double the time.
+- **UI Tests:** Xcode distributes by class, using 4 clones. Booting each clone (~15s) costs more than it saves with only 8 tests.
 
-- **Serial**: The 12 processes run sequentially on the same simulator. The simulator stays "warm" (rendering caches, frameworks already loaded in memory), and each process gets exclusive access to CPU and GPU.
-- **Parallel**: The 12 processes run concurrently on a cloned simulator (Clone 1), causing:
-  1. **Simulator cloning overhead** (creating Clone 1)
-  2. **CPU contention** — 12 processes competing for the same cores
-  3. **Rendering contention** — snapshot tests render SwiftUI simultaneously, saturating the graphics pipeline
-  4. **Cold caches** on the clone vs warm caches on the original simulator
-
-With only **22s of real execution time** in the baseline, resource contention from running 12 processes concurrently (~20s extra) nearly doubles the time.
-
-**UI Tests:**
-Xcode distributes parallel UI tests **by class**, not by method. Tests were split into 8 classes (1 per test) to maximize parallelism, but:
-
-1. Xcode chose to use only **4 clones** (internal decision based on available CPU/RAM)
-2. **Booting each clone** (~15s per simulator) costs more time than it saves with only 8 tests
-3. **CPU contention** between 4 simulators makes each individual test slower
-
-**Serialization requirements:**
-Two test suites required `.serialized` to pass under parallelization:
-
-- **`HTTPClientTests`**: Uses `URLProtocolMock` with global static state (`handlers` dictionary). All tests share the same base URL (`test.example.com`), causing handler collisions when registering in parallel.
-- **`CharacterListViewModelTests`**: Debounce tests with `Task.sleep` that are timing-sensitive. CPU pressure from multiple runners causes sleeps to miss their timing targets.
-
-The impact of `.serialized` is minimal (~2-3s), not the main cause of degradation.
-
-### When to Re-evaluate
+### When to Re-evaluate Inter-target
 
 - When unit/snapshot test execution exceeds **60-90s of real test time**
 - When UI tests exceed **15-20 classes** to amortize simulator boot overhead

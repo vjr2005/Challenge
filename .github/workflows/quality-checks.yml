@@ -14,8 +14,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  unit-and-snapshot-tests:
+    name: Unit & Snapshot Tests
     runs-on: macos-15
     timeout-minutes: 30
 
@@ -23,7 +23,7 @@ jobs:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
       TUIST_TEST_DERIVED_DATA_PATH: derived_data
-      RESULT_BUNDLE_PATH: test_output/Challenge.xcresult
+      RESULT_BUNDLE_PATH: test_output/UnitSnapshot.xcresult
 
     steps:
       - name: Checkout
@@ -76,10 +76,10 @@ jobs:
             echo "Warning: Target simulator not found, will rely on Tuist to create it"
           fi
 
-      - name: Run tests
-        timeout-minutes: 25
+      - name: Run unit and snapshot tests
+        timeout-minutes: 15
         run: |
-          mise x -- tuist test \
+          mise x -- tuist test "Challenge (Dev)" \
             --device "$TUIST_TEST_DEVICE" \
             --os "$TUIST_TEST_OS" \
             --result-bundle-path "$RESULT_BUNDLE_PATH"
@@ -89,7 +89,7 @@ jobs:
         id: upload-xcresult
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: unit-snapshot-results
           path: test_output
           retention-days: 7
 
@@ -129,7 +129,7 @@ jobs:
                   for node in data.get('testNodes', []):
                       walk(node, [])
 
-          lines = ['## Test Results', '', ':x: **Tests failed.**']
+          lines = ['## Unit & Snapshot Test Results', '', ':x: **Tests failed.**']
           if failures:
               lines += ['', '| | Test |', '|---|------|']
               lines += [f'| :x: | `{f}` |' for f in failures]
@@ -239,3 +239,167 @@ jobs:
               issue_number: context.issue.number,
               body: `${{ steps.periphery-summary.outputs.body }}`
             });
+
+  ui-tests:
+    name: UI Tests
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    env:
+      TUIST_TEST_DEVICE: iPhone 17 Pro
+      TUIST_TEST_OS: "26.1"
+      RESULT_BUNDLE_PATH: test_output/UITests.xcresult
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26.1.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.1.1.app
+          xcodebuild -version
+
+      - name: Install mise tools
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+
+      - name: Cache Tuist and SPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            Tuist/.build
+            Derived/
+          key: tuist-${{ runner.os }}-${{ hashFiles('Tuist/Package.resolved') }}
+          restore-keys: |
+            tuist-${{ runner.os }}-
+
+      - name: Install SPM dependencies
+        run: mise x -- tuist install
+
+      - name: Generate Xcode project
+        run: mise x -- tuist generate
+
+      - name: Prepare simulator
+        run: |
+          xcrun simctl shutdown all
+          DEVICE_UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime, devices in data['devices'].items():
+              for d in devices:
+                  if d['name'] == '${{ env.TUIST_TEST_DEVICE }}' and d['isAvailable']:
+                      print(d['udid'])
+                      sys.exit(0)
+          ")
+          if [ -n "$DEVICE_UDID" ]; then
+            echo "Booting simulator: $DEVICE_UDID"
+            xcrun simctl boot "$DEVICE_UDID"
+            echo "Waiting for simulator to be ready..."
+            sleep 5
+          else
+            echo "Warning: Target simulator not found, will rely on Tuist to create it"
+          fi
+
+      - name: Run UI tests
+        timeout-minutes: 25
+        run: |
+          mise x -- tuist test "ChallengeUITests" \
+            --device "$TUIST_TEST_DEVICE" \
+            --os "$TUIST_TEST_OS" \
+            --result-bundle-path "$RESULT_BUNDLE_PATH"
+
+      - name: Upload xcresult on failure
+        if: failure()
+        id: upload-xcresult
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: test_output
+          retention-days: 7
+
+      - name: Test results summary
+        if: failure()
+        id: test-summary
+        run: |
+          python3 << 'PYEOF'
+          import json, subprocess, os
+
+          result_bundle = os.environ['RESULT_BUNDLE_PATH']
+          xcresult_url = os.environ.get('XCRESULT_URL', '')
+
+          failures = []
+          if os.path.isdir(result_bundle):
+              result = subprocess.run(
+                  ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
+                   '--path', result_bundle],
+                  capture_output=True, text=True
+              )
+              if result.returncode == 0:
+                  data = json.loads(result.stdout)
+
+                  def walk(node, parts):
+                      name = node.get('name', '')
+                      node_type = node.get('nodeType', '')
+                      if node_type == 'Test Plan':
+                          for child in node.get('children', []):
+                              walk(child, [])
+                          return
+                      current = parts + [name] if name else parts
+                      if node.get('result') == 'Failed' and node_type == 'Test Case':
+                          failures.append('/'.join(current))
+                      for child in node.get('children', []):
+                          walk(child, current)
+
+                  for node in data.get('testNodes', []):
+                      walk(node, [])
+
+          lines = ['## UI Test Results', '', ':x: **Tests failed.**']
+          if failures:
+              lines += ['', '| | Test |', '|---|------|']
+              lines += [f'| :x: | `{f}` |' for f in failures]
+          if xcresult_url:
+              lines += ['', f'[:arrow_down: Download xcresult]({xcresult_url})', '',
+                        '_Open the `.xcresult` file in Xcode to inspect failures._']
+
+          body = '\n'.join(lines)
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(body + '\n')
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('body<<TEST_BODY_EOF\n')
+              output.write(body + '\n')
+              output.write('TEST_BODY_EOF\n')
+          PYEOF
+        env:
+          XCRESULT_URL: ${{ steps.upload-xcresult.outputs.artifact-url }}
+
+      - name: Comment PR with test failures
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `${{ steps.test-summary.outputs.body }}`
+            });
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [unit-and-snapshot-tests, ui-tests]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "Unit & Snapshot Tests: ${{ needs.unit-and-snapshot-tests.result }}"
+          echo "UI Tests: ${{ needs.ui-tests.result }}"
+          if [ "${{ needs.unit-and-snapshot-tests.result }}" != "success" ] || [ "${{ needs.ui-tests.result }}" != "success" ]; then
+            echo "::error::One or more jobs failed"
+            exit 1
+          fi

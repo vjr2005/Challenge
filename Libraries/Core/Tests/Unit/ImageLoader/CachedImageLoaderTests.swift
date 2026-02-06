@@ -5,7 +5,7 @@ import UIKit
 
 @testable import ChallengeCore
 
-@Suite(.serialized, .timeLimit(.minutes(1)))
+@Suite(.timeLimit(.minutes(1)))
 struct CachedImageLoaderTests {
 	/// Minimal valid 1x1 red PNG - no rendering system dependencies for CI headless environments.
 	private let testImageData = Data(base64Encoded: """

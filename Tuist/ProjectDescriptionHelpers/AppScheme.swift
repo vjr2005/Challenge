@@ -14,23 +14,32 @@ public enum AppScheme {
 		var testAction: TestAction?
 
 		if includeTests {
+			let testTargetNames = [
+				// Unit Tests
+				"\(appName)AppKitTests",
+				"\(appName)CoreTests",
+				"\(appName)NetworkingTests",
+				"\(appName)DesignSystemTests",
+				"\(appName)CharacterTests",
+				"\(appName)HomeTests",
+				"\(appName)SystemTests",
+				// Snapshot Tests
+				"\(appName)AppKitSnapshotTests",
+				"\(appName)DesignSystemSnapshotTests",
+				"\(appName)CharacterSnapshotTests",
+				"\(appName)HomeSnapshotTests",
+				"\(appName)SystemSnapshotTests",
+			]
+
+			let testableTargets = testTargetNames.map { name in
+				TestableTarget.testableTarget(
+					target: .target(name),
+					parallelization: .swiftTestingOnly
+				)
+			}
+
 			testAction = .targets(
-				[
-					// Unit Tests
-					"\(appName)AppKitTests",
-					"\(appName)CoreTests",
-					"\(appName)NetworkingTests",
-					"\(appName)DesignSystemTests",
-					"\(appName)CharacterTests",
-					"\(appName)HomeTests",
-					"\(appName)SystemTests",
-					// Snapshot Tests
-					"\(appName)AppKitSnapshotTests",
-					"\(appName)DesignSystemSnapshotTests",
-					"\(appName)CharacterSnapshotTests",
-					"\(appName)HomeSnapshotTests",
-					"\(appName)SystemSnapshotTests",
-				],
+				testableTargets,
 				configuration: environment.debugConfigurationName,
 				options: .options(
 					coverage: true,

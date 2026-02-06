@@ -28,7 +28,8 @@ struct CharacterListViewModelTests {
             saveRecentSearchUseCase: saveRecentSearchUseCaseMock,
             deleteRecentSearchUseCase: deleteRecentSearchUseCaseMock,
             navigator: navigatorMock,
-            tracker: trackerMock
+            tracker: trackerMock,
+            debounceInterval: .zero
         )
     }
 
@@ -232,30 +233,28 @@ struct CharacterListViewModelTests {
     }
 
     @Test("Search query change triggers search use case after debounce delay")
-    func searchQueryChangeTriggersSearchAfterDebounce() async throws {
+    func searchQueryChangeTriggersSearchAfterDebounce() async {
         // Given
         searchCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(searchCharactersUseCaseMock.lastRequestedQuery == "Rick")
     }
 
     @Test("Rapid search query changes only trigger one load")
-    func rapidSearchQueryChangesOnlyTriggersOneLoad() async throws {
+    func rapidSearchQueryChangesOnlyTriggersOneLoad() async {
         // Given
         searchCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "R"
-        try await Task.sleep(for: .milliseconds(100))
         sut.searchQuery = "Ri"
-        try await Task.sleep(for: .milliseconds(100))
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(searchCharactersUseCaseMock.executeCallCount == 1)
@@ -320,7 +319,7 @@ struct CharacterListViewModelTests {
     }
 
     @Test("Search query change resets to page one")
-    func searchQueryChangeResetsToPageOne() async throws {
+    func searchQueryChangeResetsToPageOne() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
         let secondPage = CharactersPage.stub(currentPage: 2, hasNextPage: false)
@@ -332,36 +331,35 @@ struct CharacterListViewModelTests {
         // When
         searchCharactersUseCaseMock.result = .success(.stub())
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(searchCharactersUseCaseMock.lastRequestedPage == 1)
     }
 
     @Test("Search with no results sets emptySearch state")
-    func searchWithNoResultsSetsEmptySearchState() async throws {
+    func searchWithNoResultsSetsEmptySearchState() async {
         // Given
         let emptyPage = CharactersPage.stub(characters: [])
         searchCharactersUseCaseMock.result = .success(emptyPage)
 
         // When
         sut.searchQuery = "NonExistent"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(sut.state == .emptySearch)
     }
 
     @Test("Clearing search query before debounce only triggers one load")
-    func clearingSearchQueryBeforeDebounceOnlyTriggersOneLoad() async throws {
+    func clearingSearchQueryBeforeDebounceOnlyTriggersOneLoad() async {
         // Given
         getCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(100))
         sut.searchQuery = ""
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(getCharactersUseCaseMock.executeCallCount == 1)
@@ -474,28 +472,27 @@ struct CharacterListViewModelTests {
     }
 
     @Test("Search query change tracks search performed after debounce")
-    func searchQueryChangeTracksSearchPerformed() async throws {
+    func searchQueryChangeTracksSearchPerformed() async {
         // Given
         searchCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(trackerMock.searchedQueries == ["Rick"])
     }
 
     @Test("Empty search query does not track search performed")
-    func emptySearchQueryDoesNotTrackSearchPerformed() async throws {
+    func emptySearchQueryDoesNotTrackSearchPerformed() async {
         // Given
         getCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(100))
         sut.searchQuery = ""
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(trackerMock.searchedQueries.isEmpty)
@@ -575,53 +572,53 @@ struct CharacterListViewModelTests {
     }
 
     @Test("Search saves to recent searches after debounce")
-    func searchSavesToRecentSearchesAfterDebounce() async throws {
+    func searchSavesToRecentSearchesAfterDebounce() async {
         // Given
         searchCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(saveRecentSearchUseCaseMock.savedQueries == ["Rick"])
     }
 
     @Test("Empty search query does not save to recent searches")
-    func emptySearchQueryDoesNotSave() async throws {
+    func emptySearchQueryDoesNotSave() async {
         // Given
         getCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = ""
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(saveRecentSearchUseCaseMock.executeCallCount == 0)
     }
 
     @Test("Whitespace-only search query does not save to recent searches")
-    func whitespaceOnlySearchQueryDoesNotSave() async throws {
+    func whitespaceOnlySearchQueryDoesNotSave() async {
         // Given
         getCharactersUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "   "
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(saveRecentSearchUseCaseMock.executeCallCount == 0)
     }
 
     @Test("Recent searches refreshed after save")
-    func recentSearchesRefreshedAfterSave() async throws {
+    func recentSearchesRefreshedAfterSave() async {
         // Given
         searchCharactersUseCaseMock.result = .success(.stub())
         getRecentSearchesUseCaseMock.searches = ["Rick"]
 
         // When
         sut.searchQuery = "Rick"
-        try await Task.sleep(for: .milliseconds(400))
+        await sut.searchTask?.value
 
         // Then
         #expect(sut.recentSearches == ["Rick"])

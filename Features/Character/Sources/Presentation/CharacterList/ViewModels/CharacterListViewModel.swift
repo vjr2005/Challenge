@@ -2,8 +2,6 @@ import Foundation
 
 @Observable
 final class CharacterListViewModel: CharacterListViewModelContract {
-    private let debounceMilliseconds = 300
-
     private(set) var state: CharacterListViewState = .idle
     private(set) var recentSearches: [String] = []
     var searchQuery: String = "" {
@@ -22,9 +20,10 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private let tracker: CharacterListTrackerContract
+    private let debounceInterval: Duration
     private var currentPage = 1
     private var isLoadingMore = false
-    private var searchTask: Task<Void, Never>?
+    private(set) var searchTask: Task<Void, Never>?
 
     init(
         getCharactersUseCase: GetCharactersUseCaseContract,
@@ -34,7 +33,8 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         saveRecentSearchUseCase: SaveRecentSearchUseCaseContract,
         deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract,
         navigator: CharacterListNavigatorContract,
-        tracker: CharacterListTrackerContract
+        tracker: CharacterListTrackerContract,
+        debounceInterval: Duration = .milliseconds(300)
     ) {
         self.getCharactersUseCase = getCharactersUseCase
         self.refreshCharactersUseCase = refreshCharactersUseCase
@@ -44,6 +44,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         self.deleteRecentSearchUseCase = deleteRecentSearchUseCase
         self.navigator = navigator
         self.tracker = tracker
+        self.debounceInterval = debounceInterval
     }
 
     func didAppear() async {
@@ -106,7 +107,7 @@ private extension CharacterListViewModel {
     func searchQueryDidChange() {
         searchTask?.cancel()
         searchTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(debounceMilliseconds))
+            try? await Task.sleep(for: debounceInterval)
             if !Task.isCancelled {
                 if let query = normalizedQuery {
                     tracker.trackSearchPerformed(query: query)
