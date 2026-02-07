@@ -147,7 +147,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value == Character.stub())
@@ -161,7 +161,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 0)
@@ -176,7 +176,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
+        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value.status == .dead)
@@ -450,7 +450,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .none)
+        let value = try await sut.getCharacters(page: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value == CharactersPage.stub())
@@ -464,7 +464,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
-        _ = try await sut.getCharacters(page: 1, cachePolicy: .none)
+        _ = try await sut.getCharacters(page: 1, cachePolicy: .noCache)
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 0)
@@ -479,7 +479,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .none)
+        let value = try await sut.getCharacters(page: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value.characters.count == 2)

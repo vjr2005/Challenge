@@ -9,5 +9,5 @@ public enum CachePolicy: Sendable {
 	case remoteFirst
 
 	/// Only remote, no cache interaction.
-	case none
+	case noCache
 }

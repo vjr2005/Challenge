@@ -20,7 +20,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 			try await getCharacterDetailLocalFirst(identifier: identifier)
 		case .remoteFirst:
 			try await getCharacterDetailRemoteFirst(identifier: identifier)
-		case .none:
+		case .noCache:
 			try await getCharacterDetailNoCache(identifier: identifier)
 		}
 	}
@@ -31,7 +31,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 			try await getCharactersLocalFirst(page: page)
 		case .remoteFirst:
 			try await getCharactersRemoteFirst(page: page)
-		case .none:
+		case .noCache:
 			try await getCharactersNoCache(page: page)
 		}
 	}
