@@ -529,7 +529,7 @@ import Testing
 struct CharacterListViewModelTests {
     // MARK: - Properties
 
-    private let useCaseMock = GetCharactersUseCaseMock()
+    private let useCaseMock = GetCharactersPageUseCaseMock()
     private let navigatorMock = CharacterListNavigatorMock()
     private let sut: CharacterListViewModel
 
@@ -537,7 +537,7 @@ struct CharacterListViewModelTests {
 
     init() {
         sut = CharacterListViewModel(
-            getCharactersUseCase: useCaseMock,
+            getCharactersPageUseCase: useCaseMock,
             navigator: navigatorMock
         )
     }

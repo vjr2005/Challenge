@@ -20,9 +20,9 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         filterState.filter
     }
 
-    private let getCharactersUseCase: GetCharactersUseCaseContract
-    private let refreshCharactersUseCase: RefreshCharactersUseCaseContract
-    private let searchCharactersUseCase: SearchCharactersUseCaseContract
+    private let getCharactersPageUseCase: GetCharactersPageUseCaseContract
+    private let refreshCharactersPageUseCase: RefreshCharactersPageUseCaseContract
+    private let searchCharactersPageUseCase: SearchCharactersPageUseCaseContract
     private let getRecentSearchesUseCase: GetRecentSearchesUseCaseContract
     private let saveRecentSearchUseCase: SaveRecentSearchUseCaseContract
     private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
@@ -35,9 +35,9 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private(set) var searchTask: Task<Void, Never>?
 
     init(
-        getCharactersUseCase: GetCharactersUseCaseContract,
-        refreshCharactersUseCase: RefreshCharactersUseCaseContract,
-        searchCharactersUseCase: SearchCharactersUseCaseContract,
+        getCharactersPageUseCase: GetCharactersPageUseCaseContract,
+        refreshCharactersPageUseCase: RefreshCharactersPageUseCaseContract,
+        searchCharactersPageUseCase: SearchCharactersPageUseCaseContract,
         getRecentSearchesUseCase: GetRecentSearchesUseCaseContract,
         saveRecentSearchUseCase: SaveRecentSearchUseCaseContract,
         deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract,
@@ -46,9 +46,9 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         filterState: CharacterFilterState,
         debounceInterval: Duration = .milliseconds(300)
     ) {
-        self.getCharactersUseCase = getCharactersUseCase
-        self.refreshCharactersUseCase = refreshCharactersUseCase
-        self.searchCharactersUseCase = searchCharactersUseCase
+        self.getCharactersPageUseCase = getCharactersPageUseCase
+        self.refreshCharactersPageUseCase = refreshCharactersPageUseCase
+        self.searchCharactersPageUseCase = searchCharactersPageUseCase
         self.getRecentSearchesUseCase = getRecentSearchesUseCase
         self.saveRecentSearchUseCase = saveRecentSearchUseCase
         self.deleteRecentSearchUseCase = deleteRecentSearchUseCase
@@ -160,9 +160,9 @@ private extension CharacterListViewModel {
             let filter = currentFilter
             let result: CharactersPage
             if filter.isEmpty {
-                result = try await getCharactersUseCase.execute(page: currentPage)
+                result = try await getCharactersPageUseCase.execute(page: currentPage)
             } else {
-                result = try await searchCharactersUseCase.execute(page: currentPage, filter: filter)
+                result = try await searchCharactersPageUseCase.execute(page: currentPage, filter: filter)
             }
 
             if result.characters.isEmpty {
@@ -178,7 +178,7 @@ private extension CharacterListViewModel {
     func refreshCharacters() async {
         do {
             currentPage = 1
-            let result = try await refreshCharactersUseCase.execute(page: currentPage)
+            let result = try await refreshCharactersPageUseCase.execute(page: currentPage)
             if result.characters.isEmpty {
                 state = .empty
             } else {
@@ -195,9 +195,9 @@ private extension CharacterListViewModel {
             let filter = currentFilter
             let result: CharactersPage
             if filter.isEmpty {
-                result = try await getCharactersUseCase.execute(page: currentPage)
+                result = try await getCharactersPageUseCase.execute(page: currentPage)
             } else {
-                result = try await searchCharactersUseCase.execute(page: currentPage, filter: filter)
+                result = try await searchCharactersPageUseCase.execute(page: currentPage, filter: filter)
             }
 
             let combinedCharacters = existingPage.characters + result.characters

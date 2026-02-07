@@ -4,16 +4,16 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
-struct SearchCharactersUseCaseTests {
+struct SearchCharactersPageUseCaseTests {
     // MARK: - Properties
 
     private let repositoryMock = CharactersPageRepositoryMock()
-    private let sut: SearchCharactersUseCase
+    private let sut: SearchCharactersPageUseCase
 
     // MARK: - Initialization
 
     init() {
-        sut = SearchCharactersUseCase(repository: repositoryMock)
+        sut = SearchCharactersPageUseCase(repository: repositoryMock)
     }
 
     // MARK: - Tests
@@ -41,7 +41,7 @@ struct SearchCharactersUseCaseTests {
         _ = try await sut.execute(page: 3, filter: filter)
 
         // Then
-        #expect(repositoryMock.searchCharactersCallCount == 1)
+        #expect(repositoryMock.searchCharactersPageCallCount == 1)
         #expect(repositoryMock.lastSearchedPage == 3)
         #expect(repositoryMock.lastSearchedFilter == filter)
     }

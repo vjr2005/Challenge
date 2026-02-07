@@ -26,41 +26,41 @@ struct CharactersPageRepositoryTests {
     // MARK: - Get Characters - LocalFirst Policy
 
     @Test("LocalFirst returns cached page when available")
-    func getCharactersLocalFirstReturnsCachedPageWhenAvailable() async throws {
+    func getCharactersPageLocalFirstReturnsCachedPageWhenAvailable() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         let expected = CharactersPage.stub()
         memoryDataSourceMock.pageToReturn = responseDTO
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
     }
 
     @Test("LocalFirst does not call remote when cache hit")
-    func getCharactersLocalFirstDoesNotCallRemoteWhenCacheHit() async throws {
+    func getCharactersPageLocalFirstDoesNotCallRemoteWhenCacheHit() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         memoryDataSourceMock.pageToReturn = responseDTO
 
         // When
-        _ = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+        _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharactersCallCount == 0)
     }
 
     @Test("LocalFirst fetches from remote when cache miss")
-    func getCharactersLocalFirstFetchesFromRemoteWhenCacheMiss() async throws {
+    func getCharactersPageLocalFirstFetchesFromRemoteWhenCacheMiss() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         let expected = CharactersPage.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -68,13 +68,13 @@ struct CharactersPageRepositoryTests {
     }
 
     @Test("LocalFirst saves page to cache after remote fetch")
-    func getCharactersLocalFirstSavesPageToCache() async throws {
+    func getCharactersPageLocalFirstSavesPageToCache() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response_two_results")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+        _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 1)
@@ -85,7 +85,7 @@ struct CharactersPageRepositoryTests {
     // MARK: - Get Characters - RemoteFirst Policy
 
     @Test("RemoteFirst always fetches from remote data source")
-    func getCharactersRemoteFirstAlwaysFetchesFromRemote() async throws {
+    func getCharactersPageRemoteFirstAlwaysFetchesFromRemote() async throws {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
         let freshResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")
@@ -93,7 +93,7 @@ struct CharactersPageRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(freshResponse)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharactersCallCount == 1)
@@ -101,53 +101,53 @@ struct CharactersPageRepositoryTests {
     }
 
     @Test("RemoteFirst saves page to cache after remote fetch")
-    func getCharactersRemoteFirstSavesPageToCache() async throws {
+    func getCharactersPageRemoteFirstSavesPageToCache() async throws {
         // Given
         let freshResponse: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(freshResponse)
 
         // When
-        _ = try await sut.getCharacters(page: 1, cachePolicy: .remoteFirst)
+        _ = try await sut.getCharactersPage(page: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 1)
     }
 
     @Test("RemoteFirst falls back to cache on remote error")
-    func getCharactersRemoteFirstFallsBackToCacheOnRemoteError() async throws {
+    func getCharactersPageRemoteFirstFallsBackToCacheOnRemoteError() async throws {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
         memoryDataSourceMock.pageToReturn = cachedResponse
         remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(value == CharactersPage.stub())
     }
 
     @Test("RemoteFirst throws error when remote fails and no cache")
-    func getCharactersRemoteFirstThrowsErrorWhenRemoteFailsAndNoCache() async throws {
+    func getCharactersPageRemoteFirstThrowsErrorWhenRemoteFailsAndNoCache() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.getCharacters(page: 1, cachePolicy: .remoteFirst)
+            _ = try await sut.getCharactersPage(page: 1, cachePolicy: .remoteFirst)
         }
     }
 
     // MARK: - Get Characters - NoCache Policy
 
     @Test("NoCache policy only fetches from remote")
-    func getCharactersNoCachePolicyOnlyFetchesFromRemote() async throws {
+    func getCharactersPageNoCachePolicyOnlyFetchesFromRemote() async throws {
         // Given
         let remoteResponse: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .noCache)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value == CharactersPage.stub())
@@ -155,20 +155,20 @@ struct CharactersPageRepositoryTests {
     }
 
     @Test("NoCache policy does not save to cache")
-    func getCharactersNoCachePolicyDoesNotSaveToCache() async throws {
+    func getCharactersPageNoCachePolicyDoesNotSaveToCache() async throws {
         // Given
         let remoteResponse: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
-        _ = try await sut.getCharacters(page: 1, cachePolicy: .noCache)
+        _ = try await sut.getCharactersPage(page: 1, cachePolicy: .noCache)
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 0)
     }
 
     @Test("NoCache policy does not check cache")
-    func getCharactersNoCachePolicyDoesNotCheckCache() async throws {
+    func getCharactersPageNoCachePolicyDoesNotCheckCache() async throws {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
         let remoteResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")
@@ -176,7 +176,7 @@ struct CharactersPageRepositoryTests {
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .noCache)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value.characters.count == 2)
@@ -186,13 +186,13 @@ struct CharactersPageRepositoryTests {
     // MARK: - Get Characters - Pagination
 
     @Test("Get characters calls remote with correct page number")
-    func getCharactersCallsRemoteWithCorrectPage() async throws {
+    func getCharactersPageCallsRemoteWithCorrectPage() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.getCharacters(page: 5, cachePolicy: .localFirst)
+        _ = try await sut.getCharactersPage(page: 5, cachePolicy: .localFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharactersCallCount == 1)
@@ -200,13 +200,13 @@ struct CharactersPageRepositoryTests {
     }
 
     @Test("Get characters transforms pagination info correctly")
-    func getCharactersTransformsPaginationInfo() async throws {
+    func getCharactersPageTransformsPaginationInfo() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response_pagination")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        let value = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value.totalCount == 100)
@@ -218,112 +218,112 @@ struct CharactersPageRepositoryTests {
     // MARK: - Get Characters - Errors
 
     @Test("Get characters maps HTTP 404 to invalid page error")
-    func getCharactersMapsHTTPNotFoundToInvalidPage() async throws {
+    func getCharactersPageMapsHTTPNotFoundToInvalidPage() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
 
         // When / Then
         await #expect(throws: CharactersPageError.invalidPage(page: 5)) {
-            _ = try await sut.getCharacters(page: 5, cachePolicy: .localFirst)
+            _ = try await sut.getCharactersPage(page: 5, cachePolicy: .localFirst)
         }
     }
 
     @Test("Get characters maps HTTP 500 to load failed error")
-    func getCharactersMapsHTTPServerErrorToLoadFailed() async throws {
+    func getCharactersPageMapsHTTPServerErrorToLoadFailed() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+            _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
         }
     }
 
     @Test("Get characters does not save to cache on error")
-    func getCharactersDoesNotSaveToCacheOnError() async throws {
+    func getCharactersPageDoesNotSaveToCacheOnError() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
 
         // When
-        _ = try? await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+        _ = try? await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 0)
     }
 
     @Test("Get characters maps generic error to load failed error")
-    func getCharactersMapsGenericErrorToLoadFailed() async throws {
+    func getCharactersPageMapsGenericErrorToLoadFailed() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
+            _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
         }
     }
 
     // MARK: - Search Characters
 
     @Test("Search characters always calls remote data source")
-    func searchCharactersAlwaysCallsRemote() async throws {
+    func searchCharactersPageAlwaysCallsRemote() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
         memoryDataSourceMock.pageToReturn = responseDTO
 
         // When
-        _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
+        _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(remoteDataSourceMock.fetchCharactersCallCount == 1)
     }
 
     @Test("Search characters does not save results to cache")
-    func searchCharactersDoesNotSaveToCache() async throws {
+    func searchCharactersPageDoesNotSaveToCache() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
+        _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 0)
     }
 
     @Test("Search characters passes query to remote data source")
-    func searchCharactersPassesQueryToRemoteDataSource() async throws {
+    func searchCharactersPagePassesQueryToRemoteDataSource() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Morty"))
+        _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Morty"))
 
         // Then
         #expect(remoteDataSourceMock.lastFetchedFilter == CharacterFilter(name: "Morty"))
     }
 
     @Test("Search characters passes page number to remote data source")
-    func searchCharactersPassesPageToRemoteDataSource() async throws {
+    func searchCharactersPagePassesPageToRemoteDataSource() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
-        _ = try await sut.searchCharacters(page: 3, filter: CharacterFilter(name: "Rick"))
+        _ = try await sut.searchCharactersPage(page: 3, filter: CharacterFilter(name: "Rick"))
 
         // Then
         #expect(remoteDataSourceMock.lastFetchedPage == 3)
     }
 
     @Test("Search characters returns empty page when HTTP 404")
-    func searchCharactersReturnsEmptyPageWhenNotFound() async throws {
+    func searchCharactersPageReturnsEmptyPageWhenNotFound() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
 
         // When
-        let result = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "NonExistentCharacter"))
+        let result = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "NonExistentCharacter"))
 
         // Then
         let expected = CharactersPage(
@@ -338,24 +338,24 @@ struct CharactersPageRepositoryTests {
     }
 
     @Test("Search characters maps HTTP 500 to load failed error")
-    func searchCharactersMapsHTTPServerErrorToLoadFailed() async throws {
+    func searchCharactersPageMapsHTTPServerErrorToLoadFailed() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
+            _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
 
     @Test("Search characters maps generic error to load failed error")
-    func searchCharactersMapsGenericErrorToLoadFailed() async throws {
+    func searchCharactersPageMapsGenericErrorToLoadFailed() async throws {
         // Given
         remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
+            _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
 

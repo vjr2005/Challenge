@@ -1,10 +1,10 @@
 import Foundation
 
-protocol RefreshCharactersUseCaseContract: Sendable {
+protocol GetCharactersPageUseCaseContract: Sendable {
 	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
-struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
+struct GetCharactersPageUseCase: GetCharactersPageUseCaseContract {
 	private let repository: CharactersPageRepositoryContract
 
 	init(repository: CharactersPageRepositoryContract) {
@@ -12,6 +12,6 @@ struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
 	}
 
 	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
-		try await repository.getCharacters(page: page, cachePolicy: .remoteFirst)
+		try await repository.getCharactersPage(page: page, cachePolicy: .localFirst)
 	}
 }

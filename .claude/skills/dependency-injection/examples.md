@@ -151,8 +151,15 @@ public final class CharacterContainer: Sendable {
 
     // MARK: - Repository
 
-    private var repository: any CharacterRepositoryContract {
+    private var characterRepository: any CharacterRepositoryContract {
         CharacterRepository(
+            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+            memoryDataSource: memoryDataSource
+        )
+    }
+
+    private var charactersPageRepository: any CharactersPageRepositoryContract {
+        CharactersPageRepository(
             remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
             memoryDataSource: memoryDataSource
         )
@@ -162,9 +169,9 @@ public final class CharacterContainer: Sendable {
 
     func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCase(repository: repository),
-            refreshCharactersUseCase: RefreshCharactersUseCase(repository: repository),
-            searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
+            getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
+            refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
+            searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
             navigator: CharacterListNavigator(navigator: navigator),
             tracker: CharacterListTracker(tracker: tracker)
         )

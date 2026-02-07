@@ -16,7 +16,7 @@ Tests follow Given/When/Then structure:
 @Test("Fetches characters from repository")
 func fetchesCharacters() async throws {
     // Given
-    let sut = GetCharactersUseCase(repository: repositoryMock)
+    let sut = GetCharactersPageUseCase(repository: repositoryMock)
 
     // When
     let result = try await sut.execute(page: 1)
@@ -39,11 +39,15 @@ The project uses **Mocks** to isolate units under test. Mocks are located in:
 ### Example Mock
 
 ```swift
-final class CharacterRepositoryMock: CharacterRepositoryContract {
-    var getCharactersResult: Result<CharacterPage, Error> = .success(.stub())
+final class CharactersPageRepositoryMock: CharactersPageRepositoryContract, @unchecked Sendable {
+    var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
 
-    func getCharacters(page: Int) async throws -> CharacterPage {
-        try getCharactersResult.get()
+    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
+        try charactersResult.get()
+    }
+
+    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
+        try charactersResult.get()
     }
 }
 ```

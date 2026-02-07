@@ -286,8 +286,8 @@ protocol {Name}RepositoryContract: Sendable {
 
 **Naming Convention:**
 - Use `Detail` suffix for single-item methods: `get{Name}Detail`
-- Use plural for list methods: `get{Name}s`
-- This avoids confusion between `getCharacter` and `getCharacters`
+- Use `Page` suffix for list methods: `get{Name}sPage`, `search{Name}sPage`
+- This avoids confusion between `getCharacter` and `getCharactersPage`
 
 ### Cache Strategies
 

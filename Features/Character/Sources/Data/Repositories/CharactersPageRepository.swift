@@ -14,18 +14,18 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
+	func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
 		switch cachePolicy {
 		case .localFirst:
-			try await getCharactersLocalFirst(page: page)
+			try await getCharactersPageLocalFirst(page: page)
 		case .remoteFirst:
-			try await getCharactersRemoteFirst(page: page)
+			try await getCharactersPageRemoteFirst(page: page)
 		case .noCache:
-			try await getCharactersNoCache(page: page)
+			try await getCharactersPageNoCache(page: page)
 		}
 	}
 
-	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
+	func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filter)
 			return response.toDomain(currentPage: page)
@@ -64,7 +64,7 @@ private extension CharactersPageRepository {
 // MARK: - Cache Strategies
 
 private extension CharactersPageRepository {
-	func getCharactersLocalFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
+	func getCharactersPageLocalFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		if let cached = await memoryDataSource.getPage(page) {
 			return cached.toDomain(currentPage: page)
 		}
@@ -73,7 +73,7 @@ private extension CharactersPageRepository {
 		return response.toDomain(currentPage: page)
 	}
 
-	func getCharactersRemoteFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
+	func getCharactersPageRemoteFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let response = try await fetchFromRemote(page: page)
 			await memoryDataSource.savePage(response, page: page)
@@ -86,7 +86,7 @@ private extension CharactersPageRepository {
 		}
 	}
 
-	func getCharactersNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
+	func getCharactersPageNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		let response = try await fetchFromRemote(page: page)
 		return response.toDomain(currentPage: page)
 	}

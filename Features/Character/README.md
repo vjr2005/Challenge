@@ -22,9 +22,11 @@ Character/
 │   │   │   ├── CharacterRepositoryContract.swift
 │   │   │   └── CharactersPageRepositoryContract.swift
 │   │   ├── UseCases/
-│   │   │   ├── GetCharactersUseCase.swift
-│   │   │   ├── GetCharacterUseCase.swift
-│   │   │   └── SearchCharactersUseCase.swift
+│   │   │   ├── GetCharacterDetailUseCase.swift
+│   │   │   ├── GetCharactersPageUseCase.swift
+│   │   │   ├── RefreshCharacterDetailUseCase.swift
+│   │   │   ├── RefreshCharactersPageUseCase.swift
+│   │   │   └── SearchCharactersPageUseCase.swift
 │   │   └── Errors/
 │   │       ├── CharacterError.swift
 │   │       └── CharactersPageError.swift

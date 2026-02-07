@@ -42,9 +42,9 @@ public final class CharacterContainer: Sendable {
 
     func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCase(repository: charactersPageRepository),
-            refreshCharactersUseCase: RefreshCharactersUseCase(repository: charactersPageRepository),
-            searchCharactersUseCase: SearchCharactersUseCase(repository: charactersPageRepository),
+            getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
+            refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
+            searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
             getRecentSearchesUseCase: GetRecentSearchesUseCase(dataSource: recentSearchesDataSource),
             saveRecentSearchUseCase: SaveRecentSearchUseCase(dataSource: recentSearchesDataSource),
             deleteRecentSearchUseCase: DeleteRecentSearchUseCase(dataSource: recentSearchesDataSource),

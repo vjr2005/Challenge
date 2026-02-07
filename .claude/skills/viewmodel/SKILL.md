@@ -799,16 +799,16 @@ import Foundation
 final class CharacterListViewModel {
     private(set) var state: CharacterListViewState = .idle
 
-    private let getCharactersUseCase: GetCharactersUseCaseContract
+    private let getCharactersPageUseCase: GetCharactersPageUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private let tracker: CharacterListTrackerContract
 
     init(
-        getCharactersUseCase: GetCharactersUseCaseContract,
+        getCharactersPageUseCase: GetCharactersPageUseCaseContract,
         navigator: CharacterListNavigatorContract,
         tracker: CharacterListTrackerContract
     ) {
-        self.getCharactersUseCase = getCharactersUseCase
+        self.getCharactersPageUseCase = getCharactersPageUseCase
         self.navigator = navigator
         self.tracker = tracker
     }
@@ -835,7 +835,7 @@ private extension CharacterListViewModel {
     func load() async {
         state = .loading
         do {
-            let result = try await getCharactersUseCase.execute(page: 1)
+            let result = try await getCharactersPageUseCase.execute(page: 1)
             state = result.characters.isEmpty ? .empty : .loaded(result)
         } catch {
             state = .error(error)

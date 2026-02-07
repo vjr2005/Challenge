@@ -40,8 +40,8 @@ Features/{Feature}/
 Each UseCase encapsulates **one business operation** with **exactly one public method: `execute`**.
 
 > **CRITICAL:** A UseCase must have only the `execute` method. If you need multiple operations, create separate UseCases. For example:
-> - Instead of adding `search` method to `GetCharactersUseCase`, create a separate `SearchCharactersUseCase`
-> - Instead of adding `cachePolicy` parameter to `GetCharactersUseCase`, create separate `GetCharactersUseCase` (localFirst) and `RefreshCharactersUseCase` (remoteFirst)
+> - Instead of adding `search` method to `GetCharactersPageUseCase`, create a separate `SearchCharactersPageUseCase`
+> - Instead of adding `cachePolicy` parameter to `GetCharactersPageUseCase`, create separate `GetCharactersPageUseCase` (localFirst) and `RefreshCharactersPageUseCase` (remoteFirst)
 >
 > **Never add auxiliary methods** like `validate()` to existing UseCases. Each operation deserves its own UseCase.
 >
@@ -53,15 +53,15 @@ Naming convention:
 |-----------|--------------|--------|--------------|
 | Get single item | `Get{Name}DetailUseCase` | `execute(identifier:)` | localFirst (implicit) |
 | Refresh single item | `Refresh{Name}DetailUseCase` | `execute(identifier:)` | remoteFirst (implicit) |
-| Get list | `Get{Name}sUseCase` | `execute(page:)` | localFirst (implicit) |
-| Refresh list | `Refresh{Name}sUseCase` | `execute(page:)` | remoteFirst (implicit) |
-| Search | `Search{Name}sUseCase` | `execute(page:, query:)` | none (always remote) |
+| Get list | `Get{Name}sPageUseCase` | `execute(page:)` | localFirst (implicit) |
+| Refresh list | `Refresh{Name}sPageUseCase` | `execute(page:)` | remoteFirst (implicit) |
+| Search | `Search{Name}sPageUseCase` | `execute(page:, query:)` | none (always remote) |
 | Create | `Create{Name}UseCase` | `execute({name}:)` | - |
 | Update | `Update{Name}UseCase` | `execute({name}:)` | - |
 | Delete | `Delete{Name}UseCase` | `execute(id:)` | - |
 | Custom action | `{Action}{Name}UseCase` | `execute(...)` | - |
 
-> **Note:** Use `Detail` suffix for single-item UseCases (e.g., `GetCharacterDetailUseCase`) to distinguish from list UseCases (`GetCharactersUseCase`).
+> **Note:** Use `Detail` suffix for single-item UseCases and `Page` suffix for list UseCases (e.g., `GetCharacterDetailUseCase` vs `GetCharactersPageUseCase`).
 
 ### 1. Contract (Protocol)
 
@@ -259,37 +259,37 @@ struct GetCharacterWithEpisodesUseCase: GetCharacterWithEpisodesUseCaseContract 
 The same pattern applies to list operations:
 
 ```swift
-// GetCharactersUseCase - uses localFirst cache policy (implicit)
-protocol GetCharactersUseCaseContract: Sendable {
+// GetCharactersPageUseCase - uses localFirst cache policy (implicit)
+protocol GetCharactersPageUseCaseContract: Sendable {
     func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
-struct GetCharactersUseCase: GetCharactersUseCaseContract {
-    private let repository: CharacterRepositoryContract
+struct GetCharactersPageUseCase: GetCharactersPageUseCaseContract {
+    private let repository: CharactersPageRepositoryContract
 
-    init(repository: CharacterRepositoryContract) {
+    init(repository: CharactersPageRepositoryContract) {
         self.repository = repository
     }
 
     func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
-        try await repository.getCharacters(page: page, cachePolicy: .localFirst)
+        try await repository.getCharactersPage(page: page, cachePolicy: .localFirst)
     }
 }
 
-// RefreshCharactersUseCase - uses remoteFirst cache policy (implicit)
-protocol RefreshCharactersUseCaseContract: Sendable {
+// RefreshCharactersPageUseCase - uses remoteFirst cache policy (implicit)
+protocol RefreshCharactersPageUseCaseContract: Sendable {
     func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
-struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
-    private let repository: CharacterRepositoryContract
+struct RefreshCharactersPageUseCase: RefreshCharactersPageUseCaseContract {
+    private let repository: CharactersPageRepositoryContract
 
-    init(repository: CharacterRepositoryContract) {
+    init(repository: CharactersPageRepositoryContract) {
         self.repository = repository
     }
 
     func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
-        try await repository.getCharacters(page: page, cachePolicy: .remoteFirst)
+        try await repository.getCharactersPage(page: page, cachePolicy: .remoteFirst)
     }
 }
 ```
@@ -298,10 +298,10 @@ struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
 
 ```swift
 // Load with localFirst (default behavior)
-let page = try await getCharactersUseCase.execute(page: 1)
+let page = try await getCharactersPageUseCase.execute(page: 1)
 
 // Refresh with remoteFirst
-let page = try await refreshCharactersUseCase.execute(page: 1)
+let page = try await refreshCharactersPageUseCase.execute(page: 1)
 ```
 
 > **Note:** The cache policy is encapsulated in the UseCase, not exposed to ViewModels. This provides:
@@ -314,25 +314,25 @@ let page = try await refreshCharactersUseCase.execute(page: 1)
 Search operations typically bypass cache and always go to remote:
 
 ```swift
-// Example: SearchCharactersUseCase (always remote, no cachePolicy parameter)
-protocol SearchCharactersUseCaseContract: Sendable {
-    func execute(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage
+// Example: SearchCharactersPageUseCase (always remote, no cachePolicy parameter)
+protocol SearchCharactersPageUseCaseContract: Sendable {
+    func execute(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
 }
 
-struct SearchCharactersUseCase: SearchCharactersUseCaseContract {
-    private let repository: CharacterRepositoryContract
+struct SearchCharactersPageUseCase: SearchCharactersPageUseCaseContract {
+    private let repository: CharactersPageRepositoryContract
 
-    init(repository: CharacterRepositoryContract) {
+    init(repository: CharactersPageRepositoryContract) {
         self.repository = repository
     }
 
-    func execute(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage {
-        try await repository.searchCharacters(page: page, query: query)
+    func execute(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
+        try await repository.searchCharactersPage(page: page, filter: filter)
     }
 }
 ```
 
-> **Note:** `SearchCharactersUseCase` does NOT have a `cachePolicy` parameter because search results are always fetched from remote.
+> **Note:** `SearchCharactersPageUseCase` does NOT have a `cachePolicy` parameter because search results are always fetched from remote.
 
 ### UseCase with Validation
 

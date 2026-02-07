@@ -2,8 +2,8 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-/// Mock implementation of SearchCharactersUseCaseContract for testing.
-final class SearchCharactersUseCaseMock: SearchCharactersUseCaseContract, @unchecked Sendable {
+/// Mock implementation of SearchCharactersPageUseCaseContract for testing.
+final class SearchCharactersPageUseCaseMock: SearchCharactersPageUseCaseContract, @unchecked Sendable {
 	var result: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedPage: Int?

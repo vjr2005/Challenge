@@ -32,15 +32,15 @@ Features/{Feature}/
 |--------|---------|---------|
 | Get + Detail | Fetch single item (localFirst) | `GetCharacterDetailUseCase` |
 | Refresh + Detail | Refresh single item (remoteFirst) | `RefreshCharacterDetailUseCase` |
-| Get (plural) | Fetch collection (localFirst) | `GetCharactersUseCase` |
-| Refresh (plural) | Refresh collection (remoteFirst) | `RefreshCharactersUseCase` |
-| Search | Search with query | `SearchCharactersUseCase` |
+| Get (plural + Page) | Fetch collection (localFirst) | `GetCharactersPageUseCase` |
+| Refresh (plural + Page) | Refresh collection (remoteFirst) | `RefreshCharactersPageUseCase` |
+| Search (plural + Page) | Search with query | `SearchCharactersPageUseCase` |
 | Create | Create new item | `CreateOrderUseCase` |
 | Update | Update existing item | `UpdateProfileUseCase` |
 | Delete | Delete item | `DeleteCartItemUseCase` |
 | Validate | Validate data | `ValidateEmailUseCase` |
 
-> **Note:** Use `Detail` suffix for single-item UseCases to distinguish from list UseCases (`GetCharacterDetail` vs `GetCharacters`).
+> **Note:** Use `Detail` suffix for single-item UseCases and `Page` suffix for list UseCases to distinguish them (`GetCharacterDetailUseCase` vs `GetCharactersPageUseCase`).
 
 ---
 

@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-final class RefreshCharactersUseCaseMock: RefreshCharactersUseCaseContract, @unchecked Sendable {
+final class RefreshCharactersPageUseCaseMock: RefreshCharactersPageUseCaseContract, @unchecked Sendable {
 	var result: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
 	var onExecute: (() -> Void)?
 	private(set) var executeCallCount = 0

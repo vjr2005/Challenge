@@ -50,10 +50,10 @@ The codebase adheres to SOLID principles to ensure maintainable, extensible, and
 
 | Principle | Description | Example in Codebase |
 |-----------|-------------|---------------------|
-| **S**ingle Responsibility | Each class/struct has only one reason to change | `GetCharactersUseCase` only handles fetching characters; `CharacterViewModel` only manages character list state |
+| **S**ingle Responsibility | Each class/struct has only one reason to change | `GetCharactersPageUseCase` only handles fetching characters page; `CharacterViewModel` only manages character list state |
 | **O**pen/Closed | Open for extension, closed for modification | Protocols like `CharacterRepositoryContract` allow new implementations without modifying existing code |
 | **L**iskov Substitution | Subtypes must be substitutable for their base types | `RemoteCharacterDataSource` and `MemoryCharacterDataSource` are interchangeable via `CharacterDataSourceContract` |
-| **I**nterface Segregation | Prefer small, specific protocols over large ones | Separate contracts for `CharacterRepositoryContract`, `CharacterDataSourceContract` instead of one large protocol |
+| **I**nterface Segregation | Prefer small, specific protocols over large ones | Separate contracts for `CharacterRepositoryContract`, `CharactersPageRepositoryContract` instead of one large protocol |
 | **D**ependency Inversion | Depend on abstractions, not concrete implementations | ViewModels depend on UseCase protocols; Repositories depend on DataSource protocols |
 
 ### Practical Application
@@ -85,7 +85,8 @@ The Repository pattern acts as a **boundary between Domain and Data layers**, pr
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              DOMAIN LAYER                                   │
 │                                                                             │
-│   UseCase ──► CharacterRepositoryContract (Protocol)                        │
+│   UseCase ──► CharacterRepositoryContract (detail)                          │
+│              CharactersPageRepositoryContract (list/search)                 │
 │                        │                                                    │
 │                        │  • Works with Domain Models (Character)            │
 │                        │  • Doesn't know about DTOs, HTTP, or caching       │
@@ -113,21 +114,24 @@ The contract defines **what** operations are available, using only domain types:
 // Domain layer - no knowledge of Data layer implementation
 protocol CharacterRepositoryContract: Sendable {
     func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
-    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
-    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage
+}
+
+protocol CharactersPageRepositoryContract: Sendable {
+    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
 }
 ```
 
 ### Implementation (Data Layer)
 
-The repository implementation handles **how** data is fetched, cached, and transformed:
+Each contract has its own implementation that handles **how** data is fetched, cached, and transformed:
 
 ```swift
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
     private let memoryDataSource: CharacterMemoryDataSourceContract
 
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
         switch cachePolicy {
         case .localFirst:
             // 1. Check cache first

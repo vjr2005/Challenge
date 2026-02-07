@@ -261,8 +261,8 @@ Creates screen-specific trackers, same pattern as navigators:
 ```swift
 func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
     CharacterListViewModel(
-        getCharactersUseCase: makeGetCharactersUseCase(),
-        searchCharactersUseCase: makeSearchCharactersUseCase(),
+        getCharactersPageUseCase: makeGetCharactersPageUseCase(),
+        searchCharactersPageUseCase: makeSearchCharactersPageUseCase(),
         navigator: CharacterListNavigator(navigator: navigator),
         tracker: CharacterListTracker(tracker: tracker)
     )

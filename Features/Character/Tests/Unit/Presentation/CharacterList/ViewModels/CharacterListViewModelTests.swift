@@ -7,9 +7,9 @@ import Testing
 struct CharacterListViewModelTests {
     // MARK: - Properties
 
-    private let getCharactersUseCaseMock = GetCharactersUseCaseMock()
-    private let refreshCharactersUseCaseMock = RefreshCharactersUseCaseMock()
-    private let searchCharactersUseCaseMock = SearchCharactersUseCaseMock()
+    private let getCharactersPageUseCaseMock = GetCharactersPageUseCaseMock()
+    private let refreshCharactersPageUseCaseMock = RefreshCharactersPageUseCaseMock()
+    private let searchCharactersPageUseCaseMock = SearchCharactersPageUseCaseMock()
     private let getRecentSearchesUseCaseMock = GetRecentSearchesUseCaseMock()
     private let saveRecentSearchUseCaseMock = SaveRecentSearchUseCaseMock()
     private let deleteRecentSearchUseCaseMock = DeleteRecentSearchUseCaseMock()
@@ -22,9 +22,9 @@ struct CharacterListViewModelTests {
 
     init() {
         sut = CharacterListViewModel(
-            getCharactersUseCase: getCharactersUseCaseMock,
-            refreshCharactersUseCase: refreshCharactersUseCaseMock,
-            searchCharactersUseCase: searchCharactersUseCaseMock,
+            getCharactersPageUseCase: getCharactersPageUseCaseMock,
+            refreshCharactersPageUseCase: refreshCharactersPageUseCaseMock,
+            searchCharactersPageUseCase: searchCharactersPageUseCaseMock,
             getRecentSearchesUseCase: getRecentSearchesUseCaseMock,
             saveRecentSearchUseCase: saveRecentSearchUseCaseMock,
             deleteRecentSearchUseCase: deleteRecentSearchUseCaseMock,
@@ -49,7 +49,7 @@ struct CharacterListViewModelTests {
     func didAppearSetsLoadedStateOnSuccess() async {
         // Given
         let expected = CharactersPage.stub()
-        getCharactersUseCaseMock.result = .success(expected)
+        getCharactersPageUseCaseMock.result = .success(expected)
 
         // When
         await sut.didAppear()
@@ -62,7 +62,7 @@ struct CharacterListViewModelTests {
     func didAppearSetsEmptyStateWhenNoCharacters() async {
         // Given
         let emptyPage = CharactersPage.stub(characters: [])
-        getCharactersUseCaseMock.result = .success(emptyPage)
+        getCharactersPageUseCaseMock.result = .success(emptyPage)
 
         // When
         await sut.didAppear()
@@ -74,7 +74,7 @@ struct CharacterListViewModelTests {
     @Test("didAppear sets error state on failure")
     func didAppearSetsErrorStateOnFailure() async {
         // Given
-        getCharactersUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.didAppear()
@@ -86,14 +86,14 @@ struct CharacterListViewModelTests {
     @Test("didAppear calls use case requesting page one")
     func didAppearCallsUseCaseWithPageOne() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-        #expect(getCharactersUseCaseMock.lastRequestedPage == 1)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 1)
     }
 
     // MARK: - didTapOnRetryButton
@@ -101,29 +101,29 @@ struct CharacterListViewModelTests {
     @Test("didTapOnRetryButton retries loading when in error state")
     func didTapOnRetryButtonRetriesWhenError() async {
         // Given
-        getCharactersUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
         await sut.didAppear()
 
         // When
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 2)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 2)
     }
 
     @Test("didTapOnRetryButton always loads regardless of current state")
     func didTapOnRetryButtonAlwaysLoads() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
         await sut.didAppear()
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
 
         // When
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 2)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 2)
     }
 
     // MARK: - didTapOnLoadMoreButton
@@ -135,9 +135,9 @@ struct CharacterListViewModelTests {
         let secondPageCharacters = [Character.stub(id: 2)]
         let firstPage = CharactersPage.stub(characters: firstPageCharacters, currentPage: 1, hasNextPage: true)
         let secondPage = CharactersPage.stub(characters: secondPageCharacters, currentPage: 2, hasNextPage: false)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersUseCaseMock.result = .success(secondPage)
+        getCharactersPageUseCaseMock.result = .success(secondPage)
 
         // When
         await sut.didTapOnLoadMoreButton()
@@ -156,37 +156,37 @@ struct CharacterListViewModelTests {
     func didTapOnLoadMoreButtonIncrementsPage() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        #expect(getCharactersUseCaseMock.lastRequestedPage == 2)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 2)
     }
 
     @Test("didTapOnLoadMoreButton does nothing when no next page available")
     func didTapOnLoadMoreButtonDoesNothingWhenNoNextPage() async {
         // Given
         let lastPage = CharactersPage.stub(hasNextPage: false)
-        getCharactersUseCaseMock.result = .success(lastPage)
+        getCharactersPageUseCaseMock.result = .success(lastPage)
         await sut.didAppear()
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
     }
 
     @Test("didTapOnLoadMoreButton keeps existing data on error")
     func didTapOnLoadMoreButtonKeepsExistingDataOnError() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.didTapOnLoadMoreButton()
@@ -199,17 +199,17 @@ struct CharacterListViewModelTests {
     func didTapOnLoadMoreButtonRevertsPageOnError() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
         await sut.didTapOnLoadMoreButton()
 
         // When - retry after error
-        getCharactersUseCaseMock.result = .success(CharactersPage.stub(currentPage: 2))
+        getCharactersPageUseCaseMock.result = .success(CharactersPage.stub(currentPage: 2))
         await sut.didTapOnLoadMoreButton()
 
         // Then - should request page 2 again, not page 3
-        #expect(getCharactersUseCaseMock.lastRequestedPage == 2)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 2)
     }
 
     // MARK: - Navigation
@@ -237,20 +237,20 @@ struct CharacterListViewModelTests {
     @Test("Search query change triggers search use case after debounce delay")
     func searchQueryChangeTriggersSearchAfterDebounce() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
         await sut.searchTask?.value
 
         // Then
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.name == "Rick")
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Rick")
     }
 
     @Test("Rapid search query changes only trigger one load")
     func rapidSearchQueryChangesOnlyTriggersOneLoad() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "R"
@@ -259,14 +259,14 @@ struct CharacterListViewModelTests {
         await sut.searchTask?.value
 
         // Then
-        #expect(searchCharactersUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.name == "Rick")
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Rick")
     }
 
     @Test("didAppear uses search use case when query is set")
     func didAppearUsesSearchUseCaseWhenQueryIsSet() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
         sut.searchQuery = "Morty"
         await sut.searchTask?.value
 
@@ -274,15 +274,15 @@ struct CharacterListViewModelTests {
         await sut.didAppear()
 
         // Then
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.name == "Morty")
-        #expect(getCharactersUseCaseMock.executeCallCount == 0)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Morty")
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
     }
 
     @Test("didTapOnLoadMoreButton uses search use case when query is set")
     func didTapOnLoadMoreButtonUsesSearchUseCaseWhenQueryIsSet() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        searchCharactersUseCaseMock.result = .success(firstPage)
+        searchCharactersPageUseCaseMock.result = .success(firstPage)
         sut.searchQuery = "Summer"
         await sut.searchTask?.value
         await sut.didAppear()
@@ -291,34 +291,34 @@ struct CharacterListViewModelTests {
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.name == "Summer")
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Summer")
     }
 
     @Test("Empty search query uses get characters use case")
-    func emptySearchQueryUsesGetCharactersUseCase() async {
+    func emptySearchQueryUsesGetCharactersPageUseCase() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersUseCaseMock.executeCallCount == 0)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 0)
     }
 
     @Test("Whitespace-only search query uses get characters use case")
-    func whitespaceOnlySearchQueryUsesGetCharactersUseCase() async {
+    func whitespaceOnlySearchQueryUsesGetCharactersPageUseCase() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "   "
         await sut.searchTask?.value
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersUseCaseMock.executeCallCount == 0)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 0)
     }
 
     @Test("Search query change resets to page one")
@@ -326,25 +326,25 @@ struct CharacterListViewModelTests {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
         let secondPage = CharactersPage.stub(currentPage: 2, hasNextPage: false)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersUseCaseMock.result = .success(secondPage)
+        getCharactersPageUseCaseMock.result = .success(secondPage)
         await sut.didTapOnLoadMoreButton()
 
         // When
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
         sut.searchQuery = "Rick"
         await sut.searchTask?.value
 
         // Then
-        #expect(searchCharactersUseCaseMock.lastRequestedPage == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 1)
     }
 
     @Test("Search with no results sets emptySearch state")
     func searchWithNoResultsSetsEmptySearchState() async {
         // Given
         let emptyPage = CharactersPage.stub(characters: [])
-        searchCharactersUseCaseMock.result = .success(emptyPage)
+        searchCharactersPageUseCaseMock.result = .success(emptyPage)
 
         // When
         sut.searchQuery = "NonExistent"
@@ -357,7 +357,7 @@ struct CharacterListViewModelTests {
     @Test("Clearing search query before debounce only triggers one load")
     func clearingSearchQueryBeforeDebounceOnlyTriggersOneLoad() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
@@ -365,8 +365,8 @@ struct CharacterListViewModelTests {
         await sut.searchTask?.value
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersUseCaseMock.executeCallCount == 0)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 0)
     }
 
     // MARK: - didPullToRefresh
@@ -374,13 +374,13 @@ struct CharacterListViewModelTests {
     @Test("didPullToRefresh calls refresh use case")
     func didPullToRefreshCallsRefreshUseCase() async {
         // Given
-        refreshCharactersUseCaseMock.result = .success(.stub())
+        refreshCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
-        #expect(refreshCharactersUseCaseMock.executeCallCount == 1)
+        #expect(refreshCharactersPageUseCaseMock.executeCallCount == 1)
     }
 
     @Test("didPullToRefresh resets to page one")
@@ -388,29 +388,29 @@ struct CharacterListViewModelTests {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
         let secondPage = CharactersPage.stub(currentPage: 2, hasNextPage: false)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersUseCaseMock.result = .success(secondPage)
+        getCharactersPageUseCaseMock.result = .success(secondPage)
         await sut.didTapOnLoadMoreButton()
-        refreshCharactersUseCaseMock.result = .success(.stub())
+        refreshCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
-        #expect(refreshCharactersUseCaseMock.lastRequestedPage == 1)
+        #expect(refreshCharactersPageUseCaseMock.lastRequestedPage == 1)
     }
 
     @Test("didPullToRefresh keeps loaded state visible during network request")
     func didPullToRefreshKeepsLoadedStateDuringRequest() async {
         // Given
         let loadedPage = CharactersPage.stub()
-        getCharactersUseCaseMock.result = .success(loadedPage)
+        getCharactersPageUseCaseMock.result = .success(loadedPage)
         await sut.didAppear()
-        refreshCharactersUseCaseMock.result = .success(.stub())
+        refreshCharactersPageUseCaseMock.result = .success(.stub())
 
         var statesDuringRefresh: [CharacterListViewState] = []
-        refreshCharactersUseCaseMock.onExecute = { [weak sut] in
+        refreshCharactersPageUseCaseMock.onExecute = { [weak sut] in
             guard let sut else { return }
             statesDuringRefresh.append(sut.state)
         }
@@ -427,7 +427,7 @@ struct CharacterListViewModelTests {
     func didPullToRefreshSetsEmptyStateWhenNoCharacters() async {
         // Given
         let emptyPage = CharactersPage.stub(characters: [])
-        refreshCharactersUseCaseMock.result = .success(emptyPage)
+        refreshCharactersPageUseCaseMock.result = .success(emptyPage)
 
         // When
         await sut.didPullToRefresh()
@@ -439,7 +439,7 @@ struct CharacterListViewModelTests {
     @Test("didPullToRefresh sets error state on failure")
     func didPullToRefreshSetsErrorStateOnFailure() async {
         // Given
-        refreshCharactersUseCaseMock.result = .failure(.loadFailed)
+        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.didPullToRefresh()
@@ -453,7 +453,7 @@ struct CharacterListViewModelTests {
     @Test("didAppear tracks screen viewed")
     func didAppearTracksScreenViewed() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didAppear()
@@ -477,7 +477,7 @@ struct CharacterListViewModelTests {
     @Test("Search query change tracks search performed after debounce")
     func searchQueryChangeTracksSearchPerformed() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
@@ -490,7 +490,7 @@ struct CharacterListViewModelTests {
     @Test("Empty search query does not track search performed")
     func emptySearchQueryDoesNotTrackSearchPerformed() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
@@ -504,7 +504,7 @@ struct CharacterListViewModelTests {
     @Test("didTapOnRetryButton tracks retry button tapped")
     func didTapOnRetryButtonTracksRetryButtonTapped() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didTapOnRetryButton()
@@ -516,7 +516,7 @@ struct CharacterListViewModelTests {
     @Test("didPullToRefresh tracks pull to refresh triggered")
     func didPullToRefreshTracksPullToRefreshTriggered() async {
         // Given
-        refreshCharactersUseCaseMock.result = .success(.stub())
+        refreshCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didPullToRefresh()
@@ -529,7 +529,7 @@ struct CharacterListViewModelTests {
     func didTapOnLoadMoreButtonTracksLoadMoreButtonTapped() async {
         // Given
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersUseCaseMock.result = .success(firstPage)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
 
         // When
@@ -543,7 +543,7 @@ struct CharacterListViewModelTests {
     func didTapOnLoadMoreButtonDoesNotTrackWhenNoNextPage() async {
         // Given
         let lastPage = CharactersPage.stub(hasNextPage: false)
-        getCharactersUseCaseMock.result = .success(lastPage)
+        getCharactersPageUseCaseMock.result = .success(lastPage)
         await sut.didAppear()
 
         // When
@@ -564,7 +564,7 @@ struct CharacterListViewModelTests {
     @Test("didAppear loads recent searches")
     func didAppearLoadsRecentSearches() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
         getRecentSearchesUseCaseMock.searches = ["Rick", "Morty"]
 
         // When
@@ -577,7 +577,7 @@ struct CharacterListViewModelTests {
     @Test("Search saves to recent searches after debounce")
     func searchSavesToRecentSearchesAfterDebounce() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "Rick"
@@ -590,7 +590,7 @@ struct CharacterListViewModelTests {
     @Test("Empty search query does not save to recent searches")
     func emptySearchQueryDoesNotSave() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = ""
@@ -603,7 +603,7 @@ struct CharacterListViewModelTests {
     @Test("Whitespace-only search query does not save to recent searches")
     func whitespaceOnlySearchQueryDoesNotSave() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         sut.searchQuery = "   "
@@ -616,7 +616,7 @@ struct CharacterListViewModelTests {
     @Test("Recent searches refreshed after save")
     func recentSearchesRefreshedAfterSave() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
         getRecentSearchesUseCaseMock.searches = ["Rick"]
 
         // When
@@ -631,7 +631,7 @@ struct CharacterListViewModelTests {
     @Test("didSelectRecentSearch sets searchQuery")
     func didSelectRecentSearchSetsSearchQuery() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didSelectRecentSearch("Rick")
@@ -643,20 +643,20 @@ struct CharacterListViewModelTests {
     @Test("didSelectRecentSearch triggers immediate search")
     func didSelectRecentSearchTriggersImmediateSearch() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didSelectRecentSearch("Rick")
 
         // Then
-        #expect(searchCharactersUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.name == "Rick")
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Rick")
     }
 
     @Test("didSelectRecentSearch saves the query")
     func didSelectRecentSearchSavesQuery() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didSelectRecentSearch("Morty")
@@ -668,7 +668,7 @@ struct CharacterListViewModelTests {
     @Test("didSelectRecentSearch tracks search performed")
     func didSelectRecentSearchTracksSearchPerformed() async {
         // Given
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didSelectRecentSearch("Summer")
@@ -722,13 +722,13 @@ struct CharacterListViewModelTests {
     @Test("didChangeAdvancedFilters triggers fetch characters")
     func didChangeAdvancedFiltersTriggersFetchCharacters() async {
         // Given
-        getCharactersUseCaseMock.result = .success(.stub())
+        getCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didChangeAdvancedFilters()
 
         // Then
-        #expect(getCharactersUseCaseMock.executeCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
     }
 
     @Test("searchQuery reflects updated value")
@@ -756,15 +756,15 @@ struct CharacterListViewModelTests {
     func fetchCharactersUsesSearchUseCaseWhenFilterStateHasActiveFilters() async {
         // Given
         filterState.status = .alive
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didChangeAdvancedFilters()
 
         // Then
-        #expect(searchCharactersUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.status == .alive)
-        #expect(getCharactersUseCaseMock.executeCallCount == 0)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .alive)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
     }
 
     @Test("fetchMoreCharacters uses search use case when filterState has active filters")
@@ -772,15 +772,15 @@ struct CharacterListViewModelTests {
         // Given
         filterState.status = .dead
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        searchCharactersUseCaseMock.result = .success(firstPage)
+        searchCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didChangeAdvancedFilters()
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        #expect(searchCharactersUseCaseMock.lastRequestedFilter?.status == .dead)
-        #expect(searchCharactersUseCaseMock.lastRequestedPage == 2)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .dead)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 2)
     }
 
     @Test("activeFilterCount reflects filterState")
@@ -807,12 +807,12 @@ struct CharacterListViewModelTests {
     func fetchCharactersCombinesNameAndFilterState() async {
         // Given
         filterState.status = .alive
-        searchCharactersUseCaseMock.result = .success(.stub())
+        searchCharactersPageUseCaseMock.result = .success(.stub())
         sut.searchQuery = "Rick"
         await sut.searchTask?.value
 
         // Then
-        let filter = searchCharactersUseCaseMock.lastRequestedFilter
+        let filter = searchCharactersPageUseCaseMock.lastRequestedFilter
         #expect(filter?.name == "Rick")
         #expect(filter?.status == .alive)
     }

@@ -463,17 +463,26 @@ import ChallengeCore
 
 protocol CharacterRepositoryContract: Sendable {
     func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
-    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
-    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage
+}
+
+// Sources/Domain/Repositories/CharactersPageRepositoryContract.swift
+import ChallengeCore
+
+protocol CharactersPageRepositoryContract: Sendable {
+    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
 }
 ```
 
 **Naming Convention:**
 - `getCharacterDetail` - singular item with `Detail` suffix
-- `getCharacters` - plural for list operations
-- This avoids confusion between singular and plural method names
+- `getCharactersPage` - plural with `Page` suffix for list operations
+- `searchCharactersPage` - search with `Page` suffix
+- Separate contracts per ISP: detail vs page operations
 
 ### Implementation
+
+Each contract has its own implementation:
 
 ```swift
 // Sources/Data/Repositories/CharacterRepository.swift
@@ -501,11 +510,6 @@ struct CharacterRepository: CharacterRepositoryContract {
         case .noCache:
             try await getCharacterDetailNoCache(identifier: identifier)
         }
-    }
-
-    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage {
-        let response = try await fetchCharactersFromRemote(page: page, query: query)
-        return response.toDomain(currentPage: page)
     }
 }
 
@@ -612,17 +616,9 @@ import Foundation
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
     var result: Result<Character, CharacterError> = .failure(.loadFailed)
-    var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
-    var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
     private(set) var getCharacterDetailCallCount = 0
-    private(set) var getCharactersCallCount = 0
-    private(set) var searchCharactersCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
-    private(set) var lastRequestedPage: Int?
-    private(set) var lastSearchedPage: Int?
-    private(set) var lastSearchedQuery: String?
     private(set) var lastCharacterDetailCachePolicy: CachePolicy?
-    private(set) var lastCharactersCachePolicy: CachePolicy?
 
     func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
         getCharacterDetailCallCount += 1
@@ -630,18 +626,30 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
         lastCharacterDetailCachePolicy = cachePolicy
         return try result.get()
     }
+}
 
-    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
-        getCharactersCallCount += 1
+// Tests/Mocks/CharactersPageRepositoryMock.swift
+final class CharactersPageRepositoryMock: CharactersPageRepositoryContract, @unchecked Sendable {
+    var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+    var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+    private(set) var getCharactersPageCallCount = 0
+    private(set) var searchCharactersPageCallCount = 0
+    private(set) var lastRequestedPage: Int?
+    private(set) var lastSearchedPage: Int?
+    private(set) var lastSearchedFilter: CharacterFilter?
+    private(set) var lastCharactersCachePolicy: CachePolicy?
+
+    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
+        getCharactersPageCallCount += 1
         lastRequestedPage = page
         lastCharactersCachePolicy = cachePolicy
         return try charactersResult.get()
     }
 
-    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage {
-        searchCharactersCallCount += 1
+    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
+        searchCharactersPageCallCount += 1
         lastSearchedPage = page
-        lastSearchedQuery = query
+        lastSearchedFilter = filter
         return try searchResult.get()
     }
 }

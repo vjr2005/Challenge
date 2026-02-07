@@ -37,14 +37,18 @@ The Composition Root is the **single location** where the entire object graph is
 All dependencies are defined as **protocols** (named with `Contract` suffix). Concrete implementations are only known at the Composition Root.
 
 ```swift
-// Protocol definition (Domain layer)
+// Protocol definitions (Domain layer)
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacters(page: Int) async throws -> CharacterPage
-    func getCharacter(id: Int) async throws -> Character
+    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
 }
 
-// Concrete implementation (Data layer)
-final class CharacterRepository: CharacterRepositoryContract {
+protocol CharactersPageRepositoryContract: Sendable {
+    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
+}
+
+// Concrete implementations (Data layer)
+struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: any CharacterRemoteDataSourceContract
     private let memoryDataSource: any CharacterMemoryDataSourceContract
 
@@ -64,7 +68,7 @@ final class CharacterRepository: CharacterRepositoryContract {
 | Layer | Protocol Examples | Purpose |
 |-------|-------------------|---------|
 | **Presentation** | `CharacterListViewModelContract`, `NavigatorContract`, `TrackerContract` | ViewModel abstractions for Views |
-| **Domain** | `GetCharactersUseCaseContract`, `CharacterRepositoryContract` | Business logic contracts |
+| **Domain** | `GetCharactersPageUseCaseContract`, `CharacterRepositoryContract`, `CharactersPageRepositoryContract` | Business logic contracts |
 | **Data** | `CharacterRemoteDataSourceContract`, `HTTPClientContract` | Data access abstractions |
 
 ## Container Structure
@@ -122,9 +126,16 @@ public final class CharacterContainer: Sendable {
         self.tracker = tracker
     }
 
-    // Repository (created on demand)
-    private var repository: any CharacterRepositoryContract {
+    // Repositories (created on demand)
+    private var characterRepository: any CharacterRepositoryContract {
         CharacterRepository(
+            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+            memoryDataSource: memoryDataSource
+        )
+    }
+
+    private var charactersPageRepository: any CharactersPageRepositoryContract {
+        CharactersPageRepository(
             remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
             memoryDataSource: memoryDataSource
         )
@@ -133,8 +144,8 @@ public final class CharacterContainer: Sendable {
     // Factory methods for ViewModels
     func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCase(repository: repository),
-            searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
+            getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
+            searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
             navigator: CharacterListNavigator(navigator: navigator),
             tracker: CharacterListTracker(tracker: tracker)
         )
@@ -157,9 +168,10 @@ AppContainer
                     ├── CharacterRemoteDataSource ← HTTPClient
                     ├── CharacterMemoryDataSource
                     │
-                    └── CharacterRepository ← DataSources
+                    ├── CharacterRepository ← DataSources
+                    └── CharactersPageRepository ← DataSources
                             │
-                            ├── GetCharactersUseCase ← Repository
+                            ├── GetCharactersPageUseCase ← Repository
                             │
                             └── CharacterListViewModel ← UseCases, Navigator, Tracker
 ```
@@ -172,10 +184,10 @@ The protocol-based approach enables easy testing by injecting mocks:
 @Test("Fetches characters from repository")
 func fetchesCharacters() async throws {
     // Given - Inject mock instead of real implementation
-    let repositoryMock = CharacterRepositoryMock()
-    repositoryMock.getCharactersResult = .success(.stub())
+    let repositoryMock = CharactersPageRepositoryMock()
+    repositoryMock.charactersResult = .success(.stub())
 
-    let sut = GetCharactersUseCase(repository: repositoryMock)
+    let sut = GetCharactersPageUseCase(repository: repositoryMock)
 
     // When
     let result = try await sut.execute(page: 1)

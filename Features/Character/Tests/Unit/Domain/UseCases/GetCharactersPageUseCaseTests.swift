@@ -5,16 +5,16 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
-struct GetCharactersUseCaseTests {
+struct GetCharactersPageUseCaseTests {
     // MARK: - Properties
 
     private let repositoryMock = CharactersPageRepositoryMock()
-    private let sut: GetCharactersUseCase
+    private let sut: GetCharactersPageUseCase
 
     // MARK: - Initialization
 
     init() {
-        sut = GetCharactersUseCase(repository: repositoryMock)
+        sut = GetCharactersPageUseCase(repository: repositoryMock)
     }
 
     // MARK: - Execute
@@ -41,7 +41,7 @@ struct GetCharactersUseCaseTests {
         _ = try await sut.execute(page: 5)
 
         // Then
-        #expect(repositoryMock.getCharactersCallCount == 1)
+        #expect(repositoryMock.getCharactersPageCallCount == 1)
         #expect(repositoryMock.lastRequestedPage == 5)
         #expect(repositoryMock.lastCharactersCachePolicy == .localFirst)
     }
