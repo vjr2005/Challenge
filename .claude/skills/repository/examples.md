@@ -402,26 +402,41 @@ public enum CachePolicy: Sendable {
 }
 ```
 
-### Domain Error
+### Domain Errors
 
 ```swift
-// Sources/Domain/Errors/CharacterError.swift
+// Sources/Domain/Errors/CharacterError.swift (for detail operations)
 import ChallengeResources
 import Foundation
 
 public enum CharacterError: Error, Equatable, Sendable, LocalizedError {
     case loadFailed
-    case characterNotFound(id: Int)
-    case invalidPage(page: Int)
+    case notFound(identifier: Int)
 
     public var errorDescription: String? {
         switch self {
         case .loadFailed:
             return "characterError.loadFailed".localized()
-        case .characterNotFound(let id):
-            return "characterError.characterNotFound %lld".localized(id)
+        case .notFound(let identifier):
+            return "characterError.notFound %lld".localized(identifier)
+        }
+    }
+}
+
+// Sources/Domain/Errors/CharactersPageError.swift (for paginated list operations)
+import ChallengeResources
+import Foundation
+
+public enum CharactersPageError: Error, Equatable, Sendable, LocalizedError {
+    case loadFailed
+    case invalidPage(page: Int)
+
+    public var errorDescription: String? {
+        switch self {
+        case .loadFailed:
+            return "charactersPageError.loadFailed".localized()
         case .invalidPage(let page):
-            return "characterError.invalidPage %lld".localized(page)
+            return "charactersPageError.invalidPage %lld".localized(page)
         }
     }
 }
@@ -448,8 +463,8 @@ import ChallengeCore
 
 protocol CharacterRepositoryContract: Sendable {
     func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
-    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
-    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage
+    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage
 }
 ```
 
@@ -488,7 +503,7 @@ struct CharacterRepository: CharacterRepositoryContract {
         }
     }
 
-    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage {
         let response = try await fetchCharactersFromRemote(page: page, query: query)
         return response.toDomain(currentPage: page)
     }
@@ -507,11 +522,11 @@ private extension CharacterRepository {
         }
     }
 
-    func fetchCharactersFromRemote(page: Int, query: String? = nil) async throws(CharacterError) -> CharactersResponseDTO {
+    func fetchCharactersFromRemote(page: Int, query: String? = nil) async throws(CharactersPageError) -> CharactersResponseDTO {
         do {
             return try await remoteDataSource.fetchCharacters(page: page, query: query)
         } catch let error as HTTPError {
-            throw mapHTTPError(error, page: page)
+            throw mapPageHTTPError(error, page: page)
         } catch {
             throw .loadFailed
         }
@@ -555,13 +570,13 @@ private extension CharacterRepository {
     func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
         switch error {
         case .statusCode(404, _):
-            .characterNotFound(id: identifier)
+            .notFound(identifier: identifier)
         case .invalidURL, .invalidResponse, .statusCode:
             .loadFailed
         }
     }
 
-    func mapHTTPError(_ error: HTTPError, page: Int) -> CharacterError {
+    func mapPageHTTPError(_ error: HTTPError, page: Int) -> CharactersPageError {
         switch error {
         case .statusCode(404, _):
             .invalidPage(page: page)
@@ -597,8 +612,8 @@ import Foundation
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
     var result: Result<Character, CharacterError> = .failure(.loadFailed)
-    var charactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
-    var searchResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
+    var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+    var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
     private(set) var getCharacterDetailCallCount = 0
     private(set) var getCharactersCallCount = 0
     private(set) var searchCharactersCallCount = 0
@@ -616,14 +631,14 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
         return try result.get()
     }
 
-    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage {
+    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
         getCharactersCallCount += 1
         lastRequestedPage = page
         lastCharactersCachePolicy = cachePolicy
         return try charactersResult.get()
     }
 
-    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage {
         searchCharactersCallCount += 1
         lastSearchedPage = page
         lastSearchedQuery = query
@@ -751,7 +766,7 @@ struct CharacterRepositoryTests {
 
     // MARK: - Error Mapping Tests
 
-    @Test("Maps 404 error to characterNotFound")
+    @Test("Maps 404 error to notFound")
     func maps404ToCharacterNotFound() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
@@ -763,7 +778,7 @@ struct CharacterRepositoryTests {
         )
 
         // When / Then
-        await #expect(throws: CharacterError.characterNotFound(id: 42)) {
+        await #expect(throws: CharacterError.notFound(identifier: 42)) {
             _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .none)
         }
     }

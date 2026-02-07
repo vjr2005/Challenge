@@ -6,7 +6,7 @@ enum CharacterListViewState {
 	case loaded(CharactersPage)
 	case empty
 	case emptySearch
-	case error(CharacterError)
+	case error(CharactersPageError)
 
 	var isSearchAvailable: Bool {
 		switch self {

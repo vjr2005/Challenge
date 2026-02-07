@@ -3,18 +3,18 @@ import Testing
 
 @testable import ChallengeCharacter
 
-struct CharacterErrorTests {
+struct CharactersPageErrorTests {
     // MARK: - Equatability
 
     @Test(arguments: [
-        (CharacterError.loadFailed, CharacterError.loadFailed, true),
-        (CharacterError.notFound(identifier: 1), CharacterError.notFound(identifier: 1), true),
-        (CharacterError.notFound(identifier: 1), CharacterError.notFound(identifier: 2), false),
-        (CharacterError.loadFailed, CharacterError.notFound(identifier: 1), false)
+        (CharactersPageError.loadFailed, CharactersPageError.loadFailed, true),
+        (CharactersPageError.invalidPage(page: 1), CharactersPageError.invalidPage(page: 1), true),
+        (CharactersPageError.invalidPage(page: 1), CharactersPageError.invalidPage(page: 2), false),
+        (CharactersPageError.loadFailed, CharactersPageError.invalidPage(page: 1), false)
     ])
     func equality(
-        lhs: CharacterError,
-        rhs: CharacterError,
+        lhs: CharactersPageError,
+        rhs: CharactersPageError,
         expectedEqual: Bool
     ) {
         // When
@@ -29,7 +29,7 @@ struct CharacterErrorTests {
     @Test("Load failed error description is localized")
     func loadFailedErrorDescriptionIsLocalized() {
         // Given
-        let sut = CharacterError.loadFailed
+        let sut = CharactersPageError.loadFailed
 
         // When
         let description = sut.errorDescription
@@ -39,17 +39,17 @@ struct CharacterErrorTests {
         #expect(description?.isEmpty == false)
     }
 
-    @Test("Not found error description contains id")
-    func notFoundErrorDescriptionContainsId() {
+    @Test("Invalid page error description contains page number")
+    func invalidPageErrorDescriptionContainsPage() {
         // Given
-        let sut = CharacterError.notFound(identifier: 42)
+        let sut = CharactersPageError.invalidPage(page: 5)
 
         // When
         let description = sut.errorDescription
 
         // Then
         #expect(description != nil)
-        #expect(description?.contains("42") == true)
+        #expect(description?.contains("5") == true)
     }
 
     // MARK: - Sendable
@@ -57,7 +57,7 @@ struct CharacterErrorTests {
     @Test("Error is Sendable across contexts")
     func errorIsSendable() async {
         // Given
-        let error = CharacterError.loadFailed
+        let error = CharactersPageError.loadFailed
 
         // When
         let sentError = await sendToAnotherContext(error)
@@ -69,6 +69,6 @@ struct CharacterErrorTests {
 
 // MARK: - Helpers
 
-private func sendToAnotherContext(_ error: CharacterError) async -> CharacterError {
+private func sendToAnotherContext(_ error: CharactersPageError) async -> CharactersPageError {
     await Task { error }.value
 }

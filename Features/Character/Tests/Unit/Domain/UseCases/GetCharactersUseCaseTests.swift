@@ -52,7 +52,7 @@ struct GetCharactersUseCaseTests {
         repositoryMock.charactersResult = .failure(.loadFailed)
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.execute(page: 1)
         }
     }

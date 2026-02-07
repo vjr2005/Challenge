@@ -1,7 +1,7 @@
 import Foundation
 
 protocol RefreshCharactersUseCaseContract: Sendable {
-	func execute(page: Int) async throws(CharacterError) -> CharactersPage
+	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
 struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
@@ -11,7 +11,7 @@ struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(page: Int) async throws(CharacterError) -> CharactersPage {
+	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		try await repository.getCharacters(page: page, cachePolicy: .remoteFirst)
 	}
 }

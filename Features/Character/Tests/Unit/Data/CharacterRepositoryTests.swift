@@ -265,7 +265,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
 
         // When / Then
-        await #expect(throws: CharacterError.characterNotFound(identifier: 42)) {
+        await #expect(throws: CharacterError.notFound(identifier: 42)) {
             _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .localFirst)
         }
     }
@@ -436,7 +436,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.getCharacters(page: 1, cachePolicy: .remoteFirst)
         }
     }
@@ -526,7 +526,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
 
         // When / Then
-        await #expect(throws: CharacterError.invalidPage(page: 5)) {
+        await #expect(throws: CharactersPageError.invalidPage(page: 5)) {
             _ = try await sut.getCharacters(page: 5, cachePolicy: .localFirst)
         }
     }
@@ -537,7 +537,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
         }
     }
@@ -560,7 +560,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.getCharacters(page: 1, cachePolicy: .localFirst)
         }
     }
@@ -629,7 +629,15 @@ struct CharacterRepositoryTests {
         let result = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "NonExistentCharacter"))
 
         // Then
-        #expect(result == .empty(currentPage: 1))
+        let expected = CharactersPage(
+            characters: [],
+            currentPage: 1,
+            totalPages: 0,
+            totalCount: 0,
+            hasNextPage: false,
+            hasPreviousPage: false
+        )
+        #expect(result == expected)
     }
 
     @Test("Search characters maps HTTP 500 to load failed error")
@@ -638,7 +646,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
@@ -649,7 +657,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.searchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }

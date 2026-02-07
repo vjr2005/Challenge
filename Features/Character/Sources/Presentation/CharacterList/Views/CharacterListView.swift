@@ -180,7 +180,7 @@ private extension CharacterListView {
 		.padding(.vertical, theme.spacing.sm)
 	}
 
-	func errorView(error: CharacterError) -> some View {
+	func errorView(error: CharactersPageError) -> some View {
 		DSErrorView(
 			title: LocalizedStrings.Error.title,
 			message: error.localizedDescription,

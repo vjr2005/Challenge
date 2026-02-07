@@ -25,7 +25,8 @@ Character/
 │   │   │   ├── GetCharacterUseCase.swift
 │   │   │   └── SearchCharactersUseCase.swift
 │   │   └── Errors/
-│   │       └── CharacterError.swift
+│   │       ├── CharacterError.swift
+│   │       └── CharactersPageError.swift
 │   ├── Data/
 │   │   ├── Repositories/
 │   │   │   └── CharacterRepository.swift

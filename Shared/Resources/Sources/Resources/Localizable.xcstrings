@@ -364,18 +364,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to load characters. Please try again."
+            "value" : "Failed to load character. Please try again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error al cargar los personajes. Por favor, inténtalo de nuevo."
+            "value" : "Error al cargar el personaje. Por favor, inténtalo de nuevo."
           }
         }
       }
     },
-    "characterError.characterNotFound %lld" : {
+    "characterError.notFound %lld" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -392,7 +392,24 @@
         }
       }
     },
-    "characterError.invalidPage %lld" : {
+    "charactersPageError.loadFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load characters. Please try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error al cargar los personajes. Por favor, inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "charactersPageError.invalidPage %lld" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

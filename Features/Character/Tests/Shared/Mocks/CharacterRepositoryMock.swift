@@ -5,8 +5,8 @@ import Foundation
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
 	var result: Result<Character, CharacterError> = .failure(.loadFailed)
-	var charactersResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
-	var searchResult: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
+	var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+	var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
 	private(set) var getCharacterDetailCallCount = 0
 	private(set) var getCharactersCallCount = 0
 	private(set) var searchCharactersCallCount = 0
@@ -24,14 +24,14 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 		return try result.get()
 	}
 
-	func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage {
+	func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
 		getCharactersCallCount += 1
 		lastRequestedPage = page
 		lastCharactersCachePolicy = cachePolicy
 		return try charactersResult.get()
 	}
 
-	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharacterError) -> CharactersPage {
+	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		searchCharactersCallCount += 1
 		lastSearchedPage = page
 		lastSearchedFilter = filter

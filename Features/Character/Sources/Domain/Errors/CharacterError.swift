@@ -1,20 +1,17 @@
 import ChallengeResources
 import Foundation
 
-/// Errors that can occur when working with characters.
+/// Errors that can occur when working with character detail.
 public enum CharacterError: Error, Equatable, Sendable, LocalizedError {
 	case loadFailed
-	case characterNotFound(identifier: Int)
-	case invalidPage(page: Int)
+	case notFound(identifier: Int)
 
 	public var errorDescription: String? {
 		switch self {
 		case .loadFailed:
 			return "characterError.loadFailed".localized()
-		case .characterNotFound(let identifier):
-			return "characterError.characterNotFound %lld".localized(identifier)
-		case .invalidPage(let page):
-			return "characterError.invalidPage %lld".localized(page)
+		case .notFound(let identifier):
+			return "characterError.notFound %lld".localized(identifier)
 		}
 	}
 }

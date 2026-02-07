@@ -89,7 +89,7 @@ The Repository pattern acts as a **boundary between Domain and Data layers**, pr
 │                        │                                                    │
 │                        │  • Works with Domain Models (Character)            │
 │                        │  • Doesn't know about DTOs, HTTP, or caching       │
-│                        │  • Throws domain-specific errors (CharacterError)  │
+│                        │  • Throws domain-specific typed errors              │
 └────────────────────────┼────────────────────────────────────────────────────┘
                          │
                          ▼
@@ -112,9 +112,9 @@ The contract defines **what** operations are available, using only domain types:
 ```swift
 // Domain layer - no knowledge of Data layer implementation
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
-    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
-    func searchCharacters(page: Int, query: String) async throws(CharacterError) -> CharactersPage
+    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    func searchCharacters(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage
 }
 ```
 
@@ -212,7 +212,7 @@ The repository translates infrastructure errors into domain-specific errors:
 private func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
     switch error {
     case .statusCode(404, _):
-        .characterNotFound(identifier: identifier)  // Domain error
+        .notFound(identifier: identifier)  // Domain error
     case .invalidURL, .invalidResponse, .statusCode:
         .loadFailed
     }

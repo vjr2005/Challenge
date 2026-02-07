@@ -1,7 +1,7 @@
 import Foundation
 
 protocol GetCharactersUseCaseContract: Sendable {
-	func execute(page: Int) async throws(CharacterError) -> CharactersPage
+	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
 struct GetCharactersUseCase: GetCharactersUseCaseContract {
@@ -11,7 +11,7 @@ struct GetCharactersUseCase: GetCharactersUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(page: Int) async throws(CharacterError) -> CharactersPage {
+	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		try await repository.getCharacters(page: page, cachePolicy: .localFirst)
 	}
 }

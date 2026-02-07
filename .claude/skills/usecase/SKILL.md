@@ -261,7 +261,7 @@ The same pattern applies to list operations:
 ```swift
 // GetCharactersUseCase - uses localFirst cache policy (implicit)
 protocol GetCharactersUseCaseContract: Sendable {
-    func execute(page: Int) async throws(CharacterError) -> CharactersPage
+    func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
 struct GetCharactersUseCase: GetCharactersUseCaseContract {
@@ -271,14 +271,14 @@ struct GetCharactersUseCase: GetCharactersUseCaseContract {
         self.repository = repository
     }
 
-    func execute(page: Int) async throws(CharacterError) -> CharactersPage {
+    func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
         try await repository.getCharacters(page: page, cachePolicy: .localFirst)
     }
 }
 
 // RefreshCharactersUseCase - uses remoteFirst cache policy (implicit)
 protocol RefreshCharactersUseCaseContract: Sendable {
-    func execute(page: Int) async throws(CharacterError) -> CharactersPage
+    func execute(page: Int) async throws(CharactersPageError) -> CharactersPage
 }
 
 struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
@@ -288,7 +288,7 @@ struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
         self.repository = repository
     }
 
-    func execute(page: Int) async throws(CharacterError) -> CharactersPage {
+    func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
         try await repository.getCharacters(page: page, cachePolicy: .remoteFirst)
     }
 }
@@ -316,7 +316,7 @@ Search operations typically bypass cache and always go to remote:
 ```swift
 // Example: SearchCharactersUseCase (always remote, no cachePolicy parameter)
 protocol SearchCharactersUseCaseContract: Sendable {
-    func execute(page: Int, query: String) async throws(CharacterError) -> CharactersPage
+    func execute(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage
 }
 
 struct SearchCharactersUseCase: SearchCharactersUseCaseContract {
@@ -326,7 +326,7 @@ struct SearchCharactersUseCase: SearchCharactersUseCaseContract {
         self.repository = repository
     }
 
-    func execute(page: Int, query: String) async throws(CharacterError) -> CharactersPage {
+    func execute(page: Int, query: String) async throws(CharactersPageError) -> CharactersPage {
         try await repository.searchCharacters(page: page, query: query)
     }
 }

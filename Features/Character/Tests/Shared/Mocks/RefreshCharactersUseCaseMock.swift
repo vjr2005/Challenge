@@ -3,12 +3,12 @@ import Foundation
 @testable import ChallengeCharacter
 
 final class RefreshCharactersUseCaseMock: RefreshCharactersUseCaseContract, @unchecked Sendable {
-	var result: Result<CharactersPage, CharacterError> = .failure(.loadFailed)
+	var result: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
 	var onExecute: (() -> Void)?
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedPage: Int?
 
-	func execute(page: Int) async throws(CharacterError) -> CharactersPage {
+	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		executeCallCount += 1
 		lastRequestedPage = page
 		onExecute?()

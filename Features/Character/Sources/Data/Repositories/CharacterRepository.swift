@@ -25,7 +25,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 		}
 	}
 
-	func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage {
+	func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
 		switch cachePolicy {
 		case .localFirst:
 			try await getCharactersLocalFirst(page: page)
@@ -36,15 +36,22 @@ struct CharacterRepository: CharacterRepositoryContract {
 		}
 	}
 
-	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharacterError) -> CharactersPage {
+	func searchCharacters(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filter)
 			return response.toDomain(currentPage: page)
 		} catch let error as HTTPError {
 			if case .statusCode(404, _) = error {
-				return .empty(currentPage: page)
+				return CharactersPage(
+					characters: [],
+					currentPage: page,
+					totalPages: 0,
+					totalCount: 0,
+					hasNextPage: false,
+					hasPreviousPage: false
+				)
 			}
-			throw mapHTTPError(error, page: page)
+			throw mapPageHTTPError(error, page: page)
 		} catch {
 			throw .loadFailed
 		}
@@ -64,11 +71,11 @@ private extension CharacterRepository {
 		}
 	}
 
-	func fetchCharactersFromRemote(page: Int, filter: CharacterFilter = .empty) async throws(CharacterError) -> CharactersResponseDTO {
+	func fetchCharactersFromRemote(page: Int, filter: CharacterFilter = .empty) async throws(CharactersPageError) -> CharactersResponseDTO {
 		do {
 			return try await remoteDataSource.fetchCharacters(page: page, filter: filter)
 		} catch let error as HTTPError {
-			throw mapHTTPError(error, page: page)
+			throw mapPageHTTPError(error, page: page)
 		} catch {
 			throw .loadFailed
 		}
@@ -110,7 +117,7 @@ private extension CharacterRepository {
 // MARK: - Characters Page Cache Strategies
 
 private extension CharacterRepository {
-	func getCharactersLocalFirst(page: Int) async throws(CharacterError) -> CharactersPage {
+	func getCharactersLocalFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		if let cached = await memoryDataSource.getPage(page) {
 			return cached.toDomain(currentPage: page)
 		}
@@ -119,7 +126,7 @@ private extension CharacterRepository {
 		return response.toDomain(currentPage: page)
 	}
 
-	func getCharactersRemoteFirst(page: Int) async throws(CharacterError) -> CharactersPage {
+	func getCharactersRemoteFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let response = try await fetchCharactersFromRemote(page: page)
 			await memoryDataSource.savePage(response, page: page)
@@ -132,7 +139,7 @@ private extension CharacterRepository {
 		}
 	}
 
-	func getCharactersNoCache(page: Int) async throws(CharacterError) -> CharactersPage {
+	func getCharactersNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		let response = try await fetchCharactersFromRemote(page: page)
 		return response.toDomain(currentPage: page)
 	}
@@ -144,13 +151,13 @@ private extension CharacterRepository {
 	func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
 		switch error {
 		case .statusCode(404, _):
-			.characterNotFound(identifier: identifier)
+			.notFound(identifier: identifier)
 		case .invalidURL, .invalidResponse, .statusCode:
 			.loadFailed
 		}
 	}
 
-	func mapHTTPError(_ error: HTTPError, page: Int) -> CharacterError {
+	func mapPageHTTPError(_ error: HTTPError, page: Int) -> CharactersPageError {
 		switch error {
 		case .statusCode(404, _):
 			.invalidPage(page: page)

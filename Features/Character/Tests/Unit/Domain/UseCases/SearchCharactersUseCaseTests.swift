@@ -52,7 +52,7 @@ struct SearchCharactersUseCaseTests {
         repositoryMock.searchResult = .failure(.loadFailed)
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed) {
             _ = try await sut.execute(page: 1, filter: CharacterFilter(name: "Rick"))
         }
     }
