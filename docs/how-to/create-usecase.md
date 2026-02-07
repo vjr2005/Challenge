@@ -145,6 +145,7 @@ final class Refresh{Name}DetailUseCaseMock: Refresh{Name}DetailUseCaseContract, 
 Create `Tests/Unit/Domain/UseCases/Get{Name}DetailUseCaseTests.swift`:
 
 ```swift
+import ChallengeCore
 import Foundation
 import Testing
 
@@ -202,6 +203,7 @@ struct Get{Name}DetailUseCaseTests {
 Create `Tests/Unit/Domain/UseCases/Refresh{Name}DetailUseCaseTests.swift`:
 
 ```swift
+import ChallengeCore
 import Foundation
 import Testing
 

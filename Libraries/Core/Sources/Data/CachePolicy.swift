@@ -1,7 +1,7 @@
 import Foundation
 
 /// Policy for controlling cache behavior when fetching data.
-enum CachePolicy: Sendable {
+public enum CachePolicy: Sendable {
 	/// Cache first, remote if not found. Default behavior.
 	case localFirst
 

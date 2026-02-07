@@ -391,9 +391,11 @@ struct {Name}RepositoryTests {
 
 ### CachePolicy
 
+`CachePolicy` is defined in `ChallengeCore` and shared across all features:
+
 ```swift
-// Sources/Domain/Models/CachePolicy.swift
-enum CachePolicy: Sendable {
+// Libraries/Core/Sources/Data/CachePolicy.swift
+public enum CachePolicy: Sendable {
     case localFirst   // Cache first, remote if not found. Default behavior.
     case remoteFirst  // Remote first, cache as fallback on error.
     case none         // Only remote, no cache interaction.
@@ -442,6 +444,8 @@ struct Character: Equatable {
 
 ```swift
 // Sources/Domain/Repositories/CharacterRepositoryContract.swift
+import ChallengeCore
+
 protocol CharacterRepositoryContract: Sendable {
     func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
     func getCharacters(page: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> CharactersPage
@@ -458,6 +462,7 @@ protocol CharacterRepositoryContract: Sendable {
 
 ```swift
 // Sources/Data/Repositories/CharacterRepository.swift
+import ChallengeCore
 import ChallengeNetworking
 
 struct CharacterRepository: CharacterRepositoryContract {
@@ -585,6 +590,7 @@ extension CharacterDTO {
 
 ```swift
 // Tests/Mocks/CharacterRepositoryMock.swift
+import ChallengeCore
 import Foundation
 
 @testable import {AppName}Character
@@ -630,6 +636,7 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 
 ```swift
 // Tests/Data/CharacterRepositoryTests.swift
+import ChallengeCore
 import ChallengeNetworking
 import Foundation
 import Testing

@@ -153,7 +153,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 
 ### Caching Strategies
 
-The repository supports multiple caching policies through the `CachePolicy` enum:
+The repository supports multiple caching policies through the `CachePolicy` enum (defined in `ChallengeCore`):
 
 | Policy | Behavior | Use Case |
 |--------|----------|----------|
@@ -162,7 +162,8 @@ The repository supports multiple caching policies through the `CachePolicy` enum
 | `.none` | Always fetch from remote, no caching | Real-time data, search queries |
 
 ```swift
-enum CachePolicy: Sendable {
+// Libraries/Core/Sources/Data/CachePolicy.swift
+public enum CachePolicy: Sendable {
     case localFirst   // Cache → Remote
     case remoteFirst  // Remote → Cache (fallback)
     case none         // Remote only

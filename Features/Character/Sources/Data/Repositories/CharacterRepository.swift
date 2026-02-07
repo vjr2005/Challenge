@@ -1,3 +1,4 @@
+import ChallengeCore
 import ChallengeNetworking
 import Foundation
 

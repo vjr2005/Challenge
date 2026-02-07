@@ -1,3 +1,4 @@
+import ChallengeCore
 import Foundation
 
 protocol CharacterRepositoryContract: Sendable {

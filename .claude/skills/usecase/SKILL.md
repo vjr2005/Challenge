@@ -380,6 +380,7 @@ struct CreateCharacterUseCase: CreateCharacterUseCaseContract {
 ### Get UseCase Test
 
 ```swift
+import ChallengeCore
 import Foundation
 import Testing
 
@@ -435,6 +436,7 @@ struct Get{Name}DetailUseCaseTests {
 ### Refresh UseCase Test
 
 ```swift
+import ChallengeCore
 import Foundation
 import Testing
 

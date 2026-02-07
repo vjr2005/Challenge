@@ -261,19 +261,24 @@ private extension {Name}Repository {
 
 ## CachePolicy
 
-Use `CachePolicy` enum to control cache behavior:
+Use `CachePolicy` enum (from `ChallengeCore`) to control cache behavior:
 
 ```swift
-enum CachePolicy: Sendable {
+// Libraries/Core/Sources/Data/CachePolicy.swift
+public enum CachePolicy: Sendable {
     case localFirst   // Cache first, remote if not found (default)
     case remoteFirst  // Remote first, cache as fallback on error
     case none         // Only remote, no cache interaction
 }
 ```
 
+> **Note:** `CachePolicy` is defined in `ChallengeCore` so it can be reused across features. Import `ChallengeCore` in any file that references it.
+
 ### Contract with CachePolicy
 
 ```swift
+import ChallengeCore
+
 protocol {Name}RepositoryContract: Sendable {
     func get{Name}Detail(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
@@ -383,7 +388,7 @@ private extension {Name}Repository {
 
 ### Repository with CachePolicy (Both DataSources)
 
-- [ ] Create CachePolicy enum in Domain/Models/
+- [ ] Import `ChallengeCore` (provides `CachePolicy`)
 - [ ] Create Domain model with Equatable conformance
 - [ ] Create Domain error enum in Domain/Errors/ with typed throws
 - [ ] Create Contract in Domain/Repositories/ with cachePolicy parameter

@@ -25,7 +25,6 @@ Features/{Feature}/
 │   │   │   └── {Feature}Error.swift
 │   │   ├── Models/
 │   │   │   ├── {Name}.swift
-│   │   │   └── CachePolicy.swift          # Only if using cache
 │   │   └── Repositories/
 │   │       └── {Name}RepositoryContract.swift
 │   └── Data/
@@ -435,30 +434,14 @@ struct {Name}RepositoryTests {
 
 ## Option C: Both DataSources with CachePolicy
 
-### 3C. Create CachePolicy
+`CachePolicy` is defined in `ChallengeCore` (`Libraries/Core/Sources/Data/CachePolicy.swift`) and shared across all features — no need to create it per feature.
 
-Create `Sources/Domain/Models/CachePolicy.swift`:
-
-```swift
-import Foundation
-
-enum CachePolicy: Sendable {
-    /// Cache first, remote if not found (default)
-    case localFirst
-
-    /// Remote first, cache as fallback on error
-    case remoteFirst
-
-    /// Only remote, no cache interaction
-    case none
-}
-```
-
-### 4C. Create Contract
+### 3C. Create Contract
 
 Create `Sources/Domain/Repositories/{Name}RepositoryContract.swift`:
 
 ```swift
+import ChallengeCore
 import Foundation
 
 protocol {Name}RepositoryContract: Sendable {
@@ -468,11 +451,12 @@ protocol {Name}RepositoryContract: Sendable {
 
 > **Note:** Use `Detail` suffix for single-item methods to distinguish from list methods (`get{Name}Detail` vs `get{Name}s`).
 
-### 5C. Create Implementation
+### 4C. Create Implementation
 
 Create `Sources/Data/Repositories/{Name}Repository.swift`:
 
 ```swift
+import ChallengeCore
 import ChallengeNetworking
 import Foundation
 
@@ -567,11 +551,12 @@ private extension {Name}DTO {
 }
 ```
 
-### 6C. Create Mock
+### 5C. Create Mock
 
 Create `Tests/Shared/Mocks/{Name}RepositoryMock.swift`:
 
 ```swift
+import ChallengeCore
 import Foundation
 
 @testable import Challenge{Feature}
@@ -591,11 +576,12 @@ final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable 
 }
 ```
 
-### 7C. Create tests
+### 6C. Create tests
 
 Create `Tests/Unit/Data/{Name}RepositoryTests.swift`:
 
 ```swift
+import ChallengeCore
 import ChallengeCoreMocks
 import ChallengeNetworking
 import Foundation

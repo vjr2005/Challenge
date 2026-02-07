@@ -409,6 +409,8 @@ public enum JSONLoadError: Error, CustomStringConvertible {
 ## Usage in Repository
 
 ```swift
+import ChallengeCore
+
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}MemoryDataSourceContract
