@@ -104,6 +104,8 @@ FeatureName/
 │   │   │   └── {Name}MemoryDataSource.swift
 │   │   ├── DTOs/
 │   │   │   └── {Name}DTO.swift
+│   │   ├── Mappers/
+│   │   │   └── {Name}Mapper.swift
 │   │   └── Repositories/
 │   │       └── {Name}Repository.swift
 │   └── Presentation/
@@ -506,6 +508,7 @@ AppKit/
 | DTO | `{Name}DTO.swift` | `CharacterDTO.swift` |
 | UseCase | `{Action}{Name}UseCase.swift` | `GetCharacterUseCase.swift` |
 | Repository | `{Name}Repository.swift` | `CharacterRepository.swift` |
+| Mapper | `{Name}Mapper.swift` | `CharacterMapper.swift` |
 | Contract | `{Name}Contract.swift` | `CharacterRepositoryContract.swift` |
 | DataSource | `{Name}{Type}DataSource.swift` | `CharacterRemoteDataSource.swift` |
 | Navigator | `{ScreenName}Navigator.swift` | `CharacterDetailNavigator.swift` |

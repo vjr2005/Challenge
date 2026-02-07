@@ -199,22 +199,6 @@ struct CharactersPageRepositoryTests {
         #expect(remoteDataSourceMock.lastFetchedPage == 5)
     }
 
-    @Test("Get characters transforms pagination info correctly")
-    func getCharactersPageTransformsPaginationInfo() async throws {
-        // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response_pagination")
-        remoteDataSourceMock.charactersResult = .success(responseDTO)
-
-        // When
-        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
-
-        // Then
-        #expect(value.totalCount == 100)
-        #expect(value.totalPages == 5)
-        #expect(value.hasNextPage == true)
-        #expect(value.hasPreviousPage == false)
-    }
-
     // MARK: - Get Characters - Errors
 
     @Test("Get characters maps HTTP 404 to invalid page error")

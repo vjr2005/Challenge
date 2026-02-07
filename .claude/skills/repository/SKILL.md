@@ -36,6 +36,8 @@ Features/{Feature}/
 │       │   └── {Name}MemoryDataSource.swift      # See /datasource skill
 │       ├── DTOs/
 │       │   └── {Name}DTO.swift                   # See /datasource skill
+│       ├── Mappers/
+│       │   └── {Name}Mapper.swift                # DTO to Domain mapping
 │       └── Repositories/
 │           └── {Name}Repository.swift            # Implementation
 └── Tests/
@@ -129,27 +131,45 @@ protocol {Name}RepositoryContract: Sendable {
 
 ### DTO to Domain Mapping
 
-Mapping extensions are defined in the **Repository file** as **private extensions**. This ensures:
-- DTOs remain anemic (no knowledge of Domain models)
-- Mapping is the Repository's responsibility (Anti-Corruption Layer)
-- No leakage of transformation logic outside the Repository
+Mapping logic lives in dedicated **Mapper types** that conform to `MapperContract` (from `ChallengeCore`). Each Mapper is a pure, stateless struct that transforms DTOs into Domain models. Repositories use Mappers as concrete types (not injected via protocol), since they are deterministic and don't need mocking.
 
 ```swift
-// In {Name}Repository.swift
+// Libraries/Core/Sources/Data/MapperContract.swift
+public protocol MapperContract<Input, Output>: Sendable {
+    associatedtype Input
+    associatedtype Output
+    func map(_ input: Input) -> Output
+}
+```
 
-// MARK: - DTO to Domain Mapping
+```swift
+// In Sources/Data/Mappers/{Name}Mapper.swift
+import ChallengeCore
 
-private extension {Name}DTO {
-    func toDomain() -> {Name} {
-        {Name}(id: id, name: name)
+struct {Name}Mapper: MapperContract {
+    func map(_ input: {Name}DTO) -> {Name} {
+        {Name}(id: input.id, name: input.name)
     }
 }
 ```
 
-**Why private?**
-- Only the Repository should call `toDomain()`
-- Encapsulates transformation logic
-- Prevents other layers from depending on DTOs
+```swift
+// In {Name}Repository.swift
+struct {Name}Repository: {Name}RepositoryContract {
+    private let mapper = {Name}Mapper()
+
+    func get{Name}(identifier: Int) async throws -> {Name} {
+        let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
+        return mapper.map(dto)
+    }
+}
+```
+
+**Why Mapper types?**
+- Single Responsibility: Repositories handle data access, Mappers handle transformation
+- Independently testable without data source mocks
+- Composable: Mappers can delegate to other Mappers (e.g., `CharacterMapper` uses `LocationMapper`)
+- DTOs remain anemic (no knowledge of Domain models)
 
 ### Mock
 
@@ -357,7 +377,7 @@ private extension {Name}Repository {
 | Domain Model | internal | `Sources/Domain/Models/` |
 | Contract | internal | `Sources/Domain/Repositories/` |
 | Implementation | internal | `Sources/Data/Repositories/` |
-| DTO Mapping | **private** | `Sources/Data/Repositories/` (private extension) |
+| Mapper | internal | `Sources/Data/Mappers/` |
 | Mock | internal | `Tests/Mocks/` |
 
 ---
@@ -369,11 +389,12 @@ private extension {Name}Repository {
 - [ ] Create Domain model with Equatable conformance
 - [ ] Create Domain error enum in Domain/Errors/ with typed throws
 - [ ] Create Contract in Domain/Repositories/ using typed throws
-- [ ] Create Implementation injecting RemoteDataSource
-- [ ] Add DTO to Domain mapping extension
+- [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
+- [ ] Create Implementation injecting RemoteDataSource, using Mapper
 - [ ] Add HTTPError to Domain error mapping
 - [ ] Create Mock in Tests/Mocks/
-- [ ] Create tests verifying transformation and error mapping
+- [ ] Create Mapper tests verifying transformation
+- [ ] Create Repository tests verifying cache policies and error mapping
 - [ ] Add localized strings for error messages
 
 ### Local Only Repository
@@ -381,21 +402,23 @@ private extension {Name}Repository {
 - [ ] Create Domain model with Equatable conformance
 - [ ] Create Domain error enum in Domain/Errors/
 - [ ] Create Contract in Domain/Repositories/ using typed throws
-- [ ] Create Implementation injecting MemoryDataSource
-- [ ] Add DTO to Domain mapping
+- [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
+- [ ] Create Implementation injecting MemoryDataSource, using Mapper
 - [ ] Add Domain to DTO mapping (for saving)
 - [ ] Create Mock and tests
 
 ### Repository with CachePolicy (Both DataSources)
 
-- [ ] Import `ChallengeCore` (provides `CachePolicy`)
+- [ ] Import `ChallengeCore` (provides `CachePolicy` and `MapperContract`)
 - [ ] Create Domain model with Equatable conformance
 - [ ] Create Domain error enum in Domain/Errors/ with typed throws
 - [ ] Create Contract in Domain/Repositories/ with cachePolicy parameter
-- [ ] Create Implementation injecting both DataSources
+- [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
+- [ ] Create Implementation injecting both DataSources, using Mapper
 - [ ] Extract remote fetch helper methods
 - [ ] Implement cache strategies (localFirst, remoteFirst, none)
 - [ ] Add HTTPError to Domain error mapping
+- [ ] Create Mapper tests verifying transformation
 - [ ] Create tests for localFirst (cache hit → no remote call)
 - [ ] Create tests for localFirst (cache miss → remote + save)
 - [ ] Create tests for remoteFirst (always remote, cache fallback on error)

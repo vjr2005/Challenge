@@ -31,10 +31,13 @@ Character/
 │   │       ├── CharacterError.swift
 │   │       └── CharactersPageError.swift
 │   ├── Data/
+│   │   ├── Mappers/
+│   │   │   ├── LocationMapper.swift
+│   │   │   ├── CharacterMapper.swift
+│   │   │   └── CharactersPageMapper.swift
 │   │   ├── Repositories/
 │   │   │   ├── CharacterRepository.swift
-│   │   │   ├── CharactersPageRepository.swift
-│   │   │   └── CharacterDTOMapping.swift
+│   │   │   └── CharactersPageRepository.swift
 │   │   ├── DataSources/
 │   │   │   ├── CharacterRemoteDataSource.swift
 │   │   │   └── CharacterMemoryDataSource.swift

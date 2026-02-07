@@ -5,6 +5,7 @@ import Foundation
 struct CharacterRepository: CharacterRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterMemoryDataSourceContract
+	private let mapper = CharacterMapper()
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
@@ -45,21 +46,21 @@ private extension CharacterRepository {
 private extension CharacterRepository {
 	func getCharacterLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
 		if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-			return cached.toDomain()
+			return mapper.map(cached)
 		}
 		let dto = try await fetchFromRemote(identifier: identifier)
 		await memoryDataSource.saveCharacter(dto)
-		return dto.toDomain()
+		return mapper.map(dto)
 	}
 
 	func getCharacterRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
 		do {
 			let dto = try await fetchFromRemote(identifier: identifier)
 			await memoryDataSource.saveCharacter(dto)
-			return dto.toDomain()
+			return mapper.map(dto)
 		} catch {
 			if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-				return cached.toDomain()
+				return mapper.map(cached)
 			}
 			throw error
 		}
@@ -67,7 +68,7 @@ private extension CharacterRepository {
 
 	func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
 		let dto = try await fetchFromRemote(identifier: identifier)
-		return dto.toDomain()
+		return mapper.map(dto)
 	}
 }
 

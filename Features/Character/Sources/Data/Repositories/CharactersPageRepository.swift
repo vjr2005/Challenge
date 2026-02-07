@@ -5,6 +5,7 @@ import Foundation
 struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterMemoryDataSourceContract
+	private let mapper = CharactersPageMapper()
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
@@ -28,7 +29,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 	func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filter)
-			return response.toDomain(currentPage: page)
+			return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
 		} catch let error as HTTPError {
 			if case .statusCode(404, _) = error {
 				return CharactersPage(
@@ -66,21 +67,21 @@ private extension CharactersPageRepository {
 private extension CharactersPageRepository {
 	func getCharactersPageLocalFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		if let cached = await memoryDataSource.getPage(page) {
-			return cached.toDomain(currentPage: page)
+			return mapper.map(CharactersPageMapperInput(response: cached, currentPage: page))
 		}
 		let response = try await fetchFromRemote(page: page)
 		await memoryDataSource.savePage(response, page: page)
-		return response.toDomain(currentPage: page)
+		return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
 	}
 
 	func getCharactersPageRemoteFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let response = try await fetchFromRemote(page: page)
 			await memoryDataSource.savePage(response, page: page)
-			return response.toDomain(currentPage: page)
+			return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
 		} catch {
 			if let cached = await memoryDataSource.getPage(page) {
-				return cached.toDomain(currentPage: page)
+				return mapper.map(CharactersPageMapperInput(response: cached, currentPage: page))
 			}
 			throw error
 		}
@@ -88,7 +89,7 @@ private extension CharactersPageRepository {
 
 	func getCharactersPageNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		let response = try await fetchFromRemote(page: page)
-		return response.toDomain(currentPage: page)
+		return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
 	}
 }
 

@@ -11,6 +11,7 @@ Complete implementation examples for different repository scenarios.
 ```swift
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
+    private let mapper = {Name}Mapper()
 
     init(remoteDataSource: {Name}RemoteDataSourceContract) {
         self.remoteDataSource = remoteDataSource
@@ -18,12 +19,12 @@ struct {Name}Repository: {Name}RepositoryContract {
 
     func get{Name}(id: Int) async throws -> {Name} {
         let dto = try await remoteDataSource.fetch{Name}(id: id)
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 
     func getAll{Name}s() async throws -> [{Name}] {
         let dtos = try await remoteDataSource.fetchAll{Name}s()
-        return dtos.map { $0.toDomain() }
+        return dtos.map { mapper.map($0) }
     }
 }
 ```
@@ -95,6 +96,7 @@ private enum TestError: Error {
 ```swift
 struct {Name}Repository: {Name}RepositoryContract {
     private let memoryDataSource: {Name}MemoryDataSourceContract
+    private let mapper = {Name}Mapper()
 
     init(memoryDataSource: {Name}MemoryDataSourceContract) {
         self.memoryDataSource = memoryDataSource
@@ -104,12 +106,12 @@ struct {Name}Repository: {Name}RepositoryContract {
         guard let dto = await memoryDataSource.get{Name}(id: id) else {
             throw {Name}RepositoryError.notFound
         }
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 
     func getAll{Name}s() async throws -> [{Name}] {
         let dtos = await memoryDataSource.getAll{Name}s()
-        return dtos.map { $0.toDomain() }
+        return dtos.map { mapper.map($0) }
     }
 
     func save{Name}(_ model: {Name}) async {
@@ -196,6 +198,7 @@ struct {Name}RepositoryTests {
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}MemoryDataSourceContract
+    private let mapper = {Name}Mapper()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
@@ -236,21 +239,21 @@ private extension {Name}Repository {
 private extension {Name}Repository {
     func getLocalFirst(id: Int) async throws({Feature}Error) -> {Name} {
         if let cached = await memoryDataSource.get{Name}(id: id) {
-            return cached.toDomain()
+            return mapper.map(cached)
         }
         let dto = try await fetchFromRemote(id: id)
         await memoryDataSource.save{Name}(dto)
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 
     func getRemoteFirst(id: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await fetchFromRemote(id: id)
             await memoryDataSource.save{Name}(dto)
-            return dto.toDomain()
+            return mapper.map(dto)
         } catch {
             if let cached = await memoryDataSource.get{Name}(id: id) {
-                return cached.toDomain()
+                return mapper.map(cached)
             }
             throw error
         }
@@ -258,7 +261,7 @@ private extension {Name}Repository {
 
     func getNoCache(id: Int) async throws({Feature}Error) -> {Name} {
         let dto = try await fetchFromRemote(id: id)
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 }
 ```
@@ -492,6 +495,7 @@ import ChallengeNetworking
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
     private let memoryDataSource: CharacterMemoryDataSourceContract
+    private let mapper = CharacterMapper()
 
     init(
         remoteDataSource: CharacterRemoteDataSourceContract,
@@ -513,10 +517,10 @@ struct CharacterRepository: CharacterRepositoryContract {
     }
 }
 
-// MARK: - Remote Fetch Helpers
+// MARK: - Remote Fetch
 
 private extension CharacterRepository {
-    func fetchCharacterFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
+    func fetchFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
         do {
             return try await remoteDataSource.fetchCharacter(identifier: identifier)
         } catch let error as HTTPError {
@@ -525,46 +529,36 @@ private extension CharacterRepository {
             throw .loadFailed
         }
     }
-
-    func fetchCharactersFromRemote(page: Int, query: String? = nil) async throws(CharactersPageError) -> CharactersResponseDTO {
-        do {
-            return try await remoteDataSource.fetchCharacters(page: page, query: query)
-        } catch let error as HTTPError {
-            throw mapPageHTTPError(error, page: page)
-        } catch {
-            throw .loadFailed
-        }
-    }
 }
 
-// MARK: - Character Detail Cache Strategies
+// MARK: - Cache Strategies
 
 private extension CharacterRepository {
     func getCharacterLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
         if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-            return cached.toDomain()
+            return mapper.map(cached)
         }
-        let dto = try await fetchCharacterFromRemote(identifier: identifier)
+        let dto = try await fetchFromRemote(identifier: identifier)
         await memoryDataSource.saveCharacter(dto)
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 
     func getCharacterRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
         do {
-            let dto = try await fetchCharacterFromRemote(identifier: identifier)
+            let dto = try await fetchFromRemote(identifier: identifier)
             await memoryDataSource.saveCharacter(dto)
-            return dto.toDomain()
+            return mapper.map(dto)
         } catch {
             if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-                return cached.toDomain()
+                return mapper.map(cached)
             }
             throw error
         }
     }
 
     func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
-        let dto = try await fetchCharacterFromRemote(identifier: identifier)
-        return dto.toDomain()
+        let dto = try await fetchFromRemote(identifier: identifier)
+        return mapper.map(dto)
     }
 }
 
@@ -578,29 +572,6 @@ private extension CharacterRepository {
         case .invalidURL, .invalidResponse, .statusCode:
             .loadFailed
         }
-    }
-
-    func mapPageHTTPError(_ error: HTTPError, page: Int) -> CharactersPageError {
-        switch error {
-        case .statusCode(404, _):
-            .invalidPage(page: page)
-        case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed
-        }
-    }
-}
-
-// MARK: - DTO to Domain Mapping
-
-extension CharacterDTO {
-    func toDomain() -> Character {
-        Character(
-            id: id,
-            name: name,
-            status: CharacterStatus(from: status),
-            species: species,
-            gender: CharacterGender(from: gender)
-        )
     }
 }
 ```
