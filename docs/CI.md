@@ -155,6 +155,18 @@ After pushing the workflow file, configure the repository:
 
 > **Note:** The `Quality Gate` status check will only appear after the workflow has run at least once. Create a test PR to trigger the first execution before configuring the ruleset.
 
+## Production Tooling
+
+This project uses a lightweight GitHub Actions setup suited for a challenge project. In a production iOS application, consider integrating industry-standard tools for automation, quality, and distribution:
+
+| Tool | Purpose | Integration |
+|------|---------|-------------|
+| [Fastlane](https://fastlane.tools/) | Automates code signing (`match`), screenshots, TestFlight uploads, and App Store releases | Define lanes in a `Fastfile` at the project root; invoke them from any CI provider or locally via CLI |
+| [Bitrise](https://bitrise.io/) | Mobile-specialized CI/CD platform with managed macOS runners and Xcode pre-installed | Connect your repository and configure workflows in a `bitrise.yml` with pre-built steps for common iOS tasks |
+| [SonarQube / SonarCloud](https://www.sonarsource.com/) | Static code analysis that detects bugs, vulnerabilities, code smells, and tracks technical debt in Swift code | Run `sonar-scanner` as a CI step after compilation; results appear in a dashboard and as PR decorations |
+| [Firebase App Distribution](https://firebase.google.com/products/app-distribution) | Distributes ad-hoc builds to testers without requiring TestFlight or App Store Connect | Upload IPA files via Firebase CLI or Fastlane plugin as a post-build CI step |
+| [Danger](https://danger.systems/swift/) | Automates code review conventions (PR size, changelog enforcement, SwiftLint violations) by commenting on PRs | Add a `Dangerfile.swift` to the project and run `danger-swift ci` as a CI step after tests |
+
 ## Design Decisions
 
 - **Composite actions**: Shared setup steps (Xcode selection, mise, caching, SPM dependencies, project generation, simulator boot) and test reporting steps (artifact upload, failure summary, PR comment) are extracted into reusable composite actions (`.github/actions/setup/` and `.github/actions/test-report/`). This eliminates duplication between the unit+snapshot and UI test jobs. The `if: failure()` condition is applied to the step that invokes the test-report action in the workflow, since composite action steps inherit the job's failure state.

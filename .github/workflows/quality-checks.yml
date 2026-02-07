@@ -204,18 +204,19 @@ jobs:
 
       - name: Merge coverage data
         run: |
+          mkdir -p merged-output
           xcrun xcresulttool merge \
             unit-snapshot-coverage/UnitSnapshot.xcresult \
             ui-test-coverage/UITests.xcresult \
-            --output-path merged.xcresult
-          xcrun xccov view --report --json merged.xcresult > coverage.json
+            --output-path merged-output/merged.xcresult
+          xcrun xccov view --report --json merged-output/merged.xcresult > coverage.json
 
       - name: Upload merged xcresult
         id: upload-xcresult
         uses: actions/upload-artifact@v4
         with:
           name: merged-xcresult
-          path: merged.xcresult
+          path: merged-output
           retention-days: 7
 
       - name: Coverage report
