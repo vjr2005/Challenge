@@ -6,9 +6,9 @@ iOS application built with **Swift 6**, **SwiftUI**, **Clean Architecture**, and
 
 ## Screenshots
 
-| Home | Character List | Character Detail |
-|:----:|:--------------:|:----------------:|
-| <img src="docs/screenshots/home.png" width="250"> | <img src="docs/screenshots/character-list.png" width="250"> | <img src="docs/screenshots/character-detail.png" width="250"> |
+| Home | About | Character List | Filters | Character Detail |
+|:----:|:-----:|:--------------:|:-------:|:----------------:|
+| <img src="docs/screenshots/home.png" width="180"> | <img src="docs/screenshots/about.png" width="180"> | <img src="docs/screenshots/character-list.png" width="180"> | <img src="docs/screenshots/filters.png" width="180"> | <img src="docs/screenshots/character-detail.png" width="180"> |
 
 ## Requirements
 
