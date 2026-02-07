@@ -144,7 +144,7 @@ struct CharacterRepository: CharacterRepositoryContract {
             // 1. Try remote first
             // 2. Fallback to cache on error
 
-        case .none:
+        case .noCache:
             // No caching, always fetch from remote
         }
     }
@@ -159,14 +159,14 @@ The repository supports multiple caching policies through the `CachePolicy` enum
 |--------|----------|----------|
 | `.localFirst` | Cache first, remote if not found | Default, best for static data |
 | `.remoteFirst` | Remote first, cache as fallback on error | Fresh data with offline support |
-| `.none` | Always fetch from remote, no caching | Real-time data, search queries |
+| `.noCache` | Always fetch from remote, no caching | Real-time data, search queries |
 
 ```swift
 // Libraries/Core/Sources/Data/CachePolicy.swift
 public enum CachePolicy: Sendable {
     case localFirst   // Cache → Remote
     case remoteFirst  // Remote → Cache (fallback)
-    case none         // Remote only
+    case noCache      // Remote only
 }
 ```
 

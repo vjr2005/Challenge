@@ -9,9 +9,9 @@ public enum CharacterError: Error, Equatable, Sendable, LocalizedError {
 	public var errorDescription: String? {
 		switch self {
 		case .loadFailed:
-			return "characterError.loadFailed".localized()
+			"characterError.loadFailed".localized()
 		case .notFound(let identifier):
-			return "characterError.notFound %lld".localized(identifier)
+			"characterError.notFound %lld".localized(identifier)
 		}
 	}
 }

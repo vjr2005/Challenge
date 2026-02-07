@@ -9,9 +9,9 @@ public enum CharactersPageError: Error, Equatable, Sendable, LocalizedError {
 	public var errorDescription: String? {
 		switch self {
 		case .loadFailed:
-			return "charactersPageError.loadFailed".localized()
+			"charactersPageError.loadFailed".localized()
 		case .invalidPage(let page):
-			return "charactersPageError.invalidPage %lld".localized(page)
+			"charactersPageError.invalidPage %lld".localized(page)
 		}
 	}
 }

@@ -211,7 +211,7 @@ struct {Name}Repository: {Name}RepositoryContract {
             try await getLocalFirst(id: id)
         case .remoteFirst:
             try await getRemoteFirst(id: id)
-        case .none:
+        case .noCache:
             try await getNoCache(id: id)
         }
     }
@@ -375,7 +375,7 @@ struct {Name}RepositoryTests {
         )
 
         // When
-        let value = try await sut.get{Name}(id: 1, cachePolicy: .none)
+        let value = try await sut.get{Name}(id: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value == expected)
@@ -398,7 +398,7 @@ struct {Name}RepositoryTests {
 public enum CachePolicy: Sendable {
     case localFirst   // Cache first, remote if not found. Default behavior.
     case remoteFirst  // Remote first, cache as fallback on error.
-    case none         // Only remote, no cache interaction.
+    case noCache      // Only remote, no cache interaction.
 }
 ```
 
@@ -498,7 +498,7 @@ struct CharacterRepository: CharacterRepositoryContract {
             try await getCharacterDetailLocalFirst(identifier: identifier)
         case .remoteFirst:
             try await getCharacterDetailRemoteFirst(identifier: identifier)
-        case .none:
+        case .noCache:
             try await getCharacterDetailNoCache(identifier: identifier)
         }
     }
@@ -757,7 +757,7 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .none)
+        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
@@ -779,7 +779,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.notFound(identifier: 42)) {
-            _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .none)
+            _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .noCache)
         }
     }
 }

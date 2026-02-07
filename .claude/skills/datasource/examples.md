@@ -431,7 +431,7 @@ struct {Name}Repository: {Name}RepositoryContract {
             // Always fetch from remote, fallback to cache on error
             // ...
 
-        case .none:
+        case .noCache:
             // Only remote, no cache
             // ...
         }

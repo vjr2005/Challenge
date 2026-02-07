@@ -268,7 +268,7 @@ Use `CachePolicy` enum (from `ChallengeCore`) to control cache behavior:
 public enum CachePolicy: Sendable {
     case localFirst   // Cache first, remote if not found (default)
     case remoteFirst  // Remote first, cache as fallback on error
-    case none         // Only remote, no cache interaction
+    case noCache      // Only remote, no cache interaction
 }
 ```
 
@@ -295,7 +295,7 @@ protocol {Name}RepositoryContract: Sendable {
 |--------|----------|
 | `.localFirst` | Cache → Remote (if miss) → Save to cache |
 | `.remoteFirst` | Remote → Save to cache → Cache (if error) |
-| `.none` | Remote only, no cache interaction |
+| `.noCache` | Remote only, no cache interaction |
 
 ### Implementation Pattern
 

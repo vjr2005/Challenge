@@ -478,7 +478,7 @@ struct {Name}Repository: {Name}RepositoryContract {
             try await get{Name}DetailLocalFirst(identifier: identifier)
         case .remoteFirst:
             try await get{Name}DetailRemoteFirst(identifier: identifier)
-        case .none:
+        case .noCache:
             try await get{Name}DetailNoCache(identifier: identifier)
         }
     }
@@ -722,7 +722,7 @@ struct {Name}RepositoryTests {
         remoteDataSourceMock.result = .success(dto)
 
         // When
-        let value = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .none)
+        let value = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value.name == "Remote")
@@ -736,7 +736,7 @@ struct {Name}RepositoryTests {
         remoteDataSourceMock.result = .success(dto)
 
         // When
-        _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .none)
+        _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(memoryDataSourceMock.save{Name}DetailCallCount == 0)
@@ -751,7 +751,7 @@ struct {Name}RepositoryTests {
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
-        let value = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .none)
+        let value = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(value.name == "Remote")
