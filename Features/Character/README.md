@@ -19,7 +19,8 @@ Character/
 │   │   │   ├── CharacterLocation.swift
 │   │   │   └── CharactersPage.swift
 │   │   ├── Repositories/
-│   │   │   └── CharacterRepositoryContract.swift
+│   │   │   ├── CharacterRepositoryContract.swift
+│   │   │   └── CharactersPageRepositoryContract.swift
 │   │   ├── UseCases/
 │   │   │   ├── GetCharactersUseCase.swift
 │   │   │   ├── GetCharacterUseCase.swift
@@ -29,7 +30,9 @@ Character/
 │   │       └── CharactersPageError.swift
 │   ├── Data/
 │   │   ├── Repositories/
-│   │   │   └── CharacterRepository.swift
+│   │   │   ├── CharacterRepository.swift
+│   │   │   ├── CharactersPageRepository.swift
+│   │   │   └── CharacterDTOMapping.swift
 │   │   ├── DataSources/
 │   │   │   ├── CharacterRemoteDataSource.swift
 │   │   │   └── CharacterMemoryDataSource.swift

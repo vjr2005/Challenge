@@ -5,9 +5,9 @@ protocol RefreshCharactersUseCaseContract: Sendable {
 }
 
 struct RefreshCharactersUseCase: RefreshCharactersUseCaseContract {
-	private let repository: CharacterRepositoryContract
+	private let repository: CharactersPageRepositoryContract
 
-	init(repository: CharacterRepositoryContract) {
+	init(repository: CharactersPageRepositoryContract) {
 		self.repository = repository
 	}
 

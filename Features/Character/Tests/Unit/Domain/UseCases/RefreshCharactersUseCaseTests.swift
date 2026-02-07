@@ -8,7 +8,7 @@ import Testing
 struct RefreshCharactersUseCaseTests {
     // MARK: - Properties
 
-    private let repositoryMock = CharacterRepositoryMock()
+    private let repositoryMock = CharactersPageRepositoryMock()
     private let sut: RefreshCharactersUseCase
 
     // MARK: - Initialization

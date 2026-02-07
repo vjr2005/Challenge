@@ -22,10 +22,17 @@ public final class CharacterContainer: Sendable {
         self.tracker = tracker
     }
 
-    // MARK: - Repository
+    // MARK: - Repositories
 
-    private var repository: any CharacterRepositoryContract {
+    private var characterRepository: any CharacterRepositoryContract {
         CharacterRepository(
+            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+            memoryDataSource: memoryDataSource
+        )
+    }
+
+    private var charactersPageRepository: any CharactersPageRepositoryContract {
+        CharactersPageRepository(
             remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
             memoryDataSource: memoryDataSource
         )
@@ -35,9 +42,9 @@ public final class CharacterContainer: Sendable {
 
     func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
-            getCharactersUseCase: GetCharactersUseCase(repository: repository),
-            refreshCharactersUseCase: RefreshCharactersUseCase(repository: repository),
-            searchCharactersUseCase: SearchCharactersUseCase(repository: repository),
+            getCharactersUseCase: GetCharactersUseCase(repository: charactersPageRepository),
+            refreshCharactersUseCase: RefreshCharactersUseCase(repository: charactersPageRepository),
+            searchCharactersUseCase: SearchCharactersUseCase(repository: charactersPageRepository),
             getRecentSearchesUseCase: GetRecentSearchesUseCase(dataSource: recentSearchesDataSource),
             saveRecentSearchUseCase: SaveRecentSearchUseCase(dataSource: recentSearchesDataSource),
             deleteRecentSearchUseCase: DeleteRecentSearchUseCase(dataSource: recentSearchesDataSource),
@@ -53,8 +60,8 @@ public final class CharacterContainer: Sendable {
     ) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: repository),
-            refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
+            getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: characterRepository),
+            refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: characterRepository),
             navigator: CharacterDetailNavigator(navigator: navigator),
             tracker: CharacterDetailTracker(tracker: tracker)
         )
