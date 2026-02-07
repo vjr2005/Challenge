@@ -30,8 +30,8 @@ Features/{Feature}/
 
 | Prefix | Purpose | Example |
 |--------|---------|---------|
-| Get + Detail | Fetch single item (localFirst) | `GetCharacterDetailUseCase` |
-| Refresh + Detail | Refresh single item (remoteFirst) | `RefreshCharacterDetailUseCase` |
+| Get (singular) | Fetch single item (localFirst) | `GetCharacterUseCase` |
+| Refresh (singular) | Refresh single item (remoteFirst) | `RefreshCharacterUseCase` |
 | Get (plural + Page) | Fetch collection (localFirst) | `GetCharactersPageUseCase` |
 | Refresh (plural + Page) | Refresh collection (remoteFirst) | `RefreshCharactersPageUseCase` |
 | Search (plural + Page) | Search with query | `SearchCharactersPageUseCase` |
@@ -40,7 +40,7 @@ Features/{Feature}/
 | Delete | Delete item | `DeleteCartItemUseCase` |
 | Validate | Validate data | `ValidateEmailUseCase` |
 
-> **Note:** Use `Detail` suffix for single-item UseCases and `Page` suffix for list UseCases to distinguish them (`GetCharacterDetailUseCase` vs `GetCharactersPageUseCase`).
+> **Note:** Use singular names for single-item UseCases and `Page` suffix for list UseCases to distinguish them (`GetCharacterUseCase` vs `GetCharactersPageUseCase`).
 
 ---
 

@@ -14,14 +14,14 @@ struct CharacterRepository: CharacterRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+	func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
 		switch cachePolicy {
 		case .localFirst:
-			try await getCharacterDetailLocalFirst(identifier: identifier)
+			try await getCharacterLocalFirst(identifier: identifier)
 		case .remoteFirst:
-			try await getCharacterDetailRemoteFirst(identifier: identifier)
+			try await getCharacterRemoteFirst(identifier: identifier)
 		case .noCache:
-			try await getCharacterDetailNoCache(identifier: identifier)
+			try await getCharacterNoCache(identifier: identifier)
 		}
 	}
 }
@@ -43,29 +43,29 @@ private extension CharacterRepository {
 // MARK: - Cache Strategies
 
 private extension CharacterRepository {
-	func getCharacterDetailLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
-		if let cached = await memoryDataSource.getCharacterDetail(identifier: identifier) {
+	func getCharacterLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
+		if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
 			return cached.toDomain()
 		}
 		let dto = try await fetchFromRemote(identifier: identifier)
-		await memoryDataSource.saveCharacterDetail(dto)
+		await memoryDataSource.saveCharacter(dto)
 		return dto.toDomain()
 	}
 
-	func getCharacterDetailRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
+	func getCharacterRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
 		do {
 			let dto = try await fetchFromRemote(identifier: identifier)
-			await memoryDataSource.saveCharacterDetail(dto)
+			await memoryDataSource.saveCharacter(dto)
 			return dto.toDomain()
 		} catch {
-			if let cached = await memoryDataSource.getCharacterDetail(identifier: identifier) {
+			if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
 				return cached.toDomain()
 			}
 			throw error
 		}
 	}
 
-	func getCharacterDetailNoCache(identifier: Int) async throws(CharacterError) -> Character {
+	func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
 		let dto = try await fetchFromRemote(identifier: identifier)
 		return dto.toDomain()
 	}

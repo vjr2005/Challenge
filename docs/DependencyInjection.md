@@ -39,7 +39,7 @@ All dependencies are defined as **protocols** (named with `Contract` suffix). Co
 ```swift
 // Protocol definitions (Domain layer)
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
 }
 
 protocol CharactersPageRepositoryContract: Sendable {

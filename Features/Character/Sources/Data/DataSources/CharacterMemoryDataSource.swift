@@ -3,8 +3,8 @@ import Foundation
 protocol CharacterMemoryDataSourceContract: Sendable {
 	// MARK: - Character Detail
 
-	func getCharacterDetail(identifier: Int) async -> CharacterDTO?
-	func saveCharacterDetail(_ character: CharacterDTO) async
+	func getCharacter(identifier: Int) async -> CharacterDTO?
+	func saveCharacter(_ character: CharacterDTO) async
 
 	// MARK: - Paginated Results
 
@@ -18,11 +18,11 @@ actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract {
 
 	// MARK: - Character Detail
 
-	func getCharacterDetail(identifier: Int) -> CharacterDTO? {
+	func getCharacter(identifier: Int) -> CharacterDTO? {
 		characterStorage[identifier]
 	}
 
-	func saveCharacterDetail(_ character: CharacterDTO) {
+	func saveCharacter(_ character: CharacterDTO) {
 		characterStorage[character.id] = character
 	}
 

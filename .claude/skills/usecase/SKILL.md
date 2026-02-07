@@ -51,8 +51,8 @@ Naming convention:
 
 | Operation | UseCase Name | Method | Cache Policy |
 |-----------|--------------|--------|--------------|
-| Get single item | `Get{Name}DetailUseCase` | `execute(identifier:)` | localFirst (implicit) |
-| Refresh single item | `Refresh{Name}DetailUseCase` | `execute(identifier:)` | remoteFirst (implicit) |
+| Get single item | `Get{Name}UseCase` | `execute(identifier:)` | localFirst (implicit) |
+| Refresh single item | `Refresh{Name}UseCase` | `execute(identifier:)` | remoteFirst (implicit) |
 | Get list | `Get{Name}sPageUseCase` | `execute(page:)` | localFirst (implicit) |
 | Refresh list | `Refresh{Name}sPageUseCase` | `execute(page:)` | remoteFirst (implicit) |
 | Search | `Search{Name}sPageUseCase` | `execute(page:, query:)` | none (always remote) |
@@ -61,7 +61,7 @@ Naming convention:
 | Delete | `Delete{Name}UseCase` | `execute(id:)` | - |
 | Custom action | `{Action}{Name}UseCase` | `execute(...)` | - |
 
-> **Note:** Use `Detail` suffix for single-item UseCases and `Page` suffix for list UseCases (e.g., `GetCharacterDetailUseCase` vs `GetCharactersPageUseCase`).
+> **Note:** Use singular names for single-item UseCases and `Page` suffix for list UseCases (e.g., `GetCharacterUseCase` vs `GetCharactersPageUseCase`).
 
 ### 1. Contract (Protocol)
 
@@ -151,16 +151,16 @@ final class Refresh{Name}DetailUseCaseMock: Refresh{Name}DetailUseCaseContract, 
 
 Instead of using a `cachePolicy` parameter, create separate UseCases for different cache behaviors. This improves:
 - **Single Responsibility**: Each UseCase has one clear purpose
-- **Readability**: UseCase name expresses intent (`GetCharacterDetail` vs `RefreshCharacterDetail`)
+- **Readability**: UseCase name expresses intent (`GetCharacter` vs `RefreshCharacter`)
 - **Encapsulation**: ViewModels don't need to know about cache policies
 
 ```swift
-// GetCharacterDetailUseCase - uses localFirst cache policy (implicit)
-protocol GetCharacterDetailUseCaseContract: Sendable {
+// GetCharacterUseCase - uses localFirst cache policy (implicit)
+protocol GetCharacterUseCaseContract: Sendable {
     func execute(identifier: Int) async throws(CharacterError) -> Character
 }
 
-struct GetCharacterDetailUseCase: GetCharacterDetailUseCaseContract {
+struct GetCharacterUseCase: GetCharacterUseCaseContract {
     private let repository: CharacterRepositoryContract
 
     init(repository: CharacterRepositoryContract) {
@@ -168,16 +168,16 @@ struct GetCharacterDetailUseCase: GetCharacterDetailUseCaseContract {
     }
 
     func execute(identifier: Int) async throws(CharacterError) -> Character {
-        try await repository.getCharacterDetail(identifier: identifier, cachePolicy: .localFirst)
+        try await repository.getCharacter(identifier: identifier, cachePolicy: .localFirst)
     }
 }
 
-// RefreshCharacterDetailUseCase - uses remoteFirst cache policy (implicit)
-protocol RefreshCharacterDetailUseCaseContract: Sendable {
+// RefreshCharacterUseCase - uses remoteFirst cache policy (implicit)
+protocol RefreshCharacterUseCaseContract: Sendable {
     func execute(identifier: Int) async throws(CharacterError) -> Character
 }
 
-struct RefreshCharacterDetailUseCase: RefreshCharacterDetailUseCaseContract {
+struct RefreshCharacterUseCase: RefreshCharacterUseCaseContract {
     private let repository: CharacterRepositoryContract
 
     init(repository: CharacterRepositoryContract) {
@@ -185,7 +185,7 @@ struct RefreshCharacterDetailUseCase: RefreshCharacterDetailUseCaseContract {
     }
 
     func execute(identifier: Int) async throws(CharacterError) -> Character {
-        try await repository.getCharacterDetail(identifier: identifier, cachePolicy: .remoteFirst)
+        try await repository.getCharacter(identifier: identifier, cachePolicy: .remoteFirst)
     }
 }
 ```

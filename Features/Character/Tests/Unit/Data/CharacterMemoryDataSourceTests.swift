@@ -18,8 +18,8 @@ struct CharacterMemoryDataSourceTests {
         let expected: CharacterDTO = try loadJSON("character")
 
         // When
-        await sut.saveCharacterDetail(expected)
-        let value = await sut.getCharacterDetail(identifier: expected.id)
+        await sut.saveCharacter(expected)
+        let value = await sut.getCharacter(identifier: expected.id)
 
         // Then
         #expect(value == expected)
@@ -28,7 +28,7 @@ struct CharacterMemoryDataSourceTests {
     @Test("Returns nil for non-existent character")
     func returnsNilForNonExistentCharacter() async {
         // When
-        let value = await sut.getCharacterDetail(identifier: 999)
+        let value = await sut.getCharacter(identifier: 999)
 
         // Then
         #expect(value == nil)
@@ -39,11 +39,11 @@ struct CharacterMemoryDataSourceTests {
         // Given
         let original: CharacterDTO = try loadJSON("character")
         let updated: CharacterDTO = try loadJSON("character_dead")
-        await sut.saveCharacterDetail(original)
+        await sut.saveCharacter(original)
 
         // When
-        await sut.saveCharacterDetail(updated)
-        let value = await sut.getCharacterDetail(identifier: 1)
+        await sut.saveCharacter(updated)
+        let value = await sut.getCharacter(identifier: 1)
 
         // Then
         #expect(value == updated)
@@ -97,8 +97,8 @@ struct CharacterMemoryDataSourceTests {
 
         // When
         await sut.savePage(response, page: 1)
-        let character1 = await sut.getCharacterDetail(identifier: 1)
-        let character2 = await sut.getCharacterDetail(identifier: 2)
+        let character1 = await sut.getCharacter(identifier: 1)
+        let character2 = await sut.getCharacter(identifier: 2)
 
         // Then
         #expect(character1 == nil)

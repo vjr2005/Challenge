@@ -8,8 +8,8 @@ struct CharacterDetailViewModelTests {
     // MARK: - Properties
 
     private let identifier = 1
-    private let getCharacterDetailUseCaseMock = GetCharacterDetailUseCaseMock()
-    private let refreshCharacterDetailUseCaseMock = RefreshCharacterDetailUseCaseMock()
+    private let getCharacterUseCaseMock = GetCharacterUseCaseMock()
+    private let refreshCharacterUseCaseMock = RefreshCharacterUseCaseMock()
     private let navigatorMock = CharacterDetailNavigatorMock()
     private let trackerMock = CharacterDetailTrackerMock()
     private let sut: CharacterDetailViewModel
@@ -19,8 +19,8 @@ struct CharacterDetailViewModelTests {
     init() {
         sut = CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterDetailUseCase: getCharacterDetailUseCaseMock,
-            refreshCharacterDetailUseCase: refreshCharacterDetailUseCaseMock,
+            getCharacterUseCase: getCharacterUseCaseMock,
+            refreshCharacterUseCase: refreshCharacterUseCaseMock,
             navigator: navigatorMock,
             tracker: trackerMock
         )
@@ -40,7 +40,7 @@ struct CharacterDetailViewModelTests {
     func didAppearSetsLoadedStateOnSuccess() async {
         // Given
         let expected = Character.stub()
-        getCharacterDetailUseCaseMock.result = .success(expected)
+        getCharacterUseCaseMock.result = .success(expected)
 
         // When
         await sut.didAppear()
@@ -52,7 +52,7 @@ struct CharacterDetailViewModelTests {
     @Test("didAppear sets error state on failure")
     func didAppearSetsErrorStateOnFailure() async {
         // Given
-        getCharacterDetailUseCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.didAppear()
@@ -64,14 +64,14 @@ struct CharacterDetailViewModelTests {
     @Test("didAppear calls use case with correct character identifier")
     func didAppearCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        getCharacterDetailUseCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
-        #expect(getCharacterDetailUseCaseMock.lastRequestedIdentifier == identifier)
+        #expect(getCharacterUseCaseMock.executeCallCount == 1)
+        #expect(getCharacterUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
     // MARK: - didTapOnRetryButton
@@ -79,29 +79,29 @@ struct CharacterDetailViewModelTests {
     @Test("didTapOnRetryButton retries loading when in error state")
     func didTapOnRetryButtonRetriesWhenError() async {
         // Given
-        getCharacterDetailUseCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed)
         await sut.didAppear()
 
         // When
-        getCharacterDetailUseCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getCharacterDetailUseCaseMock.executeCallCount == 2)
+        #expect(getCharacterUseCaseMock.executeCallCount == 2)
     }
 
     @Test("didTapOnRetryButton always loads regardless of current state")
     func didTapOnRetryButtonAlwaysLoads() async {
         // Given
-        getCharacterDetailUseCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
         await sut.didAppear()
-        #expect(getCharacterDetailUseCaseMock.executeCallCount == 1)
+        #expect(getCharacterUseCaseMock.executeCallCount == 1)
 
         // When
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getCharacterDetailUseCaseMock.executeCallCount == 2)
+        #expect(getCharacterUseCaseMock.executeCallCount == 2)
     }
 
     // MARK: - Navigation
@@ -122,34 +122,34 @@ struct CharacterDetailViewModelTests {
         // Given
         let initialCharacter = Character.stub(name: "Initial")
         let refreshedCharacter = Character.stub(name: "Refreshed")
-        getCharacterDetailUseCaseMock.result = .success(initialCharacter)
+        getCharacterUseCaseMock.result = .success(initialCharacter)
         await sut.didAppear()
-        refreshCharacterDetailUseCaseMock.result = .success(refreshedCharacter)
+        refreshCharacterUseCaseMock.result = .success(refreshedCharacter)
 
         // When
         await sut.didPullToRefresh()
 
         // Then
-        #expect(refreshCharacterDetailUseCaseMock.executeCallCount == 1)
+        #expect(refreshCharacterUseCaseMock.executeCallCount == 1)
         #expect(sut.state == .loaded(refreshedCharacter))
     }
 
     @Test("didPullToRefresh calls use case with correct character identifier")
     func didPullToRefreshCallsUseCaseWithCorrectIdentifier() async {
         // Given
-        refreshCharacterDetailUseCaseMock.result = .success(.stub())
+        refreshCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
-        #expect(refreshCharacterDetailUseCaseMock.lastRequestedIdentifier == identifier)
+        #expect(refreshCharacterUseCaseMock.lastRequestedIdentifier == identifier)
     }
 
     @Test("didPullToRefresh sets error state on failure")
     func didPullToRefreshSetsErrorStateOnFailure() async {
         // Given
-        refreshCharacterDetailUseCaseMock.result = .failure(.loadFailed)
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed)
 
         // When
         await sut.didPullToRefresh()
@@ -162,12 +162,12 @@ struct CharacterDetailViewModelTests {
     func didPullToRefreshKeepsLoadedStateDuringRequest() async {
         // Given
         let loadedCharacter = Character.stub()
-        getCharacterDetailUseCaseMock.result = .success(loadedCharacter)
+        getCharacterUseCaseMock.result = .success(loadedCharacter)
         await sut.didAppear()
-        refreshCharacterDetailUseCaseMock.result = .success(.stub())
+        refreshCharacterUseCaseMock.result = .success(.stub())
 
         var statesDuringRefresh: [CharacterDetailViewState] = []
-        refreshCharacterDetailUseCaseMock.onExecute = { [weak sut] in
+        refreshCharacterUseCaseMock.onExecute = { [weak sut] in
             guard let sut else { return }
             statesDuringRefresh.append(sut.state)
         }
@@ -185,7 +185,7 @@ struct CharacterDetailViewModelTests {
     @Test("didAppear tracks screen viewed with identifier")
     func didAppearTracksScreenViewed() async {
         // Given
-        getCharacterDetailUseCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didAppear()
@@ -197,7 +197,7 @@ struct CharacterDetailViewModelTests {
     @Test("didTapOnRetryButton tracks retry button tapped")
     func didTapOnRetryButtonTracksRetryButtonTapped() async {
         // Given
-        getCharacterDetailUseCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didTapOnRetryButton()
@@ -209,7 +209,7 @@ struct CharacterDetailViewModelTests {
     @Test("didPullToRefresh tracks pull to refresh triggered")
     func didPullToRefreshTracksPullToRefreshTriggered() async {
         // Given
-        refreshCharacterDetailUseCaseMock.result = .success(.stub())
+        refreshCharacterUseCaseMock.result = .success(.stub())
 
         // When
         await sut.didPullToRefresh()

@@ -5,14 +5,14 @@ import Foundation
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
 	var result: Result<Character, CharacterError> = .failure(.loadFailed)
-	private(set) var getCharacterDetailCallCount = 0
+	private(set) var getCharacterCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
-	private(set) var lastCharacterDetailCachePolicy: CachePolicy?
+	private(set) var lastCharacterCachePolicy: CachePolicy?
 
-	func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-		getCharacterDetailCallCount += 1
+	func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+		getCharacterCallCount += 1
 		lastRequestedIdentifier = identifier
-		lastCharacterDetailCachePolicy = cachePolicy
+		lastCharacterCachePolicy = cachePolicy
 		return try result.get()
 	}
 }

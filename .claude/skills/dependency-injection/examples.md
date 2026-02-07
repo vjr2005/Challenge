@@ -183,8 +183,8 @@ public final class CharacterContainer: Sendable {
     ) -> CharacterDetailViewModel {
         CharacterDetailViewModel(
             identifier: identifier,
-            getCharacterDetailUseCase: GetCharacterDetailUseCase(repository: repository),
-            refreshCharacterDetailUseCase: RefreshCharacterDetailUseCase(repository: repository),
+            getCharacterUseCase: GetCharacterUseCase(repository: characterRepository),
+            refreshCharacterUseCase: RefreshCharacterUseCase(repository: characterRepository),
             navigator: CharacterDetailNavigator(navigator: navigator),
             tracker: CharacterDetailTracker(tracker: tracker)
         )
@@ -193,7 +193,7 @@ public final class CharacterContainer: Sendable {
 ```
 
 **Key patterns:**
-- Use `Detail` suffix for single-item UseCases: `GetCharacterDetailUseCase`
+- Use singular names for single-item UseCases: `GetCharacterUseCase`
 - Inject **separate Get and Refresh UseCases**
 - Get UseCases use `localFirst` cache policy (fast initial load)
 - Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)

@@ -113,7 +113,7 @@ The contract defines **what** operations are available, using only domain types:
 ```swift
 // Domain layer - no knowledge of Data layer implementation
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
 }
 
 protocol CharactersPageRepositoryContract: Sendable {
@@ -131,7 +131,7 @@ struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
     private let memoryDataSource: CharacterMemoryDataSourceContract
 
-    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
         switch cachePolicy {
         case .localFirst:
             // 1. Check cache first

@@ -5,21 +5,21 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     private(set) var state: CharacterDetailViewState = .idle
 
     private let identifier: Int
-    private let getCharacterDetailUseCase: GetCharacterDetailUseCaseContract
-    private let refreshCharacterDetailUseCase: RefreshCharacterDetailUseCaseContract
+    private let getCharacterUseCase: GetCharacterUseCaseContract
+    private let refreshCharacterUseCase: RefreshCharacterUseCaseContract
     private let navigator: CharacterDetailNavigatorContract
     private let tracker: CharacterDetailTrackerContract
 
     init(
         identifier: Int,
-        getCharacterDetailUseCase: GetCharacterDetailUseCaseContract,
-        refreshCharacterDetailUseCase: RefreshCharacterDetailUseCaseContract,
+        getCharacterUseCase: GetCharacterUseCaseContract,
+        refreshCharacterUseCase: RefreshCharacterUseCaseContract,
         navigator: CharacterDetailNavigatorContract,
         tracker: CharacterDetailTrackerContract
     ) {
         self.identifier = identifier
-        self.getCharacterDetailUseCase = getCharacterDetailUseCase
-        self.refreshCharacterDetailUseCase = refreshCharacterDetailUseCase
+        self.getCharacterUseCase = getCharacterUseCase
+        self.refreshCharacterUseCase = refreshCharacterUseCase
         self.navigator = navigator
         self.tracker = tracker
     }
@@ -51,7 +51,7 @@ private extension CharacterDetailViewModel {
     func load() async {
         state = .loading
         do {
-            let character = try await getCharacterDetailUseCase.execute(identifier: identifier)
+            let character = try await getCharacterUseCase.execute(identifier: identifier)
             state = .loaded(character)
         } catch {
             state = .error(error)
@@ -60,7 +60,7 @@ private extension CharacterDetailViewModel {
 
     func refresh() async {
         do {
-            let character = try await refreshCharacterDetailUseCase.execute(identifier: identifier)
+            let character = try await refreshCharacterUseCase.execute(identifier: identifier)
             state = .loaded(character)
         } catch {
             state = .error(error)

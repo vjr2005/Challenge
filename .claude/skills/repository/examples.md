@@ -462,7 +462,7 @@ struct Character: Equatable {
 import ChallengeCore
 
 protocol CharacterRepositoryContract: Sendable {
-    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
 }
 
 // Sources/Domain/Repositories/CharactersPageRepositoryContract.swift
@@ -475,7 +475,7 @@ protocol CharactersPageRepositoryContract: Sendable {
 ```
 
 **Naming Convention:**
-- `getCharacterDetail` - singular item with `Detail` suffix
+- `getCharacter` - singular item (no suffix needed)
 - `getCharactersPage` - plural with `Page` suffix for list operations
 - `searchCharactersPage` - search with `Page` suffix
 - Separate contracts per ISP: detail vs page operations
@@ -501,14 +501,14 @@ struct CharacterRepository: CharacterRepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
         switch cachePolicy {
         case .localFirst:
-            try await getCharacterDetailLocalFirst(identifier: identifier)
+            try await getCharacterLocalFirst(identifier: identifier)
         case .remoteFirst:
-            try await getCharacterDetailRemoteFirst(identifier: identifier)
+            try await getCharacterRemoteFirst(identifier: identifier)
         case .noCache:
-            try await getCharacterDetailNoCache(identifier: identifier)
+            try await getCharacterNoCache(identifier: identifier)
         }
     }
 }
@@ -540,29 +540,29 @@ private extension CharacterRepository {
 // MARK: - Character Detail Cache Strategies
 
 private extension CharacterRepository {
-    func getCharacterDetailLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
-        if let cached = await memoryDataSource.getCharacterDetail(identifier: identifier) {
+    func getCharacterLocalFirst(identifier: Int) async throws(CharacterError) -> Character {
+        if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
             return cached.toDomain()
         }
         let dto = try await fetchCharacterFromRemote(identifier: identifier)
-        await memoryDataSource.saveCharacterDetail(dto)
+        await memoryDataSource.saveCharacter(dto)
         return dto.toDomain()
     }
 
-    func getCharacterDetailRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
+    func getCharacterRemoteFirst(identifier: Int) async throws(CharacterError) -> Character {
         do {
             let dto = try await fetchCharacterFromRemote(identifier: identifier)
-            await memoryDataSource.saveCharacterDetail(dto)
+            await memoryDataSource.saveCharacter(dto)
             return dto.toDomain()
         } catch {
-            if let cached = await memoryDataSource.getCharacterDetail(identifier: identifier) {
+            if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
                 return cached.toDomain()
             }
             throw error
         }
     }
 
-    func getCharacterDetailNoCache(identifier: Int) async throws(CharacterError) -> Character {
+    func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
         let dto = try await fetchCharacterFromRemote(identifier: identifier)
         return dto.toDomain()
     }
@@ -616,14 +616,14 @@ import Foundation
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
     var result: Result<Character, CharacterError> = .failure(.loadFailed)
-    private(set) var getCharacterDetailCallCount = 0
+    private(set) var getCharacterCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
-    private(set) var lastCharacterDetailCachePolicy: CachePolicy?
+    private(set) var lastCharacterCachePolicy: CachePolicy?
 
-    func getCharacterDetail(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-        getCharacterDetailCallCount += 1
+    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        getCharacterCallCount += 1
         lastRequestedIdentifier = identifier
-        lastCharacterDetailCachePolicy = cachePolicy
+        lastCharacterCachePolicy = cachePolicy
         return try result.get()
     }
 }
@@ -682,7 +682,7 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
@@ -702,12 +702,12 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .localFirst)
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
         #expect(value == expected)
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 1)
+        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
     }
 
     // MARK: - RemoteFirst Tests
@@ -725,7 +725,7 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
+        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
@@ -745,7 +745,7 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        let value = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .remoteFirst)
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
         #expect(value == expected)
@@ -765,11 +765,11 @@ struct CharacterRepositoryTests {
         )
 
         // When
-        _ = try await sut.getCharacterDetail(identifier: 1, cachePolicy: .noCache)
+        _ = try await sut.getCharacter(identifier: 1, cachePolicy: .noCache)
 
         // Then
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterDetailCallCount == 0)
+        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
     }
 
     // MARK: - Error Mapping Tests
@@ -787,7 +787,7 @@ struct CharacterRepositoryTests {
 
         // When / Then
         await #expect(throws: CharacterError.notFound(identifier: 42)) {
-            _ = try await sut.getCharacterDetail(identifier: 42, cachePolicy: .noCache)
+            _ = try await sut.getCharacter(identifier: 42, cachePolicy: .noCache)
         }
     }
 }

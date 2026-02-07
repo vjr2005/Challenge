@@ -280,12 +280,12 @@ public enum CachePolicy: Sendable {
 import ChallengeCore
 
 protocol {Name}RepositoryContract: Sendable {
-    func get{Name}Detail(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
 ```
 
 **Naming Convention:**
-- Use `Detail` suffix for single-item methods: `get{Name}Detail`
+- Use singular for single-item methods: `get{Name}`
 - Use `Page` suffix for list methods: `get{Name}sPage`, `search{Name}sPage`
 - This avoids confusion between `getCharacter` and `getCharactersPage`
 
