@@ -5,6 +5,8 @@ enum CharacterDetailEvent: TrackingEventContract {
     case retryButtonTapped
     case pullToRefreshTriggered
     case backButtonTapped
+    case loadError(description: String)
+    case refreshError(description: String)
 
     var name: String {
         switch self {
@@ -16,6 +18,10 @@ enum CharacterDetailEvent: TrackingEventContract {
             "character_detail_pull_to_refresh"
         case .backButtonTapped:
             "character_detail_back_tapped"
+        case .loadError:
+            "character_detail_load_error"
+        case .refreshError:
+            "character_detail_refresh_error"
         }
     }
 
@@ -23,6 +29,8 @@ enum CharacterDetailEvent: TrackingEventContract {
         switch self {
         case .screenViewed(let identifier):
             ["id": "\(identifier)"]
+        case .loadError(let description), .refreshError(let description):
+            ["description": description]
         default:
             [:]
         }

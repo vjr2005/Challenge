@@ -8,6 +8,9 @@ enum CharacterListEvent: TrackingEventContract {
     case pullToRefreshTriggered
     case loadMoreButtonTapped
     case advancedSearchButtonTapped
+    case fetchError(description: String)
+    case refreshError(description: String)
+    case loadMoreError(description: String)
 
     var name: String {
         switch self {
@@ -25,6 +28,12 @@ enum CharacterListEvent: TrackingEventContract {
             "character_list_load_more_tapped"
         case .advancedSearchButtonTapped:
             "character_list_advanced_search_tapped"
+        case .fetchError:
+            "character_list_fetch_error"
+        case .refreshError:
+            "character_list_refresh_error"
+        case .loadMoreError:
+            "character_list_load_more_error"
         }
     }
 
@@ -34,6 +43,8 @@ enum CharacterListEvent: TrackingEventContract {
             ["id": "\(identifier)"]
         case .searchPerformed(let query):
             ["query": query]
+        case .fetchError(let description), .refreshError(let description), .loadMoreError(let description):
+            ["description": description]
         default:
             [:]
         }

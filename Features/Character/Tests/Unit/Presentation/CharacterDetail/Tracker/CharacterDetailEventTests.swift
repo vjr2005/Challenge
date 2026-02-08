@@ -82,4 +82,44 @@ struct CharacterDetailEventTests {
         // Then
         #expect(sut.properties == [:])
     }
+
+    // MARK: - loadError
+
+    @Test("Load error event has correct name")
+    func loadErrorEventHasCorrectName() {
+        // Given
+        let sut = CharacterDetailEvent.loadError(description: "Load failed")
+
+        // Then
+        #expect(sut.name == "character_detail_load_error")
+    }
+
+    @Test("Load error event has description in properties")
+    func loadErrorEventHasDescriptionInProperties() {
+        // Given
+        let sut = CharacterDetailEvent.loadError(description: "Load failed")
+
+        // Then
+        #expect(sut.properties == ["description": "Load failed"])
+    }
+
+    // MARK: - refreshError
+
+    @Test("Refresh error event has correct name")
+    func refreshErrorEventHasCorrectName() {
+        // Given
+        let sut = CharacterDetailEvent.refreshError(description: "Refresh failed")
+
+        // Then
+        #expect(sut.name == "character_detail_refresh_error")
+    }
+
+    @Test("Refresh error event has description in properties")
+    func refreshErrorEventHasDescriptionInProperties() {
+        // Given
+        let sut = CharacterDetailEvent.refreshError(description: "Refresh failed")
+
+        // Then
+        #expect(sut.properties == ["description": "Refresh failed"])
+    }
 }

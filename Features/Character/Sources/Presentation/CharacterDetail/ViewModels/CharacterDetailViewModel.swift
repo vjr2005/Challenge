@@ -54,6 +54,7 @@ private extension CharacterDetailViewModel {
             let character = try await getCharacterUseCase.execute(identifier: identifier)
             state = .loaded(character)
         } catch {
+            tracker.trackLoadError(description: error.localizedDescription)
             state = .error(error)
         }
     }
@@ -63,6 +64,7 @@ private extension CharacterDetailViewModel {
             let character = try await refreshCharacterUseCase.execute(identifier: identifier)
             state = .loaded(character)
         } catch {
+            tracker.trackRefreshError(description: error.localizedDescription)
             state = .error(error)
         }
     }

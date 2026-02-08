@@ -56,4 +56,24 @@ struct CharacterDetailTrackerTests {
         #expect(trackerMock.trackedEvents.count == 1)
         #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_back_tapped", properties: [:]))
     }
+
+    @Test("Track load error dispatches event with description")
+    func trackLoadErrorDispatchesCorrectEvent() {
+        // When
+        sut.trackLoadError(description: "Load failed")
+
+        // Then
+        #expect(trackerMock.trackedEvents.count == 1)
+        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_load_error", properties: ["description": "Load failed"]))
+    }
+
+    @Test("Track refresh error dispatches event with description")
+    func trackRefreshErrorDispatchesCorrectEvent() {
+        // When
+        sut.trackRefreshError(description: "Refresh failed")
+
+        // Then
+        #expect(trackerMock.trackedEvents.count == 1)
+        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_refresh_error", properties: ["description": "Refresh failed"]))
+    }
 }

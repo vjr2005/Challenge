@@ -226,4 +226,56 @@ struct CharacterDetailViewModelTests {
         // Then
         #expect(trackerMock.backButtonTappedCallCount == 1)
     }
+
+    // MARK: - Error Tracking
+
+    @Test("didAppear tracks load error on failure")
+    func didAppearTracksLoadErrorOnFailure() async {
+        // Given
+        getCharacterUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.loadErrorDescriptions.count == 1)
+        #expect(trackerMock.loadErrorDescriptions.first == CharacterError.loadFailed.localizedDescription)
+    }
+
+    @Test("didAppear does not track load error on success")
+    func didAppearDoesNotTrackLoadErrorOnSuccess() async {
+        // Given
+        getCharacterUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.loadErrorDescriptions.isEmpty)
+    }
+
+    @Test("didPullToRefresh tracks refresh error on failure")
+    func didPullToRefreshTracksRefreshErrorOnFailure() async {
+        // Given
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(trackerMock.refreshErrorDescriptions.count == 1)
+        #expect(trackerMock.refreshErrorDescriptions.first == CharacterError.loadFailed.localizedDescription)
+    }
+
+    @Test("didPullToRefresh does not track refresh error on success")
+    func didPullToRefreshDoesNotTrackRefreshErrorOnSuccess() async {
+        // Given
+        refreshCharacterUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(trackerMock.refreshErrorDescriptions.isEmpty)
+    }
 }

@@ -553,6 +553,88 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.loadMoreButtonTappedCallCount == 0)
     }
 
+    // MARK: - Error Tracking
+
+    @Test("didAppear tracks fetch error on failure")
+    func didAppearTracksFetchErrorOnFailure() async {
+        // Given
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.fetchErrorDescriptions.count == 1)
+        #expect(trackerMock.fetchErrorDescriptions.first == CharactersPageError.loadFailed.localizedDescription)
+    }
+
+    @Test("didAppear does not track fetch error on success")
+    func didAppearDoesNotTrackFetchErrorOnSuccess() async {
+        // Given
+        getCharactersPageUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didAppear()
+
+        // Then
+        #expect(trackerMock.fetchErrorDescriptions.isEmpty)
+    }
+
+    @Test("didPullToRefresh tracks refresh error on failure")
+    func didPullToRefreshTracksRefreshErrorOnFailure() async {
+        // Given
+        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(trackerMock.refreshErrorDescriptions.count == 1)
+        #expect(trackerMock.refreshErrorDescriptions.first == CharactersPageError.loadFailed.localizedDescription)
+    }
+
+    @Test("didPullToRefresh does not track refresh error on success")
+    func didPullToRefreshDoesNotTrackRefreshErrorOnSuccess() async {
+        // Given
+        refreshCharactersPageUseCaseMock.result = .success(.stub())
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(trackerMock.refreshErrorDescriptions.isEmpty)
+    }
+
+    @Test("didTapOnLoadMoreButton tracks load more error on failure")
+    func didTapOnLoadMoreButtonTracksLoadMoreErrorOnFailure() async {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
+        await sut.didAppear()
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await sut.didTapOnLoadMoreButton()
+
+        // Then
+        #expect(trackerMock.loadMoreErrorDescriptions.count == 1)
+        #expect(trackerMock.loadMoreErrorDescriptions.first == CharactersPageError.loadFailed.localizedDescription)
+    }
+
+    @Test("didTapOnLoadMoreButton does not track load more error on success")
+    func didTapOnLoadMoreButtonDoesNotTrackLoadMoreErrorOnSuccess() async {
+        // Given
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        getCharactersPageUseCaseMock.result = .success(firstPage)
+        await sut.didAppear()
+
+        // When
+        await sut.didTapOnLoadMoreButton()
+
+        // Then
+        #expect(trackerMock.loadMoreErrorDescriptions.isEmpty)
+    }
+
     // MARK: - Recent Searches
 
     @Test("Initial recentSearches is empty array")

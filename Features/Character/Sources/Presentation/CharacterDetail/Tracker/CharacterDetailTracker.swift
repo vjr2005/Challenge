@@ -22,4 +22,12 @@ struct CharacterDetailTracker: CharacterDetailTrackerContract {
     func trackBackButtonTapped() {
         tracker.track(CharacterDetailEvent.backButtonTapped)
     }
+
+    func trackLoadError(description: String) {
+        tracker.track(CharacterDetailEvent.loadError(description: description))
+    }
+
+    func trackRefreshError(description: String) {
+        tracker.track(CharacterDetailEvent.refreshError(description: description))
+    }
 }

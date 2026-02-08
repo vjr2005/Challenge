@@ -5,6 +5,8 @@ final class CharacterDetailTrackerMock: CharacterDetailTrackerContract {
     private(set) var retryButtonTappedCallCount = 0
     private(set) var pullToRefreshTriggeredCallCount = 0
     private(set) var backButtonTappedCallCount = 0
+    private(set) var loadErrorDescriptions: [String] = []
+    private(set) var refreshErrorDescriptions: [String] = []
 
     func trackScreenViewed(identifier: Int) {
         screenViewedIdentifiers.append(identifier)
@@ -20,5 +22,13 @@ final class CharacterDetailTrackerMock: CharacterDetailTrackerContract {
 
     func trackBackButtonTapped() {
         backButtonTappedCallCount += 1
+    }
+
+    func trackLoadError(description: String) {
+        loadErrorDescriptions.append(description)
+    }
+
+    func trackRefreshError(description: String) {
+        refreshErrorDescriptions.append(description)
     }
 }

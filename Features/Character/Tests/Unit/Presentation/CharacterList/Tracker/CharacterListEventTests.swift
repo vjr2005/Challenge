@@ -142,4 +142,64 @@ struct CharacterListEventTests {
         // Then
         #expect(sut.properties == [:])
     }
+
+    // MARK: - fetchError
+
+    @Test("Fetch error event has correct name")
+    func fetchErrorEventHasCorrectName() {
+        // Given
+        let sut = CharacterListEvent.fetchError(description: "Load failed")
+
+        // Then
+        #expect(sut.name == "character_list_fetch_error")
+    }
+
+    @Test("Fetch error event has description in properties")
+    func fetchErrorEventHasDescriptionInProperties() {
+        // Given
+        let sut = CharacterListEvent.fetchError(description: "Load failed")
+
+        // Then
+        #expect(sut.properties == ["description": "Load failed"])
+    }
+
+    // MARK: - refreshError
+
+    @Test("Refresh error event has correct name")
+    func refreshErrorEventHasCorrectName() {
+        // Given
+        let sut = CharacterListEvent.refreshError(description: "Refresh failed")
+
+        // Then
+        #expect(sut.name == "character_list_refresh_error")
+    }
+
+    @Test("Refresh error event has description in properties")
+    func refreshErrorEventHasDescriptionInProperties() {
+        // Given
+        let sut = CharacterListEvent.refreshError(description: "Refresh failed")
+
+        // Then
+        #expect(sut.properties == ["description": "Refresh failed"])
+    }
+
+    // MARK: - loadMoreError
+
+    @Test("Load more error event has correct name")
+    func loadMoreErrorEventHasCorrectName() {
+        // Given
+        let sut = CharacterListEvent.loadMoreError(description: "Load more failed")
+
+        // Then
+        #expect(sut.name == "character_list_load_more_error")
+    }
+
+    @Test("Load more error event has description in properties")
+    func loadMoreErrorEventHasDescriptionInProperties() {
+        // Given
+        let sut = CharacterListEvent.loadMoreError(description: "Load more failed")
+
+        // Then
+        #expect(sut.properties == ["description": "Load more failed"])
+    }
 }

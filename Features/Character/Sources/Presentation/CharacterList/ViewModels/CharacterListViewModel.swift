@@ -171,6 +171,7 @@ private extension CharacterListViewModel {
                 state = .loaded(result)
             }
         } catch {
+            tracker.trackFetchError(description: error.localizedDescription)
             state = .error(error)
         }
     }
@@ -185,6 +186,7 @@ private extension CharacterListViewModel {
                 state = .loaded(result)
             }
         } catch {
+            tracker.trackRefreshError(description: error.localizedDescription)
             state = .error(error)
         }
     }
@@ -211,6 +213,7 @@ private extension CharacterListViewModel {
             )
             state = .loaded(updatedPage)
         } catch {
+            tracker.trackLoadMoreError(description: error.localizedDescription)
             currentPage -= 1
         }
     }

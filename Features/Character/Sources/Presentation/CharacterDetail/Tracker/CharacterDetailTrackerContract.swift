@@ -3,4 +3,6 @@ protocol CharacterDetailTrackerContract {
     func trackRetryButtonTapped()
     func trackPullToRefreshTriggered()
     func trackBackButtonTapped()
+    func trackLoadError(description: String)
+    func trackRefreshError(description: String)
 }
