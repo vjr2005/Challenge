@@ -1,5 +1,5 @@
 protocol AdvancedSearchViewModelContract: AnyObject {
-    var localFilterState: CharacterFilterState { get }
+    var filter: CharacterFilter { get set }
     var hasActiveFilters: Bool { get }
     func didAppear()
     func didTapApply()

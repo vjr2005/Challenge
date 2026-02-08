@@ -10,7 +10,6 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 	var searchQuery: String = ""
 	var recentSearches: [String] = []
 	var activeFilterCount: Int = 0
-	var advancedFilterSnapshot: CharacterFilter = .empty
 
 	init(state: CharacterListViewState) {
 		self.state = state
@@ -46,9 +45,5 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 
 	func didTapAdvancedSearchButton() {
 		// No-op: navigation not tested in snapshots
-	}
-
-	func didChangeAdvancedFilters() async {
-		// No-op: filters not tested in snapshots
 	}
 }

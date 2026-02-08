@@ -15,7 +15,6 @@ struct CharacterListViewModelTests {
     private let deleteRecentSearchUseCaseMock = DeleteRecentSearchUseCaseMock()
     private let navigatorMock = CharacterListNavigatorMock()
     private let trackerMock = CharacterListTrackerMock()
-    private let filterState = CharacterFilterState()
     private let sut: CharacterListViewModel
 
     // MARK: - Initialization
@@ -30,7 +29,6 @@ struct CharacterListViewModelTests {
             deleteRecentSearchUseCase: deleteRecentSearchUseCaseMock,
             navigator: navigatorMock,
             tracker: trackerMock,
-            filterState: filterState,
             debounceInterval: .zero
         )
     }
@@ -792,25 +790,88 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.advancedSearchButtonTappedCallCount == 1)
     }
 
-    @Test("didTapAdvancedSearchButton calls navigator")
+    @Test("didTapAdvancedSearchButton calls navigator with self as delegate")
     func didTapAdvancedSearchButtonCallsNavigator() {
         // When
         sut.didTapAdvancedSearchButton()
 
         // Then
         #expect(navigatorMock.presentAdvancedSearchCallCount == 1)
+        #expect(navigatorMock.lastPresentAdvancedSearchDelegate === sut)
     }
 
-    @Test("didChangeAdvancedFilters triggers fetch characters")
-    func didChangeAdvancedFiltersTriggersFetchCharacters() async {
+    @Test("applyAdvancedFilters triggers fetch characters")
+    func applyAdvancedFiltersTriggersFetchCharacters() async {
         // Given
         getCharactersPageUseCaseMock.result = .success(.stub())
+        let filter = CharacterFilter.empty
 
         // When
-        await sut.didChangeAdvancedFilters()
+        await sut.applyAdvancedFilters(filter)
 
         // Then
         #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
+    }
+
+    @Test("applyAdvancedFilters uses search use case when filter has active filters")
+    func applyAdvancedFiltersUsesSearchUseCaseWhenFilterHasActiveFilters() async {
+        // Given
+        searchCharactersPageUseCaseMock.result = .success(.stub())
+        let filter = CharacterFilter(status: .alive)
+
+        // When
+        await sut.applyAdvancedFilters(filter)
+
+        // Then
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .alive)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
+    }
+
+    @Test("applyAdvancedFilters updates activeFilterCount")
+    func applyAdvancedFiltersUpdatesActiveFilterCount() async {
+        // Given
+        getCharactersPageUseCaseMock.result = .success(.stub())
+        let filter = CharacterFilter(status: .alive, gender: .male)
+
+        // When
+        await sut.applyAdvancedFilters(filter)
+
+        // Then
+        #expect(sut.activeFilterCount == 2)
+    }
+
+    @Test("fetchMoreCharacters uses search use case when advanced filters are active")
+    func fetchMoreCharactersUsesSearchUseCaseWhenAdvancedFiltersAreActive() async {
+        // Given
+        let filter = CharacterFilter(status: .dead)
+        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
+        searchCharactersPageUseCaseMock.result = .success(firstPage)
+        await sut.applyAdvancedFilters(filter)
+
+        // When
+        await sut.didTapOnLoadMoreButton()
+
+        // Then
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .dead)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 2)
+    }
+
+    @Test("applyAdvancedFilters combines name and filter state")
+    func applyAdvancedFiltersCombinesNameAndFilterState() async {
+        // Given
+        searchCharactersPageUseCaseMock.result = .success(.stub())
+        sut.searchQuery = "Rick"
+        await sut.searchTask?.value
+
+        // When
+        let filter = CharacterFilter(status: .alive)
+        await sut.applyAdvancedFilters(filter)
+
+        // Then
+        let requestedFilter = searchCharactersPageUseCaseMock.lastRequestedFilter
+        #expect(requestedFilter?.name == "Rick")
+        #expect(requestedFilter?.status == .alive)
     }
 
     @Test("searchQuery reflects updated value")
@@ -832,57 +893,6 @@ struct CharacterListViewModelTests {
 
         // Then
         #expect(sut.searchQuery == "")
-    }
-
-    @Test("fetchCharacters uses search use case when filterState has active filters")
-    func fetchCharactersUsesSearchUseCaseWhenFilterStateHasActiveFilters() async {
-        // Given
-        filterState.status = .alive
-        searchCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didChangeAdvancedFilters()
-
-        // Then
-        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .alive)
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
-    }
-
-    @Test("fetchMoreCharacters uses search use case when filterState has active filters")
-    func fetchMoreCharactersUsesSearchUseCaseWhenFilterStateHasActiveFilters() async {
-        // Given
-        filterState.status = .dead
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        searchCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didChangeAdvancedFilters()
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .dead)
-        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 2)
-    }
-
-    @Test("activeFilterCount reflects filterState")
-    func activeFilterCountReflectsFilterState() {
-        // Given
-        filterState.status = .alive
-        filterState.gender = .male
-
-        // Then
-        #expect(sut.activeFilterCount == 2)
-    }
-
-    @Test("advancedFilterSnapshot reflects filter state")
-    func advancedFilterSnapshotReflectsFilterState() {
-        // Given
-        filterState.status = .alive
-        filterState.species = "Human"
-
-        // Then
-        #expect(sut.advancedFilterSnapshot == filterState.filter)
     }
 
     @Test("fetchCharacters ignores error when search task is cancelled during network request")
@@ -908,17 +918,18 @@ struct CharacterListViewModelTests {
         #expect(sut.state == .loaded(page))
     }
 
-    @Test("fetchCharacters combines name and filter state")
-    func fetchCharactersCombinesNameAndFilterState() async {
+    @Test("currentFilter reflects applied filter")
+    func currentFilterReflectsAppliedFilter() async {
         // Given
-        filterState.status = .alive
-        searchCharactersPageUseCaseMock.result = .success(.stub())
-        sut.searchQuery = "Rick"
-        await sut.searchTask?.value
+        getCharactersPageUseCaseMock.result = .success(.stub())
+        let filter = CharacterFilter(status: .alive, species: "Human")
+
+        // When
+        await sut.applyAdvancedFilters(filter)
 
         // Then
-        let filter = searchCharactersPageUseCaseMock.lastRequestedFilter
-        #expect(filter?.name == "Rick")
-        #expect(filter?.status == .alive)
+        #expect(sut.currentFilter == filter)
     }
+
+
 }

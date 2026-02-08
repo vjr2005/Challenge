@@ -6,7 +6,6 @@ public final class CharacterContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
-    private let filterState = CharacterFilterState()
 
     // MARK: - Repositories
 
@@ -49,8 +48,7 @@ public final class CharacterContainer {
             saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
             deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
             navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker),
-            filterState: filterState
+            tracker: CharacterListTracker(tracker: tracker)
         )
     }
 
@@ -67,9 +65,12 @@ public final class CharacterContainer {
         )
     }
 
-    func makeAdvancedSearchViewModel(navigator: any NavigatorContract) -> AdvancedSearchViewModel {
+    func makeAdvancedSearchViewModel(
+        delegate: any CharacterFilterDelegate,
+        navigator: any NavigatorContract
+    ) -> AdvancedSearchViewModel {
         AdvancedSearchViewModel(
-            filterState: filterState,
+            delegate: delegate,
             navigator: AdvancedSearchNavigator(navigator: navigator),
             tracker: AdvancedSearchTracker(tracker: tracker)
         )

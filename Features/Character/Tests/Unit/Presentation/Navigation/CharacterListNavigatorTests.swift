@@ -31,16 +31,19 @@ struct CharacterListNavigatorTests {
         #expect(destination == expected)
     }
 
-    @Test("Present advanced search presents full screen cover")
+    @Test("Present advanced search presents full screen cover with delegate")
     func presentAdvancedSearchPresentsFullScreenCover() {
+        // Given
+        let delegateMock = CharacterFilterDelegateMock()
+
         // When
-        sut.presentAdvancedSearch()
+        sut.presentAdvancedSearch(delegate: delegateMock)
 
         // Then
         #expect(navigatorMock.presentedModals.count == 1)
         let modal = navigatorMock.presentedModals.first
         let destination = modal?.destination as? CharacterIncomingNavigation
-        #expect(destination == .advancedSearch)
+        #expect(destination == .advancedSearch(delegate: delegateMock))
         #expect(modal?.style == .fullScreenCover)
     }
 }

@@ -50,11 +50,6 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 		.onFirstAppear {
 			await viewModel.didAppear()
 		}
-		.onChange(of: viewModel.advancedFilterSnapshot) {
-			Task {
-				await viewModel.didChangeAdvancedFilters()
-			}
-		}
 		.navigationTitle(LocalizedStrings.title)
 		.navigationBarTitleDisplayMode(.large)
 		.toolbar {

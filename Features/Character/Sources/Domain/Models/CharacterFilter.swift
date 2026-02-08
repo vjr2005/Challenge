@@ -1,11 +1,11 @@
 import Foundation
 
-struct CharacterFilter: Equatable {
-    let name: String?
-    let status: CharacterStatus?
-    let species: String?
-    let type: String?
-    let gender: CharacterGender?
+public struct CharacterFilter: Equatable {
+    var name: String?
+    var status: CharacterStatus?
+    var species: String?
+    var type: String?
+    var gender: CharacterGender?
 
     init(
         name: String? = nil,

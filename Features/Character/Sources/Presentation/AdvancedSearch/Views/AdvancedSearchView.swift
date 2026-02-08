@@ -58,10 +58,10 @@ private extension AdvancedSearchView {
         DSChipGroup(
             LocalizedStrings.status,
             options: CharacterStatus.allCases.map { (id: $0, label: $0.localizedName) },
-            selectedID: viewModel.localFilterState.status,
+            selectedID: viewModel.filter.status,
             accessibilityIdentifier: AccessibilityIdentifier.statusGroup
         ) { selected in
-            viewModel.localFilterState.status = selected
+            viewModel.filter.status = selected
         }
     }
 
@@ -69,10 +69,10 @@ private extension AdvancedSearchView {
         DSChipGroup(
             LocalizedStrings.gender,
             options: CharacterGender.allCases.map { (id: $0, label: $0.localizedName) },
-            selectedID: viewModel.localFilterState.gender,
+            selectedID: viewModel.filter.gender,
             accessibilityIdentifier: AccessibilityIdentifier.genderGroup
         ) { selected in
-            viewModel.localFilterState.gender = selected
+            viewModel.filter.gender = selected
         }
     }
 
@@ -84,8 +84,8 @@ private extension AdvancedSearchView {
             DSTextField(
                 placeholder: LocalizedStrings.speciesPlaceholder,
                 text: Binding(
-                    get: { viewModel.localFilterState.species ?? "" },
-                    set: { viewModel.localFilterState.species = $0.isEmpty ? nil : $0 }
+                    get: { viewModel.filter.species ?? "" },
+                    set: { viewModel.filter.species = $0.isEmpty ? nil : $0 }
                 ),
                 accessibilityIdentifier: AccessibilityIdentifier.speciesTextField
             )
@@ -100,8 +100,8 @@ private extension AdvancedSearchView {
             DSTextField(
                 placeholder: LocalizedStrings.typePlaceholder,
                 text: Binding(
-                    get: { viewModel.localFilterState.type ?? "" },
-                    set: { viewModel.localFilterState.type = $0.isEmpty ? nil : $0 }
+                    get: { viewModel.filter.type ?? "" },
+                    set: { viewModel.filter.type = $0.isEmpty ? nil : $0 }
                 ),
                 accessibilityIdentifier: AccessibilityIdentifier.typeTextField
             )

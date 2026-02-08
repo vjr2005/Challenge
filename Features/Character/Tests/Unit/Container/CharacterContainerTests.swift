@@ -46,11 +46,27 @@ struct CharacterContainerTests {
     func makeAdvancedSearchViewModelReturnsConfiguredInstance() {
         // Given
         let navigatorMock = NavigatorMock()
+        let delegateMock = CharacterFilterDelegateMock()
 
         // When
-        let viewModel = sut.makeAdvancedSearchViewModel(navigator: navigatorMock)
+        let viewModel = sut.makeAdvancedSearchViewModel(delegate: delegateMock, navigator: navigatorMock)
 
         // Then
         #expect(!viewModel.hasActiveFilters)
+    }
+
+    @Test("Make advanced search view model initializes filter from delegate")
+    func makeAdvancedSearchViewModelInitializesFilterFromDelegate() {
+        // Given
+        let navigatorMock = NavigatorMock()
+        let delegateMock = CharacterFilterDelegateMock()
+        delegateMock.currentFilter = CharacterFilter(status: .alive, gender: .male)
+
+        // When
+        let viewModel = sut.makeAdvancedSearchViewModel(delegate: delegateMock, navigator: navigatorMock)
+
+        // Then
+        #expect(viewModel.filter.status == .alive)
+        #expect(viewModel.filter.gender == .male)
     }
 }

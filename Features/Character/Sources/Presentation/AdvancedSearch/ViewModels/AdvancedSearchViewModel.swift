@@ -2,25 +2,25 @@ import Foundation
 
 @Observable
 final class AdvancedSearchViewModel: AdvancedSearchViewModelContract {
-    let localFilterState = CharacterFilterState()
+    var filter: CharacterFilter
 
     var hasActiveFilters: Bool {
-        !localFilterState.filter.isEmpty
+        filter.activeFilterCount > 0
     }
 
-    private let filterState: CharacterFilterState
+    private let delegate: any CharacterFilterDelegate
     private let navigator: AdvancedSearchNavigatorContract
     private let tracker: AdvancedSearchTrackerContract
 
     init(
-        filterState: CharacterFilterState,
+        delegate: any CharacterFilterDelegate,
         navigator: AdvancedSearchNavigatorContract,
         tracker: AdvancedSearchTrackerContract
     ) {
-        self.filterState = filterState
+        self.filter = delegate.currentFilter
+        self.delegate = delegate
         self.navigator = navigator
         self.tracker = tracker
-        localFilterState.apply(from: filterState)
     }
 
     func didAppear() {
@@ -28,13 +28,13 @@ final class AdvancedSearchViewModel: AdvancedSearchViewModelContract {
     }
 
     func didTapApply() {
-        filterState.apply(from: localFilterState)
-        tracker.trackApplyFilters(filterCount: filterState.filter.activeFilterCount)
+        tracker.trackApplyFilters(filterCount: filter.activeFilterCount)
+        delegate.didApplyFilter(filter)
         navigator.dismiss()
     }
 
     func didTapReset() {
-        localFilterState.reset()
+        filter = .empty
         tracker.trackResetFilters()
     }
 

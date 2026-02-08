@@ -77,9 +77,13 @@ struct CharacterFeatureTests {
     func resolveReturnsViewForAdvancedSearchNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
+        let delegateMock = CharacterFilterDelegateMock()
 
         // When
-        let result = sut.resolve(CharacterIncomingNavigation.advancedSearch, navigator: navigatorMock)
+        let result = sut.resolve(
+            CharacterIncomingNavigation.advancedSearch(delegate: delegateMock),
+            navigator: navigatorMock
+        )
 
         // Then
         #expect(result != nil)

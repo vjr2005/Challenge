@@ -7,7 +7,7 @@ import Testing
 struct AdvancedSearchViewModelTests {
     // MARK: - Properties
 
-    private let filterState = CharacterFilterState()
+    private let delegateMock = CharacterFilterDelegateMock()
     private let navigatorMock = AdvancedSearchNavigatorMock()
     private let trackerMock = AdvancedSearchTrackerMock()
     private let sut: AdvancedSearchViewModel
@@ -16,7 +16,7 @@ struct AdvancedSearchViewModelTests {
 
     init() {
         sut = AdvancedSearchViewModel(
-            filterState: filterState,
+            delegate: delegateMock,
             navigator: navigatorMock,
             tracker: trackerMock
         )
@@ -24,37 +24,36 @@ struct AdvancedSearchViewModelTests {
 
     // MARK: - Initial State
 
-    @Test("Initial state copies from empty filter state")
-    func initialStateCopiesFromEmptyFilterState() {
+    @Test("Initial state has empty filter when delegate has empty filter")
+    func initialStateHasEmptyFilter() {
         // Then
-        #expect(sut.localFilterState.status == nil)
-        #expect(sut.localFilterState.species == nil)
-        #expect(sut.localFilterState.type == nil)
-        #expect(sut.localFilterState.gender == nil)
+        #expect(sut.filter == .empty)
         #expect(!sut.hasActiveFilters)
     }
 
-    @Test("Initial state copies from populated filter state")
-    func initialStateCopiesFromPopulatedFilterState() {
+    @Test("Initial state copies from delegate current filter")
+    func initialStateCopiesFromDelegateCurrentFilter() {
         // Given
-        let populatedFilterState = CharacterFilterState()
-        populatedFilterState.status = .alive
-        populatedFilterState.species = "Human"
-        populatedFilterState.type = "Parasite"
-        populatedFilterState.gender = .male
+        let delegateMock = CharacterFilterDelegateMock()
+        delegateMock.currentFilter = CharacterFilter(
+            status: .alive,
+            species: "Human",
+            type: "Parasite",
+            gender: .male
+        )
 
         // When
         let viewModel = AdvancedSearchViewModel(
-            filterState: populatedFilterState,
+            delegate: delegateMock,
             navigator: navigatorMock,
             tracker: trackerMock
         )
 
         // Then
-        #expect(viewModel.localFilterState.status == .alive)
-        #expect(viewModel.localFilterState.species == "Human")
-        #expect(viewModel.localFilterState.type == "Parasite")
-        #expect(viewModel.localFilterState.gender == .male)
+        #expect(viewModel.filter.status == .alive)
+        #expect(viewModel.filter.species == "Human")
+        #expect(viewModel.filter.type == "Parasite")
+        #expect(viewModel.filter.gender == .male)
         #expect(viewModel.hasActiveFilters)
     }
 
@@ -63,7 +62,7 @@ struct AdvancedSearchViewModelTests {
     @Test("hasActiveFilters returns true when status is set")
     func hasActiveFiltersReturnsTrueWhenStatusIsSet() {
         // When
-        sut.localFilterState.status = .alive
+        sut.filter.status = .alive
 
         // Then
         #expect(sut.hasActiveFilters)
@@ -72,7 +71,7 @@ struct AdvancedSearchViewModelTests {
     @Test("hasActiveFilters returns true when species is set")
     func hasActiveFiltersReturnsTrueWhenSpeciesIsSet() {
         // When
-        sut.localFilterState.species = "Human"
+        sut.filter.species = "Human"
 
         // Then
         #expect(sut.hasActiveFilters)
@@ -81,7 +80,7 @@ struct AdvancedSearchViewModelTests {
     @Test("hasActiveFilters returns true when type is set")
     func hasActiveFiltersReturnsTrueWhenTypeIsSet() {
         // When
-        sut.localFilterState.type = "Parasite"
+        sut.filter.type = "Parasite"
 
         // Then
         #expect(sut.hasActiveFilters)
@@ -90,7 +89,7 @@ struct AdvancedSearchViewModelTests {
     @Test("hasActiveFilters returns true when gender is set")
     func hasActiveFiltersReturnsTrueWhenGenderIsSet() {
         // When
-        sut.localFilterState.gender = .female
+        sut.filter.gender = .female
 
         // Then
         #expect(sut.hasActiveFilters)
@@ -115,22 +114,26 @@ struct AdvancedSearchViewModelTests {
 
     // MARK: - didTapApply
 
-    @Test("didTapApply commits local values to shared filter state")
-    func didTapApplyCommitsToSharedFilterState() {
+    @Test("didTapApply calls delegate didApplyFilter with correct filter")
+    func didTapApplyCallsDelegateDidApplyFilter() {
         // Given
-        sut.localFilterState.status = .dead
-        sut.localFilterState.species = "Alien"
-        sut.localFilterState.type = "Robot"
-        sut.localFilterState.gender = .genderless
+        sut.filter.status = .dead
+        sut.filter.species = "Alien"
+        sut.filter.type = "Robot"
+        sut.filter.gender = .genderless
 
         // When
         sut.didTapApply()
 
         // Then
-        #expect(filterState.status == .dead)
-        #expect(filterState.species == "Alien")
-        #expect(filterState.type == "Robot")
-        #expect(filterState.gender == .genderless)
+        let expected = CharacterFilter(
+            status: .dead,
+            species: "Alien",
+            type: "Robot",
+            gender: .genderless
+        )
+        #expect(delegateMock.didApplyFilterCallCount == 1)
+        #expect(delegateMock.lastAppliedFilter == expected)
     }
 
     @Test("didTapApply calls navigator dismiss")
@@ -145,8 +148,8 @@ struct AdvancedSearchViewModelTests {
     @Test("didTapApply tracks apply filters with correct count")
     func didTapApplyTracksApplyFilters() {
         // Given
-        sut.localFilterState.status = .alive
-        sut.localFilterState.gender = .male
+        sut.filter.status = .alive
+        sut.filter.gender = .male
 
         // When
         sut.didTapApply()
@@ -158,44 +161,37 @@ struct AdvancedSearchViewModelTests {
 
     // MARK: - didTapReset
 
-    @Test("didTapReset clears all local values")
-    func didTapResetClearsAllLocalValues() {
+    @Test("didTapReset clears all filter values")
+    func didTapResetClearsAllFilterValues() {
         // Given
-        sut.localFilterState.status = .alive
-        sut.localFilterState.species = "Human"
-        sut.localFilterState.type = "Parasite"
-        sut.localFilterState.gender = .male
+        sut.filter.status = .alive
+        sut.filter.species = "Human"
+        sut.filter.type = "Parasite"
+        sut.filter.gender = .male
 
         // When
         sut.didTapReset()
 
         // Then
-        #expect(sut.localFilterState.status == nil)
-        #expect(sut.localFilterState.species == nil)
-        #expect(sut.localFilterState.type == nil)
-        #expect(sut.localFilterState.gender == nil)
+        #expect(sut.filter == .empty)
     }
 
-    @Test("didTapReset does not commit to shared filter state")
-    func didTapResetDoesNotCommitToSharedFilterState() {
+    @Test("didTapReset does not call delegate didApplyFilter")
+    func didTapResetDoesNotCallDelegateDidApplyFilter() {
         // Given
-        filterState.status = .alive
-        filterState.species = "Human"
-
+        let delegateMock = CharacterFilterDelegateMock()
+        delegateMock.currentFilter = CharacterFilter(status: .alive)
         let viewModel = AdvancedSearchViewModel(
-            filterState: filterState,
+            delegate: delegateMock,
             navigator: navigatorMock,
             tracker: trackerMock
         )
-        viewModel.localFilterState.status = .dead
-        viewModel.localFilterState.species = "Alien"
 
         // When
         viewModel.didTapReset()
 
-        // Then - shared state still has original values
-        #expect(filterState.status == .alive)
-        #expect(filterState.species == "Human")
+        // Then
+        #expect(delegateMock.didApplyFilterCallCount == 0)
     }
 
     @Test("didTapReset tracks reset filters")
@@ -227,17 +223,15 @@ struct AdvancedSearchViewModelTests {
         #expect(trackerMock.closeTappedCallCount == 1)
     }
 
-    @Test("didTapClose does not commit to shared filter state")
-    func didTapCloseDoesNotCommitToSharedFilterState() {
+    @Test("didTapClose does not call delegate didApplyFilter")
+    func didTapCloseDoesNotCallDelegateDidApplyFilter() {
         // Given
-        sut.localFilterState.status = .dead
-        sut.localFilterState.species = "Alien"
+        sut.filter.status = .dead
 
         // When
         sut.didTapClose()
 
-        // Then - shared state remains empty
-        #expect(filterState.status == nil)
-        #expect(filterState.species == nil)
+        // Then
+        #expect(delegateMock.didApplyFilterCallCount == 0)
     }
 }

@@ -142,7 +142,6 @@ public final class CharacterContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
-    private let filterState = CharacterFilterState()
 
     // MARK: - Repositories
 
@@ -181,8 +180,7 @@ public final class CharacterContainer {
             saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
             deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
             navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker),
-            filterState: filterState
+            tracker: CharacterListTracker(tracker: tracker)
         )
     }
 
@@ -199,9 +197,12 @@ public final class CharacterContainer {
         )
     }
 
-    func makeAdvancedSearchViewModel(navigator: any NavigatorContract) -> AdvancedSearchViewModel {
+    func makeAdvancedSearchViewModel(
+        delegate: any CharacterFilterDelegate,
+        navigator: any NavigatorContract
+    ) -> AdvancedSearchViewModel {
         AdvancedSearchViewModel(
-            filterState: filterState,
+            delegate: delegate,
             navigator: AdvancedSearchNavigator(navigator: navigator),
             tracker: AdvancedSearchTracker(tracker: tracker)
         )
@@ -214,8 +215,9 @@ public final class CharacterContainer {
 - Inject **separate Get and Refresh UseCases**
 - Get UseCases use `localFirst` cache policy (fast initial load)
 - Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)
-- Only store what factory methods need after `init` (`tracker`, `filterState`, repositories)
+- Only store what factory methods need after `init` (`tracker`, repositories)
 - DataSources are **local variables in `init`** — only needed to build repositories
+- Inter-ViewModel communication uses **delegate pattern** through navigation enum (e.g., `CharacterFilterDelegate`)
 
 ### Navigation Destinations
 
@@ -226,8 +228,36 @@ import ChallengeCore
 public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
+    case advancedSearch(delegate: any CharacterFilterDelegate)
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.list, .list):
+            return true
+        case (.detail(let lhsID), .detail(let rhsID)):
+            return lhsID == rhsID
+        case (.advancedSearch, .advancedSearch):
+            return true
+        default:
+            return false
+        }
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .list:
+            hasher.combine(0)
+        case .detail(let identifier):
+            hasher.combine(1)
+            hasher.combine(identifier)
+        case .advancedSearch:
+            hasher.combine(2)
+        }
+    }
 }
 ```
+
+When an `IncomingNavigation` case carries a non-Hashable associated value (e.g., a delegate), implement custom `Equatable` and `Hashable` that ignore the delegate identity.
 
 ### Feature (Public Entry Point)
 
@@ -274,6 +304,13 @@ public struct CharacterFeature: FeatureContract {
             return AnyView(CharacterDetailView(
                 viewModel: container.makeCharacterDetailViewModel(
                     identifier: identifier,
+                    navigator: navigator
+                )
+            ))
+        case .advancedSearch(let delegate):
+            return AnyView(AdvancedSearchView(
+                viewModel: container.makeAdvancedSearchViewModel(
+                    delegate: delegate,
                     navigator: navigator
                 )
             ))
@@ -485,7 +522,7 @@ struct CharacterFeatureTests {
 
     // MARK: - Init
 
-    @Test
+    @Test("Init with HTTP client does not crash")
     func initWithHTTPClientDoesNotCrash() {
         // Then - Feature initializes without crashing
         _ = sut
@@ -493,7 +530,7 @@ struct CharacterFeatureTests {
 
     // MARK: - Feature Protocol
 
-    @Test
+    @Test("Make main view returns character list view")
     func makeMainViewReturnsCharacterListView() {
         // When
         let result = sut.makeMainView(navigator: navigatorMock)
@@ -502,7 +539,7 @@ struct CharacterFeatureTests {
         _ = result
     }
 
-    @Test
+    @Test("Resolve list navigation returns view")
     func resolveListNavigationReturnsView() {
         // When
         let result = sut.resolve(CharacterIncomingNavigation.list, navigator: navigatorMock)
@@ -511,7 +548,7 @@ struct CharacterFeatureTests {
         #expect(result != nil)
     }
 
-    @Test
+    @Test("Resolve detail navigation returns view")
     func resolveDetailNavigationReturnsView() {
         // When
         let result = sut.resolve(CharacterIncomingNavigation.detail(identifier: 42), navigator: navigatorMock)
@@ -520,7 +557,22 @@ struct CharacterFeatureTests {
         #expect(result != nil)
     }
 
-    @Test
+    @Test("Resolve advanced search navigation returns view")
+    func resolveAdvancedSearchNavigationReturnsView() {
+        // Given
+        let delegateMock = CharacterFilterDelegateMock()
+
+        // When
+        let result = sut.resolve(
+            CharacterIncomingNavigation.advancedSearch(delegate: delegateMock),
+            navigator: navigatorMock
+        )
+
+        // Then
+        #expect(result != nil)
+    }
+
+    @Test("Resolve unknown navigation returns nil")
     func resolveUnknownNavigationReturnsNil() {
         // Given
         struct UnknownNavigation: NavigationContract {}

@@ -1,4 +1,4 @@
 protocol CharacterListNavigatorContract {
     func navigateToDetail(identifier: Int)
-    func presentAdvancedSearch()
+    func presentAdvancedSearch(delegate: any CharacterFilterDelegate)
 }

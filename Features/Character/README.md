@@ -57,9 +57,8 @@ Character/
 │   └── Presentation/
 │       ├── Navigation/
 │       │   ├── CharacterIncomingNavigation.swift
+│       │   ├── CharacterFilterDelegate.swift
 │       │   └── CharacterDeepLinkHandler.swift
-│       ├── Shared/
-│       │   └── CharacterFilterState.swift
 │       ├── CharacterList/
 │       │   ├── Views/
 │       │   │   └── CharacterListView.swift
@@ -130,8 +129,11 @@ Character/
 public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
+    case advancedSearch(delegate: any CharacterFilterDelegate)
 }
 ```
+
+The `advancedSearch` case carries a `CharacterFilterDelegate` reference, enabling direct communication between `CharacterListViewModel` (which conforms to the delegate) and `AdvancedSearchViewModel`.
 
 ### Deep Links
 

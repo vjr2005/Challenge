@@ -120,32 +120,26 @@ Each feature has its own container that manages its internal dependencies:
 
 ```swift
 public final class CharacterContainer {
-    private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
-    private let memoryDataSource = CharacterMemoryDataSource()
-    private let recentSearchesDataSource = RecentSearchesLocalDataSource()
-    private let filterState = CharacterFilterState()
+
+    private let characterRepository: any CharacterRepositoryContract
+    private let recentSearchesRepository: any RecentSearchesRepositoryContract
+    private let charactersPageRepository: any CharactersPageRepositoryContract
 
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
-        self.httpClient = httpClient
         self.tracker = tracker
-    }
-
-    // Repositories (created on demand)
-    private var characterRepository: any CharacterRepositoryContract {
-        CharacterRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+        let remoteDataSource = CharacterRemoteDataSource(httpClient: httpClient)
+        let memoryDataSource = CharacterMemoryDataSource()
+        let recentSearchesDataSource = RecentSearchesLocalDataSource()
+        self.characterRepository = CharacterRepository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
-    }
-
-    private var recentSearchesRepository: any RecentSearchesRepositoryContract {
-        RecentSearchesRepository(localDataSource: recentSearchesDataSource)
-    }
-
-    private var charactersPageRepository: any CharactersPageRepositoryContract {
-        CharactersPageRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+        self.recentSearchesRepository = RecentSearchesRepository(
+            localDataSource: recentSearchesDataSource
+        )
+        self.charactersPageRepository = CharactersPageRepository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
     }
@@ -160,8 +154,18 @@ public final class CharacterContainer {
             saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
             deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
             navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker),
-            filterState: filterState
+            tracker: CharacterListTracker(tracker: tracker)
+        )
+    }
+
+    func makeAdvancedSearchViewModel(
+        delegate: any CharacterFilterDelegate,
+        navigator: any NavigatorContract
+    ) -> AdvancedSearchViewModel {
+        AdvancedSearchViewModel(
+            delegate: delegate,
+            navigator: AdvancedSearchNavigator(navigator: navigator),
+            tracker: AdvancedSearchTracker(tracker: tracker)
         )
     }
 }
@@ -183,7 +187,6 @@ AppContainer
                     ├── CharacterRemoteDataSource ← HTTPClient
                     ├── CharacterMemoryDataSource
                     ├── RecentSearchesLocalDataSource
-                    ├── CharacterFilterState
                     │
                     ├── CharacterRepository ← Remote + Memory DataSources
                     ├── CharactersPageRepository ← Remote + Memory DataSources
@@ -192,7 +195,10 @@ AppContainer
                             ├── GetCharactersPageUseCase ← Repository
                             ├── GetRecentSearchesUseCase ← Repository
                             │
-                            └── CharacterListViewModel ← UseCases, Navigator, Tracker, FilterState
+                            ├── CharacterListViewModel ← UseCases, Navigator, Tracker
+                            │       (conforms to CharacterFilterDelegate)
+                            │
+                            └── AdvancedSearchViewModel ← Delegate, Navigator, Tracker
 ```
 
 ## Testing

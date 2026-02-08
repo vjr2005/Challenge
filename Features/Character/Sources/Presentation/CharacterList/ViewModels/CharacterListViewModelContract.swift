@@ -5,7 +5,6 @@ protocol CharacterListViewModelContract: AnyObject {
 	var searchQuery: String { get set }
 	var recentSearches: [String] { get }
 	var activeFilterCount: Int { get }
-	var advancedFilterSnapshot: CharacterFilter { get }
 	func didAppear() async
 	func didTapOnRetryButton() async
 	func didPullToRefresh() async
@@ -14,5 +13,4 @@ protocol CharacterListViewModelContract: AnyObject {
 	func didSelectRecentSearch(_ query: String) async
 	func didDeleteRecentSearch(_ query: String)
 	func didTapAdvancedSearchButton()
-	func didChangeAdvancedFilters() async
 }

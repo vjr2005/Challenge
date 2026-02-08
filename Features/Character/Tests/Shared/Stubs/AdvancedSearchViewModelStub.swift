@@ -6,7 +6,7 @@ import Foundation
 /// Maintains a fixed state without performing any operations.
 @Observable
 final class AdvancedSearchViewModelStub: AdvancedSearchViewModelContract {
-	let localFilterState: CharacterFilterState
+	var filter: CharacterFilter
 	var hasActiveFilters: Bool
 
 	init(
@@ -16,12 +16,13 @@ final class AdvancedSearchViewModelStub: AdvancedSearchViewModelContract {
 		gender: CharacterGender? = nil,
 		hasActiveFilters: Bool = false
 	) {
-		self.localFilterState = CharacterFilterState()
+		self.filter = CharacterFilter(
+			status: status,
+			species: species,
+			type: type,
+			gender: gender
+		)
 		self.hasActiveFilters = hasActiveFilters
-		localFilterState.status = status
-		localFilterState.species = species
-		localFilterState.type = type
-		localFilterState.gender = gender
 	}
 
 	func didAppear() {
