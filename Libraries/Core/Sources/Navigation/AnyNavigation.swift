@@ -5,20 +5,24 @@ import Foundation
 public struct AnyNavigation: Hashable {
     /// The wrapped navigation value.
     public let wrapped: any NavigationContract
+    /// Captures the underlying value's real equality through `AnyHashable`,
+    /// since `any NavigationContract` cannot be compared directly with `==`.
+    /// Unlike comparing `hashValue` (which can produce false positives on hash collisions),
+    /// `AnyHashable` delegates to the concrete type's `==`, preserving semantic correctness.
+    private let erased: AnyHashable
 
     /// Creates a new type-erased navigation wrapper.
     /// - Parameter navigation: The navigation to wrap.
     public init(_ navigation: any NavigationContract) {
         self.wrapped = navigation
+        self.erased = AnyHashable(navigation)
     }
 
-    public static func == (lhs: AnyNavigation, rhs: AnyNavigation) -> Bool {
-        lhs.wrapped.hashValue == rhs.wrapped.hashValue &&
-            type(of: lhs.wrapped) == type(of: rhs.wrapped)
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.erased == rhs.erased
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type(of: wrapped)))
-        hasher.combine(wrapped)
+        hasher.combine(erased)
     }
 }

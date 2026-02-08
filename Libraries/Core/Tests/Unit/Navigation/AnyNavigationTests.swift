@@ -29,6 +29,16 @@ struct AnyNavigationTests {
         #expect(navigation1 == navigation2)
     }
 
+    @Test("Equality returns false for different values with same hash")
+    func equalityReturnsFalseForDifferentValuesWithSameHash() {
+        // Given
+        let navigation1 = AnyNavigation(CollidingNavigation.value1)
+        let navigation2 = AnyNavigation(CollidingNavigation.value2)
+
+        // Then
+        #expect(navigation1 != navigation2)
+    }
+
     @Test("Equality returns false for different navigation values")
     func equalityReturnsFalseForDifferentNavigationValues() {
         // Given
@@ -101,4 +111,14 @@ private enum OtherNavigation: IncomingNavigationContract {
 
 private enum TestNavigationWithValue: IncomingNavigationContract {
     case detail(identifier: Int)
+}
+
+/// Two distinct values that produce the same hash, used to verify equality is value-based, not hash-based.
+private enum CollidingNavigation: IncomingNavigationContract {
+    case value1
+    case value2
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
+    }
 }
