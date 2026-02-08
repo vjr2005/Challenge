@@ -2,7 +2,7 @@ import Foundation
 
 /// Type-erased wrapper for NavigationContract.
 /// Allows using a single `.navigationDestination(for:)` modifier for all navigation types.
-public final class AnyNavigation: Hashable, @unchecked Sendable {
+public struct AnyNavigation: Hashable {
     /// The wrapped navigation value.
     public let wrapped: any NavigationContract
 
