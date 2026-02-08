@@ -5,11 +5,14 @@ import ChallengeNetworking
 public final class CharacterContainer: Sendable {
     // MARK: - Dependencies
 
-    private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
-    private let memoryDataSource = CharacterMemoryDataSource()
-    private let recentSearchesDataSource = RecentSearchesLocalDataSource()
     private let filterState = CharacterFilterState()
+
+    // MARK: - Repositories
+
+    private let characterRepository: any CharacterRepositoryContract
+    private let recentSearchesRepository: any RecentSearchesRepositoryContract
+    private let charactersPageRepository: any CharactersPageRepositoryContract
 
     // MARK: - Init
 
@@ -18,26 +21,19 @@ public final class CharacterContainer: Sendable {
     ///   - httpClient: The HTTP client used for network requests.
     ///   - tracker: The tracker used to register analytics events.
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
-        self.httpClient = httpClient
         self.tracker = tracker
-    }
-
-    // MARK: - Repositories
-
-    private var characterRepository: any CharacterRepositoryContract {
-        CharacterRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+        let remoteDataSource = CharacterRemoteDataSource(httpClient: httpClient)
+        let memoryDataSource = CharacterMemoryDataSource()
+        let recentSearchesDataSource = RecentSearchesLocalDataSource()
+        self.characterRepository = CharacterRepository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
-    }
-
-    private var recentSearchesRepository: any RecentSearchesRepositoryContract {
-        RecentSearchesRepository(localDataSource: recentSearchesDataSource)
-    }
-
-    private var charactersPageRepository: any CharactersPageRepositoryContract {
-        CharactersPageRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+        self.recentSearchesRepository = RecentSearchesRepository(
+            localDataSource: recentSearchesDataSource
+        )
+        self.charactersPageRepository = CharactersPageRepository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
     }

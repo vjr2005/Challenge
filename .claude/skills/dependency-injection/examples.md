@@ -138,35 +138,31 @@ import ChallengeNetworking
 public final class CharacterContainer: Sendable {
     // MARK: - Dependencies
 
-    private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
-    private let memoryDataSource = CharacterMemoryDataSource()
-    private let recentSearchesDataSource = RecentSearchesLocalDataSource()
     private let filterState = CharacterFilterState()
+
+    // MARK: - Repositories
+
+    private let characterRepository: any CharacterRepositoryContract
+    private let recentSearchesRepository: any RecentSearchesRepositoryContract
+    private let charactersPageRepository: any CharactersPageRepositoryContract
 
     // MARK: - Init
 
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
-        self.httpClient = httpClient
         self.tracker = tracker
-    }
-
-    // MARK: - Repositories
-
-    private var characterRepository: any CharacterRepositoryContract {
-        CharacterRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+        let remoteDataSource = CharacterRemoteDataSource(httpClient: httpClient)
+        let memoryDataSource = CharacterMemoryDataSource()
+        let recentSearchesDataSource = RecentSearchesLocalDataSource()
+        self.characterRepository = CharacterRepository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
-    }
-
-    private var recentSearchesRepository: any RecentSearchesRepositoryContract {
-        RecentSearchesRepository(localDataSource: recentSearchesDataSource)
-    }
-
-    private var charactersPageRepository: any CharactersPageRepositoryContract {
-        CharactersPageRepository(
-            remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
+        self.recentSearchesRepository = RecentSearchesRepository(
+            localDataSource: recentSearchesDataSource
+        )
+        self.charactersPageRepository = CharactersPageRepository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
     }
@@ -215,7 +211,8 @@ public final class CharacterContainer: Sendable {
 - Inject **separate Get and Refresh UseCases**
 - Get UseCases use `localFirst` cache policy (fast initial load)
 - Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)
-- Local-only repositories (e.g., `RecentSearchesRepository`) use stored `LocalDataSource` properties
+- Only store what factory methods need after `init` (`tracker`, `filterState`, repositories)
+- DataSources are **local variables in `init`** — only needed to build repositories
 
 ### Navigation Destinations
 

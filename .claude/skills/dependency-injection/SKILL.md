@@ -190,22 +190,20 @@ import ChallengeNetworking
 public final class {Feature}Container: Sendable {
     // MARK: - Dependencies
 
-    private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
-    private let memoryDataSource = {Name}MemoryDataSource()
+
+    // MARK: - Repositories
+
+    private let repository: any {Name}RepositoryContract
 
     // MARK: - Init
 
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
-        self.httpClient = httpClient
         self.tracker = tracker
-    }
-
-    // MARK: - Repository
-
-    private var repository: any {Name}RepositoryContract {
-        {Name}Repository(
-            remoteDataSource: {Name}RemoteDataSource(httpClient: httpClient),
+        let remoteDataSource = {Name}RemoteDataSource(httpClient: httpClient)
+        let memoryDataSource = {Name}MemoryDataSource()
+        self.repository = {Name}Repository(
+            remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
         )
     }
@@ -245,8 +243,9 @@ public final class {Feature}Container: Sendable {
 **Rules:**
 - **public final class** with `Sendable` conformance
 - Receives `httpClient` and `tracker` from Feature (injected by AppContainer)
-- Owns **stored memoryDataSource** (source of truth for caching)
-- Has **computed repository** (uses shared memoryDataSource)
+- Only stores what factory methods need after `init` (`tracker`, repositories)
+- DataSources are **local variables in `init`** — only needed to build repositories
+- Repositories are **stored properties** (`private let`) built in `init`
 - Contains all **factory methods** for ViewModels
 - Factory methods receive `navigator: any NavigatorContract`
 - Factory methods create screen-specific trackers: `{Name}ListTracker(tracker: tracker)`
@@ -491,9 +490,8 @@ public final class HomeContainer: Sendable {
 | HTTPClient | Required init parameter | Injected by AppContainer |
 | Tracker | Required init parameter | Injected by AppContainer |
 | Container | Created in Feature init | Owns dependency composition |
-| MemoryDataSource | Instance property in Container (`let`) | Maintains cache state |
-| LocalDataSource | Instance property in Container (`let`) | Maintains persistent local state |
-| Repository | Computed property in Container (`var`) | Uses shared DataSources |
+| DataSource | Local variable in Container `init` | Only needed to build repositories |
+| Repository | Stored property in Container (`let`) | Built in `init`, used by factory methods |
 | Navigator | Factory method (inline) | New instance per ViewModel |
 | Screen Tracker | Factory method (inline) | New instance per ViewModel |
 | ViewModel | Factory method | New instance per navigation |
@@ -659,8 +657,8 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Feature implements `FeatureContract` protocol
 - [ ] Feature implements `makeMainView(navigator:)` returning default entry point
 - [ ] Feature implements `resolve(_:navigator:)` returning view or `nil`
-- [ ] Container has stored `memoryDataSource` property (source of truth)
-- [ ] Container has computed `repository` property
+- [ ] Container builds DataSources as local variables in `init`
+- [ ] Container has stored `repository` properties (`private let`)
 - [ ] Container has factory methods receiving `navigator: any NavigatorContract`
 - [ ] Create `{Feature}IncomingNavigation.swift` in `Presentation/Navigation/`
 - [ ] Create `{Feature}OutgoingNavigation.swift` for cross-feature navigation (if needed)
