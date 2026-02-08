@@ -387,15 +387,11 @@ Libraries/Networking/
 │   │   ├── Endpoint.swift
 │   │   ├── HTTPMethod.swift
 │   │   └── HTTPError.swift
-│   └── Errors/
-│       └── DataError.swift           # Data layer errors (network, parsing, etc.)
 ├── Tests/
 │   └── Unit/
 └── Mocks/
     └── HTTPClientMock.swift
 ```
-
-**Note:** `DataError` is in Networking (not Core) as it represents data layer errors that are transformed to domain errors in repositories.
 
 ---
 
