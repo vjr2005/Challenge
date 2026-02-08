@@ -149,6 +149,23 @@ struct HTTPClientTests {
         }
     }
 
+    @Test("Throws DecodingError when JSON does not match expected type")
+    func throwsDecodingErrorForInvalidJSON() async throws {
+        // Given
+        let (sut, baseURL) = try makeSUT(host: "test-decoding-failed")
+        let invalidData = Data("{\"unexpected\": true}".utf8)
+        let fallbackURL = baseURL
+
+        URLProtocolMock.setHandler({ request in
+            (Self.mockResponse(url: request.url ?? fallbackURL), invalidData)
+        }, forURL: baseURL)
+
+        // When / Then
+        await #expect(throws: DecodingError.self) {
+            let _: TestUser = try await sut.request(Endpoint(path: "/users/1"))
+        }
+    }
+
     @Test("Throws invalid response error for non-HTTP response")
     func throwsInvalidResponseWhenResponseIsNotHTTPURLResponse() async throws {
         // Given

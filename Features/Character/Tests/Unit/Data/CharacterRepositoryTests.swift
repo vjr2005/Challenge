@@ -133,7 +133,7 @@ struct CharacterRepositoryTests {
         remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharacterError.loadFailed()) {
             _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
         }
     }

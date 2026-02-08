@@ -213,19 +213,45 @@ Features/{Feature}/
 ```
 
 ```swift
-public enum {Feature}Error: Error, Equatable, Sendable, LocalizedError {
-    case loadFailed
+public enum {Feature}Error: Error, Equatable, LocalizedError {
+    case loadFailed(description: String = "")
     case notFound(id: Int)
     case invalidPage(page: Int)
+
+    public static func == (lhs: {Feature}Error, rhs: {Feature}Error) -> Bool {
+        switch (lhs, rhs) {
+        case (.loadFailed, .loadFailed):
+            true
+        case let (.notFound(lhsId), .notFound(rhsId)):
+            lhsId == rhsId
+        case let (.invalidPage(lhsPage), .invalidPage(rhsPage)):
+            lhsPage == rhsPage
+        default:
+            false
+        }
+    }
 
     public var errorDescription: String? {
         switch self {
         case .loadFailed:
-            return "{feature}Error.loadFailed".localized()
+            "{feature}Error.loadFailed".localized()
         case .notFound(let id):
-            return "{feature}Error.notFound %lld".localized(id)
+            "{feature}Error.notFound %lld".localized(id)
         case .invalidPage(let page):
-            return "{feature}Error.invalidPage %lld".localized(page)
+            "{feature}Error.invalidPage %lld".localized(page)
+        }
+    }
+}
+
+extension {Feature}Error: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .loadFailed(let description):
+            description
+        case .notFound(let id):
+            "notFound(id: \(id))"
+        case .invalidPage(let page):
+            "invalidPage(page: \(page))"
         }
     }
 }
@@ -234,8 +260,12 @@ public enum {Feature}Error: Error, Equatable, Sendable, LocalizedError {
 **Rules:**
 - Located in `Domain/Errors/`
 - **Public visibility** (used by presentation layer)
-- Conform to `Error`, `Equatable`, `Sendable`, `LocalizedError`
+- Conform to `Error`, `Equatable`, `LocalizedError` (`Sendable` is inferred by approachable concurrency)
 - Use localized strings from Resources module
+- `.loadFailed` carries a `description` (default `""`) with the original error info for debugging/tracking
+- Custom `Equatable`: ignores `description` (it's debug metadata, not domain identity)
+- `CustomDebugStringConvertible`: `debugDescription` returns the raw error info — ViewModels use `error.debugDescription` when sending to the tracker
+- `errorDescription` (for the user) and `debugDescription` (for tracking) are separate concerns
 
 ### Typed Throws in Contract
 
@@ -262,13 +292,13 @@ struct {Name}ErrorMapperInput {
 struct {Name}ErrorMapper: MapperContract {
     func map(_ input: {Name}ErrorMapperInput) -> {Feature}Error {
         guard let httpError = input.error as? HTTPError else {
-            return .loadFailed
+            return .loadFailed(description: String(describing: input.error))
         }
         return switch httpError {
         case .statusCode(404, _):
             .notFound(identifier: input.identifier)
         case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed
+            .loadFailed(description: String(describing: httpError))
         }
     }
 }

@@ -3,7 +3,7 @@ import Foundation
 @testable import ChallengeCharacter
 
 final class GetCharactersPageUseCaseMock: GetCharactersPageUseCaseContract, @unchecked Sendable {
-	var result: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+	var result: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed())
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedPage: Int?
 

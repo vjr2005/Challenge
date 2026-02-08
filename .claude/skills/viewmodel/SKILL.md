@@ -483,7 +483,7 @@ Test state transitions:
 @Test("didTapOnRetryButton retries loading when in error state")
 func didTapOnRetryButtonRetriesWhenError() async {
     // Given
-    useCaseMock.result = .failure(.loadFailed)
+    useCaseMock.result = .failure(.loadFailed())
     await sut.didAppear()
 
     // When

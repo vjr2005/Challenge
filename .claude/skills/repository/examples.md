@@ -346,7 +346,7 @@ struct {Name}RepositoryTests {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .failure(.loadFailed)
+        remoteDataSourceMock.result = .failure(.loadFailed())
         let memoryDataSourceMock = {Name}MemoryDataSourceMock()
         memoryDataSourceMock.itemToReturn = .stub()
         let sut = {Name}Repository(
@@ -411,16 +411,33 @@ public enum CachePolicy: Sendable {
 import ChallengeResources
 import Foundation
 
-public enum CharacterError: Error, Equatable, Sendable, LocalizedError {
-    case loadFailed
+public enum CharacterError: Error, Equatable, LocalizedError {
+    case loadFailed(description: String = "")
     case notFound(identifier: Int)
+
+    public static func == (lhs: CharacterError, rhs: CharacterError) -> Bool {
+        switch (lhs, rhs) {
+        case (.loadFailed, .loadFailed): true
+        case let (.notFound(lhsId), .notFound(rhsId)): lhsId == rhsId
+        default: false
+        }
+    }
 
     public var errorDescription: String? {
         switch self {
         case .loadFailed:
-            return "characterError.loadFailed".localized()
+            "characterError.loadFailed".localized()
         case .notFound(let identifier):
-            return "characterError.notFound %lld".localized(identifier)
+            "characterError.notFound %lld".localized(identifier)
+        }
+    }
+}
+
+extension CharacterError: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .loadFailed(let description): description
+        case .notFound(let identifier): "notFound(identifier: \(identifier))"
         }
     }
 }
@@ -429,16 +446,33 @@ public enum CharacterError: Error, Equatable, Sendable, LocalizedError {
 import ChallengeResources
 import Foundation
 
-public enum CharactersPageError: Error, Equatable, Sendable, LocalizedError {
-    case loadFailed
+public enum CharactersPageError: Error, Equatable, LocalizedError {
+    case loadFailed(description: String = "")
     case invalidPage(page: Int)
+
+    public static func == (lhs: CharactersPageError, rhs: CharactersPageError) -> Bool {
+        switch (lhs, rhs) {
+        case (.loadFailed, .loadFailed): true
+        case let (.invalidPage(lhsPage), .invalidPage(rhsPage)): lhsPage == rhsPage
+        default: false
+        }
+    }
 
     public var errorDescription: String? {
         switch self {
         case .loadFailed:
-            return "charactersPageError.loadFailed".localized()
+            "charactersPageError.loadFailed".localized()
         case .invalidPage(let page):
-            return "charactersPageError.invalidPage %lld".localized(page)
+            "charactersPageError.invalidPage %lld".localized(page)
+        }
+    }
+}
+
+extension CharactersPageError: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .loadFailed(let description): description
+        case .invalidPage(let page): "invalidPage(page: \(page))"
         }
     }
 }
@@ -571,7 +605,7 @@ import Foundation
 @testable import {AppName}Character
 
 final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
-    var result: Result<Character, CharacterError> = .failure(.loadFailed)
+    var result: Result<Character, CharacterError> = .failure(.loadFailed())
     private(set) var getCharacterCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
     private(set) var lastCharacterCachePolicy: CachePolicy?
@@ -586,8 +620,8 @@ final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sen
 
 // Tests/Mocks/CharactersPageRepositoryMock.swift
 final class CharactersPageRepositoryMock: CharactersPageRepositoryContract, @unchecked Sendable {
-    var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
-    var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+    var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed())
+    var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed())
     private(set) var getCharactersPageCallCount = 0
     private(set) var searchCharactersPageCallCount = 0
     private(set) var lastRequestedPage: Int?
@@ -742,7 +776,7 @@ struct CharacterRepositoryTests {
         )
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharacterError.loadFailed()) {
             _ = try await sut.getCharacter(identifier: 1, cachePolicy: .noCache)
         }
     }

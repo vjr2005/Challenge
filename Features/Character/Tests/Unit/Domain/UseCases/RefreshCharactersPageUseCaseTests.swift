@@ -49,10 +49,10 @@ struct RefreshCharactersPageUseCaseTests {
     @Test("Execute propagates repository error")
     func executePropagatesError() async throws {
         // Given
-        repositoryMock.charactersResult = .failure(.loadFailed)
+        repositoryMock.charactersResult = .failure(.loadFailed())
 
         // When / Then
-        await #expect(throws: CharactersPageError.loadFailed) {
+        await #expect(throws: CharactersPageError.loadFailed()) {
             _ = try await sut.execute(page: 1)
         }
     }

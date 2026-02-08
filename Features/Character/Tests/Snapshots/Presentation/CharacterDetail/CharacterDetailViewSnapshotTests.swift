@@ -132,7 +132,7 @@ struct CharacterDetailViewSnapshotTests {
 	@Test("Renders character detail error state with retry option")
 	func errorState() {
 		// Given
-		let viewModel = CharacterDetailViewModelStub(state: .error(.loadFailed))
+		let viewModel = CharacterDetailViewModelStub(state: .error(.loadFailed()))
 
 		// When
 		let view = NavigationStack {

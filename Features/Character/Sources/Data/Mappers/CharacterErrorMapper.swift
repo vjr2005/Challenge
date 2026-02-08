@@ -10,13 +10,13 @@ struct CharacterErrorMapperInput {
 struct CharacterErrorMapper: MapperContract {
 	func map(_ input: CharacterErrorMapperInput) -> CharacterError {
 		guard let httpError = input.error as? HTTPError else {
-			return .loadFailed
+			return .loadFailed(description: String(describing: input.error))
 		}
 		return switch httpError {
 		case .statusCode(404, _):
 			.notFound(identifier: input.identifier)
 		case .invalidURL, .invalidResponse, .statusCode:
-			.loadFailed
+			.loadFailed(description: String(describing: httpError))
 		}
 	}
 }

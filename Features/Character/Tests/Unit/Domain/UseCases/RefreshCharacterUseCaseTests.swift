@@ -49,10 +49,10 @@ struct RefreshCharacterUseCaseTests {
     @Test("Execute propagates repository error")
     func executePropagatesRepositoryError() async throws {
         // Given
-        repositoryMock.result = .failure(.loadFailed)
+        repositoryMock.result = .failure(.loadFailed())
 
         // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
+        await #expect(throws: CharacterError.loadFailed()) {
             _ = try await sut.execute(identifier: 1)
         }
     }

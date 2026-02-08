@@ -52,13 +52,13 @@ struct CharacterDetailViewModelTests {
     @Test("didAppear sets error state on failure")
     func didAppearSetsErrorStateOnFailure() async {
         // Given
-        getCharacterUseCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(sut.state == .error(.loadFailed))
+        #expect(sut.state == .error(.loadFailed()))
     }
 
     @Test("didAppear calls use case with correct character identifier")
@@ -79,7 +79,7 @@ struct CharacterDetailViewModelTests {
     @Test("didTapOnRetryButton retries loading when in error state")
     func didTapOnRetryButtonRetriesWhenError() async {
         // Given
-        getCharacterUseCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed())
         await sut.didAppear()
 
         // When
@@ -149,13 +149,13 @@ struct CharacterDetailViewModelTests {
     @Test("didPullToRefresh sets error state on failure")
     func didPullToRefreshSetsErrorStateOnFailure() async {
         // Given
-        refreshCharacterUseCaseMock.result = .failure(.loadFailed)
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
-        #expect(sut.state == .error(.loadFailed))
+        #expect(sut.state == .error(.loadFailed()))
     }
 
     @Test("didPullToRefresh keeps loaded state visible during network request")
@@ -232,14 +232,14 @@ struct CharacterDetailViewModelTests {
     @Test("didAppear tracks load error on failure")
     func didAppearTracksLoadErrorOnFailure() async {
         // Given
-        getCharacterUseCaseMock.result = .failure(.loadFailed)
+        getCharacterUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didAppear()
 
         // Then
         #expect(trackerMock.loadErrorDescriptions.count == 1)
-        #expect(trackerMock.loadErrorDescriptions.first == CharacterError.loadFailed.localizedDescription)
+        #expect(trackerMock.loadErrorDescriptions.first == CharacterError.loadFailed().debugDescription)
     }
 
     @Test("didAppear does not track load error on success")
@@ -257,14 +257,14 @@ struct CharacterDetailViewModelTests {
     @Test("didPullToRefresh tracks refresh error on failure")
     func didPullToRefreshTracksRefreshErrorOnFailure() async {
         // Given
-        refreshCharacterUseCaseMock.result = .failure(.loadFailed)
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
         #expect(trackerMock.refreshErrorDescriptions.count == 1)
-        #expect(trackerMock.refreshErrorDescriptions.first == CharacterError.loadFailed.localizedDescription)
+        #expect(trackerMock.refreshErrorDescriptions.first == CharacterError.loadFailed().debugDescription)
     }
 
     @Test("didPullToRefresh does not track refresh error on success")

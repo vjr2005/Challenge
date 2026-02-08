@@ -3,7 +3,7 @@ import Foundation
 @testable import ChallengeCharacter
 
 final class GetCharacterUseCaseMock: GetCharacterUseCaseContract, @unchecked Sendable {
-	var result: Result<Character, CharacterError> = .failure(.loadFailed)
+	var result: Result<Character, CharacterError> = .failure(.loadFailed())
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
 

@@ -39,7 +39,7 @@ struct CharacterErrorMapperTests {
 		let result = sut.map(input)
 
 		// Then
-		#expect(result == .loadFailed)
+		#expect(result == .loadFailed())
 	}
 
 	@Test("Maps invalidURL to loadFailed error")
@@ -54,7 +54,7 @@ struct CharacterErrorMapperTests {
 		let result = sut.map(input)
 
 		// Then
-		#expect(result == .loadFailed)
+		#expect(result == .loadFailed())
 	}
 
 	@Test("Maps invalidResponse to loadFailed error")
@@ -69,7 +69,62 @@ struct CharacterErrorMapperTests {
 		let result = sut.map(input)
 
 		// Then
-		#expect(result == .loadFailed)
+		#expect(result == .loadFailed())
+	}
+
+	@Test("Maps DecodingError to loadFailed error")
+	func mapsDecodingErrorToLoadFailed() {
+		// Given
+		let input = CharacterErrorMapperInput(
+			error: DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "test")),
+			identifier: 1
+		)
+
+		// When
+		let result = sut.map(input)
+
+		// Then
+		#expect(result == .loadFailed())
+	}
+
+	// MARK: - Description Propagation
+
+	@Test("Maps HTTP error description into loadFailed")
+	func mapsHTTPErrorDescriptionIntoLoadFailed() {
+		// Given
+		let input = CharacterErrorMapperInput(
+			error: HTTPError.statusCode(500, Data()),
+			identifier: 1
+		)
+
+		// When
+		let result = sut.map(input)
+
+		// Then
+		if case .loadFailed(let description) = result {
+			#expect(description.contains("500"))
+		} else {
+			Issue.record("Expected loadFailed, got \(result)")
+		}
+	}
+
+	@Test("Maps DecodingError description into loadFailed")
+	func mapsDecodingErrorDescriptionIntoLoadFailed() {
+		// Given
+		let input = CharacterErrorMapperInput(
+			error: DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "corrupted data")),
+			identifier: 1
+		)
+
+		// When
+		let result = sut.map(input)
+
+		// Then
+		if case .loadFailed(let description) = result {
+			#expect(!description.isEmpty)
+		} else {
+			Issue.record("Expected loadFailed, got \(result)")
+		}
 	}
 
 	// MARK: - Generic Error Tests
@@ -86,7 +141,7 @@ struct CharacterErrorMapperTests {
 		let result = sut.map(input)
 
 		// Then
-		#expect(result == .loadFailed)
+		#expect(result == .loadFailed())
 	}
 }
 

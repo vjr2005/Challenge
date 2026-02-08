@@ -4,8 +4,8 @@ import Foundation
 @testable import ChallengeCharacter
 
 final class CharactersPageRepositoryMock: CharactersPageRepositoryContract, @unchecked Sendable {
-	var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
-	var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
+	var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed())
+	var searchResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed())
 	private(set) var getCharactersPageCallCount = 0
 	private(set) var searchCharactersPageCallCount = 0
 	private(set) var lastRequestedPage: Int?

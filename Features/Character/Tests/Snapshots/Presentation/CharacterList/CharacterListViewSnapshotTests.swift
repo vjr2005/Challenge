@@ -146,7 +146,7 @@ struct CharacterListViewSnapshotTests {
 	@Test("Renders character list error state with retry option")
 	func errorState() {
 		// Given
-		let viewModel = CharacterListViewModelStub(state: .error(.loadFailed))
+		let viewModel = CharacterListViewModelStub(state: .error(.loadFailed()))
 
 		// When
 		let view = NavigationStack {

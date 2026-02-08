@@ -69,7 +69,7 @@ struct CharacterListViewStateTests {
 	@Test("isSearchAvailable returns false for error state")
 	func isSearchAvailableReturnsFalseForErrorState() {
 		// Given
-		let sut = CharacterListViewState.error(.loadFailed)
+		let sut = CharacterListViewState.error(.loadFailed())
 
 		// When
 		let result = sut.isSearchAvailable

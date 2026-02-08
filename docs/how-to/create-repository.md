@@ -91,16 +91,38 @@ Create `Sources/Domain/Errors/{Feature}Error.swift`:
 import ChallengeResources
 import Foundation
 
-public enum {Feature}Error: Error, Equatable, Sendable, LocalizedError {
-    case loadFailed
+public enum {Feature}Error: Error, Equatable, LocalizedError {
+    case loadFailed(description: String = "")
     case notFound(identifier: Int)
+
+    public static func == (lhs: {Feature}Error, rhs: {Feature}Error) -> Bool {
+        switch (lhs, rhs) {
+        case (.loadFailed, .loadFailed):
+            true
+        case let (.notFound(lhsId), .notFound(rhsId)):
+            lhsId == rhsId
+        default:
+            false
+        }
+    }
 
     public var errorDescription: String? {
         switch self {
         case .loadFailed:
-            return "{feature}Error.loadFailed".localized()
+            "{feature}Error.loadFailed".localized()
         case .notFound(let identifier):
-            return "{feature}Error.notFound %lld".localized(identifier)
+            "{feature}Error.notFound %lld".localized(identifier)
+        }
+    }
+}
+
+extension {Feature}Error: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .loadFailed(let description):
+            description
+        case .notFound(let identifier):
+            "notFound(identifier: \(identifier))"
         }
     }
 }
@@ -161,7 +183,7 @@ import Foundation
 @testable import Challenge{Feature}
 
 final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
-    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
     private(set) var getCallCount = 0
     private(set) var lastIdentifier: Int?
 
@@ -231,7 +253,7 @@ struct {Name}RepositoryTests {
         remoteDataSourceMock.result = .failure(TestError.unknown)
 
         // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
+        await #expect(throws: {Feature}Error.loadFailed()) {
             _ = try await sut.get{Name}(identifier: 1)
         }
     }
@@ -502,7 +524,7 @@ import Foundation
 @testable import Challenge{Feature}
 
 final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
-    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
     private(set) var get{Name}DetailCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
     private(set) var last{Name}DetailCachePolicy: CachePolicy?
@@ -648,7 +670,7 @@ struct {Name}RepositoryTests {
         remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
 
         // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
+        await #expect(throws: {Feature}Error.loadFailed()) {
             _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .remoteFirst)
         }
     }

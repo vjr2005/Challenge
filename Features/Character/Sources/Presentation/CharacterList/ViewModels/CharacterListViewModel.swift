@@ -172,7 +172,7 @@ private extension CharacterListViewModel {
             }
         } catch {
             guard !Task.isCancelled else { return }
-            tracker.trackFetchError(description: error.localizedDescription)
+            tracker.trackFetchError(description: error.debugDescription)
             state = .error(error)
         }
     }
@@ -187,7 +187,7 @@ private extension CharacterListViewModel {
                 state = .loaded(result)
             }
         } catch {
-            tracker.trackRefreshError(description: error.localizedDescription)
+            tracker.trackRefreshError(description: error.debugDescription)
             state = .error(error)
         }
     }
@@ -214,7 +214,7 @@ private extension CharacterListViewModel {
             )
             state = .loaded(updatedPage)
         } catch {
-            tracker.trackLoadMoreError(description: error.localizedDescription)
+            tracker.trackLoadMoreError(description: error.debugDescription)
             currentPage -= 1
         }
     }

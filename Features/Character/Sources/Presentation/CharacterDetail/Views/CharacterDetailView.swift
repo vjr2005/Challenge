@@ -222,7 +222,7 @@ private enum AccessibilityIdentifier {
 
 #Preview("Error") {
 	NavigationStack {
-		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(.loadFailed)))
+		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(.loadFailed())))
 	}
 }
 private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {

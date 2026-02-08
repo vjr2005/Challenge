@@ -74,13 +74,13 @@ struct CharacterListViewModelTests {
     @Test("didAppear sets error state on failure")
     func didAppearSetsErrorStateOnFailure() async {
         // Given
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(sut.state == .error(.loadFailed))
+        #expect(sut.state == .error(.loadFailed()))
     }
 
     @Test("didAppear calls use case requesting page one")
@@ -101,7 +101,7 @@ struct CharacterListViewModelTests {
     @Test("didTapOnRetryButton retries loading when in error state")
     func didTapOnRetryButtonRetriesWhenError() async {
         // Given
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
         await sut.didAppear()
 
         // When
@@ -186,7 +186,7 @@ struct CharacterListViewModelTests {
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
         getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didTapOnLoadMoreButton()
@@ -201,7 +201,7 @@ struct CharacterListViewModelTests {
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
         getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
         await sut.didTapOnLoadMoreButton()
 
         // When - retry after error
@@ -439,13 +439,13 @@ struct CharacterListViewModelTests {
     @Test("didPullToRefresh sets error state on failure")
     func didPullToRefreshSetsErrorStateOnFailure() async {
         // Given
-        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
-        #expect(sut.state == .error(.loadFailed))
+        #expect(sut.state == .error(.loadFailed()))
     }
 
     // MARK: - Tracking
@@ -558,14 +558,14 @@ struct CharacterListViewModelTests {
     @Test("didAppear tracks fetch error on failure")
     func didAppearTracksFetchErrorOnFailure() async {
         // Given
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didAppear()
 
         // Then
         #expect(trackerMock.fetchErrorDescriptions.count == 1)
-        #expect(trackerMock.fetchErrorDescriptions.first == CharactersPageError.loadFailed.localizedDescription)
+        #expect(trackerMock.fetchErrorDescriptions.first == CharactersPageError.loadFailed().debugDescription)
     }
 
     @Test("didAppear does not track fetch error on success")
@@ -583,14 +583,14 @@ struct CharacterListViewModelTests {
     @Test("didPullToRefresh tracks refresh error on failure")
     func didPullToRefreshTracksRefreshErrorOnFailure() async {
         // Given
-        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didPullToRefresh()
 
         // Then
         #expect(trackerMock.refreshErrorDescriptions.count == 1)
-        #expect(trackerMock.refreshErrorDescriptions.first == CharactersPageError.loadFailed.localizedDescription)
+        #expect(trackerMock.refreshErrorDescriptions.first == CharactersPageError.loadFailed().debugDescription)
     }
 
     @Test("didPullToRefresh does not track refresh error on success")
@@ -611,14 +611,14 @@ struct CharacterListViewModelTests {
         let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
         getCharactersPageUseCaseMock.result = .success(firstPage)
         await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
         #expect(trackerMock.loadMoreErrorDescriptions.count == 1)
-        #expect(trackerMock.loadMoreErrorDescriptions.first == CharactersPageError.loadFailed.localizedDescription)
+        #expect(trackerMock.loadMoreErrorDescriptions.first == CharactersPageError.loadFailed().debugDescription)
     }
 
     @Test("didTapOnLoadMoreButton does not track load more error on success")
@@ -891,7 +891,7 @@ struct CharacterListViewModelTests {
         let page = CharactersPage.stub()
         getCharactersPageUseCaseMock.result = .success(page)
         await sut.didAppear()
-        searchCharactersPageUseCaseMock.result = .failure(.loadFailed)
+        searchCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
         await withCheckedContinuation { continuation in
