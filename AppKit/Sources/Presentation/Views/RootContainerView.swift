@@ -14,6 +14,7 @@ public struct RootContainerView: View {
 		NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
 			appContainer.makeRootView(navigator: navigationCoordinator)
 		}
+		.imageLoader(appContainer.imageLoader)
 		.onOpenURL { url in
 			appContainer.handle(url: url, navigator: navigationCoordinator)
 		}

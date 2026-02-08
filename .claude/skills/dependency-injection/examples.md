@@ -20,6 +20,7 @@ public struct AppContainer {
 
     public let httpClient: any HTTPClientContract
     public let tracker: any TrackerContract
+    public let imageLoader: any ImageLoaderContract
 
     // MARK: - Features
 
@@ -35,8 +36,10 @@ public struct AppContainer {
 
     public init(
         httpClient: (any HTTPClientContract)? = nil,
-        tracker: (any TrackerContract)? = nil
+        tracker: (any TrackerContract)? = nil,
+        imageLoader: (any ImageLoaderContract)? = nil
     ) {
+        self.imageLoader = imageLoader ?? CachedImageLoader()
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
@@ -320,6 +323,7 @@ public struct RootContainerView: View {
                     appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
                 }
         }
+        .imageLoader(appContainer.imageLoader)
         .onOpenURL { url in
             appContainer.handle(url: url, navigator: navigationCoordinator)
         }

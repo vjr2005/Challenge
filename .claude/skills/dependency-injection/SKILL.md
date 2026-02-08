@@ -27,6 +27,7 @@ ChallengeApp
         │
         ├── httpClient: HTTPClientContract
         ├── tracker: TrackerContract
+        ├── imageLoader: ImageLoaderContract → SwiftUI Environment
         │
         └── features: [Feature]
             ├── CharacterFeature (navigation + deep links)
@@ -116,6 +117,7 @@ struct AppContainer {
 
     let httpClient: any HTTPClientContract
     let tracker: any TrackerContract
+    let imageLoader: any ImageLoaderContract
 
     // MARK: - Features
 
@@ -131,8 +133,10 @@ struct AppContainer {
 
     init(
         httpClient: (any HTTPClientContract)? = nil,
-        tracker: (any TrackerContract)? = nil
+        tracker: (any TrackerContract)? = nil,
+        imageLoader: (any ImageLoaderContract)? = nil
     ) {
+        self.imageLoader = imageLoader ?? CachedImageLoader()
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
@@ -172,8 +176,8 @@ private extension AppContainer {
 
 **Rules:**
 - Centralizes ALL dependency injection in one place
-- Creates shared dependencies (HTTPClient, Tracker, etc.)
-- Injects shared dependencies into features
+- Creates shared dependencies (HTTPClient, Tracker, ImageLoader)
+- Injects shared dependencies into features or via SwiftUI environment
 - Handles deep links via feature handlers
 - `features` is a computed property aggregating private feature instances
 - Tracking providers are registered via a static factory method (`makeTrackingProviders()`), as it is called during `init` before `self` is fully initialized
@@ -489,6 +493,7 @@ public final class HomeContainer {
 |------|---------|--------|
 | HTTPClient | Required init parameter | Injected by AppContainer |
 | Tracker | Required init parameter | Injected by AppContainer |
+| ImageLoader | SwiftUI Environment | Injected by RootContainerView from AppContainer |
 | Container | Created in Feature init | Owns dependency composition |
 | DataSource | Local variable in Container `init` | Only needed to build repositories |
 | Repository | Stored property in Container (`let`) | Built in `init`, used by factory methods |
@@ -565,6 +570,7 @@ public struct RootContainerView: View {
         NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
             appContainer.makeRootView(navigator: navigationCoordinator)
         }
+        .imageLoader(appContainer.imageLoader)
         .onOpenURL { url in
             appContainer.handle(url: url, navigator: navigationCoordinator)
         }
@@ -581,6 +587,7 @@ public struct RootContainerView: View {
 **Key Points:**
 - Located in `AppKit` module (not `App`) for testability without TEST_HOST
 - Uses `NavigationContainerView` for NavigationStack + push destinations + modal bindings
+- Injects `imageLoader` via SwiftUI environment for all descendant views (`DSAsyncImage`)
 - Only adds `.onOpenURL` on top of `NavigationContainerView`
 
 ---
@@ -670,11 +677,12 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] `AppContainer` has `resolve(_:navigator:)` iterating features
 - [ ] `AppContainer` has `handle(url:navigator:)` for deep links
 - [ ] `AppContainer` has `tracker: any TrackerContract` shared dependency
+- [ ] `AppContainer` has `imageLoader: any ImageLoaderContract` shared dependency
 - [ ] `AppContainer` has `makeTrackingProviders()` static factory method
 - [ ] `AppContainer` has `makeRootView(navigator:)` factory method
 - [ ] `ChallengeApp` imports `ChallengeAppKit` and uses `RootContainerView`
 - [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`
 - [ ] `NavigationContainerView` in `AppKit/Sources/Presentation/Views/` (NavigationStack + push + modals)
-- [ ] `RootContainerView` uses `NavigationContainerView` + `.onOpenURL`
+- [ ] `RootContainerView` uses `NavigationContainerView` + `.imageLoader()` + `.onOpenURL`
 - [ ] `ModalContainerView` in `AppKit/Sources/Presentation/Views/`
 - [ ] **Create feature tests**

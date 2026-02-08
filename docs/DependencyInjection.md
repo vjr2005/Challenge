@@ -82,6 +82,7 @@ public struct AppContainer {
     // Shared dependencies
     public let httpClient: any HTTPClientContract
     public let tracker: any TrackerContract
+    public let imageLoader: any ImageLoaderContract
 
     // Feature containers
     private let homeFeature: HomeFeature
@@ -90,8 +91,10 @@ public struct AppContainer {
 
     public init(
         httpClient: (any HTTPClientContract)? = nil,
-        tracker: (any TrackerContract)? = nil
+        tracker: (any TrackerContract)? = nil,
+        imageLoader: (any ImageLoaderContract)? = nil
     ) {
+        self.imageLoader = imageLoader ?? CachedImageLoader()
         self.httpClient = httpClient ?? HTTPClient(
             baseURL: AppEnvironment.current.rickAndMorty.baseURL
         )
@@ -171,6 +174,7 @@ AppContainer
     │
     ├── HTTPClient (shared)
     ├── Tracker (shared) ← [Providers]
+    ├── ImageLoader (shared) → injected via SwiftUI Environment
     │
     └── CharacterFeature
             │

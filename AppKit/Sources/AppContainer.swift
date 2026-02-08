@@ -11,6 +11,7 @@ public struct AppContainer {
 	public let launchEnvironment: LaunchEnvironment
 	public let httpClient: any HTTPClientContract
 	public let tracker: any TrackerContract
+	public let imageLoader: any ImageLoaderContract
 
 	// MARK: - Features
 
@@ -27,9 +28,11 @@ public struct AppContainer {
 	public init(
 		launchEnvironment: LaunchEnvironment = LaunchEnvironment(),
 		httpClient: (any HTTPClientContract)? = nil,
-		tracker: (any TrackerContract)? = nil
+		tracker: (any TrackerContract)? = nil,
+		imageLoader: (any ImageLoaderContract)? = nil
 	) {
 		self.launchEnvironment = launchEnvironment
+		self.imageLoader = imageLoader ?? CachedImageLoader()
 		self.httpClient = httpClient ?? HTTPClient(
 			baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL
 		)

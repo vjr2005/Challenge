@@ -61,6 +61,7 @@ Composition root that creates and wires all dependencies:
 public struct AppContainer {
     public let httpClient: any HTTPClientContract
     public let tracker: any TrackerContract
+    public let imageLoader: any ImageLoaderContract
     public var features: [any FeatureContract]
 
     public func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView

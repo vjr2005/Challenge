@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Environment key for providing an image loader.
 private struct ImageLoaderKey: EnvironmentKey {
-	static let defaultValue: any ImageLoaderContract = CachedImageLoader.shared
+	static let defaultValue: any ImageLoaderContract = CachedImageLoader()
 }
 
 public extension EnvironmentValues {
