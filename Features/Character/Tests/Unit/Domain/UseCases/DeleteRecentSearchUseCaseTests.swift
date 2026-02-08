@@ -7,32 +7,32 @@ import Testing
 struct DeleteRecentSearchUseCaseTests {
 	// MARK: - Properties
 
-	private let dataSourceMock = RecentSearchesLocalDataSourceMock()
+	private let repositoryMock = RecentSearchesRepositoryMock()
 	private let sut: DeleteRecentSearchUseCase
 
 	// MARK: - Initialization
 
 	init() {
-		sut = DeleteRecentSearchUseCase(dataSource: dataSourceMock)
+		sut = DeleteRecentSearchUseCase(repository: repositoryMock)
 	}
 
 	// MARK: - Execute
 
-	@Test("Execute calls data source with correct query")
-	func executeCallsDataSourceWithCorrectQuery() {
+	@Test("Execute calls repository with correct query")
+	func executeCallsRepositoryWithCorrectQuery() {
 		// When
 		sut.execute(query: "Rick")
 
 		// Then
-		#expect(dataSourceMock.lastDeletedQuery == "Rick")
+		#expect(repositoryMock.lastDeletedQuery == "Rick")
 	}
 
-	@Test("Execute calls data source exactly once")
-	func executeCallsDataSourceOnce() {
+	@Test("Execute calls repository exactly once")
+	func executeCallsRepositoryOnce() {
 		// When
 		sut.execute(query: "Morty")
 
 		// Then
-		#expect(dataSourceMock.deleteSearchCallCount == 1)
+		#expect(repositoryMock.deleteSearchCallCount == 1)
 	}
 }

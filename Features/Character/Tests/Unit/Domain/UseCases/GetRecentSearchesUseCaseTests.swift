@@ -7,21 +7,21 @@ import Testing
 struct GetRecentSearchesUseCaseTests {
 	// MARK: - Properties
 
-	private let dataSourceMock = RecentSearchesLocalDataSourceMock()
+	private let repositoryMock = RecentSearchesRepositoryMock()
 	private let sut: GetRecentSearchesUseCase
 
 	// MARK: - Initialization
 
 	init() {
-		sut = GetRecentSearchesUseCase(dataSource: dataSourceMock)
+		sut = GetRecentSearchesUseCase(repository: repositoryMock)
 	}
 
 	// MARK: - Execute
 
-	@Test("Execute returns searches from data source")
+	@Test("Execute returns searches from repository")
 	func executeReturnsSearches() {
 		// Given
-		dataSourceMock.searches = ["Rick", "Morty"]
+		repositoryMock.searches = ["Rick", "Morty"]
 
 		// When
 		let result = sut.execute()
@@ -39,12 +39,12 @@ struct GetRecentSearchesUseCaseTests {
 		#expect(result == [])
 	}
 
-	@Test("Execute calls data source exactly once")
-	func executeCallsDataSourceOnce() {
+	@Test("Execute calls repository exactly once")
+	func executeCallsRepositoryOnce() {
 		// When
 		_ = sut.execute()
 
 		// Then
-		#expect(dataSourceMock.getRecentSearchesCallCount == 1)
+		#expect(repositoryMock.getRecentSearchesCallCount == 1)
 	}
 }

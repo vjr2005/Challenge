@@ -58,7 +58,8 @@ Features/{Feature}/
 | Scenario | DataSources | Use case |
 |----------|-------------|----------|
 | Remote only | `RemoteDataSource` | Simple API consumption |
-| Local only | `MemoryDataSource` | Offline-first, local state |
+| Local only (memory) | `MemoryDataSource` | Offline-first, local state |
+| Local only (persistent) | `LocalDataSource` | UserDefaults-backed storage (e.g., recent searches) |
 | Both (local-first) | `RemoteDataSource` + `MemoryDataSource` | Caching with remote fallback |
 
 ---

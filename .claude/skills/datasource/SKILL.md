@@ -1,6 +1,6 @@
 ---
 name: datasource
-description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage, or DTOs for API responses.
+description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage, LocalDataSource for UserDefaults persistence, or DTOs for API responses.
 ---
 
 # Skill: DataSource
@@ -9,6 +9,7 @@ Guide for creating DataSources following the Repository pattern.
 
 - **RemoteDataSource**: Consumes REST APIs via HTTPClient
 - **MemoryDataSource**: In-memory storage using actors for thread safety
+- **LocalDataSource**: Persistent local storage using UserDefaults (struct, synchronous)
 
 ## When to use this skill
 
@@ -144,6 +145,59 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 
 ---
 
+## LocalDataSource Pattern
+
+For persistent local storage using `UserDefaults` (e.g., recent searches, user preferences).
+
+### Contract
+
+```swift
+protocol {Name}LocalDataSourceContract: Sendable {
+	func getItems() -> [String]
+	func saveItem(_ item: String)
+	func deleteItem(_ item: String)
+}
+```
+
+**Rules:** Internal visibility, `Sendable`, **synchronous** (no `async`)
+
+### Implementation
+
+```swift
+struct {Name}LocalDataSource: {Name}LocalDataSourceContract {
+	private nonisolated(unsafe) let userDefaults: UserDefaults
+	private let key = "{storageKey}"
+
+	init(userDefaults: UserDefaults = .standard) {
+		self.userDefaults = userDefaults
+	}
+
+	func getItems() -> [String] {
+		userDefaults.stringArray(forKey: key) ?? []
+	}
+
+	func saveItem(_ item: String) {
+		var items = getItems()
+		items.insert(item, at: 0)
+		userDefaults.set(items, forKey: key)
+	}
+
+	func deleteItem(_ item: String) {
+		var items = getItems()
+		items.removeAll { $0 == item }
+		userDefaults.set(items, forKey: key)
+	}
+}
+```
+
+**Rules:**
+- Use `struct` (not `actor`) since `UserDefaults` is thread-safe
+- Use `nonisolated(unsafe) let` for `UserDefaults` to satisfy `Sendable`
+- Synchronous methods (no `async`)
+- Always provide a default `UserDefaults` parameter for testability
+
+---
+
 ## JSON Fixtures
 
 Tests use JSON files replicating real API responses.
@@ -199,3 +253,10 @@ Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
 - [ ] Create `actor` Implementation
 - [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
 - [ ] Create tests
+
+### LocalDataSource
+
+- [ ] Create Contract with synchronous methods and `Sendable`
+- [ ] Create `struct` Implementation with `nonisolated(unsafe) let userDefaults`
+- [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
+- [ ] Create tests using custom `UserDefaults` suite

@@ -12,7 +12,8 @@ Create a Repository that abstracts data access, transforms DTOs to Domain models
 | Type | DataSources | Use case |
 |------|-------------|----------|
 | Remote only | `RemoteDataSource` | Simple API consumption, no caching |
-| Local only | `MemoryDataSource` | Offline-first, local state management |
+| Local only (memory) | `MemoryDataSource` | Offline-first, local state management |
+| Local only (persistent) | `LocalDataSource` | UserDefaults-backed storage (e.g., recent searches) |
 | Both (with cache) | `RemoteDataSource` + `MemoryDataSource` | Caching with configurable policy |
 
 ## File structure

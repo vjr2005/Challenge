@@ -5,13 +5,13 @@ protocol DeleteRecentSearchUseCaseContract: Sendable {
 }
 
 struct DeleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract {
-	private let dataSource: RecentSearchesLocalDataSourceContract
+	private let repository: RecentSearchesRepositoryContract
 
-	init(dataSource: RecentSearchesLocalDataSourceContract) {
-		self.dataSource = dataSource
+	init(repository: RecentSearchesRepositoryContract) {
+		self.repository = repository
 	}
 
 	func execute(query: String) {
-		dataSource.deleteSearch(query)
+		repository.deleteSearch(query)
 	}
 }

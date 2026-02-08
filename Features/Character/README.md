@@ -16,17 +16,22 @@ Character/
 │   ├── Domain/
 │   │   ├── Models/
 │   │   │   ├── Character.swift
-│   │   │   ├── CharacterLocation.swift
-│   │   │   └── CharactersPage.swift
+│   │   │   ├── CharacterFilter.swift
+│   │   │   ├── CharactersPage.swift
+│   │   │   └── Location.swift
 │   │   ├── Repositories/
 │   │   │   ├── CharacterRepositoryContract.swift
-│   │   │   └── CharactersPageRepositoryContract.swift
+│   │   │   ├── CharactersPageRepositoryContract.swift
+│   │   │   └── RecentSearchesRepositoryContract.swift
 │   │   ├── UseCases/
 │   │   │   ├── GetCharacterUseCase.swift
 │   │   │   ├── GetCharactersPageUseCase.swift
 │   │   │   ├── RefreshCharacterUseCase.swift
 │   │   │   ├── RefreshCharactersPageUseCase.swift
-│   │   │   └── SearchCharactersPageUseCase.swift
+│   │   │   ├── SearchCharactersPageUseCase.swift
+│   │   │   ├── GetRecentSearchesUseCase.swift
+│   │   │   ├── SaveRecentSearchUseCase.swift
+│   │   │   └── DeleteRecentSearchUseCase.swift
 │   │   └── Errors/
 │   │       ├── CharacterError.swift
 │   │       └── CharactersPageError.swift
@@ -39,10 +44,12 @@ Character/
 │   │   │   └── CharactersPageErrorMapper.swift
 │   │   ├── Repositories/
 │   │   │   ├── CharacterRepository.swift
-│   │   │   └── CharactersPageRepository.swift
+│   │   │   ├── CharactersPageRepository.swift
+│   │   │   └── RecentSearchesRepository.swift
 │   │   ├── DataSources/
 │   │   │   ├── CharacterRemoteDataSource.swift
-│   │   │   └── CharacterMemoryDataSource.swift
+│   │   │   ├── CharacterMemoryDataSource.swift
+│   │   │   └── RecentSearchesLocalDataSource.swift
 │   │   └── DTOs/
 │   │       ├── CharacterDTO.swift
 │   │       ├── CharactersResponseDTO.swift
@@ -51,6 +58,8 @@ Character/
 │       ├── Navigation/
 │       │   ├── CharacterIncomingNavigation.swift
 │       │   └── CharacterDeepLinkHandler.swift
+│       ├── Shared/
+│       │   └── CharacterFilterState.swift
 │       ├── CharacterList/
 │       │   ├── Views/
 │       │   │   └── CharacterListView.swift
@@ -65,20 +74,33 @@ Character/
 │       │       ├── CharacterListTracker.swift
 │       │       ├── CharacterListTrackerContract.swift
 │       │       └── CharacterListEvent.swift
-│       └── CharacterDetail/
+│       ├── CharacterDetail/
+│       │   ├── Views/
+│       │   │   └── CharacterDetailView.swift
+│       │   ├── ViewModels/
+│       │   │   ├── CharacterDetailViewModel.swift
+│       │   │   ├── CharacterDetailViewModelContract.swift
+│       │   │   └── CharacterDetailViewState.swift
+│       │   ├── Navigator/
+│       │   │   ├── CharacterDetailNavigator.swift
+│       │   │   └── CharacterDetailNavigatorContract.swift
+│       │   └── Tracker/
+│       │       ├── CharacterDetailTracker.swift
+│       │       ├── CharacterDetailTrackerContract.swift
+│       │       └── CharacterDetailEvent.swift
+│       └── AdvancedSearch/
 │           ├── Views/
-│           │   └── CharacterDetailView.swift
+│           │   └── AdvancedSearchView.swift
 │           ├── ViewModels/
-│           │   ├── CharacterDetailViewModel.swift
-│           │   ├── CharacterDetailViewModelContract.swift
-│           │   └── CharacterDetailViewState.swift
+│           │   ├── AdvancedSearchViewModel.swift
+│           │   └── AdvancedSearchViewModelContract.swift
 │           ├── Navigator/
-│           │   ├── CharacterDetailNavigator.swift
-│           │   └── CharacterDetailNavigatorContract.swift
+│           │   ├── AdvancedSearchNavigator.swift
+│           │   └── AdvancedSearchNavigatorContract.swift
 │           └── Tracker/
-│               ├── CharacterDetailTracker.swift
-│               ├── CharacterDetailTrackerContract.swift
-│               └── CharacterDetailEvent.swift
+│               ├── AdvancedSearchTracker.swift
+│               ├── AdvancedSearchTrackerContract.swift
+│               └── AdvancedSearchEvent.swift
 └── Tests/
     └── ...
 ```

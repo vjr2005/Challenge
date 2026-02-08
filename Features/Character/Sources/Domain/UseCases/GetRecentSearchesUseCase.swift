@@ -5,13 +5,13 @@ protocol GetRecentSearchesUseCaseContract: Sendable {
 }
 
 struct GetRecentSearchesUseCase: GetRecentSearchesUseCaseContract {
-	private let dataSource: RecentSearchesLocalDataSourceContract
+	private let repository: RecentSearchesRepositoryContract
 
-	init(dataSource: RecentSearchesLocalDataSourceContract) {
-		self.dataSource = dataSource
+	init(repository: RecentSearchesRepositoryContract) {
+		self.repository = repository
 	}
 
 	func execute() -> [String] {
-		dataSource.getRecentSearches()
+		repository.getRecentSearches()
 	}
 }

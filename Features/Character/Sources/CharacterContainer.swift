@@ -31,6 +31,10 @@ public final class CharacterContainer: Sendable {
         )
     }
 
+    private var recentSearchesRepository: any RecentSearchesRepositoryContract {
+        RecentSearchesRepository(localDataSource: recentSearchesDataSource)
+    }
+
     private var charactersPageRepository: any CharactersPageRepositoryContract {
         CharactersPageRepository(
             remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
@@ -45,9 +49,9 @@ public final class CharacterContainer: Sendable {
             getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
             refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
             searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
-            getRecentSearchesUseCase: GetRecentSearchesUseCase(dataSource: recentSearchesDataSource),
-            saveRecentSearchUseCase: SaveRecentSearchUseCase(dataSource: recentSearchesDataSource),
-            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(dataSource: recentSearchesDataSource),
+            getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
+            saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
+            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
             navigator: CharacterListNavigator(navigator: navigator),
             tracker: CharacterListTracker(tracker: tracker),
             filterState: filterState

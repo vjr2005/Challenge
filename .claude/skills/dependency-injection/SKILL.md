@@ -492,7 +492,8 @@ public final class HomeContainer: Sendable {
 | Tracker | Required init parameter | Injected by AppContainer |
 | Container | Created in Feature init | Owns dependency composition |
 | MemoryDataSource | Instance property in Container (`let`) | Maintains cache state |
-| Repository | Computed property in Container (`var`) | Uses shared memoryDataSource |
+| LocalDataSource | Instance property in Container (`let`) | Maintains persistent local state |
+| Repository | Computed property in Container (`var`) | Uses shared DataSources |
 | Navigator | Factory method (inline) | New instance per ViewModel |
 | Screen Tracker | Factory method (inline) | New instance per ViewModel |
 | ViewModel | Factory method | New instance per navigation |

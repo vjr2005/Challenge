@@ -7,32 +7,32 @@ import Testing
 struct SaveRecentSearchUseCaseTests {
 	// MARK: - Properties
 
-	private let dataSourceMock = RecentSearchesLocalDataSourceMock()
+	private let repositoryMock = RecentSearchesRepositoryMock()
 	private let sut: SaveRecentSearchUseCase
 
 	// MARK: - Initialization
 
 	init() {
-		sut = SaveRecentSearchUseCase(dataSource: dataSourceMock)
+		sut = SaveRecentSearchUseCase(repository: repositoryMock)
 	}
 
 	// MARK: - Execute
 
-	@Test("Execute calls data source with correct query")
-	func executeCallsDataSourceWithCorrectQuery() {
+	@Test("Execute calls repository with correct query")
+	func executeCallsRepositoryWithCorrectQuery() {
 		// When
 		sut.execute(query: "Rick")
 
 		// Then
-		#expect(dataSourceMock.lastSavedQuery == "Rick")
+		#expect(repositoryMock.lastSavedQuery == "Rick")
 	}
 
-	@Test("Execute calls data source exactly once")
-	func executeCallsDataSourceOnce() {
+	@Test("Execute calls repository exactly once")
+	func executeCallsRepositoryOnce() {
 		// When
 		sut.execute(query: "Morty")
 
 		// Then
-		#expect(dataSourceMock.saveSearchCallCount == 1)
+		#expect(repositoryMock.saveSearchCallCount == 1)
 	}
 }

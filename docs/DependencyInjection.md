@@ -120,6 +120,8 @@ public final class CharacterContainer: Sendable {
     private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
+    private let recentSearchesDataSource = RecentSearchesLocalDataSource()
+    private let filterState = CharacterFilterState()
 
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.httpClient = httpClient
@@ -134,6 +136,10 @@ public final class CharacterContainer: Sendable {
         )
     }
 
+    private var recentSearchesRepository: any RecentSearchesRepositoryContract {
+        RecentSearchesRepository(localDataSource: recentSearchesDataSource)
+    }
+
     private var charactersPageRepository: any CharactersPageRepositoryContract {
         CharactersPageRepository(
             remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
@@ -145,9 +151,14 @@ public final class CharacterContainer: Sendable {
     func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
         CharacterListViewModel(
             getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
+            refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
             searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
+            getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
+            saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
+            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
             navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker)
+            tracker: CharacterListTracker(tracker: tracker),
+            filterState: filterState
         )
     }
 }
@@ -167,13 +178,17 @@ AppContainer
                     │
                     ├── CharacterRemoteDataSource ← HTTPClient
                     ├── CharacterMemoryDataSource
+                    ├── RecentSearchesLocalDataSource
+                    ├── CharacterFilterState
                     │
-                    ├── CharacterRepository ← DataSources
-                    └── CharactersPageRepository ← DataSources
+                    ├── CharacterRepository ← Remote + Memory DataSources
+                    ├── CharactersPageRepository ← Remote + Memory DataSources
+                    └── RecentSearchesRepository ← Local DataSource
                             │
                             ├── GetCharactersPageUseCase ← Repository
+                            ├── GetRecentSearchesUseCase ← Repository
                             │
-                            └── CharacterListViewModel ← UseCases, Navigator, Tracker
+                            └── CharacterListViewModel ← UseCases, Navigator, Tracker, FilterState
 ```
 
 ## Testing

@@ -141,6 +141,8 @@ public final class CharacterContainer: Sendable {
     private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()
+    private let recentSearchesDataSource = RecentSearchesLocalDataSource()
+    private let filterState = CharacterFilterState()
 
     // MARK: - Init
 
@@ -149,13 +151,17 @@ public final class CharacterContainer: Sendable {
         self.tracker = tracker
     }
 
-    // MARK: - Repository
+    // MARK: - Repositories
 
     private var characterRepository: any CharacterRepositoryContract {
         CharacterRepository(
             remoteDataSource: CharacterRemoteDataSource(httpClient: httpClient),
             memoryDataSource: memoryDataSource
         )
+    }
+
+    private var recentSearchesRepository: any RecentSearchesRepositoryContract {
+        RecentSearchesRepository(localDataSource: recentSearchesDataSource)
     }
 
     private var charactersPageRepository: any CharactersPageRepositoryContract {
@@ -172,8 +178,12 @@ public final class CharacterContainer: Sendable {
             getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
             refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
             searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
+            getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
+            saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
+            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
             navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker)
+            tracker: CharacterListTracker(tracker: tracker),
+            filterState: filterState
         )
     }
 
@@ -189,6 +199,14 @@ public final class CharacterContainer: Sendable {
             tracker: CharacterDetailTracker(tracker: tracker)
         )
     }
+
+    func makeAdvancedSearchViewModel(navigator: any NavigatorContract) -> AdvancedSearchViewModel {
+        AdvancedSearchViewModel(
+            filterState: filterState,
+            navigator: AdvancedSearchNavigator(navigator: navigator),
+            tracker: AdvancedSearchTracker(tracker: tracker)
+        )
+    }
 }
 ```
 
@@ -197,6 +215,7 @@ public final class CharacterContainer: Sendable {
 - Inject **separate Get and Refresh UseCases**
 - Get UseCases use `localFirst` cache policy (fast initial load)
 - Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)
+- Local-only repositories (e.g., `RecentSearchesRepository`) use stored `LocalDataSource` properties
 
 ### Navigation Destinations
 
