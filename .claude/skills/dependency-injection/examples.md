@@ -15,7 +15,7 @@ import ChallengeNetworking
 import ChallengeSystem
 import SwiftUI
 
-public struct AppContainer: Sendable {
+public struct AppContainer {
     // MARK: - Shared Dependencies
 
     public let httpClient: any HTTPClientContract
@@ -135,7 +135,7 @@ struct AppNavigationRedirect: NavigationRedirectContract {
 import ChallengeCore
 import ChallengeNetworking
 
-public final class CharacterContainer: Sendable {
+public final class CharacterContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
@@ -343,7 +343,7 @@ public struct RootContainerView: View {
 // Features/Home/Sources/HomeContainer.swift
 import ChallengeCore
 
-public final class HomeContainer: Sendable {
+public final class HomeContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract

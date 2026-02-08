@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Status types for the status indicator.
-public enum DSStatus: String, CaseIterable, Sendable {
+public enum DSStatus: String, CaseIterable {
 	/// Alive/active/success status
 	case alive
 

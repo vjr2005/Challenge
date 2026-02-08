@@ -3,7 +3,7 @@
 /// Use ``DSTheme/default`` for the standard theme, or create custom themes
 /// by providing different ``DSColorPaletteContract``, ``DSTypographyContract``, ``DSSpacingContract``,
 /// ``DSDimensionsContract``, ``DSBorderWidthContract``, ``DSCornerRadiusContract``, ``DSOpacityContract``, and ``DSShadowContract`` implementations.
-public struct DSTheme: Sendable {
+public struct DSTheme {
 	/// The color palette for this theme
 	public let colors: DSColorPaletteContract
 

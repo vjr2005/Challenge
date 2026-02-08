@@ -397,7 +397,7 @@ struct {Name}RepositoryTests {
 
 ```swift
 // Libraries/Core/Sources/Data/CachePolicy.swift
-public enum CachePolicy: Sendable {
+public enum CachePolicy {
     case localFirst   // Cache first, remote if not found. Default behavior.
     case remoteFirst  // Remote first, cache as fallback on error.
     case noCache      // Only remote, no cache interaction.

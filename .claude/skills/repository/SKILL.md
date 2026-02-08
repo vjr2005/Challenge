@@ -339,7 +339,7 @@ Use `CachePolicy` enum (from `ChallengeCore`) to control cache behavior:
 
 ```swift
 // Libraries/Core/Sources/Data/CachePolicy.swift
-public enum CachePolicy: Sendable {
+public enum CachePolicy {
     case localFirst   // Cache first, remote if not found (default)
     case remoteFirst  // Remote first, cache as fallback on error
     case noCache      // Only remote, no cache interaction

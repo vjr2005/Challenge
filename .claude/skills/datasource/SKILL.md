@@ -79,7 +79,7 @@ struct {Name}RemoteDataSource: {Name}RemoteDataSourceContract {
 DTOs are **intentionally anemic** - they exist purely to transfer data between systems.
 
 ```swift
-struct {Name}DTO: Decodable, Equatable, Sendable {
+struct {Name}DTO: Decodable, Equatable {
     let id: Int
     let name: String
 }

@@ -5,7 +5,7 @@ import ChallengeNetworking
 import ChallengeSystem
 import SwiftUI
 
-public struct AppContainer: Sendable {
+public struct AppContainer {
 	// MARK: - Shared Dependencies
 
 	public let launchEnvironment: LaunchEnvironment

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LaunchEnvironment: Sendable {
+public struct LaunchEnvironment {
 	public let apiBaseURL: URL?
 
 	public init(environment: [String: String] = ProcessInfo.processInfo.environment) {

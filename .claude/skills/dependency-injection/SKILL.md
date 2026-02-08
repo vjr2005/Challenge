@@ -111,7 +111,7 @@ import ChallengeNetworking
 import ChallengeSystem
 import SwiftUI
 
-struct AppContainer: Sendable {
+struct AppContainer {
     // MARK: - Shared Dependencies
 
     let httpClient: any HTTPClientContract
@@ -187,7 +187,7 @@ private extension AppContainer {
 import ChallengeCore
 import ChallengeNetworking
 
-public final class {Feature}Container: Sendable {
+public final class {Feature}Container {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
@@ -457,7 +457,7 @@ public struct HomeFeature: FeatureContract {
 // Sources/HomeContainer.swift
 import ChallengeCore
 
-public final class HomeContainer: Sendable {
+public final class HomeContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract

@@ -1,7 +1,7 @@
 import ChallengeCore
 
 /// Dependency container for the System feature.
-public final class SystemContainer: Sendable {
+public final class SystemContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract

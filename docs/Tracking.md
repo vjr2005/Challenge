@@ -57,7 +57,7 @@ public protocol TrackerContract: Sendable {
 Concrete implementation that dispatches events to all registered providers:
 
 ```swift
-public final class Tracker: TrackerContract, Sendable {
+public final class Tracker: TrackerContract {
     private let providers: [any TrackingProviderContract]
 
     public init(providers: [any TrackingProviderContract]) {
@@ -235,7 +235,7 @@ enum CharacterListEvent: TrackingEventContract {
 Creates the `Tracker` with providers and injects it into all features:
 
 ```swift
-public struct AppContainer: Sendable {
+public struct AppContainer {
     public let tracker: any TrackerContract
 
     public init(tracker: (any TrackerContract)? = nil) {

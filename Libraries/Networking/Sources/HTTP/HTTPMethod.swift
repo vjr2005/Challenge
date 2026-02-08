@@ -1,7 +1,7 @@
 import Foundation
 
 /// HTTP methods supported by the networking layer.
-public enum HTTPMethod: String, Sendable {
+public enum HTTPMethod: String {
 	case get = "GET"
 	case post = "POST"
 	case put = "PUT"

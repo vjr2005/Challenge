@@ -46,7 +46,7 @@ Create `Sources/Data/DTOs/{Name}DTO.swift`:
 ```swift
 import Foundation
 
-struct {Name}DTO: Decodable, Equatable, Sendable {
+struct {Name}DTO: Decodable, Equatable {
     let id: Int
     let name: String
     // Add properties matching JSON keys

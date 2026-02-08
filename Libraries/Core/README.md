@@ -79,7 +79,7 @@ public protocol NavigatorContract {
 Defines how a modal is presented:
 
 ```swift
-public enum ModalPresentationStyle: Hashable, Sendable {
+public enum ModalPresentationStyle: Hashable {
     case sheet(detents: Set<PresentationDetent> = [.large])
     case fullScreenCover
 }

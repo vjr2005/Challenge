@@ -1,6 +1,6 @@
 import Foundation
 
-struct LocationDTO: Decodable, Equatable, Sendable {
+struct LocationDTO: Decodable, Equatable {
 	let name: String
 	let url: String
 }

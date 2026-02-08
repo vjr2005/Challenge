@@ -234,7 +234,7 @@ public struct Endpoint {
 ### HTTPMethod
 
 ```swift
-public enum HTTPMethod: String, Sendable {
+public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
     case put = "PUT"

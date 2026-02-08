@@ -78,7 +78,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 The root container that creates shared dependencies and feature containers:
 
 ```swift
-public struct AppContainer: Sendable {
+public struct AppContainer {
     // Shared dependencies
     public let httpClient: any HTTPClientContract
     public let tracker: any TrackerContract
@@ -116,7 +116,7 @@ public struct AppContainer: Sendable {
 Each feature has its own container that manages its internal dependencies:
 
 ```swift
-public final class CharacterContainer: Sendable {
+public final class CharacterContainer {
     private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
     private let memoryDataSource = CharacterMemoryDataSource()

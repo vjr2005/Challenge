@@ -2,7 +2,7 @@ import ChallengeCore
 import ChallengeNetworking
 
 /// Dependency container for the Character feature.
-public final class CharacterContainer: Sendable {
+public final class CharacterContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract

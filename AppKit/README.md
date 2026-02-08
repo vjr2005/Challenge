@@ -58,7 +58,7 @@ AppKit/
 Composition root that creates and wires all dependencies:
 
 ```swift
-public struct AppContainer: Sendable {
+public struct AppContainer {
     public let httpClient: any HTTPClientContract
     public let tracker: any TrackerContract
     public var features: [any FeatureContract]

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Concrete tracker that dispatches events to multiple providers.
-public final class Tracker: TrackerContract, Sendable {
+public final class Tracker: TrackerContract {
     private let providers: [any TrackingProviderContract]
 
     /// Creates a tracker with the given providers.

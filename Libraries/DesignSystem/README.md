@@ -76,7 +76,7 @@ Colors, typography, spacing, dimensions, border widths, corner radii, opacity, a
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                  DSTheme (struct, Sendable)                                  │
+│                                  DSTheme (struct)                                  │
 │  ┌──────────────┐ ┌────────────┐ ┌─────────┐ ┌────────────┐ ┌─────────────┐ ┌──────────────┐ ┌─────────┐ │
 │  │DSColorPaletteContract│ │DSTypographyContract│ │DSSpacingContract│ │DSDimensionsContract│ │DSBorderWidthContract│ │DSCornerRadiusContract│ │DSOpacityContract│ │DSShadowContract│ │
 │  │ (protocol)           │ │ (protocol)         │ │(protocol)       │ │ (protocol)         │ │ (protocol)          │ │ (protocol)           │ │(protocol)       │ │(protocol)      │ │

@@ -1,7 +1,7 @@
 import UIKit
 
 /// Image loader with in-memory caching and deduplication of in-flight requests.
-public final class CachedImageLoader: ImageLoaderContract, Sendable {
+public final class CachedImageLoader: ImageLoaderContract {
 	/// Shared instance for app-wide image caching.
 	public static let shared = CachedImageLoader()
 
@@ -38,7 +38,7 @@ public final class CachedImageLoader: ImageLoaderContract, Sendable {
 	}
 }
 
-private final class ImageCache: Sendable {
+private final class ImageCache {
 	private let storage = NSCache<NSURL, UIImage>()
 
 	func image(for url: URL) -> UIImage? {

@@ -140,7 +140,7 @@ Create `Sources/{Feature}Container.swift`:
 import ChallengeCore
 import ChallengeNetworking
 
-public final class {Feature}Container: Sendable {
+public final class {Feature}Container {
     private let httpClient: any HTTPClientContract
     private let tracker: any TrackerContract
 

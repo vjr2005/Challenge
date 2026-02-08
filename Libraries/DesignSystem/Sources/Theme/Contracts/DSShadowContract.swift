@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A shadow value combining color, radius, and offset.
-public struct DSShadowValue: Sendable, Equatable {
+public struct DSShadowValue: Equatable {
 	/// Shadow color
 	public let color: Color
 	/// Shadow blur radius

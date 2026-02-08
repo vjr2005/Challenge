@@ -167,7 +167,7 @@ The repository supports multiple caching policies through the `CachePolicy` enum
 
 ```swift
 // Libraries/Core/Sources/Data/CachePolicy.swift
-public enum CachePolicy: Sendable {
+public enum CachePolicy {
     case localFirst   // Cache → Remote
     case remoteFirst  // Remote → Cache (fallback)
     case noCache      // Remote only
@@ -188,7 +188,7 @@ struct CharacterDTO: Decodable {
 }
 
 // Domain layer - Clean model
-struct Character: Sendable, Equatable {
+struct Character: Equatable {
     let id: Int
     let name: String
     let status: CharacterStatus  // Type-safe enum

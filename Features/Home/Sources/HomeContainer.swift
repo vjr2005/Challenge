@@ -1,7 +1,7 @@
 import ChallengeCore
 
 /// Dependency container for the Home feature.
-public final class HomeContainer: Sendable {
+public final class HomeContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract

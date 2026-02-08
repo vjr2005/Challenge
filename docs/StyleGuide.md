@@ -108,7 +108,7 @@ Prefer **enums** over strings for values with a known finite set of options:
 
 ```swift
 // RIGHT - Enum for finite set of values
-enum CharacterGender: Sendable {
+enum CharacterGender {
     case male
     case female
     case genderless

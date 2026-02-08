@@ -92,7 +92,7 @@ nonisolated public protocol OutgoingNavigationContract: NavigationContract {}
 // Libraries/Core/Sources/Navigation/ModalPresentationStyle.swift
 import SwiftUI
 
-public enum ModalPresentationStyle: Hashable, Sendable {
+public enum ModalPresentationStyle: Hashable {
     case sheet(detents: Set<PresentationDetent> = [.large])
     case fullScreenCover
 }
