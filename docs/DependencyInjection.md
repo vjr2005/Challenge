@@ -158,14 +158,14 @@ public final class CharacterContainer {
         )
     }
 
-    func makeAdvancedSearchViewModel(
+    func makeCharacterFilterViewModel(
         delegate: any CharacterFilterDelegate,
         navigator: any NavigatorContract
-    ) -> AdvancedSearchViewModel {
-        AdvancedSearchViewModel(
+    ) -> CharacterFilterViewModel {
+        CharacterFilterViewModel(
             delegate: delegate,
-            navigator: AdvancedSearchNavigator(navigator: navigator),
-            tracker: AdvancedSearchTracker(tracker: tracker)
+            navigator: CharacterFilterNavigator(navigator: navigator),
+            tracker: CharacterFilterTracker(tracker: tracker)
         )
     }
 }
@@ -198,7 +198,7 @@ AppContainer
                             ├── CharacterListViewModel ← UseCases, Navigator, Tracker
                             │       (conforms to CharacterFilterDelegate)
                             │
-                            └── AdvancedSearchViewModel ← Delegate, Navigator, Tracker
+                            └── CharacterFilterViewModel ← Delegate, Navigator, Tracker
 ```
 
 ## Testing

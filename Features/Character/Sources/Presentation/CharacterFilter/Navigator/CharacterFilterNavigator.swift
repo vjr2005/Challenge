@@ -1,6 +1,6 @@
 import ChallengeCore
 
-struct AdvancedSearchNavigator: AdvancedSearchNavigatorContract {
+struct CharacterFilterNavigator: CharacterFilterNavigatorContract {
     private let navigator: NavigatorContract
 
     init(navigator: NavigatorContract) {

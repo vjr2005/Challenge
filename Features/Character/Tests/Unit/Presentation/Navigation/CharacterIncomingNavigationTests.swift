@@ -20,14 +20,14 @@ struct CharacterIncomingNavigationTests {
         #expect(CharacterIncomingNavigation.detail(identifier: 42) != .detail(identifier: 99))
     }
 
-    @Test("Equality returns true for advanced search cases regardless of delegate")
-    func equalityReturnsTrueForAdvancedSearchCases() {
+    @Test("Equality returns true for character filter cases regardless of delegate")
+    func equalityReturnsTrueForCharacterFilterCases() {
         // Given
         let delegate1 = CharacterFilterDelegateMock()
         let delegate2 = CharacterFilterDelegateMock()
 
         // Then
-        #expect(CharacterIncomingNavigation.advancedSearch(delegate: delegate1) == .advancedSearch(delegate: delegate2))
+        #expect(CharacterIncomingNavigation.characterFilter(delegate: delegate1) == .characterFilter(delegate: delegate2))
     }
 
     @Test("Equality returns false for different cases")
@@ -37,8 +37,8 @@ struct CharacterIncomingNavigationTests {
 
         // Then
         #expect(CharacterIncomingNavigation.list != .detail(identifier: 1))
-        #expect(CharacterIncomingNavigation.list != .advancedSearch(delegate: delegateMock))
-        #expect(CharacterIncomingNavigation.detail(identifier: 1) != .advancedSearch(delegate: delegateMock))
+        #expect(CharacterIncomingNavigation.list != .characterFilter(delegate: delegateMock))
+        #expect(CharacterIncomingNavigation.detail(identifier: 1) != .characterFilter(delegate: delegateMock))
     }
 
     // MARK: - Hashable
@@ -56,7 +56,7 @@ struct CharacterIncomingNavigationTests {
             CharacterIncomingNavigation.detail(identifier: 42).hashValue == CharacterIncomingNavigation.detail(identifier: 42).hashValue
         )
         #expect(
-            CharacterIncomingNavigation.advancedSearch(delegate: delegateMock).hashValue == CharacterIncomingNavigation.advancedSearch(delegate: delegateMock).hashValue
+            CharacterIncomingNavigation.characterFilter(delegate: delegateMock).hashValue == CharacterIncomingNavigation.characterFilter(delegate: delegateMock).hashValue
         )
     }
 
@@ -67,7 +67,7 @@ struct CharacterIncomingNavigationTests {
         let set: Set<CharacterIncomingNavigation> = [
             .list,
             .detail(identifier: 1),
-            .advancedSearch(delegate: delegateMock)
+            .characterFilter(delegate: delegateMock)
         ]
 
         // Then

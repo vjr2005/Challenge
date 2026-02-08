@@ -3,16 +3,16 @@ import Testing
 
 @testable import ChallengeCharacter
 
-struct AdvancedSearchNavigatorTests {
+struct CharacterFilterNavigatorTests {
     // MARK: - Properties
 
     private let navigatorMock = NavigatorMock()
-    private let sut: AdvancedSearchNavigator
+    private let sut: CharacterFilterNavigator
 
     // MARK: - Initialization
 
     init() {
-        sut = AdvancedSearchNavigator(navigator: navigatorMock)
+        sut = CharacterFilterNavigator(navigator: navigatorMock)
     }
 
     // MARK: - Tests

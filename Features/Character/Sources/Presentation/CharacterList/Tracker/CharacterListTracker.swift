@@ -31,8 +31,8 @@ struct CharacterListTracker: CharacterListTrackerContract {
         tracker.track(CharacterListEvent.loadMoreButtonTapped)
     }
 
-    func trackAdvancedSearchButtonTapped() {
-        tracker.track(CharacterListEvent.advancedSearchButtonTapped)
+    func trackCharacterFilterButtonTapped() {
+        tracker.track(CharacterListEvent.characterFilterButtonTapped)
     }
 
     func trackFetchError(description: String) {

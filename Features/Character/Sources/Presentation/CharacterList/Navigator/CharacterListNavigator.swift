@@ -11,9 +11,9 @@ struct CharacterListNavigator: CharacterListNavigatorContract {
         navigator.navigate(to: CharacterIncomingNavigation.detail(identifier: identifier))
     }
 
-    func presentAdvancedSearch(delegate: any CharacterFilterDelegate) {
+    func presentCharacterFilter(delegate: any CharacterFilterDelegate) {
         navigator.present(
-            CharacterIncomingNavigation.advancedSearch(delegate: delegate),
+            CharacterIncomingNavigation.characterFilter(delegate: delegate),
             style: .fullScreenCover
         )
     }

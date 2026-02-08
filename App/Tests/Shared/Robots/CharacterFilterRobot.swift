@@ -1,12 +1,12 @@
 import XCTest
 
-struct AdvancedSearchRobot: RobotContract {
+struct CharacterFilterRobot: RobotContract {
 	let app: XCUIApplication
 }
 
 // MARK: - Actions
 
-extension AdvancedSearchRobot {
+extension CharacterFilterRobot {
 	@discardableResult
 	func tapStatusChip(_ label: String, file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let chip = app.buttons[AccessibilityIdentifier.statusChip(label: label)]
@@ -68,7 +68,7 @@ extension AdvancedSearchRobot {
 
 // MARK: - Verifications
 
-extension AdvancedSearchRobot {
+extension CharacterFilterRobot {
 	@discardableResult
 	func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let button = app.buttons[AccessibilityIdentifier.applyButton]
@@ -80,17 +80,17 @@ extension AdvancedSearchRobot {
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-	static let closeButton = "advancedSearch.close.button"
-	static let resetButton = "advancedSearch.reset.button"
-	static let applyButton = "advancedSearch.apply.button"
-	static let speciesTextField = "advancedSearch.species.textField"
-	static let typeTextField = "advancedSearch.type.textField"
+	static let closeButton = "characterFilter.close.button"
+	static let resetButton = "characterFilter.reset.button"
+	static let applyButton = "characterFilter.apply.button"
+	static let speciesTextField = "characterFilter.species.textField"
+	static let typeTextField = "characterFilter.type.textField"
 
 	static func statusChip(label: String) -> String {
-		"advancedSearch.status.\(label)"
+		"characterFilter.status.\(label)"
 	}
 
 	static func genderChip(label: String) -> String {
-		"advancedSearch.gender.\(label)"
+		"characterFilter.gender.\(label)"
 	}
 }

@@ -7,7 +7,7 @@ enum CharacterListEvent: TrackingEventContract {
     case retryButtonTapped
     case pullToRefreshTriggered
     case loadMoreButtonTapped
-    case advancedSearchButtonTapped
+    case characterFilterButtonTapped
     case fetchError(description: String)
     case refreshError(description: String)
     case loadMoreError(description: String)
@@ -26,8 +26,8 @@ enum CharacterListEvent: TrackingEventContract {
             "character_list_pull_to_refresh"
         case .loadMoreButtonTapped:
             "character_list_load_more_tapped"
-        case .advancedSearchButtonTapped:
-            "character_list_advanced_search_tapped"
+        case .characterFilterButtonTapped:
+            "character_list_character_filter_tapped"
         case .fetchError:
             "character_list_fetch_error"
         case .refreshError:

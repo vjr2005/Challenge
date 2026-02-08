@@ -13,11 +13,11 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     }
 
     var activeFilterCount: Int {
-        advancedFilter.activeFilterCount
+        characterFilter.activeFilterCount
     }
 
-    func applyAdvancedFilters(_ filter: CharacterFilter) async {
-        advancedFilter = filter
+    func applyCharacterFilters(_ filter: CharacterFilter) async {
+        characterFilter = filter
         await fetchCharacters()
     }
 
@@ -29,7 +29,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
     private let navigator: CharacterListNavigatorContract
     private let tracker: CharacterListTrackerContract
-    private var advancedFilter = CharacterFilter.empty
+    private var characterFilter = CharacterFilter.empty
     private let debounceInterval: Duration
     private var currentPage = 1
     private var isLoadingMore = false
@@ -105,19 +105,19 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         loadRecentSearches()
     }
 
-    func didTapAdvancedSearchButton() {
-        tracker.trackAdvancedSearchButtonTapped()
-        navigator.presentAdvancedSearch(delegate: self)
+    func didTapCharacterFilterButton() {
+        tracker.trackCharacterFilterButtonTapped()
+        navigator.presentCharacterFilter(delegate: self)
     }
 }
 
 // MARK: - CharacterFilterDelegate
 
 extension CharacterListViewModel: CharacterFilterDelegate {
-    var currentFilter: CharacterFilter { advancedFilter }
+    var currentFilter: CharacterFilter { characterFilter }
 
     func didApplyFilter(_ filter: CharacterFilter) {
-        Task { await applyAdvancedFilters(filter) }
+        Task { await applyCharacterFilters(filter) }
     }
 }
 
@@ -130,7 +130,7 @@ private extension CharacterListViewModel {
     }
 
     var effectiveFilter: CharacterFilter {
-        var filter = advancedFilter
+        var filter = characterFilter
         filter.name = normalizedQuery
         return filter
     }

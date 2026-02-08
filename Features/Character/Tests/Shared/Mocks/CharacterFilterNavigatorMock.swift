@@ -1,6 +1,6 @@
 @testable import ChallengeCharacter
 
-final class AdvancedSearchNavigatorMock: AdvancedSearchNavigatorContract {
+final class CharacterFilterNavigatorMock: CharacterFilterNavigatorContract {
     private(set) var dismissCallCount = 0
 
     func dismiss() {

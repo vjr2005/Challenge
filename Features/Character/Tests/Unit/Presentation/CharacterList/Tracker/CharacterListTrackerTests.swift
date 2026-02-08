@@ -77,14 +77,14 @@ struct CharacterListTrackerTests {
         #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_list_load_more_tapped", properties: [:]))
     }
 
-    @Test("Track advanced search button tapped dispatches correct event")
-    func trackAdvancedSearchButtonTappedDispatchesCorrectEvent() {
+    @Test("Track character filter button tapped dispatches correct event")
+    func trackCharacterFilterButtonTappedDispatchesCorrectEvent() {
         // When
-        sut.trackAdvancedSearchButtonTapped()
+        sut.trackCharacterFilterButtonTapped()
 
         // Then
         #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_list_advanced_search_tapped", properties: [:]))
+        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_list_character_filter_tapped", properties: [:]))
     }
 
     @Test("Track fetch error dispatches event with description")

@@ -3,7 +3,7 @@ import ChallengeCore
 public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
-    case advancedSearch(delegate: any CharacterFilterDelegate)
+    case characterFilter(delegate: any CharacterFilterDelegate)
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
@@ -11,7 +11,7 @@ public enum CharacterIncomingNavigation: IncomingNavigationContract {
             return true
         case (.detail(let lhsID), .detail(let rhsID)):
             return lhsID == rhsID
-        case (.advancedSearch, .advancedSearch):
+        case (.characterFilter, .characterFilter):
             return true
         default:
             return false
@@ -25,7 +25,7 @@ public enum CharacterIncomingNavigation: IncomingNavigationContract {
         case .detail(let identifier):
             hasher.combine(1)
             hasher.combine(identifier)
-        case .advancedSearch:
+        case .characterFilter:
             hasher.combine(2)
         }
     }

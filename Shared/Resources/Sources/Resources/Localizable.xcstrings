@@ -477,7 +477,7 @@
         }
       }
     },
-    "advancedSearch.title" : {
+    "characterFilter.title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -494,7 +494,7 @@
         }
       }
     },
-    "advancedSearch.name" : {
+    "characterFilter.name" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -511,7 +511,7 @@
         }
       }
     },
-    "advancedSearch.namePlaceholder" : {
+    "characterFilter.namePlaceholder" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -528,7 +528,7 @@
         }
       }
     },
-    "advancedSearch.status" : {
+    "characterFilter.status" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -545,7 +545,7 @@
         }
       }
     },
-    "advancedSearch.gender" : {
+    "characterFilter.gender" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -562,7 +562,7 @@
         }
       }
     },
-    "advancedSearch.species" : {
+    "characterFilter.species" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -579,7 +579,7 @@
         }
       }
     },
-    "advancedSearch.speciesPlaceholder" : {
+    "characterFilter.speciesPlaceholder" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -596,7 +596,7 @@
         }
       }
     },
-    "advancedSearch.type" : {
+    "characterFilter.type" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -613,7 +613,7 @@
         }
       }
     },
-    "advancedSearch.typePlaceholder" : {
+    "characterFilter.typePlaceholder" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -630,7 +630,7 @@
         }
       }
     },
-    "advancedSearch.apply" : {
+    "characterFilter.apply" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -647,7 +647,7 @@
         }
       }
     },
-    "advancedSearch.reset" : {
+    "characterFilter.reset" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

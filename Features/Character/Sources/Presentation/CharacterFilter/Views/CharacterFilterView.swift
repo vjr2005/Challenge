@@ -2,7 +2,7 @@ import ChallengeDesignSystem
 import ChallengeResources
 import SwiftUI
 
-struct AdvancedSearchView<ViewModel: AdvancedSearchViewModelContract>: View {
+struct CharacterFilterView<ViewModel: CharacterFilterViewModelContract>: View {
     @State private var viewModel: ViewModel
     @Environment(\.dsTheme) private var theme
 
@@ -53,7 +53,7 @@ struct AdvancedSearchView<ViewModel: AdvancedSearchViewModelContract>: View {
 
 // MARK: - Subviews
 
-private extension AdvancedSearchView {
+private extension CharacterFilterView {
     var statusChipGroup: some View {
         DSChipGroup(
             LocalizedStrings.status,
@@ -123,25 +123,25 @@ private extension AdvancedSearchView {
 // MARK: - LocalizedStrings
 
 private enum LocalizedStrings {
-    static var title: String { "advancedSearch.title".localized() }
-    static var status: String { "advancedSearch.status".localized() }
-    static var gender: String { "advancedSearch.gender".localized() }
-    static var species: String { "advancedSearch.species".localized() }
-    static var speciesPlaceholder: String { "advancedSearch.speciesPlaceholder".localized() }
-    static var type: String { "advancedSearch.type".localized() }
-    static var typePlaceholder: String { "advancedSearch.typePlaceholder".localized() }
-    static var apply: String { "advancedSearch.apply".localized() }
-    static var reset: String { "advancedSearch.reset".localized() }
+    static var title: String { "characterFilter.title".localized() }
+    static var status: String { "characterFilter.status".localized() }
+    static var gender: String { "characterFilter.gender".localized() }
+    static var species: String { "characterFilter.species".localized() }
+    static var speciesPlaceholder: String { "characterFilter.speciesPlaceholder".localized() }
+    static var type: String { "characterFilter.type".localized() }
+    static var typePlaceholder: String { "characterFilter.typePlaceholder".localized() }
+    static var apply: String { "characterFilter.apply".localized() }
+    static var reset: String { "characterFilter.reset".localized() }
 }
 
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-    static let closeButton = "advancedSearch.close.button"
-    static let resetButton = "advancedSearch.reset.button"
-    static let applyButton = "advancedSearch.apply.button"
-    static let statusGroup = "advancedSearch.status"
-    static let genderGroup = "advancedSearch.gender"
-    static let speciesTextField = "advancedSearch.species.textField"
-    static let typeTextField = "advancedSearch.type.textField"
+    static let closeButton = "characterFilter.close.button"
+    static let resetButton = "characterFilter.reset.button"
+    static let applyButton = "characterFilter.apply.button"
+    static let statusGroup = "characterFilter.status"
+    static let genderGroup = "characterFilter.gender"
+    static let speciesTextField = "characterFilter.species.textField"
+    static let typeTextField = "characterFilter.type.textField"
 }

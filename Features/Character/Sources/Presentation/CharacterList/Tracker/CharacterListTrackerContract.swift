@@ -5,7 +5,7 @@ protocol CharacterListTrackerContract {
     func trackRetryButtonTapped()
     func trackPullToRefreshTriggered()
     func trackLoadMoreButtonTapped()
-    func trackAdvancedSearchButtonTapped()
+    func trackCharacterFilterButtonTapped()
     func trackFetchError(description: String)
     func trackRefreshError(description: String)
     func trackLoadMoreError(description: String)

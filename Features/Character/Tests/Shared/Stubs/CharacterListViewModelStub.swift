@@ -43,7 +43,7 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 		// No-op: recent searches not tested in snapshots
 	}
 
-	func didTapAdvancedSearchButton() {
+	func didTapCharacterFilterButton() {
 		// No-op: navigation not tested in snapshots
 	}
 }

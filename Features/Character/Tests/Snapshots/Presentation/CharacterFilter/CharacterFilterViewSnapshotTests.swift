@@ -4,21 +4,21 @@ import Testing
 
 @testable import ChallengeCharacter
 
-struct AdvancedSearchViewSnapshotTests {
+struct CharacterFilterViewSnapshotTests {
 	init() {
 		UIView.setAnimationsEnabled(false)
 	}
 
 	// MARK: - Empty State
 
-	@Test("Renders advanced search with no filters selected")
+	@Test("Renders character filter with no filters selected")
 	func emptyState() {
 		// Given
-		let viewModel = AdvancedSearchViewModelStub()
+		let viewModel = CharacterFilterViewModelStub()
 
 		// When
 		let view = NavigationStack {
-			AdvancedSearchView(viewModel: viewModel)
+			CharacterFilterView(viewModel: viewModel)
 		}
 
 		// Then
@@ -27,44 +27,44 @@ struct AdvancedSearchViewSnapshotTests {
 
 	// MARK: - Partially Filled
 
-	@Test("Renders advanced search with status selected")
+	@Test("Renders character filter with status selected")
 	func statusSelected() {
 		// Given
-		let viewModel = AdvancedSearchViewModelStub(
+		let viewModel = CharacterFilterViewModelStub(
 			status: .alive,
 			hasActiveFilters: true
 		)
 
 		// When
 		let view = NavigationStack {
-			AdvancedSearchView(viewModel: viewModel)
+			CharacterFilterView(viewModel: viewModel)
 		}
 
 		// Then
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test("Renders advanced search with gender selected")
+	@Test("Renders character filter with gender selected")
 	func genderSelected() {
 		// Given
-		let viewModel = AdvancedSearchViewModelStub(
+		let viewModel = CharacterFilterViewModelStub(
 			gender: .female,
 			hasActiveFilters: true
 		)
 
 		// When
 		let view = NavigationStack {
-			AdvancedSearchView(viewModel: viewModel)
+			CharacterFilterView(viewModel: viewModel)
 		}
 
 		// Then
 		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
 	}
 
-	@Test("Renders advanced search with text fields filled")
+	@Test("Renders character filter with text fields filled")
 	func textFieldsFilled() {
 		// Given
-		let viewModel = AdvancedSearchViewModelStub(
+		let viewModel = CharacterFilterViewModelStub(
 			species: "Human",
 			type: "Parasite",
 			hasActiveFilters: true
@@ -72,7 +72,7 @@ struct AdvancedSearchViewSnapshotTests {
 
 		// When
 		let view = NavigationStack {
-			AdvancedSearchView(viewModel: viewModel)
+			CharacterFilterView(viewModel: viewModel)
 		}
 
 		// Then
@@ -81,10 +81,10 @@ struct AdvancedSearchViewSnapshotTests {
 
 	// MARK: - Fully Filled
 
-	@Test("Renders advanced search with all filters selected")
+	@Test("Renders character filter with all filters selected")
 	func allFiltersSelected() {
 		// Given
-		let viewModel = AdvancedSearchViewModelStub(
+		let viewModel = CharacterFilterViewModelStub(
 			status: .dead,
 			species: "Alien",
 			type: "Robot",
@@ -94,7 +94,7 @@ struct AdvancedSearchViewSnapshotTests {
 
 		// When
 		let view = NavigationStack {
-			AdvancedSearchView(viewModel: viewModel)
+			CharacterFilterView(viewModel: viewModel)
 		}
 
 		// Then

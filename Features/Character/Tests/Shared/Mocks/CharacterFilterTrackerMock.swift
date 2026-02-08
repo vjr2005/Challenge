@@ -1,6 +1,6 @@
 @testable import ChallengeCharacter
 
-final class AdvancedSearchTrackerMock: AdvancedSearchTrackerContract {
+final class CharacterFilterTrackerMock: CharacterFilterTrackerContract {
     private(set) var screenViewedCallCount = 0
     private(set) var applyFiltersCallCount = 0
     private(set) var lastAppliedFilterCount: Int?

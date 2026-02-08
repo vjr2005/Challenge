@@ -64,8 +64,8 @@ nonisolated class UITestCase: XCTestCase {
 	}
 
 	@MainActor
-	func advancedSearch(actions: (AdvancedSearchRobot) -> Void) {
-		actions(AdvancedSearchRobot(app: app))
+	func characterFilter(actions: (CharacterFilterRobot) -> Void) {
+		actions(CharacterFilterRobot(app: app))
 	}
 
 	@MainActor

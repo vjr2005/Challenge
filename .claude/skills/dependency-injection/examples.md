@@ -197,14 +197,14 @@ public final class CharacterContainer {
         )
     }
 
-    func makeAdvancedSearchViewModel(
+    func makeCharacterFilterViewModel(
         delegate: any CharacterFilterDelegate,
         navigator: any NavigatorContract
-    ) -> AdvancedSearchViewModel {
-        AdvancedSearchViewModel(
+    ) -> CharacterFilterViewModel {
+        CharacterFilterViewModel(
             delegate: delegate,
-            navigator: AdvancedSearchNavigator(navigator: navigator),
-            tracker: AdvancedSearchTracker(tracker: tracker)
+            navigator: CharacterFilterNavigator(navigator: navigator),
+            tracker: CharacterFilterTracker(tracker: tracker)
         )
     }
 }
@@ -228,7 +228,7 @@ import ChallengeCore
 public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
-    case advancedSearch(delegate: any CharacterFilterDelegate)
+    case characterFilter(delegate: any CharacterFilterDelegate)
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
@@ -236,7 +236,7 @@ public enum CharacterIncomingNavigation: IncomingNavigationContract {
             return true
         case (.detail(let lhsID), .detail(let rhsID)):
             return lhsID == rhsID
-        case (.advancedSearch, .advancedSearch):
+        case (.characterFilter, .characterFilter):
             return true
         default:
             return false
@@ -250,7 +250,7 @@ public enum CharacterIncomingNavigation: IncomingNavigationContract {
         case .detail(let identifier):
             hasher.combine(1)
             hasher.combine(identifier)
-        case .advancedSearch:
+        case .characterFilter:
             hasher.combine(2)
         }
     }
@@ -307,9 +307,9 @@ public struct CharacterFeature: FeatureContract {
                     navigator: navigator
                 )
             ))
-        case .advancedSearch(let delegate):
-            return AnyView(AdvancedSearchView(
-                viewModel: container.makeAdvancedSearchViewModel(
+        case .characterFilter(let delegate):
+            return AnyView(CharacterFilterView(
+                viewModel: container.makeCharacterFilterViewModel(
                     delegate: delegate,
                     navigator: navigator
                 )
@@ -557,14 +557,14 @@ struct CharacterFeatureTests {
         #expect(result != nil)
     }
 
-    @Test("Resolve advanced search navigation returns view")
-    func resolveAdvancedSearchNavigationReturnsView() {
+    @Test("Resolve character filter navigation returns view")
+    func resolveCharacterFilterNavigationReturnsView() {
         // Given
         let delegateMock = CharacterFilterDelegateMock()
 
         // When
         let result = sut.resolve(
-            CharacterIncomingNavigation.advancedSearch(delegate: delegateMock),
+            CharacterIncomingNavigation.characterFilter(delegate: delegateMock),
             navigator: navigatorMock
         )
 

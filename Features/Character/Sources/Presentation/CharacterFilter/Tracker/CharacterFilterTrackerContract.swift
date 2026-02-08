@@ -1,4 +1,4 @@
-protocol AdvancedSearchTrackerContract {
+protocol CharacterFilterTrackerContract {
     func trackScreenViewed()
     func trackApplyFilters(filterCount: Int)
     func trackResetFilters()

@@ -73,22 +73,22 @@ struct CharacterFeatureTests {
         #expect(viewName.contains("CharacterDetailView"))
     }
 
-    @Test("Resolve returns view for advanced search navigation")
-    func resolveReturnsViewForAdvancedSearchNavigation() {
+    @Test("Resolve returns view for character filter navigation")
+    func resolveReturnsViewForCharacterFilterNavigation() {
         // Given
         let navigatorMock = NavigatorMock()
         let delegateMock = CharacterFilterDelegateMock()
 
         // When
         let result = sut.resolve(
-            CharacterIncomingNavigation.advancedSearch(delegate: delegateMock),
+            CharacterIncomingNavigation.characterFilter(delegate: delegateMock),
             navigator: navigatorMock
         )
 
         // Then
         #expect(result != nil)
         let viewName = String(describing: result)
-        #expect(viewName.contains("AdvancedSearchView"))
+        #expect(viewName.contains("CharacterFilterView"))
     }
 
     @Test("Resolve returns nil for non-character navigation")

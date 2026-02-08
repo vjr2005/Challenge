@@ -1,9 +1,9 @@
 import XCTest
 
-/// UI tests for the advanced search flow.
-final class AdvancedSearchUITests: UITestCase {
+/// UI tests for the character filter flow.
+final class CharacterFilterUITests: UITestCase {
 	@MainActor
-	func testOpenAdvancedSearchAndCloseWithoutApplying() async throws {
+	func testOpenCharacterFilterAndCloseWithoutApplying() async throws {
 		// Given
 		try await givenCharacterListSucceeds()
 
@@ -21,7 +21,7 @@ final class AdvancedSearchUITests: UITestCase {
 			robot.tapFilterButton()
 		}
 
-		advancedSearch { robot in
+		characterFilter { robot in
 			robot.verifyIsVisible()
 			robot.tapClose()
 		}
@@ -50,7 +50,7 @@ final class AdvancedSearchUITests: UITestCase {
 			robot.tapFilterButton()
 		}
 
-		advancedSearch { robot in
+		characterFilter { robot in
 			robot.verifyIsVisible()
 			robot.tapStatusChip("Alive")
 			robot.tapApply()
@@ -80,7 +80,7 @@ final class AdvancedSearchUITests: UITestCase {
 			robot.tapFilterButton()
 		}
 
-		advancedSearch { robot in
+		characterFilter { robot in
 			robot.verifyIsVisible()
 			robot.tapStatusChip("Alive")
 			robot.tapGenderChip("Male")

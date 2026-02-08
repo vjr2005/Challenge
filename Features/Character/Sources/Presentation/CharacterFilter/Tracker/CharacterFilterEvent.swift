@@ -1,6 +1,6 @@
 import ChallengeCore
 
-enum AdvancedSearchEvent: TrackingEventContract {
+enum CharacterFilterEvent: TrackingEventContract {
     case screenViewed
     case filtersApplied(filterCount: Int)
     case filtersReset
@@ -9,13 +9,13 @@ enum AdvancedSearchEvent: TrackingEventContract {
     var name: String {
         switch self {
         case .screenViewed:
-            "advanced_search_viewed"
+            "character_filter_viewed"
         case .filtersApplied:
-            "advanced_search_filters_applied"
+            "character_filter_filters_applied"
         case .filtersReset:
-            "advanced_search_filters_reset"
+            "character_filter_filters_reset"
         case .closeTapped:
-            "advanced_search_close_tapped"
+            "character_filter_close_tapped"
         }
     }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 @Observable
-final class AdvancedSearchViewModel: AdvancedSearchViewModelContract {
+final class CharacterFilterViewModel: CharacterFilterViewModelContract {
     var filter: CharacterFilter
 
     var hasActiveFilters: Bool {
@@ -9,13 +9,13 @@ final class AdvancedSearchViewModel: AdvancedSearchViewModelContract {
     }
 
     private let delegate: any CharacterFilterDelegate
-    private let navigator: AdvancedSearchNavigatorContract
-    private let tracker: AdvancedSearchTrackerContract
+    private let navigator: CharacterFilterNavigatorContract
+    private let tracker: CharacterFilterTrackerContract
 
     init(
         delegate: any CharacterFilterDelegate,
-        navigator: AdvancedSearchNavigatorContract,
-        tracker: AdvancedSearchTrackerContract
+        navigator: CharacterFilterNavigatorContract,
+        tracker: CharacterFilterTrackerContract
     ) {
         self.filter = delegate.currentFilter
         self.delegate = delegate

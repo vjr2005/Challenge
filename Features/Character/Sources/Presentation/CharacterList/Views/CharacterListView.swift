@@ -191,7 +191,7 @@ private extension CharacterListView {
 
 	var filterButton: some View {
 		Button {
-			viewModel.didTapAdvancedSearchButton()
+			viewModel.didTapCharacterFilterButton()
 		} label: {
 			DSBadge(count: viewModel.activeFilterCount) {
 				Image(systemName: "line.3.horizontal.decrease.circle")

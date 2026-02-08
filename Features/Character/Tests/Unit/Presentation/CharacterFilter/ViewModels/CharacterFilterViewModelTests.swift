@@ -4,18 +4,18 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
-struct AdvancedSearchViewModelTests {
+struct CharacterFilterViewModelTests {
     // MARK: - Properties
 
     private let delegateMock = CharacterFilterDelegateMock()
-    private let navigatorMock = AdvancedSearchNavigatorMock()
-    private let trackerMock = AdvancedSearchTrackerMock()
-    private let sut: AdvancedSearchViewModel
+    private let navigatorMock = CharacterFilterNavigatorMock()
+    private let trackerMock = CharacterFilterTrackerMock()
+    private let sut: CharacterFilterViewModel
 
     // MARK: - Initialization
 
     init() {
-        sut = AdvancedSearchViewModel(
+        sut = CharacterFilterViewModel(
             delegate: delegateMock,
             navigator: navigatorMock,
             tracker: trackerMock
@@ -43,7 +43,7 @@ struct AdvancedSearchViewModelTests {
         )
 
         // When
-        let viewModel = AdvancedSearchViewModel(
+        let viewModel = CharacterFilterViewModel(
             delegate: delegateMock,
             navigator: navigatorMock,
             tracker: trackerMock
@@ -181,7 +181,7 @@ struct AdvancedSearchViewModelTests {
         // Given
         let delegateMock = CharacterFilterDelegateMock()
         delegateMock.currentFilter = CharacterFilter(status: .alive)
-        let viewModel = AdvancedSearchViewModel(
+        let viewModel = CharacterFilterViewModel(
             delegate: delegateMock,
             navigator: navigatorMock,
             tracker: trackerMock

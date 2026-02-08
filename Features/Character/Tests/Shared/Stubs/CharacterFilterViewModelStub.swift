@@ -2,10 +2,10 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-/// ViewModel stub for AdvancedSearchView snapshot tests.
+/// ViewModel stub for CharacterFilterView snapshot tests.
 /// Maintains a fixed state without performing any operations.
 @Observable
-final class AdvancedSearchViewModelStub: AdvancedSearchViewModelContract {
+final class CharacterFilterViewModelStub: CharacterFilterViewModelContract {
 	var filter: CharacterFilter
 	var hasActiveFilters: Bool
 

@@ -87,19 +87,19 @@ Character/
 │       │       ├── CharacterDetailTracker.swift
 │       │       ├── CharacterDetailTrackerContract.swift
 │       │       └── CharacterDetailEvent.swift
-│       └── AdvancedSearch/
+│       └── CharacterFilter/
 │           ├── Views/
-│           │   └── AdvancedSearchView.swift
+│           │   └── CharacterFilterView.swift
 │           ├── ViewModels/
-│           │   ├── AdvancedSearchViewModel.swift
-│           │   └── AdvancedSearchViewModelContract.swift
+│           │   ├── CharacterFilterViewModel.swift
+│           │   └── CharacterFilterViewModelContract.swift
 │           ├── Navigator/
-│           │   ├── AdvancedSearchNavigator.swift
-│           │   └── AdvancedSearchNavigatorContract.swift
+│           │   ├── CharacterFilterNavigator.swift
+│           │   └── CharacterFilterNavigatorContract.swift
 │           └── Tracker/
-│               ├── AdvancedSearchTracker.swift
-│               ├── AdvancedSearchTrackerContract.swift
-│               └── AdvancedSearchEvent.swift
+│               ├── CharacterFilterTracker.swift
+│               ├── CharacterFilterTrackerContract.swift
+│               └── CharacterFilterEvent.swift
 └── Tests/
     └── ...
 ```
@@ -129,11 +129,11 @@ Character/
 public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
-    case advancedSearch(delegate: any CharacterFilterDelegate)
+    case characterFilter(delegate: any CharacterFilterDelegate)
 }
 ```
 
-The `advancedSearch` case carries a `CharacterFilterDelegate` reference, enabling direct communication between `CharacterListViewModel` (which conforms to the delegate) and `AdvancedSearchViewModel`.
+The `characterFilter` case carries a `CharacterFilterDelegate` reference, enabling direct communication between `CharacterListViewModel` (which conforms to the delegate) and `CharacterFilterViewModel`.
 
 ### Deep Links
 

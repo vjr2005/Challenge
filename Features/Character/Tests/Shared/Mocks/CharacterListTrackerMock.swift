@@ -7,7 +7,7 @@ final class CharacterListTrackerMock: CharacterListTrackerContract {
     private(set) var retryButtonTappedCallCount = 0
     private(set) var pullToRefreshTriggeredCallCount = 0
     private(set) var loadMoreButtonTappedCallCount = 0
-    private(set) var advancedSearchButtonTappedCallCount = 0
+    private(set) var characterFilterButtonTappedCallCount = 0
     private(set) var fetchErrorDescriptions: [String] = []
     private(set) var refreshErrorDescriptions: [String] = []
     private(set) var loadMoreErrorDescriptions: [String] = []
@@ -36,8 +36,8 @@ final class CharacterListTrackerMock: CharacterListTrackerContract {
         loadMoreButtonTappedCallCount += 1
     }
 
-    func trackAdvancedSearchButtonTapped() {
-        advancedSearchButtonTappedCallCount += 1
+    func trackCharacterFilterButtonTapped() {
+        characterFilterButtonTappedCallCount += 1
     }
 
     func trackFetchError(description: String) {

@@ -2,22 +2,22 @@ import Testing
 
 @testable import ChallengeCharacter
 
-struct AdvancedSearchEventTests {
+struct CharacterFilterEventTests {
     // MARK: - screenViewed
 
     @Test("Screen viewed event has correct name")
     func screenViewedEventHasCorrectName() {
         // Given
-        let sut = AdvancedSearchEvent.screenViewed
+        let sut = CharacterFilterEvent.screenViewed
 
         // Then
-        #expect(sut.name == "advanced_search_viewed")
+        #expect(sut.name == "character_filter_viewed")
     }
 
     @Test("Screen viewed event has empty properties")
     func screenViewedEventHasEmptyProperties() {
         // Given
-        let sut = AdvancedSearchEvent.screenViewed
+        let sut = CharacterFilterEvent.screenViewed
 
         // Then
         #expect(sut.properties == [:])
@@ -28,16 +28,16 @@ struct AdvancedSearchEventTests {
     @Test("Filters applied event has correct name")
     func filtersAppliedEventHasCorrectName() {
         // Given
-        let sut = AdvancedSearchEvent.filtersApplied(filterCount: 3)
+        let sut = CharacterFilterEvent.filtersApplied(filterCount: 3)
 
         // Then
-        #expect(sut.name == "advanced_search_filters_applied")
+        #expect(sut.name == "character_filter_filters_applied")
     }
 
     @Test("Filters applied event has filter count in properties")
     func filtersAppliedEventHasFilterCountInProperties() {
         // Given
-        let sut = AdvancedSearchEvent.filtersApplied(filterCount: 3)
+        let sut = CharacterFilterEvent.filtersApplied(filterCount: 3)
 
         // Then
         #expect(sut.properties == ["filter_count": "3"])
@@ -48,16 +48,16 @@ struct AdvancedSearchEventTests {
     @Test("Filters reset event has correct name")
     func filtersResetEventHasCorrectName() {
         // Given
-        let sut = AdvancedSearchEvent.filtersReset
+        let sut = CharacterFilterEvent.filtersReset
 
         // Then
-        #expect(sut.name == "advanced_search_filters_reset")
+        #expect(sut.name == "character_filter_filters_reset")
     }
 
     @Test("Filters reset event has empty properties")
     func filtersResetEventHasEmptyProperties() {
         // Given
-        let sut = AdvancedSearchEvent.filtersReset
+        let sut = CharacterFilterEvent.filtersReset
 
         // Then
         #expect(sut.properties == [:])
@@ -68,16 +68,16 @@ struct AdvancedSearchEventTests {
     @Test("Close tapped event has correct name")
     func closeTappedEventHasCorrectName() {
         // Given
-        let sut = AdvancedSearchEvent.closeTapped
+        let sut = CharacterFilterEvent.closeTapped
 
         // Then
-        #expect(sut.name == "advanced_search_close_tapped")
+        #expect(sut.name == "character_filter_close_tapped")
     }
 
     @Test("Close tapped event has empty properties")
     func closeTappedEventHasEmptyProperties() {
         // Given
-        let sut = AdvancedSearchEvent.closeTapped
+        let sut = CharacterFilterEvent.closeTapped
 
         // Then
         #expect(sut.properties == [:])

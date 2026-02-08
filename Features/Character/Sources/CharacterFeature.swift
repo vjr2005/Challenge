@@ -47,9 +47,9 @@ public struct CharacterFeature: FeatureContract {
                     navigator: navigator
                 )
             ))
-        case .advancedSearch(let delegate):
-            return AnyView(AdvancedSearchView(
-                viewModel: container.makeAdvancedSearchViewModel(
+        case .characterFilter(let delegate):
+            return AnyView(CharacterFilterView(
+                viewModel: container.makeCharacterFilterViewModel(
                     delegate: delegate,
                     navigator: navigator
                 )
