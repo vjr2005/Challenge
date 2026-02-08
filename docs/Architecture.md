@@ -101,8 +101,8 @@ The Repository pattern acts as a **boundary between Domain and Data layers**, pr
 │           │                                                                 │
 │           ├── RemoteDataSource ──► HTTP/API (DTOs)                          │
 │           ├── MemoryDataSource ──► In-memory cache (DTOs)                   │
-│           ├── DTO → Domain mapping                                          │
-│           └── Error mapping (HTTPError → CharacterError)                    │
+│           ├── Mapper → DTO to Domain mapping                                │
+│           └── Error Mapper → HTTPError to Domain error mapping              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -210,15 +210,39 @@ private extension CharacterDTO {
 
 ### Error Mapping
 
-The repository translates infrastructure errors into domain-specific errors:
+Error mapping uses dedicated **Error Mapper types** that conform to `MapperContract`, keeping repositories focused on data access orchestration:
 
 ```swift
-private func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
-    switch error {
-    case .statusCode(404, _):
-        .notFound(identifier: identifier)  // Domain error
-    case .invalidURL, .invalidResponse, .statusCode:
-        .loadFailed
+// Sources/Data/Mappers/CharacterErrorMapper.swift
+struct CharacterErrorMapperInput {
+    let error: any Error
+    let identifier: Int
+}
+
+struct CharacterErrorMapper: MapperContract {
+    func map(_ input: CharacterErrorMapperInput) -> CharacterError {
+        guard let httpError = input.error as? HTTPError else {
+            return .loadFailed
+        }
+        return switch httpError {
+        case .statusCode(404, _):
+            .notFound(identifier: input.identifier)
+        case .invalidURL, .invalidResponse, .statusCode:
+            .loadFailed
+        }
+    }
+}
+```
+
+```swift
+// In Repository — single catch block delegates all error mapping
+private let errorMapper = CharacterErrorMapper()
+
+func fetchFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
+    do {
+        return try await remoteDataSource.fetchCharacter(identifier: identifier)
+    } catch {
+        throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
     }
 }
 ```

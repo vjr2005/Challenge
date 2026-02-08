@@ -199,6 +199,7 @@ struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}MemoryDataSourceContract
     private let mapper = {Name}Mapper()
+    private let errorMapper = {Name}ErrorMapper()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
@@ -226,10 +227,8 @@ private extension {Name}Repository {
     func fetchFromRemote(id: Int) async throws({Feature}Error) -> {Name}DTO {
         do {
             return try await remoteDataSource.fetch{Name}(id: id)
-        } catch let error as HTTPError {
-            throw mapHTTPError(error, id: id)
         } catch {
-            throw .loadFailed
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, id: id))
         }
     }
 }
@@ -496,6 +495,7 @@ struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
     private let memoryDataSource: CharacterMemoryDataSourceContract
     private let mapper = CharacterMapper()
+    private let errorMapper = CharacterErrorMapper()
 
     init(
         remoteDataSource: CharacterRemoteDataSourceContract,
@@ -523,10 +523,8 @@ private extension CharacterRepository {
     func fetchFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
         do {
             return try await remoteDataSource.fetchCharacter(identifier: identifier)
-        } catch let error as HTTPError {
-            throw mapHTTPError(error, identifier: identifier)
         } catch {
-            throw .loadFailed
+            throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
         }
     }
 }
@@ -559,19 +557,6 @@ private extension CharacterRepository {
     func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
         let dto = try await fetchFromRemote(identifier: identifier)
         return mapper.map(dto)
-    }
-}
-
-// MARK: - Error Mapping
-
-private extension CharacterRepository {
-    func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
-        switch error {
-        case .statusCode(404, _):
-            .notFound(identifier: identifier)
-        case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed
-        }
     }
 }
 ```
@@ -743,13 +728,13 @@ struct CharacterRepositoryTests {
         #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
     }
 
-    // MARK: - Error Mapping Tests
+    // MARK: - Error Handling Tests
 
-    @Test("Maps 404 error to notFound")
-    func maps404ToCharacterNotFound() async throws {
+    @Test("Maps generic error to loadFailed")
+    func mapsGenericErrorToLoadFailed() async throws {
         // Given
         let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-        remoteDataSourceMock.fetchCharacterResult = .failure(.statusCode(404, nil))
+        remoteDataSourceMock.fetchCharacterResult = .failure(GenericTestError.unknown)
         let memoryDataSourceMock = CharacterMemoryDataSourceMock()
         let sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
@@ -757,9 +742,13 @@ struct CharacterRepositoryTests {
         )
 
         // When / Then
-        await #expect(throws: CharacterError.notFound(identifier: 42)) {
-            _ = try await sut.getCharacter(identifier: 42, cachePolicy: .noCache)
+        await #expect(throws: CharacterError.loadFailed) {
+            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .noCache)
         }
     }
+}
+
+private enum GenericTestError: Error {
+    case unknown
 }
 ```

@@ -6,6 +6,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterMemoryDataSourceContract
 	private let mapper = CharacterMapper()
+	private let errorMapper = CharacterErrorMapper()
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
@@ -33,10 +34,8 @@ private extension CharacterRepository {
 	func fetchFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
 		do {
 			return try await remoteDataSource.fetchCharacter(identifier: identifier)
-		} catch let error as HTTPError {
-			throw mapHTTPError(error, identifier: identifier)
 		} catch {
-			throw .loadFailed
+			throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
 		}
 	}
 }
@@ -69,18 +68,5 @@ private extension CharacterRepository {
 	func getCharacterNoCache(identifier: Int) async throws(CharacterError) -> Character {
 		let dto = try await fetchFromRemote(identifier: identifier)
 		return mapper.map(dto)
-	}
-}
-
-// MARK: - Error Mapping
-
-private extension CharacterRepository {
-	func mapHTTPError(_ error: HTTPError, identifier: Int) -> CharacterError {
-		switch error {
-		case .statusCode(404, _):
-			.notFound(identifier: identifier)
-		case .invalidURL, .invalidResponse, .statusCode:
-			.loadFailed
-		}
 	}
 }

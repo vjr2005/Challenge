@@ -34,7 +34,9 @@ Character/
 │   │   ├── Mappers/
 │   │   │   ├── LocationMapper.swift
 │   │   │   ├── CharacterMapper.swift
-│   │   │   └── CharactersPageMapper.swift
+│   │   │   ├── CharacterErrorMapper.swift
+│   │   │   ├── CharactersPageMapper.swift
+│   │   │   └── CharactersPageErrorMapper.swift
 │   │   ├── Repositories/
 │   │   │   ├── CharacterRepository.swift
 │   │   │   └── CharactersPageRepository.swift

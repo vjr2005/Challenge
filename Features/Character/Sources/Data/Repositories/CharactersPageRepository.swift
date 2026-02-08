@@ -6,6 +6,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterMemoryDataSourceContract
 	private let mapper = CharactersPageMapper()
+	private let errorMapper = CharactersPageErrorMapper()
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
@@ -30,8 +31,9 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 		do {
 			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filter)
 			return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
-		} catch let error as HTTPError {
-			if case .statusCode(404, _) = error {
+		} catch {
+			let mappedError = errorMapper.map(CharactersPageErrorMapperInput(error: error, page: page))
+			if case .invalidPage = mappedError {
 				return CharactersPage(
 					characters: [],
 					currentPage: page,
@@ -41,9 +43,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 					hasPreviousPage: false
 				)
 			}
-			throw mapHTTPError(error, page: page)
-		} catch {
-			throw .loadFailed
+			throw mappedError
 		}
 	}
 }
@@ -54,10 +54,8 @@ private extension CharactersPageRepository {
 	func fetchFromRemote(page: Int) async throws(CharactersPageError) -> CharactersResponseDTO {
 		do {
 			return try await remoteDataSource.fetchCharacters(page: page, filter: .empty)
-		} catch let error as HTTPError {
-			throw mapHTTPError(error, page: page)
 		} catch {
-			throw .loadFailed
+			throw errorMapper.map(CharactersPageErrorMapperInput(error: error, page: page))
 		}
 	}
 }
@@ -90,18 +88,5 @@ private extension CharactersPageRepository {
 	func getCharactersPageNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		let response = try await fetchFromRemote(page: page)
 		return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
-	}
-}
-
-// MARK: - Error Mapping
-
-private extension CharactersPageRepository {
-	func mapHTTPError(_ error: HTTPError, page: Int) -> CharactersPageError {
-		switch error {
-		case .statusCode(404, _):
-			.invalidPage(page: page)
-		case .invalidURL, .invalidResponse, .statusCode:
-			.loadFailed
-		}
 	}
 }

@@ -126,11 +126,14 @@ protocol {Name}RepositoryContract: Sendable {
 Create `Sources/Data/Repositories/{Name}Repository.swift`:
 
 ```swift
+import ChallengeCore
 import ChallengeNetworking
 import Foundation
 
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
+    private let mapper = {Name}Mapper()
+    private let errorMapper = {Name}ErrorMapper()
 
     init(remoteDataSource: {Name}RemoteDataSourceContract) {
         self.remoteDataSource = remoteDataSource
@@ -139,33 +142,10 @@ struct {Name}Repository: {Name}RepositoryContract {
     func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
-            return dto.toDomain()
-        } catch let error as HTTPError {
-            throw mapHTTPError(error, identifier: identifier)
+            return mapper.map(dto)
         } catch {
-            throw .loadFailed
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
         }
-    }
-}
-
-// MARK: - Error Mapping
-
-private extension {Name}Repository {
-    func mapHTTPError(_ error: HTTPError, identifier: Int) -> {Feature}Error {
-        switch error {
-        case .statusCode(404, _):
-            .notFound(identifier: identifier)
-        case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed
-        }
-    }
-}
-
-// MARK: - DTO to Domain Mapping
-
-private extension {Name}DTO {
-    func toDomain() -> {Name} {
-        {Name}(id: id, name: name, status: {Name}Status(from: status))
     }
 }
 ```
@@ -242,29 +222,7 @@ struct {Name}RepositoryTests {
         #expect(value.status == .unknown)
     }
 
-    // MARK: - Error Mapping Tests
-
-    @Test("Maps HTTP 404 to notFound error")
-    func mapsHTTP404ToNotFoundError() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
-
-        // When / Then
-        await #expect(throws: {Feature}Error.notFound(identifier: 42)) {
-            _ = try await sut.get{Name}(identifier: 42)
-        }
-    }
-
-    @Test("Maps HTTP 500 to loadFailed error")
-    func mapsHTTP500ToLoadFailedError() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.statusCode(500, Data()))
-
-        // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.get{Name}(identifier: 1)
-        }
-    }
+    // MARK: - Error Handling Tests
 
     @Test("Maps generic error to loadFailed error")
     func mapsGenericErrorToLoadFailedError() async throws {
@@ -282,6 +240,8 @@ private enum TestError: Error {
     case unknown
 }
 ```
+
+> **Note:** HTTP error mapping tests (404 → notFound, 500 → loadFailed, etc.) belong in `{Name}ErrorMapperTests`, not in repository tests. Repository tests only verify generic error handling and data access behavior.
 
 ---
 
@@ -463,6 +423,8 @@ import Foundation
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}MemoryDataSourceContract
+    private let mapper = {Name}Mapper()
+    private let errorMapper = {Name}ErrorMapper()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
@@ -490,10 +452,8 @@ private extension {Name}Repository {
     func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
         do {
             return try await remoteDataSource.fetch{Name}(identifier: identifier)
-        } catch let error as HTTPError {
-            throw mapHTTPError(error, identifier: identifier)
         } catch {
-            throw .loadFailed
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
         }
     }
 }
@@ -503,21 +463,21 @@ private extension {Name}Repository {
 private extension {Name}Repository {
     func get{Name}DetailLocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
         if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
-            return cached.toDomain()
+            return mapper.map(cached)
         }
         let dto = try await fetchFromRemote(identifier: identifier)
         await memoryDataSource.save{Name}Detail(dto)
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 
     func get{Name}DetailRemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await fetchFromRemote(identifier: identifier)
             await memoryDataSource.save{Name}Detail(dto)
-            return dto.toDomain()
+            return mapper.map(dto)
         } catch {
             if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
-                return cached.toDomain()
+                return mapper.map(cached)
             }
             throw error
         }
@@ -525,28 +485,7 @@ private extension {Name}Repository {
 
     func get{Name}DetailNoCache(identifier: Int) async throws({Feature}Error) -> {Name} {
         let dto = try await fetchFromRemote(identifier: identifier)
-        return dto.toDomain()
-    }
-}
-
-// MARK: - Error Mapping
-
-private extension {Name}Repository {
-    func mapHTTPError(_ error: HTTPError, identifier: Int) -> {Feature}Error {
-        switch error {
-        case .statusCode(404, _):
-            .notFound(identifier: identifier)
-        case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed
-        }
-    }
-}
-
-// MARK: - DTO to Domain Mapping
-
-private extension {Name}DTO {
-    func toDomain() -> {Name} {
-        {Name}(id: id, name: name, status: {Name}Status(from: status))
+        return mapper.map(dto)
     }
 }
 ```
@@ -758,29 +697,7 @@ struct {Name}RepositoryTests {
         #expect(memoryDataSourceMock.get{Name}DetailCallCount == 0)
     }
 
-    // MARK: - Error Mapping Tests
-
-    @Test("Maps HTTP 404 to notFound error")
-    func mapsHTTP404ToNotFoundError() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
-
-        // When / Then
-        await #expect(throws: {Feature}Error.notFound(identifier: 42)) {
-            _ = try await sut.get{Name}Detail(identifier: 42, cachePolicy: .localFirst)
-        }
-    }
-
-    @Test("Maps HTTP 500 to loadFailed error")
-    func mapsHTTP500ToLoadFailedError() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.statusCode(500, Data()))
-
-        // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .localFirst)
-        }
-    }
+    // MARK: - Error Handling Tests
 
     @Test("Does not save to cache when remote fails")
     func doesNotSaveToCacheWhenRemoteFails() async throws {

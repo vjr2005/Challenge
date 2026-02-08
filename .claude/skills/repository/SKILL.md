@@ -37,12 +37,15 @@ Features/{Feature}/
 │       ├── DTOs/
 │       │   └── {Name}DTO.swift                   # See /datasource skill
 │       ├── Mappers/
-│       │   └── {Name}Mapper.swift                # DTO to Domain mapping
+│       │   ├── {Name}Mapper.swift                # DTO to Domain mapping
+│       │   └── {Name}ErrorMapper.swift           # HTTPError to Domain error mapping
 │       └── Repositories/
 │           └── {Name}Repository.swift            # Implementation
 └── Tests/
     ├── Data/
-    │   └── {Name}RepositoryTests.swift
+    │   ├── {Name}RepositoryTests.swift
+    │   └── Mappers/
+    │       └── {Name}ErrorMapperTests.swift
     ├── Domain/
     │   └── Errors/
     │       └── {Feature}ErrorTests.swift         # Error tests
@@ -241,40 +244,60 @@ protocol {Name}RepositoryContract: Sendable {
 }
 ```
 
-### Error Mapping in Implementation
+### Error Mapping with Error Mappers
+
+Error mapping logic lives in dedicated **Error Mapper types** that conform to `MapperContract`, following the same pattern as data mappers. This keeps repositories focused on data access orchestration while error transformation is independently testable.
 
 ```swift
-struct {Name}Repository: {Name}RepositoryContract {
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        do {
-            let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
-            return dto.toDomain()
-        } catch let error as HTTPError {
-            throw mapHTTPError(error, identifier: identifier)
-        } catch {
-            throw .loadFailed
-        }
-    }
+// In Sources/Data/Mappers/{Name}ErrorMapper.swift
+import ChallengeCore
+import ChallengeNetworking
+
+struct {Name}ErrorMapperInput {
+    let error: any Error
+    let identifier: Int
 }
 
-// MARK: - Error Mapping
-
-private extension {Name}Repository {
-    func mapHTTPError(_ error: HTTPError, identifier: Int) -> {Feature}Error {
-        switch error {
-        case .statusCode(404, _):
-            return .notFound(id: identifier)
-        case .invalidURL, .invalidResponse, .statusCode:
+struct {Name}ErrorMapper: MapperContract {
+    func map(_ input: {Name}ErrorMapperInput) -> {Feature}Error {
+        guard let httpError = input.error as? HTTPError else {
             return .loadFailed
+        }
+        return switch httpError {
+        case .statusCode(404, _):
+            .notFound(identifier: input.identifier)
+        case .invalidURL, .invalidResponse, .statusCode:
+            .loadFailed
         }
     }
 }
 ```
 
+```swift
+// In {Name}Repository.swift
+struct {Name}Repository: {Name}RepositoryContract {
+    private let errorMapper = {Name}ErrorMapper()
+
+    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+        do {
+            let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
+            return mapper.map(dto)
+        } catch {
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
+        }
+    }
+}
+```
+
+**Why Error Mapper types?**
+- Single Responsibility: Repositories handle data access, Error Mappers handle error transformation
+- Independently testable without data source mocks
+- Consistent with data Mapper pattern (`MapperContract`)
+
 **Rules:**
 - Use `throws({Feature}Error)` (typed throws) instead of generic `throws`
-- Map `HTTPError` cases to domain-specific errors
-- Include context in errors (e.g., `id`, `page`) for better debugging
+- Map `HTTPError` cases to domain-specific errors via Error Mapper
+- Include context in errors (e.g., `identifier`, `page`) for better debugging
 - Fallback to generic error (`.loadFailed`) for unexpected cases
 
 ---
@@ -328,10 +351,8 @@ private extension {Name}Repository {
     func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
         do {
             return try await remoteDataSource.fetch{Name}(identifier: identifier)
-        } catch let error as HTTPError {
-            throw mapHTTPError(error, identifier: identifier)
         } catch {
-            throw .loadFailed
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
         }
     }
 }
@@ -390,11 +411,12 @@ private extension {Name}Repository {
 - [ ] Create Domain error enum in Domain/Errors/ with typed throws
 - [ ] Create Contract in Domain/Repositories/ using typed throws
 - [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Implementation injecting RemoteDataSource, using Mapper
-- [ ] Add HTTPError to Domain error mapping
+- [ ] Create Error Mapper in Data/Mappers/ conforming to `MapperContract`
+- [ ] Create Implementation injecting RemoteDataSource, using Mapper and Error Mapper
 - [ ] Create Mock in Tests/Mocks/
 - [ ] Create Mapper tests verifying transformation
-- [ ] Create Repository tests verifying cache policies and error mapping
+- [ ] Create Error Mapper tests verifying error transformation
+- [ ] Create Repository tests verifying data access and generic error handling
 - [ ] Add localized strings for error messages
 
 ### Local Only Repository
@@ -414,14 +436,15 @@ private extension {Name}Repository {
 - [ ] Create Domain error enum in Domain/Errors/ with typed throws
 - [ ] Create Contract in Domain/Repositories/ with cachePolicy parameter
 - [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Implementation injecting both DataSources, using Mapper
+- [ ] Create Error Mapper in Data/Mappers/ conforming to `MapperContract`
+- [ ] Create Implementation injecting both DataSources, using Mapper and Error Mapper
 - [ ] Extract remote fetch helper methods
 - [ ] Implement cache strategies (localFirst, remoteFirst, none)
-- [ ] Add HTTPError to Domain error mapping
 - [ ] Create Mapper tests verifying transformation
+- [ ] Create Error Mapper tests verifying error transformation
 - [ ] Create tests for localFirst (cache hit → no remote call)
 - [ ] Create tests for localFirst (cache miss → remote + save)
 - [ ] Create tests for remoteFirst (always remote, cache fallback on error)
 - [ ] Create tests for none (remote only, no cache interaction)
-- [ ] Create tests for error mapping (404 → notFound, etc.)
+- [ ] Create tests for generic error handling in repository
 - [ ] Add localized strings for error messages

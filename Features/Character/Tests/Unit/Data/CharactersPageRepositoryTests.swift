@@ -201,28 +201,6 @@ struct CharactersPageRepositoryTests {
 
     // MARK: - Get Characters - Errors
 
-    @Test("Get characters maps HTTP 404 to invalid page error")
-    func getCharactersPageMapsHTTPNotFoundToInvalidPage() async throws {
-        // Given
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
-
-        // When / Then
-        await #expect(throws: CharactersPageError.invalidPage(page: 5)) {
-            _ = try await sut.getCharactersPage(page: 5, cachePolicy: .localFirst)
-        }
-    }
-
-    @Test("Get characters maps HTTP 500 to load failed error")
-    func getCharactersPageMapsHTTPServerErrorToLoadFailed() async throws {
-        // Given
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
-
-        // When / Then
-        await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
-        }
-    }
-
     @Test("Get characters does not save to cache on error")
     func getCharactersPageDoesNotSaveToCacheOnError() async throws {
         // Given
@@ -233,17 +211,6 @@ struct CharactersPageRepositoryTests {
 
         // Then
         #expect(memoryDataSourceMock.savePageCallCount == 0)
-    }
-
-    @Test("Get characters maps generic error to load failed error")
-    func getCharactersPageMapsGenericErrorToLoadFailed() async throws {
-        // Given
-        remoteDataSourceMock.charactersResult = .failure(GenericTestError.unknown)
-
-        // When / Then
-        await #expect(throws: CharactersPageError.loadFailed) {
-            _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
-        }
     }
 
     // MARK: - Search Characters

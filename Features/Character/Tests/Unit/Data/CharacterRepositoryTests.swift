@@ -183,62 +183,7 @@ struct CharacterRepositoryTests {
         #expect(memoryDataSourceMock.getCharacterCallCount == 0)
     }
 
-    // MARK: - Error Mapping Tests
-
-    @Test("Maps HTTP 404 error to character not found error")
-    func mapsHTTPNotFoundErrorToCharacterNotFound() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.statusCode(404, Data()))
-
-        // When / Then
-        await #expect(throws: CharacterError.notFound(identifier: 42)) {
-            _ = try await sut.getCharacter(identifier: 42, cachePolicy: .localFirst)
-        }
-    }
-
-    @Test("Maps HTTP 500 server error to load failed error")
-    func mapsHTTPServerErrorToLoadFailed() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.statusCode(500, Data()))
-
-        // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
-        }
-    }
-
-    @Test("Maps HTTP invalid URL error to load failed error")
-    func mapsHTTPInvalidURLToLoadFailed() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.invalidURL)
-
-        // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
-        }
-    }
-
-    @Test("Maps HTTP invalid response error to load failed error")
-    func mapsHTTPInvalidResponseToLoadFailed() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
-
-        // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
-        }
-    }
-
-    @Test("Maps generic error to load failed error")
-    func mapsGenericErrorToLoadFailed() async throws {
-        // Given
-        remoteDataSourceMock.result = .failure(GenericTestError.unknown)
-
-        // When / Then
-        await #expect(throws: CharacterError.loadFailed) {
-            _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
-        }
-    }
+    // MARK: - Error Handling Tests
 
     @Test("Does not save to cache when remote fetch fails")
     func doesNotSaveToCacheOnRemoteError() async throws {
@@ -259,8 +204,4 @@ private extension CharacterRepositoryTests {
     func loadJSON<T: Decodable>(_ filename: String) throws -> T {
         try Bundle.module.loadJSON(filename)
     }
-}
-
-private enum GenericTestError: Error {
-    case unknown
 }
