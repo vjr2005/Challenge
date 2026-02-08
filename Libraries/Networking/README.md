@@ -11,7 +11,7 @@ This library provides a type-safe HTTP client for making network requests. It us
 | File | Visibility | Description |
 |------|------------|-------------|
 | `HTTPClientContract.swift` | **public** | Protocol defining the HTTP client interface |
-| `HTTPClient.swift` | **public (open)** | Implementation using URLSession |
+| `HTTPClient.swift` | **public** | Implementation using URLSession |
 | `Endpoint.swift` | **public** | Request configuration |
 | `HTTPMethod.swift` | **public** | Supported HTTP methods |
 | `HTTPError.swift` | **public** | Error types |

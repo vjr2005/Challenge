@@ -1,7 +1,7 @@
 import Foundation
 
 /// HTTP client implementation using URLSession with async/await.
-open class HTTPClient: HTTPClientContract {
+public struct HTTPClient: HTTPClientContract {
 	private let session: URLSession
 	private let baseURL: URL
 	private let decoder: JSONDecoder
