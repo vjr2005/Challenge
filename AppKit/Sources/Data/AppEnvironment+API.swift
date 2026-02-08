@@ -8,7 +8,6 @@ extension AppEnvironment {
 		public let baseURL: URL
 	}
 
-	// swiftlint:disable force_unwrapping
 	public var rickAndMorty: API {
 		let urlString: String = switch self {
 		case .development:
@@ -21,8 +20,9 @@ extension AppEnvironment {
 			// TODO: replace by production url
 			"https://rickandmortyapi.com/api"
 		}
-		let url = URL(string: urlString)!
+		guard let url = URL(string: urlString) else {
+			preconditionFailure("Invalid API base URL: \(urlString)")
+		}
 		return API(baseURL: url)
 	}
-	// swiftlint:enable force_unwrapping
 }
