@@ -885,6 +885,29 @@ struct CharacterListViewModelTests {
         #expect(sut.advancedFilterSnapshot == filterState.filter)
     }
 
+    @Test("fetchCharacters ignores error when search task is cancelled during network request")
+    func fetchCharactersIgnoresErrorDuringCancelledSearch() async {
+        // Given
+        let page = CharactersPage.stub()
+        getCharactersPageUseCaseMock.result = .success(page)
+        await sut.didAppear()
+        searchCharactersPageUseCaseMock.result = .failure(.loadFailed)
+
+        // When
+        await withCheckedContinuation { continuation in
+            searchCharactersPageUseCaseMock.onExecute = {
+                continuation.resume()
+                try? await Task.sleep(for: .seconds(1))
+            }
+            sut.searchQuery = "Rick"
+        }
+        sut.searchTask?.cancel()
+        await sut.searchTask?.value
+
+        // Then
+        #expect(sut.state == .loaded(page))
+    }
+
     @Test("fetchCharacters combines name and filter state")
     func fetchCharactersCombinesNameAndFilterState() async {
         // Given

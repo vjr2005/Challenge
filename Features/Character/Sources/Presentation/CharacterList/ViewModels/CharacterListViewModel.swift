@@ -171,6 +171,7 @@ private extension CharacterListViewModel {
                 state = .loaded(result)
             }
         } catch {
+            guard !Task.isCancelled else { return }
             tracker.trackFetchError(description: error.localizedDescription)
             state = .error(error)
         }
