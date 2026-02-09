@@ -81,6 +81,7 @@ import Foundation
 
 struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
     private let httpClient: any HTTPClientContract
+    private let errorMapper = HTTPErrorMapper()
 
     init(httpClient: any HTTPClientContract) {
         self.httpClient = httpClient
@@ -97,13 +98,13 @@ private extension {Name}RESTDataSource {
         do {
             return try await httpClient.request(endpoint)
         } catch let error as HTTPError {
-            throw error.toAPIError
+            throw errorMapper.map(error)
         }
     }
 }
 ```
 
-> **Note:** The REST implementation maps `HTTPError` → `APIError` internally. Error mappers in repositories work with `APIError`, not `HTTPError`.
+> **Note:** The REST implementation uses `HTTPErrorMapper` to map `HTTPError` → `APIError` internally. Error mappers in repositories work with `APIError`, not `HTTPError`.
 
 ### 4. Create JSON fixture
 

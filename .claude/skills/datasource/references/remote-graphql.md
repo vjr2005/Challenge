@@ -62,6 +62,7 @@ import Foundation
 
 struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 	private let graphQLClient: any GraphQLClientContract
+	private let errorMapper = GraphQLErrorMapper()
 
 	init(graphQLClient: any GraphQLClientContract) {
 		self.graphQLClient = graphQLClient
@@ -102,8 +103,8 @@ private extension {Name}GraphQLDataSource {
 	func request<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
 		do {
 			return try await graphQLClient.execute(operation)
-		} catch let error as HTTPError {
-			throw error.toAPIError
+		} catch let error as GraphQLError {
+			throw errorMapper.map(error)
 		}
 	}
 }
@@ -149,7 +150,7 @@ extension {Name}GraphQLDataSource {
 Key patterns:
 - **Response wrappers**: Private structs that match the GraphQL `data` structure (e.g., `{ "{name}s": { ... } }`). Unwrap and return the inner DTO.
 - **Query strings**: `static let` on the DataSource. Exposed (not private) so tests can verify the correct query is sent.
-- **Error mapping**: The `request<T>` helper maps `HTTPError` → `APIError` (same as REST). The `GraphQLClient` handles GraphQL-specific errors internally.
+- **Error mapping**: The `GraphQLClient` throws `GraphQLError`. The DataSource catches it and maps to `APIError` via `GraphQLErrorMapper` (same pattern as REST DataSource with `HTTPErrorMapper`).
 
 ### Container Wiring
 
@@ -307,10 +308,10 @@ struct {Name}GraphQLDataSourceTests {
 		#expect(result.results.first?.name == "Example")
 	}
 
-	@Test("Fetch {name}s maps HTTP 404 to APIError.notFound")
-	func fetch{Name}sMapsHTTPError() async {
+	@Test("Fetch {name}s maps GraphQL statusCode 404 to APIError.notFound")
+	func fetch{Name}sMapsGraphQLError() async {
 		// Given
-		graphQLClientMock.result = .failure(HTTPError.statusCode(404, Data()))
+		graphQLClientMock.result = .failure(GraphQLError.statusCode(404, Data()))
 
 		// When / Then
 		await #expect(throws: APIError.notFound) {

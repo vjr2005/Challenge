@@ -3,6 +3,7 @@ import Foundation
 
 struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
 	private let httpClient: any HTTPClientContract
+	private let errorMapper = HTTPErrorMapper()
 
 	init(httpClient: any HTTPClientContract) {
 		self.httpClient = httpClient
@@ -42,7 +43,7 @@ private extension CharacterRESTDataSource {
 		do {
 			return try await httpClient.request(endpoint)
 		} catch let error as HTTPError {
-			throw error.toAPIError
+			throw errorMapper.map(error)
 		}
 	}
 }

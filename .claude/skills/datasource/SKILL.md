@@ -1,27 +1,31 @@
 ---
 name: datasource
-description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs, MemoryDataSource for in-memory storage, LocalDataSource for UserDefaults persistence, or DTOs for API responses.
+description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs or GraphQL, MemoryDataSource for in-memory storage, LocalDataSource for UserDefaults persistence, or DTOs for API responses.
 ---
 
 # Skill: DataSource
 
 Guide for creating DataSources following the Repository pattern.
 
-- **RemoteDataSource**: Consumes REST APIs via HTTPClient
-- **MemoryDataSource**: In-memory storage using actors for thread safety
-- **LocalDataSource**: Persistent local storage using UserDefaults (struct, synchronous)
+## DataSource Types
 
-## When to use this skill
+| Type | Transport | Implementation | Error Mapper |
+|------|-----------|----------------|-------------|
+| REST | HTTP | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
+| GraphQL | HTTP/GraphQL | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
+| Memory | In-memory | `actor` with dictionary storage | — |
+| UserDefaults | Local | `struct` with `nonisolated(unsafe) let` | — |
 
-- Create a new RemoteDataSource to consume an API
-- Create a new MemoryDataSource for in-memory caching
-- Create DTOs for API responses
+## Templates
 
-## Additional resources
+Each reference contains full templates: contract, implementation, DTO, mock, fixtures, and tests.
 
-- For complete implementation examples, see [examples.md](examples.md)
+- **REST API**: See [remote-rest.md](references/remote-rest.md)
+- **GraphQL API**: See [remote-graphql.md](references/remote-graphql.md)
+- **Memory cache**: See [local-memory.md](references/local-memory.md)
+- **UserDefaults**: See [local-userdefaults.md](references/local-userdefaults.md)
 
-## File structure
+## File Structure
 
 ```
 Features/{Feature}/
@@ -30,215 +34,53 @@ Features/{Feature}/
 │       ├── DataSources/
 │       │   ├── Remote/
 │       │   │   ├── {Name}RemoteDataSourceContract.swift
-│       │   │   └── {Name}RESTDataSource.swift
+│       │   │   └── {Name}RESTDataSource.swift (or {Name}GraphQLDataSource.swift)
 │       │   └── Local/
 │       │       ├── {Name}LocalDataSourceContract.swift
 │       │       ├── {Name}MemoryDataSource.swift
-│       │       └── {Name}LocalDataSource.swift    # Optional: UserDefaults persistence
+│       │       └── {Name}LocalDataSource.swift    # Optional: UserDefaults
 │       └── DTOs/
 │           └── {Name}DTO.swift
 └── Tests/
-    ├── Data/
-    ├── Fixtures/
+    ├── Unit/Data/
+    ├── Shared/Fixtures/
     │   ├── {name}.json
-    │   └── {name}_list.json
-    └── Mocks/
+    │   └── {name}s_response.json
+    └── Shared/Mocks/
 ```
 
 ---
 
-## RemoteDataSource Pattern
+## Key Principles
 
-### Contract (separate file: `Remote/{Name}RemoteDataSourceContract.swift`)
+### Contracts
 
-```swift
-protocol {Name}RemoteDataSourceContract: Sendable {
-    func fetch{Name}(id: Int) async throws -> {Name}DTO
-}
-```
+- Internal visibility, `Sendable`, separate file from implementation
+- Transport-agnostic: same contract for REST or GraphQL
+- **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects
+- Remote: `async throws`. Memory: `async` (no throws). UserDefaults: synchronous
 
-**Rules:** Internal visibility, `Sendable`, `async throws`. Contract lives in its own file, separate from implementations. **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects.
-
-### Implementation (`Remote/{Name}RESTDataSource.swift`)
-
-```swift
-struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
-    private let httpClient: any HTTPClientContract
-
-    init(httpClient: any HTTPClientContract) {
-        self.httpClient = httpClient
-    }
-
-    func fetch{Name}(id: Int) async throws -> {Name}DTO {
-        let endpoint = Endpoint(path: "/api/{resource}/\(id)")
-        return try await request(endpoint)
-    }
-}
-
-private extension {Name}RESTDataSource {
-    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
-        do {
-            return try await httpClient.request(endpoint)
-        } catch let error as HTTPError {
-            throw error.toAPIError
-        }
-    }
-}
-```
-
-**Note:** The REST implementation maps `HTTPError` → `APIError` internally. Error mappers in repositories work with `APIError`, not `HTTPError`.
-
-### DTO (Data Transfer Object)
+### DTOs (Data Transfer Objects)
 
 > *"A Data Transfer Object is one of those objects our mothers told us never to write. It's often little more than a bunch of fields and the getters and setters for them."*
 > — Martin Fowler, [PoEAA](https://martinfowler.com/eaaCatalog/dataTransferObject.html)
 
-DTOs are **intentionally anemic** - they exist purely to transfer data between systems.
-
-```swift
-struct {Name}DTO: Decodable, Equatable {
-    let id: Int
-    let name: String
-}
-```
+DTOs are **intentionally anemic** — they exist purely to transfer data between systems.
 
 **Rules:**
-- `Decodable`, `Equatable`, `Sendable`
-- Internal visibility
-- Properties match JSON keys
-- **NO behavior** - only data (anemic by design)
-- **NO `toDomain()` methods** - mapping belongs in the Repository
+- `Decodable`, `Equatable`
+- Internal visibility, properties match JSON keys
+- **NO behavior** — only data (anemic by design)
+- **NO `toDomain()` methods** — mapping belongs in the Repository
+- REST IDs are `Int`, GraphQL IDs are `String`
 
-**Why anemic?**
-- DTOs represent the structure of an **external system** (the API)
-- If we add logic, it couples to the external API structure
-- The Repository is responsible for translating DTOs to Domain models
+### Error Mapping
 
----
+DataSources catch transport errors and map them to `APIError`:
+- REST: `HTTPError` → `APIError` via `HTTPErrorMapper`
+- GraphQL: `GraphQLError` → `APIError` via `GraphQLErrorMapper`
 
-## MemoryDataSource Pattern
-
-### Contract (separate file: `Local/{Name}LocalDataSourceContract.swift`)
-
-```swift
-protocol {Name}LocalDataSourceContract: Sendable {
-    // MARK: - Single Item
-    func get{Name}(identifier: Int) async -> {Name}DTO?
-    func save{Name}(_ item: {Name}DTO) async
-    func delete{Name}(identifier: Int) async
-
-    // MARK: - Paginated Results (optional)
-    func getPage(_ page: Int) async -> {Name}sResponseDTO?
-    func savePage(_ response: {Name}sResponseDTO, page: Int) async
-}
-```
-
-**Rules:**
-- `async` (no throws), return optional for get
-- `identifier` parameter name (not `id`) for consistency
-- Contract lives in its own file, separate from implementations
-
-### Implementation (Actor, `Local/{Name}MemoryDataSource.swift`)
-
-```swift
-actor {Name}MemoryDataSource: {Name}LocalDataSourceContract {
-    private var items: [Int: {Name}DTO] = [:]
-    private var pages: [Int: {Name}sResponseDTO] = [:]
-
-    // MARK: - Single Item
-
-    func get{Name}(identifier: Int) -> {Name}DTO? { items[identifier] }
-    func save{Name}(_ item: {Name}DTO) { items[item.id] = item }
-    func delete{Name}(identifier: Int) { items.removeValue(forKey: identifier) }
-
-    // MARK: - Paginated Results
-
-    func getPage(_ page: Int) -> {Name}sResponseDTO? { pages[page] }
-    func savePage(_ response: {Name}sResponseDTO, page: Int) { pages[page] = response }
-}
-```
-
-**Rules:** Use `actor`, dictionary storage, no `async` in signatures
-
----
-
-## LocalDataSource Pattern (UserDefaults)
-
-For persistent local storage using `UserDefaults` (e.g., recent searches, user preferences).
-
-### Contract (separate file: `Local/{Name}LocalDataSourceContract.swift`)
-
-```swift
-protocol {Name}LocalDataSourceContract: Sendable {
-	func getItems() -> [String]
-	func saveItem(_ item: String)
-	func deleteItem(_ item: String)
-}
-```
-
-**Rules:** Internal visibility, `Sendable`, **synchronous** (no `async`). Contract lives in its own file.
-
-### Implementation (`Local/{Name}LocalDataSource.swift`)
-
-```swift
-struct {Name}LocalDataSource: {Name}LocalDataSourceContract {
-	private nonisolated(unsafe) let userDefaults: UserDefaults
-	private let key = "{storageKey}"
-
-	init(userDefaults: UserDefaults = .standard) {
-		self.userDefaults = userDefaults
-	}
-
-	func getItems() -> [String] {
-		userDefaults.stringArray(forKey: key) ?? []
-	}
-
-	func saveItem(_ item: String) {
-		var items = getItems()
-		items.insert(item, at: 0)
-		userDefaults.set(items, forKey: key)
-	}
-
-	func deleteItem(_ item: String) {
-		var items = getItems()
-		items.removeAll { $0 == item }
-		userDefaults.set(items, forKey: key)
-	}
-}
-```
-
-**Rules:**
-- Use `struct` (not `actor`) since `UserDefaults` is thread-safe
-- Use `nonisolated(unsafe) let` for `UserDefaults` to satisfy `Sendable`
-- Synchronous methods (no `async`)
-- Always provide a default `UserDefaults` parameter for testability
-
----
-
-## JSON Fixtures
-
-Tests use JSON files replicating real API responses.
-
-**Location:** `Tests/Fixtures/`
-**Naming:** snake_case (`character.json`, `character_list.json`)
-
-**Loading in tests:**
-
-Each test file defines a private extension to wrap `Bundle.module` access:
-
-```swift
-private extension {Name}DataSourceTests {
-    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
-        try Bundle.module.loadJSON(filename)
-    }
-
-    func loadJSONData(_ filename: String) throws -> Data {
-        try Bundle.module.loadJSONData(filename)
-    }
-}
-```
-
-Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
+Repositories and upper layers only see `APIError`, never transport-specific errors.
 
 ---
 
@@ -251,20 +93,29 @@ Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
 | Local Contract | internal | `Sources/Data/DataSources/Local/` |
 | Local Implementation | internal | `Sources/Data/DataSources/Local/` |
 | DTO | internal | `Sources/Data/DTOs/` |
-| Mocks | internal | `Tests/Mocks/` |
+| Mocks | internal | `Tests/Shared/Mocks/` |
 
 ---
 
 ## Checklists
 
-### RemoteDataSource
+### RemoteDataSource (REST)
 
 - [ ] Create DTO
 - [ ] Create Contract in `Remote/` with `async throws`
-- [ ] Create RESTDataSource in `Remote/` injecting HTTPClientContract, mapping HTTPError → APIError
-- [ ] Create Mock in `Tests/Mocks/`
-- [ ] Create JSON fixtures in `Tests/Fixtures/`
-- [ ] Create tests using JSON fixtures
+- [ ] Create RESTDataSource in `Remote/` with `HTTPErrorMapper`
+- [ ] Create Mock in `Tests/Shared/Mocks/`
+- [ ] Create JSON fixtures in `Tests/Shared/Fixtures/`
+- [ ] Create tests
+
+### RemoteDataSource (GraphQL)
+
+- [ ] Create DTO (IDs are `String`)
+- [ ] Create Contract in `Remote/` with `async throws`
+- [ ] Create GraphQLDataSource in `Remote/` with `GraphQLErrorMapper`
+- [ ] Create Mock in `Tests/Shared/Mocks/`
+- [ ] Create JSON fixtures in `Tests/Shared/Fixtures/`
+- [ ] Create tests
 
 ### MemoryDataSource
 

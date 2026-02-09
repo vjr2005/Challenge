@@ -173,8 +173,8 @@ struct GraphQLClientTests {
 
 	// MARK: - Error Mapping Tests
 
-	@Test("Maps GraphQL errors to APIError.invalidResponse")
-	func mapsGraphQLErrorsToInvalidResponse() async throws {
+	@Test("Maps GraphQL errors to GraphQLError.response")
+	func mapsGraphQLErrorsToResponse() async throws {
 		// Given
 		let operation = GraphQLOperation(query: "{ invalid }")
 		let errorResponse: [String: Any] = [
@@ -185,13 +185,19 @@ struct GraphQLClientTests {
 		httpClientMock.result = .success(try JSONSerialization.data(withJSONObject: errorResponse))
 
 		// When / Then
-		await #expect(throws: APIError.invalidResponse) {
+		await #expect {
 			let _: TestResponse = try await sut.execute(operation)
+		} throws: { error in
+			guard let graphQLError = error as? GraphQLError,
+				  case .response(let errors) = graphQLError else {
+				return false
+			}
+			return errors.count == 1 && errors[0].message == "Cannot query field \"invalid\""
 		}
 	}
 
-	@Test("Maps multiple GraphQL errors to APIError.invalidResponse")
-	func mapsMultipleGraphQLErrorsToInvalidResponse() async throws {
+	@Test("Maps multiple GraphQL errors to GraphQLError.response")
+	func mapsMultipleGraphQLErrorsToResponse() async throws {
 		// Given
 		let operation = GraphQLOperation(query: "{ a b }")
 		let errorResponse: [String: Any] = [
@@ -203,49 +209,67 @@ struct GraphQLClientTests {
 		httpClientMock.result = .success(try JSONSerialization.data(withJSONObject: errorResponse))
 
 		// When / Then
-		await #expect(throws: APIError.invalidResponse) {
+		await #expect {
 			let _: TestResponse = try await sut.execute(operation)
+		} throws: { error in
+			guard let graphQLError = error as? GraphQLError,
+				  case .response(let errors) = graphQLError else {
+				return false
+			}
+			return errors.count == 2
 		}
 	}
 
-	@Test("Maps HTTP 404 error to APIError.notFound")
-	func mapsHTTPNotFoundError() async throws {
+	@Test("Maps HTTP status code error to GraphQLError.statusCode")
+	func mapsHTTPStatusCodeError() async throws {
 		// Given
 		let operation = GraphQLOperation(query: "{ episodes { results { id } } }")
 		httpClientMock.result = .failure(HTTPError.statusCode(404, Data()))
 
 		// When / Then
-		await #expect(throws: APIError.notFound) {
+		await #expect(throws: GraphQLError.statusCode(404, Data())) {
 			let _: TestResponse = try await sut.execute(operation)
 		}
 	}
 
-	@Test("Maps HTTP 500 error to APIError.serverError")
+	@Test("Maps HTTP 500 error to GraphQLError.statusCode")
 	func mapsHTTPServerError() async throws {
 		// Given
 		let operation = GraphQLOperation(query: "{ episodes { results { id } } }")
 		httpClientMock.result = .failure(HTTPError.statusCode(500, Data()))
 
 		// When / Then
-		await #expect(throws: APIError.serverError(statusCode: 500)) {
+		await #expect(throws: GraphQLError.statusCode(500, Data())) {
 			let _: TestResponse = try await sut.execute(operation)
 		}
 	}
 
-	@Test("Maps invalid response to APIError.invalidResponse")
-	func mapsInvalidResponseToAPIError() async throws {
+	@Test("Maps HTTP invalid response to GraphQLError.invalidResponse")
+	func mapsHTTPInvalidResponseError() async throws {
+		// Given
+		let operation = GraphQLOperation(query: "{ episodes { results { id } } }")
+		httpClientMock.result = .failure(HTTPError.invalidResponse)
+
+		// When / Then
+		await #expect(throws: GraphQLError.invalidResponse) {
+			let _: TestResponse = try await sut.execute(operation)
+		}
+	}
+
+	@Test("Maps nil data payload to GraphQLError.invalidResponse")
+	func mapsNilDataToInvalidResponse() async throws {
 		// Given
 		let operation = GraphQLOperation(query: "{ episodes { results { id } } }")
 		let emptyEnvelope: [String: Any] = ["data": NSNull()]
 		httpClientMock.result = .success(try JSONSerialization.data(withJSONObject: emptyEnvelope))
 
 		// When / Then
-		await #expect(throws: APIError.invalidResponse) {
+		await #expect(throws: GraphQLError.invalidResponse) {
 			let _: TestResponse = try await sut.execute(operation)
 		}
 	}
 
-	@Test("Maps invalid JSON to APIError.decodingFailed")
+	@Test("Maps invalid JSON to GraphQLError.decodingFailed")
 	func mapsInvalidJSONToDecodingFailed() async throws {
 		// Given
 		let operation = GraphQLOperation(query: "{ episodes { results { id } } }")
@@ -255,8 +279,8 @@ struct GraphQLClientTests {
 		await #expect {
 			let _: TestResponse = try await sut.execute(operation)
 		} throws: { error in
-			guard let apiError = error as? APIError,
-				  case .decodingFailed = apiError else {
+			guard let graphQLError = error as? GraphQLError,
+				  case .decodingFailed = graphQLError else {
 				return false
 			}
 			return true

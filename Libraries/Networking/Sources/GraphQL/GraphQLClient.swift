@@ -39,17 +39,17 @@ public struct GraphQLClient: GraphQLClientContract {
 		do {
 			data = try await httpClient.request(endpoint)
 		} catch let error as HTTPError {
-			throw error.toAPIError
+			throw mapHTTPError(error)
 		}
 
 		let envelope = try decodeEnvelope(T.self, from: data)
 
 		if let errors = envelope.errors, !errors.isEmpty {
-			throw APIError.invalidResponse
+			throw GraphQLError.response(errors)
 		}
 
 		guard let payload = envelope.data else {
-			throw APIError.invalidResponse
+			throw GraphQLError.invalidResponse
 		}
 
 		return payload
@@ -78,7 +78,16 @@ private extension GraphQLClient {
 		do {
 			return try decoder.decode(GraphQLResponse<T>.self, from: data)
 		} catch {
-			throw APIError.decodingFailed(description: String(describing: error))
+			throw GraphQLError.decodingFailed(description: String(describing: error))
+		}
+	}
+
+	func mapHTTPError(_ error: HTTPError) -> GraphQLError {
+		switch error {
+		case .statusCode(let code, let data):
+			.statusCode(code, data)
+		case .invalidURL, .invalidResponse:
+			.invalidResponse
 		}
 	}
 }
