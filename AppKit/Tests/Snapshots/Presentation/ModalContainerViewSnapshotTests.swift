@@ -2,7 +2,7 @@ import ChallengeCore
 import ChallengeCoreMocks
 import ChallengeHome
 import ChallengeNetworkingMocks
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -23,6 +23,6 @@ struct ModalContainerViewSnapshotTests {
 		let view = ModalContainerView(modal: modal, appContainer: appContainer, onDismiss: {})
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 }

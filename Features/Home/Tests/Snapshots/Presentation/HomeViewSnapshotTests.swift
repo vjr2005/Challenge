@@ -1,8 +1,7 @@
 import Lottie
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
-import UIKit
 
 @testable import ChallengeHome
 
@@ -15,49 +14,35 @@ struct HomeViewSnapshotTests {
 	func beforeAnimation() {
 		// Given
 		let viewModel = HomeViewModelStub()
-		let view = HomeView(
-			viewModel: viewModel,
-			playbackMode: .paused(at: .progress(0)),
-			showButton: false
-		)
 
 		// When
-		let hostingController = UIHostingController(rootView: view)
-		hostingController.view.frame = CGRect(
-			origin: .zero,
-			size: ViewImageConfig.iPhone13ProMax.size!
-		)
-		hostingController.view.layoutIfNeeded()
+        let view = NavigationStack {
+            HomeView(
+                viewModel: viewModel,
+                playbackMode: .paused(at: .progress(0)),
+                showButton: false
+            )
+        }
 
 		// Then
-		assertSnapshot(
-			of: hostingController.view,
-			as: .imageOfPresentationLayer()
-		)
+		assertSnapshot(of: view, as: .presentationLayer)
 	}
 
 	@Test("Renders home view after animation completes with button visible")
 	func afterAnimation() {
 		// Given
 		let viewModel = HomeViewModelStub()
-		let view = HomeView(
-			viewModel: viewModel,
-			playbackMode: .paused(at: .progress(1)),
-			showButton: true
-		)
 
 		// When
-		let hostingController = UIHostingController(rootView: view)
-		hostingController.view.frame = CGRect(
-			origin: .zero,
-			size: ViewImageConfig.iPhone13ProMax.size!
-		)
-		hostingController.view.layoutIfNeeded()
+        let view = NavigationStack {
+            HomeView(
+                viewModel: viewModel,
+                playbackMode: .paused(at: .progress(1)),
+                showButton: true
+            )
+        }
 
 		// Then
-		assertSnapshot(
-			of: hostingController.view,
-			as: .imageOfPresentationLayer()
-		)
+		assertSnapshot(of: view, as: .presentationLayer)
 	}
 }

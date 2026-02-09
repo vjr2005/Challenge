@@ -1,4 +1,4 @@
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -13,33 +13,35 @@ struct DSChipSnapshotTests {
 
 	@Test("Renders unselected chip with border")
 	func unselectedChip() {
-		let view = DSChip("Alive", isSelected: false) {}
-			.padding()
-
-		assertSnapshot(of: view, as: .image)
+		assertSnapshot(
+			of: DSChip("Alive", isSelected: false) {}.padding(),
+			as: .component(size: CGSize(width: 200, height: 60))
+		)
 	}
 
 	// MARK: - Selected
 
 	@Test("Renders selected chip with accent background")
 	func selectedChip() {
-		let view = DSChip("Alive", isSelected: true) {}
-			.padding()
-
-		assertSnapshot(of: view, as: .image)
+		assertSnapshot(
+			of: DSChip("Alive", isSelected: true) {}.padding(),
+			as: .component(size: CGSize(width: 200, height: 60))
+		)
 	}
 
 	// MARK: - Gallery
 
 	@Test("Renders gallery of selected and unselected chips")
 	func chipGallery() {
-		let view = HStack(spacing: DefaultSpacing().sm) {
+		let gallery = HStack(spacing: DefaultSpacing().sm) {
 			DSChip("Alive", isSelected: true) {}
 			DSChip("Dead", isSelected: false) {}
 			DSChip("Unknown", isSelected: false) {}
 		}
-		.padding()
 
-		assertSnapshot(of: view, as: .image)
+		assertSnapshot(
+			of: gallery.padding(),
+			as: .component(size: CGSize(width: 320, height: 60))
+		)
 	}
 }

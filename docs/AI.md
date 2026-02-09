@@ -40,7 +40,7 @@ Skills are specialized prompts that guide the AI in specific tasks. They ensure 
 |-------|-------------|
 | `/testing` | Unit testing patterns with Swift Testing, Given/When/Then structure |
 | `/ui-tests` | UI tests with Robot pattern and accessibility identifiers |
-| `/snapshot` | Snapshot tests for SwiftUI Views using SnapshotTesting |
+| `/snapshot` | Snapshot tests for SwiftUI Views using ChallengeSnapshotTestKit |
 
 ### Code Quality
 

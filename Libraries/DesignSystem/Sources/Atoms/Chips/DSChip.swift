@@ -34,15 +34,16 @@ public struct DSChip: View {
                 .foregroundStyle(foregroundColor)
                 .padding(.horizontal, theme.spacing.md)
                 .padding(.vertical, theme.spacing.sm)
-                .background(backgroundColor)
-                .clipShape(Capsule())
+                .background(backgroundColor, in: .capsule)
                 .overlay {
                     if !isSelected {
                         Capsule()
-                            .stroke(theme.colors.separator, lineWidth: theme.borderWidth.thin)
+                            .strokeBorder(theme.colors.separator, lineWidth: theme.borderWidth.thin)
                     }
                 }
+                .clipShape(.capsule)
         }
+        .buttonStyle(.plain)
         .accessibilityIdentifier(accessibilityIdentifier ?? "")
     }
 

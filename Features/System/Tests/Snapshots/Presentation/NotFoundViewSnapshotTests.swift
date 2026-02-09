@@ -1,4 +1,4 @@
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -15,9 +15,11 @@ struct NotFoundViewSnapshotTests {
         let viewModel = NotFoundViewModelStub()
 
         // When
-        let view = NotFoundView(viewModel: viewModel)
+        let view = NavigationStack {
+            NotFoundView(viewModel: viewModel)
+        }
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 }

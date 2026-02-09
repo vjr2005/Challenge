@@ -84,6 +84,7 @@ Composition layer that wires all features together.
 | **ChallengeNetworking** | HTTP client abstraction over URLSession |
 | **ChallengeDesignSystem** | Atomic Design UI components and design tokens |
 | **ChallengeResources** | Localization and shared resources |
+| **ChallengeSnapshotTestKit** | Snapshot testing framework (test-only) |
 
 ### Features
 
@@ -119,5 +120,6 @@ Libraries (base dependencies):
 ├── ChallengeCore (no dependencies)
 ├── ChallengeNetworking (no dependencies)
 ├── ChallengeResources → ChallengeCore
-└── ChallengeDesignSystem → ChallengeCore
+├── ChallengeDesignSystem → ChallengeCore
+└── ChallengeSnapshotTestKit (test-only, auto-linked to snapshot test targets)
 ```

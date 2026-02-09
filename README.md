@@ -55,6 +55,7 @@ Shared infrastructure modules, agnostic to business logic:
 | **ChallengeNetworking** | HTTP client abstraction over URLSession |
 | **ChallengeDesignSystem** | Atomic Design UI components and design tokens |
 | **ChallengeResources** | Localization and shared assets |
+| **ChallengeSnapshotTestKit** | Snapshot testing framework (test-only) |
 
 ### Features (Vertical)
 
@@ -74,7 +75,7 @@ Self-contained modules with Presentation, Domain, and Data layers:
 
 ## Testing
 
-Uses Swift Testing for unit tests, SnapshotTesting for visual regression, and XCTest for UI tests. The project uses a three-level parallelization strategy: intra-target parallelism via Swift Testing (`.swiftTestingOnly`), CI-level parallelism with separate GitHub Actions jobs for unit+snapshot and UI tests, while inter-target parallelism remains disabled (benchmarked ~49% slower at current volume). The project achieves **100% code coverage**. See [Testing Documentation](docs/Testing.md) for details.
+Uses Swift Testing for unit tests, ChallengeSnapshotTestKit for visual regression, and XCTest for UI tests. The project uses a three-level parallelization strategy: intra-target parallelism via Swift Testing (`.swiftTestingOnly`), CI-level parallelism with separate GitHub Actions jobs for unit+snapshot and UI tests, while inter-target parallelism remains disabled (benchmarked ~49% slower at current volume). The project achieves **100% code coverage**. See [Testing Documentation](docs/Testing.md) for details.
 
 <img src="docs/screenshots/coverage.png" width="100%">
 
@@ -113,7 +114,6 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 | Package | Purpose |
 |---------|---------|
 | [Lottie](https://github.com/airbnb/lottie-ios) | JSON-based animations |
-| [SnapshotTesting](https://github.com/pointfreeco/swift-snapshot-testing) | Visual regression testing |
 | [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) | Local HTTP mock server for UI tests |
 
 **Policy:** Prefer native implementations. External dependencies only when strictly necessary.
@@ -158,6 +158,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [ChallengeNetworking](Libraries/Networking/README.md)
 - [ChallengeDesignSystem](Libraries/DesignSystem/README.md)
 - [ChallengeResources](Shared/Resources/README.md)
+- [ChallengeSnapshotTestKit](Libraries/SnapshotTestKit/README.md)
 
 **Features**
 - [ChallengeCharacter](Features/Character/README.md)

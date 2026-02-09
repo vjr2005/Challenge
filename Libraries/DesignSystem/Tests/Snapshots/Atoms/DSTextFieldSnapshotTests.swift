@@ -1,4 +1,4 @@
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 

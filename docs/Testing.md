@@ -5,7 +5,7 @@
 | Type | Framework | Location |
 |------|-----------|----------|
 | Unit Tests | Swift Testing | `*/Tests/Unit/` |
-| Snapshot Tests | SnapshotTesting | `*/Tests/Snapshots/` |
+| Snapshot Tests | ChallengeSnapshotTestKit | `*/Tests/Snapshots/` |
 | UI Tests | XCTest | `App/Tests/UI/` |
 
 ## Test Structure

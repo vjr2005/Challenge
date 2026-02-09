@@ -8,7 +8,7 @@ Complete implementation examples for snapshot tests.
 
 ```swift
 import {AppName}CoreMocks
-import SnapshotTesting
+import {AppName}SnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -34,7 +34,7 @@ struct CharacterDetailViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders loaded state with alive character")
@@ -55,7 +55,7 @@ struct CharacterDetailViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders loaded state with dead character")
@@ -75,7 +75,7 @@ struct CharacterDetailViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders error state correctly")
@@ -90,7 +90,7 @@ struct CharacterDetailViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 }
 
@@ -109,7 +109,7 @@ private enum SnapshotTestError: LocalizedError {
 
 ```swift
 import {AppName}CoreMocks
-import SnapshotTesting
+import {AppName}SnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -135,7 +135,7 @@ struct CharacterListViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders loaded state with characters list")
@@ -157,7 +157,7 @@ struct CharacterListViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders empty state correctly")
@@ -172,7 +172,7 @@ struct CharacterListViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders error state correctly")
@@ -187,7 +187,7 @@ struct CharacterListViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 }
 
@@ -287,6 +287,77 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
 ---
 
+## Component Strategy (`.component`)
+
+For components that wrap a `Button` and need a live `UIWindow` to render correctly:
+
+```swift
+import {AppName}SnapshotTestKit
+import SwiftUI
+import Testing
+
+@testable import {AppName}DesignSystem
+
+struct DSChipSnapshotTests {
+    init() {
+        UIView.setAnimationsEnabled(false)
+    }
+
+    @Test("Renders unselected chip with border")
+    func unselectedChip() {
+        assertSnapshot(
+            of: DSChip("Alive", isSelected: false) {}.padding(),
+            as: .component(size: CGSize(width: 200, height: 60))
+        )
+    }
+
+    @Test("Renders gallery of selected and unselected chips")
+    func chipGallery() {
+        let gallery = HStack(spacing: DefaultSpacing().sm) {
+            DSChip("Alive", isSelected: true) {}
+            DSChip("Dead", isSelected: false) {}
+            DSChip("Unknown", isSelected: false) {}
+        }
+
+        assertSnapshot(
+            of: gallery.padding(),
+            as: .component(size: CGSize(width: 320, height: 60))
+        )
+    }
+}
+```
+
+---
+
+## Presentation Layer Strategy (`.presentationLayer`)
+
+For views that animate via `CAAnimation` (e.g. Lottie), where the visible state only exists in the presentation layer:
+
+```swift
+import {AppName}SnapshotTestKit
+import SwiftUI
+import Testing
+
+@testable import {AppName}Home
+
+struct HomeViewSnapshotTests {
+    init() {
+        UIView.setAnimationsEnabled(false)
+    }
+
+    @Test("Renders view before animation starts")
+    func beforeAnimation() {
+        let view = NavigationStack {
+            HomeView(viewModel: HomeViewModelStub())
+        }
+
+        assertSnapshot(of: view, as: .presentationLayer)
+    }
+}
+```
+
+---
+
 ## Tuist Configuration
 
 ### Test Dependencies
@@ -300,12 +371,13 @@ let characterModule = FrameworkModule.create(
     ],
     testDependencies: [
         .target(name: "\(appName)CoreMocks"),
-        .external(name: "SnapshotTesting"),
     ]
 )
 ```
 
-Note: Mocks, Tests, and Resources targets are automatically created if the corresponding folders exist:
+Note: `ChallengeSnapshotTestKit` is automatically added to all snapshot test targets by `FrameworkModule.create`. No manual dependency configuration is needed. Tests must only import `ChallengeSnapshotTestKit` — never import the underlying library directly.
+
+Mocks, Tests, and Resources targets are automatically created if the corresponding folders exist:
 - `Libraries/{path}/Mocks/` with Swift files → Creates Mocks target
 - `Libraries/{path}/Tests/` with Swift files → Creates Tests target
 - `Libraries/{path}/Sources/Resources/` with any files → Includes resources in framework

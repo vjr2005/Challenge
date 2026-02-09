@@ -1,7 +1,7 @@
 import ChallengeCore
 import ChallengeCoreMocks
 import ChallengeNetworkingMocks
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -22,6 +22,6 @@ struct RootViewSnapshotTests {
 		let view = RootContainerView(appContainer: appContainer)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 }

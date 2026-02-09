@@ -188,7 +188,7 @@ public struct FrameworkModule: @unchecked Sendable {
 				deploymentTargets: developmentTarget,
 				sources: snapshotSources,
 				resources: snapshotResources,
-				dependencies: testsDependencies + [.external(name: "SnapshotTesting")] + snapshotTestDependencies
+				dependencies: testsDependencies + [.target(name: "\(appName)SnapshotTestKit")] + snapshotTestDependencies
 			)
 			targets.append(snapshotTests)
 			testableTargets.append(

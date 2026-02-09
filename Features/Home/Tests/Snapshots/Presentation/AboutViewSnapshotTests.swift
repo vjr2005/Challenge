@@ -1,4 +1,4 @@
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -20,6 +20,6 @@ struct AboutViewSnapshotTests {
 		}
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 }

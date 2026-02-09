@@ -57,7 +57,7 @@ Use these skills for detailed implementation patterns:
 | `/usecase` | UseCase pattern for business logic |
 | `/viewmodel` | ViewModels with ViewState pattern |
 | `/view` | SwiftUI Views, previews, accessibility identifiers |
-| `/snapshot` | Snapshot tests with SnapshotTesting library |
+| `/snapshot` | Snapshot tests with ChallengeSnapshotTestKit |
 | `/navigator` | Navigation with Navigator pattern and Deep Links |
 | `/dependency-injection` | Containers, feature entry points, dependency wiring |
 | `/clean-code` | Dead code detection and removal using Periphery |
@@ -106,7 +106,6 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 | Package | Purpose |
 |---------|---------|
-| SnapshotTesting | Snapshot tests (Point-Free) |
 | lottie-ios | Lottie animations (Airbnb) |
 | SwiftMockServer | Mock HTTP server for UI tests |
 
@@ -138,7 +137,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 ```
 Module/Tests/
 ├── Unit/           → Unit tests (Swift Testing)
-├── Snapshots/      → Snapshot tests (SnapshotTesting)
+├── Snapshots/      → Snapshot tests (ChallengeSnapshotTestKit)
 ├── UI/             → UI tests (XCTest, App only)
 └── Shared/         → Shared resources
     ├── Stubs/      → Domain model test data
@@ -163,7 +162,7 @@ Module/Tests/
 | Fixtures location | `Tests/Shared/Fixtures/` for JSON (DTOs) |
 | Coverage scope | Only source targets (never mocks or external libraries) |
 | Unit tests | Use Swift Testing (`@Test("description")`, `#expect`) |
-| Snapshot tests | Use SnapshotTesting library |
+| Snapshot tests | Import `ChallengeSnapshotTestKit` |
 | UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
 | **Previews** | All Views must have `#Preview` blocks (commented out with `/* */`) covering every visual state except `idle`. Preview stubs wrapped in `#if DEBUG`. Code must compile and stay in sync with the View. |
 

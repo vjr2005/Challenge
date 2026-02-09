@@ -1,11 +1,11 @@
 ---
 name: snapshot
-description: Creates Snapshot Tests for SwiftUI Views using SnapshotTesting. Use when creating visual regression tests for views with DSAsyncImage support.
+description: Creates Snapshot Tests for SwiftUI Views using ChallengeSnapshotTestKit. Use when creating visual regression tests for views with DSAsyncImage support.
 ---
 
 # Skill: Snapshot Tests
 
-Guide for creating Snapshot Tests using Point-Free's SnapshotTesting library.
+Guide for creating Snapshot Tests using `ChallengeSnapshotTestKit`. Tests only use `ChallengeSnapshotTestKit`'s public API. See the [module README](../../../Libraries/SnapshotTestKit/README.md) for internal details.
 
 ## When to use this skill
 
@@ -19,7 +19,7 @@ Guide for creating Snapshot Tests using Point-Free's SnapshotTesting library.
 
 ## Prerequisites
 
-1. `SnapshotTesting` dependency in snapshot test targets
+1. `ChallengeSnapshotTestKit` dependency in snapshot test targets (added automatically by Tuist)
 2. `DSAsyncImage` component (replaces `AsyncImage`)
 3. `ImageLoaderMock` in CoreMocks
 4. Test image in `Tests/Shared/Resources/`
@@ -137,7 +137,7 @@ struct {Name}ViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 
     @Test("Renders loaded state correctly")
@@ -152,7 +152,7 @@ struct {Name}ViewSnapshotTests {
         .imageLoader(imageLoader)
 
         // Then
-        assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+        assertSnapshot(of: view, as: .device)
     }
 }
 ```
@@ -175,7 +175,7 @@ struct {Name}ViewSnapshotTests {
 ### View Configuration
 
 1. Wrap in `NavigationStack`
-2. Use `.iPhone13ProMax` device config
+2. Use `.device` strategy for full-screen views, `.image` for components, `.component(size:)` for components that wrap a `Button`
 3. Apply `imageLoader` modifier
 
 ### Naming
@@ -216,7 +216,7 @@ tuist test {Module}  # Run twice
 
 ### Setup (once per feature)
 
-- [ ] Add `SnapshotTesting` to snapshotTestDependencies
+- [ ] `ChallengeSnapshotTestKit` is automatically included by Tuist in snapshot test targets
 - [ ] Create test image in `Tests/Shared/Resources/`
 - [ ] Create ViewModel stub in `Tests/Shared/Stubs/`
 - [ ] Create ViewModel protocol
@@ -228,5 +228,5 @@ tuist test {Module}  # Run twice
 - [ ] **All `@Test` attributes include a description**
 - [ ] Initialize `ImageLoaderMock`
 - [ ] Test each state
-- [ ] Use `.iPhone13ProMax` config
+- [ ] Use `.device` strategy for full-screen views
 - [ ] Run tests twice (record + verify)

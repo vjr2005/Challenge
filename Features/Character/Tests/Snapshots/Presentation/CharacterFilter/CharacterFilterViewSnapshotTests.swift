@@ -1,4 +1,4 @@
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -22,7 +22,7 @@ struct CharacterFilterViewSnapshotTests {
 		}
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Partially Filled
@@ -41,7 +41,7 @@ struct CharacterFilterViewSnapshotTests {
 		}
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character filter with gender selected")
@@ -58,7 +58,7 @@ struct CharacterFilterViewSnapshotTests {
 		}
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character filter with text fields filled")
@@ -76,7 +76,7 @@ struct CharacterFilterViewSnapshotTests {
 		}
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Fully Filled
@@ -98,6 +98,6 @@ struct CharacterFilterViewSnapshotTests {
 		}
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 }

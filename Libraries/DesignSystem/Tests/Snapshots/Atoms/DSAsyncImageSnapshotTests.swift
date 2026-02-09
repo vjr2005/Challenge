@@ -1,5 +1,5 @@
 import ChallengeCoreMocks
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 import UIKit

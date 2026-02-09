@@ -1,5 +1,5 @@
 import ChallengeCoreMocks
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -27,7 +27,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Loading State
@@ -44,7 +44,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Loaded State
@@ -68,7 +68,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character list without pagination indicator when no next page")
@@ -87,7 +87,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character list with image placeholder when image not available")
@@ -104,7 +104,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoaderWithoutImage)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Empty State
@@ -121,7 +121,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Empty Search State
@@ -138,7 +138,7 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Error State
@@ -155,6 +155,6 @@ struct CharacterListViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 }

@@ -6,6 +6,7 @@ public enum Modules {
 	/// All framework modules in dependency order.
 	private static let all: [FrameworkModule] = [
 		CoreModule.module,
+		SnapshotTestKitModule.module,
 		NetworkingModule.module,
 		ResourcesModule.module,
 		DesignSystemModule.module,

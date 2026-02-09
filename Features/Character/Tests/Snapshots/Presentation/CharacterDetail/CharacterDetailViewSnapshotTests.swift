@@ -1,5 +1,5 @@
 import ChallengeCoreMocks
-import SnapshotTesting
+import ChallengeSnapshotTestKit
 import SwiftUI
 import Testing
 
@@ -27,7 +27,7 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Loading State
@@ -44,7 +44,7 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Loaded State
@@ -67,7 +67,7 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character detail with dead status indicator")
@@ -87,7 +87,7 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character detail with unknown status indicator")
@@ -107,7 +107,7 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	@Test("Renders character detail with image placeholder when image not available")
@@ -124,7 +124,7 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoaderWithoutImage)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 
 	// MARK: - Error State
@@ -141,6 +141,6 @@ struct CharacterDetailViewSnapshotTests {
 		.imageLoader(imageLoader)
 
 		// Then
-		assertSnapshot(of: view, as: .image(layout: .device(config: .iPhone13ProMax)))
+		assertSnapshot(of: view, as: .device)
 	}
 }
