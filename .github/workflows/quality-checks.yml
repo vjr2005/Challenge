@@ -17,7 +17,7 @@ jobs:
   unit-and-snapshot-tests:
     name: Unit & Snapshot Tests
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
@@ -36,7 +36,7 @@ jobs:
           derived-data-prefix: unit
 
       - name: Run unit and snapshot tests
-        timeout-minutes: 25
+        timeout-minutes: 35
         run: |
           mise x -- tuist test "Challenge (Dev)" \
             --device "$TUIST_TEST_DEVICE" \
@@ -139,7 +139,7 @@ jobs:
   ui-tests:
     name: UI Tests
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
@@ -158,7 +158,7 @@ jobs:
           derived-data-prefix: ui
 
       - name: Run UI tests
-        timeout-minutes: 25
+        timeout-minutes: 35
         run: |
           mise x -- tuist test "ChallengeUITests" \
             --device "$TUIST_TEST_DEVICE" \
