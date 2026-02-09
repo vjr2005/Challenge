@@ -11,8 +11,6 @@ The project uses [GitHub Actions](https://github.com/features/actions) to run qu
 | `pull_request` | Automatically on every PR targeting `main` |
 | `workflow_dispatch` | Manually from **Actions** > **Quality Checks** > **Run workflow** |
 
-<img src="screenshots/manual-trigger.png" width="100%">
-
 ### Jobs
 
 The CI workflow (`.github/workflows/quality-checks.yml`) runs three jobs in parallel:
@@ -116,6 +114,12 @@ Periphery runs with `continue-on-error: true` in the Unit & Snapshot Tests job s
 When triggered by a PR, the same summary is posted as a PR comment.
 
 <img src="screenshots/periphery-comment.png" width="100%">
+
+## Manual Trigger
+
+Additionally, you can run the workflow manually from **Actions** > **Quality Checks** > **Run workflow**.
+
+<img src="screenshots/manual-trigger.png" width="100%">
 
 ## GitHub Configuration
 
