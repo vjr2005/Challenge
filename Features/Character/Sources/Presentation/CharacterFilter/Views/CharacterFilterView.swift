@@ -145,3 +145,38 @@ private enum AccessibilityIdentifier {
     static let speciesTextField = "characterFilter.species.textField"
     static let typeTextField = "characterFilter.type.textField"
 }
+
+/*
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Empty Filter") {
+    NavigationStack {
+        CharacterFilterView(viewModel: CharacterFilterViewModelPreviewStub())
+    }
+}
+
+#Preview("Active Filters") {
+    NavigationStack {
+        CharacterFilterView(viewModel: CharacterFilterViewModelPreviewStub(
+            filter: CharacterFilter(status: .alive, species: "Human", gender: .male)
+        ))
+    }
+}
+
+@Observable
+private final class CharacterFilterViewModelPreviewStub: CharacterFilterViewModelContract {
+    var filter: CharacterFilter
+    var hasActiveFilters: Bool { !filter.isEmpty }
+
+    init(filter: CharacterFilter = .empty) {
+        self.filter = filter
+    }
+
+    func didAppear() {}
+    func didTapApply() {}
+    func didTapReset() {}
+    func didTapClose() {}
+}
+#endif
+*/

@@ -96,6 +96,7 @@ private enum AccessibilityIdentifier {
 private final class HomeViewModelPreviewStub: HomeViewModelContract {
 	func didAppear() {}
 	func didTapOnCharacterButton() {}
+	func didTapOnInfoButton() {}
 }
 #endif
 */

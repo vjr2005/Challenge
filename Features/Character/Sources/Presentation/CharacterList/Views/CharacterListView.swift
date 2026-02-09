@@ -252,3 +252,96 @@ private enum AccessibilityIdentifier {
 		"characterList.recentSearch.\(query)"
 	}
 }
+
+/*
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Loading") {
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loading))
+	}
+}
+
+#Preview("Loaded") {
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .loaded(.previewStub())))
+	}
+}
+
+#Preview("Empty") {
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .empty))
+	}
+}
+
+#Preview("Empty Search") {
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .emptySearch))
+	}
+}
+
+#Preview("Error") {
+	NavigationStack {
+		CharacterListView(viewModel: CharacterListViewModelPreviewStub(state: .error(.loadFailed())))
+	}
+}
+
+@Observable
+private final class CharacterListViewModelPreviewStub: CharacterListViewModelContract {
+	var state: CharacterListViewState
+	var searchQuery = ""
+	var recentSearches: [String] = ["Rick", "Morty"]
+	var activeFilterCount = 0
+
+	init(state: CharacterListViewState) {
+		self.state = state
+	}
+
+	func didAppear() async {}
+	func didTapOnRetryButton() async {}
+	func didPullToRefresh() async {}
+	func didTapOnLoadMoreButton() async {}
+	func didSelect(_ character: Character) {}
+	func didSelectRecentSearch(_ query: String) async {}
+	func didDeleteRecentSearch(_ query: String) {}
+	func didTapCharacterFilterButton() {}
+}
+
+private extension CharactersPage {
+	static func previewStub() -> CharactersPage {
+		CharactersPage(
+			characters: [
+				.previewStub(id: 1, name: "Rick Sanchez", status: .alive),
+				.previewStub(id: 2, name: "Morty Smith", status: .alive),
+				.previewStub(id: 3, name: "Summer Smith", status: .alive)
+			],
+			currentPage: 1,
+			totalPages: 3,
+			totalCount: 42,
+			hasNextPage: true,
+			hasPreviousPage: false
+		)
+	}
+}
+
+private extension Character {
+	static func previewStub(
+		id: Int = 1,
+		name: String = "Rick Sanchez",
+		status: CharacterStatus = .alive
+	) -> Character {
+		Character(
+			id: id,
+			name: name,
+			status: status,
+			species: "Human",
+			gender: .male,
+			origin: Location(name: "Earth (C-137)", url: nil),
+			location: Location(name: "Citadel of Ricks", url: nil),
+			imageURL: URL(string: "https://rickandmortyapi.com/api/character/avatar/\(id).jpeg")
+		)
+	}
+}
+#endif
+*/

@@ -193,3 +193,20 @@ private enum AccessibilityIdentifier {
 	static let developerRow = "about.developer"
 	static let builtWithRow = "about.builtWith"
 }
+
+/*
+// MARK: - Previews
+
+#if DEBUG
+#Preview("About") {
+	NavigationStack {
+		AboutView(viewModel: AboutViewModelPreviewStub())
+	}
+}
+
+private final class AboutViewModelPreviewStub: AboutViewModelContract {
+	func didAppear() {}
+	func didTapClose() {}
+}
+#endif
+*/

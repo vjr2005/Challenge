@@ -113,3 +113,20 @@ private extension DSAsyncImage {
 		}
 	}
 }
+
+/*
+// MARK: - Previews
+
+#Preview("DSAsyncImage") {
+	VStack(spacing: DefaultSpacing().lg) {
+		DSAsyncImage(url: URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
+			.frame(width: 100, height: 100)
+			.clipShape(RoundedRectangle(cornerRadius: DefaultCornerRadius().md))
+
+		DSAsyncImage(url: nil)
+			.frame(width: 100, height: 100)
+			.clipShape(RoundedRectangle(cornerRadius: DefaultCornerRadius().md))
+	}
+	.padding()
+}
+*/

@@ -65,3 +65,31 @@ public struct DSChipGroup<ID: Hashable>: View {
         return "\(prefix).\(label)"
     }
 }
+
+/*
+// MARK: - Previews
+
+#Preview("DSChipGroup") {
+    VStack(spacing: DefaultSpacing().lg) {
+        DSChipGroup(
+            "Status",
+            options: [
+                (id: "alive", label: "Alive"),
+                (id: "dead", label: "Dead"),
+                (id: "unknown", label: "Unknown")
+            ],
+            selectedID: "alive"
+        ) { _ in }
+
+        DSChipGroup(
+            "Gender",
+            options: [
+                (id: "male", label: "Male"),
+                (id: "female", label: "Female")
+            ],
+            selectedID: nil as String?
+        ) { _ in }
+    }
+    .padding()
+}
+*/

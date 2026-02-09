@@ -37,3 +37,15 @@ public struct DSTextField: View {
             .accessibilityIdentifier(accessibilityIdentifier ?? "")
     }
 }
+
+/*
+// MARK: - Previews
+
+#Preview("DSTextField") {
+    VStack(spacing: DefaultSpacing().lg) {
+        DSTextField(placeholder: "Search...", text: .constant(""))
+        DSTextField(placeholder: "Search...", text: .constant("Rick Sanchez"))
+    }
+    .padding()
+}
+*/

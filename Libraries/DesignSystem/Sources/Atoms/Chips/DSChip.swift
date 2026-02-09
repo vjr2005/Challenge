@@ -54,3 +54,16 @@ public struct DSChip: View {
         isSelected ? theme.colors.accent : Color.clear
     }
 }
+
+/*
+// MARK: - Previews
+
+#Preview("DSChip") {
+    HStack(spacing: DefaultSpacing().sm) {
+        DSChip("Alive", isSelected: true) {}
+        DSChip("Dead", isSelected: false) {}
+        DSChip("Unknown", isSelected: false) {}
+    }
+    .padding()
+}
+*/
