@@ -146,7 +146,7 @@ extension UITestCase {
 		let imageData = Data.stubAvatarImage
 
 		await serverMock.registerPrefix(.GET, "/avatar/") { _ in .image(imageData) }
-		await serverMock.register(.GET, "/character") { _ in .json(charactersData) }
+		await serverMock.register(.GET, "/api/character") { _ in .json(charactersData) }
 	}
 
 	/// Registers character detail route for retry recovery. Use mid-test after initial failure.
@@ -154,6 +154,6 @@ extension UITestCase {
 		let baseURL = try XCTUnwrap(serverBaseURL)
 		let characterData = Data.fixture("character", baseURL: baseURL)
 
-		await serverMock.registerPrefix(.GET, "/character/") { _ in .json(characterData) }
+		await serverMock.registerPrefix(.GET, "/api/character/") { _ in .json(characterData) }
 	}
 }
