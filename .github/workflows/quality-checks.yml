@@ -33,9 +33,10 @@ jobs:
         uses: ./.github/actions/setup
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
+          derived-data-prefix: unit
 
       - name: Run unit and snapshot tests
-        timeout-minutes: 15
+        timeout-minutes: 25
         run: |
           mise x -- tuist test "Challenge (Dev)" \
             --device "$TUIST_TEST_DEVICE" \
@@ -143,6 +144,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
+      TUIST_TEST_DERIVED_DATA_PATH: derived_data
       RESULT_BUNDLE_PATH: test_output/UITests.xcresult
 
     steps:
@@ -153,6 +155,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
+          derived-data-prefix: ui
 
       - name: Run UI tests
         timeout-minutes: 25

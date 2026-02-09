@@ -6,6 +6,9 @@ inputs:
     description: Simulator device name
     required: false
     default: iPhone 17 Pro
+  derived-data-prefix:
+    description: Cache key prefix for DerivedData (e.g., unit, ui)
+    required: true
 
 runs:
   using: composite
@@ -30,6 +33,15 @@ runs:
         key: tuist-${{ runner.os }}-${{ hashFiles('Tuist/Package.resolved') }}
         restore-keys: |
           tuist-${{ runner.os }}-
+
+    - name: Cache DerivedData
+      uses: actions/cache@v4
+      with:
+        path: derived_data
+        key: derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-${{ github.sha }}
+        restore-keys: |
+          derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-
+          derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-
 
     - name: Install SPM dependencies
       shell: bash
