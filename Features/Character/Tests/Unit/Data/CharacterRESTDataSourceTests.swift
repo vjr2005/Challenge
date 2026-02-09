@@ -126,7 +126,7 @@ struct CharacterRESTDataSourceTests {
 		httpClientMock.result = .success(jsonData)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(name: "Rick"))
+		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilterDTO(name: "Rick"))
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -156,7 +156,7 @@ struct CharacterRESTDataSourceTests {
 		httpClientMock.result = .success(jsonData)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(name: ""))
+		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilterDTO(name: ""))
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -171,7 +171,7 @@ struct CharacterRESTDataSourceTests {
 		httpClientMock.result = .success(jsonData)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(status: .alive))
+		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilterDTO(status: "alive"))
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -186,7 +186,7 @@ struct CharacterRESTDataSourceTests {
 		httpClientMock.result = .success(jsonData)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(species: "Human"))
+		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilterDTO(species: "Human"))
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -201,7 +201,7 @@ struct CharacterRESTDataSourceTests {
 		httpClientMock.result = .success(jsonData)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(type: "Parasite"))
+		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilterDTO(type: "Parasite"))
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -216,7 +216,7 @@ struct CharacterRESTDataSourceTests {
 		httpClientMock.result = .success(jsonData)
 
 		// When
-		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilter(gender: .female))
+		_ = try await sut.fetchCharacters(page: 1, filter: CharacterFilterDTO(gender: "female"))
 
 		// Then
 		let endpoint = try #require(httpClientMock.requestedEndpoints.first)
@@ -229,12 +229,12 @@ struct CharacterRESTDataSourceTests {
 		// Given
 		let jsonData = try loadJSONData("characters_response")
 		httpClientMock.result = .success(jsonData)
-		let filter = CharacterFilter(
+		let filter = CharacterFilterDTO(
 			name: "Rick",
-			status: .alive,
+			status: "alive",
 			species: "Human",
 			type: "Scientist",
-			gender: .male
+			gender: "male"
 		)
 
 		// When

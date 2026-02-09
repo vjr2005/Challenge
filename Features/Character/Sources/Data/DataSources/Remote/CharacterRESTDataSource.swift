@@ -13,13 +13,13 @@ struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
 		return try await request(endpoint)
 	}
 
-	func fetchCharacters(page: Int, filter: CharacterFilter) async throws -> CharactersResponseDTO {
+	func fetchCharacters(page: Int, filter: CharacterFilterDTO) async throws -> CharactersResponseDTO {
 		var queryItems = [URLQueryItem(name: "page", value: String(page))]
 		if let name = filter.name, !name.isEmpty {
 			queryItems.append(URLQueryItem(name: "name", value: name))
 		}
 		if let status = filter.status {
-			queryItems.append(URLQueryItem(name: "status", value: status.apiValue))
+			queryItems.append(URLQueryItem(name: "status", value: status))
 		}
 		if let species = filter.species, !species.isEmpty {
 			queryItems.append(URLQueryItem(name: "species", value: species))
@@ -28,7 +28,7 @@ struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
 			queryItems.append(URLQueryItem(name: "type", value: type))
 		}
 		if let gender = filter.gender {
-			queryItems.append(URLQueryItem(name: "gender", value: gender.apiValue))
+			queryItems.append(URLQueryItem(name: "gender", value: gender))
 		}
 		let endpoint = Endpoint(path: "/api/character", queryItems: queryItems)
 		return try await request(endpoint)
@@ -47,16 +47,3 @@ private extension CharacterRESTDataSource {
 	}
 }
 
-// MARK: - API Value Mapping
-
-private extension CharacterStatus {
-	var apiValue: String {
-		rawValue.lowercased()
-	}
-}
-
-private extension CharacterGender {
-	var apiValue: String {
-		rawValue.lowercased()
-	}
-}

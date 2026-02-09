@@ -252,7 +252,7 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Morty"))
 
         // Then
-        #expect(remoteDataSourceMock.lastFetchedFilter == CharacterFilter(name: "Morty"))
+        #expect(remoteDataSourceMock.lastFetchedFilter == CharacterFilterDTO(name: "Morty"))
     }
 
     @Test("Search characters passes page number to remote data source")
