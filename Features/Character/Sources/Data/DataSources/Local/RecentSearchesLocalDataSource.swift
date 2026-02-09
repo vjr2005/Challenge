@@ -1,11 +1,5 @@
 import Foundation
 
-protocol RecentSearchesLocalDataSourceContract: Sendable {
-	func getRecentSearches() -> [String]
-	func saveSearch(_ query: String)
-	func deleteSearch(_ query: String)
-}
-
 struct RecentSearchesLocalDataSource: RecentSearchesLocalDataSourceContract {
 	private nonisolated(unsafe) let userDefaults: UserDefaults
 	private let key = "recentSearches"

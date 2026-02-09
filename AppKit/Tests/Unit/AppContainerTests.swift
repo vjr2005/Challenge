@@ -71,7 +71,7 @@ struct AppContainerTests {
 		#expect(sut.tracker is Tracker)
 	}
 
-	@Test("Creates default HTTPClient when http client is not provided")
+	@Test("Creates default HTTPClient when HTTP client is not provided")
 	func createsDefaultHTTPClient() {
 		// When
 		let sut = AppContainer(tracker: TrackerMock())

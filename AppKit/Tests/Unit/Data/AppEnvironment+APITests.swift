@@ -17,14 +17,14 @@ struct AppEnvironmentAPITests {
 		// Then
 		#expect(api.baseURL.scheme == "https")
 		#expect(api.baseURL.host == "rickandmortyapi.com")
-		#expect(api.baseURL.path == "/api")
+		#expect(api.baseURL.path == "")
 	}
 
 	@Test("Rick and Morty API returns expected URL for development environment")
 	func rickAndMortyReturnsExpectedURLForDevelopment() {
 		// Given
 		let sut = AppEnvironment.development
-		let expected = "https://rickandmortyapi.com/api"
+		let expected = "https://rickandmortyapi.com"
 
 		// When
 		let api = sut.rickAndMorty
@@ -37,7 +37,7 @@ struct AppEnvironmentAPITests {
 	func rickAndMortyReturnsExpectedURLForStaging() {
 		// Given
 		let sut = AppEnvironment.staging
-		let expected = "https://rickandmortyapi.com/api"
+		let expected = "https://rickandmortyapi.com"
 
 		// When
 		let api = sut.rickAndMorty
@@ -50,7 +50,7 @@ struct AppEnvironmentAPITests {
 	func rickAndMortyReturnsExpectedURLForProduction() {
 		// Given
 		let sut = AppEnvironment.production
-		let expected = "https://rickandmortyapi.com/api"
+		let expected = "https://rickandmortyapi.com"
 
 		// When
 		let api = sut.rickAndMorty

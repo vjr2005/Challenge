@@ -117,7 +117,7 @@ struct CharacterRepositoryTests {
     func remoteFirstFallsBackToCacheOnRemoteError() async throws {
         // Given
         let cachedDTO: CharacterDTO = try loadJSON("character")
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.result = .failure(APIError.invalidResponse)
         memoryDataSourceMock.characterToReturn = cachedDTO
 
         // When
@@ -130,7 +130,7 @@ struct CharacterRepositoryTests {
     @Test("RemoteFirst throws error when remote fails and no cache")
     func remoteFirstThrowsErrorWhenRemoteFailsAndNoCache() async throws {
         // Given
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.result = .failure(APIError.invalidResponse)
 
         // When / Then
         await #expect(throws: CharacterError.loadFailed()) {
@@ -188,7 +188,7 @@ struct CharacterRepositoryTests {
     @Test("Does not save to cache when remote fetch fails")
     func doesNotSaveToCacheOnRemoteError() async throws {
         // Given
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.result = .failure(APIError.invalidResponse)
 
         // When
         _ = try? await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)

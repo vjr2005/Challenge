@@ -118,7 +118,7 @@ struct CharactersPageRepositoryTests {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
         memoryDataSourceMock.pageToReturn = cachedResponse
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.charactersResult = .failure(APIError.invalidResponse)
 
         // When
         let value = try await sut.getCharactersPage(page: 1, cachePolicy: .remoteFirst)
@@ -130,7 +130,7 @@ struct CharactersPageRepositoryTests {
     @Test("RemoteFirst throws error when remote fails and no cache")
     func getCharactersPageRemoteFirstThrowsErrorWhenRemoteFailsAndNoCache() async throws {
         // Given
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.charactersResult = .failure(APIError.invalidResponse)
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed()) {
@@ -204,7 +204,7 @@ struct CharactersPageRepositoryTests {
     @Test("Get characters does not save to cache on error")
     func getCharactersPageDoesNotSaveToCacheOnError() async throws {
         // Given
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.charactersResult = .failure(APIError.invalidResponse)
 
         // When
         _ = try? await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
@@ -271,7 +271,7 @@ struct CharactersPageRepositoryTests {
     @Test("Search characters returns empty page when HTTP 404")
     func searchCharactersPageReturnsEmptyPageWhenNotFound() async throws {
         // Given
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(404, Data()))
+        remoteDataSourceMock.charactersResult = .failure(APIError.notFound)
 
         // When
         let result = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "NonExistentCharacter"))
@@ -291,7 +291,7 @@ struct CharactersPageRepositoryTests {
     @Test("Search characters maps HTTP 500 to load failed error")
     func searchCharactersPageMapsHTTPServerErrorToLoadFailed() async throws {
         // Given
-        remoteDataSourceMock.charactersResult = .failure(HTTPError.statusCode(500, Data()))
+        remoteDataSourceMock.charactersResult = .failure(APIError.serverError(statusCode: 500))
 
         // When / Then
         await #expect(throws: CharactersPageError.loadFailed()) {

@@ -40,7 +40,7 @@ struct {Name}RemoteDataSource: {Name}RemoteDataSourceContract {
 ### DTO
 
 ```swift
-nonisolated struct {Name}DTO: Decodable, Equatable {
+struct {Name}DTO: Decodable, Equatable {
     let id: Int
     let name: String
     let status: String
@@ -152,7 +152,7 @@ private enum TestError: Error {
 ### Contract
 
 ```swift
-protocol {Name}MemoryDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Sendable {
     // MARK: - Single Item (Detail)
     func get{Name}Detail(identifier: Int) async -> {Name}DTO?
     func save{Name}Detail(_ item: {Name}DTO) async
@@ -168,7 +168,7 @@ protocol {Name}MemoryDataSourceContract: Sendable {
 ### Implementation
 
 ```swift
-actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
+actor {Name}MemoryDataSource: {Name}LocalDataSourceContract {
     private var items: [Int: {Name}DTO] = [:]
     private var pages: [Int: {Name}sResponseDTO] = [:]
 
@@ -209,7 +209,7 @@ import Foundation
 
 @testable import {AppName}{Feature}
 
-final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @unchecked Sendable {
+final class {Name}MemoryDataSourceMock: {Name}LocalDataSourceContract, @unchecked Sendable {
     // MARK: - Configurable Returns
 
     var detailToReturn: {Name}DTO?
@@ -225,7 +225,7 @@ final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @uncheck
     private(set) var savePageCallCount = 0
     private(set) var clearPagesCallCount = 0
 
-    // MARK: - {Name}MemoryDataSourceContract
+    // MARK: - {Name}LocalDataSourceContract
 
     func get{Name}Detail(identifier: Int) -> {Name}DTO? {
         get{Name}DetailCallCount += 1
@@ -413,19 +413,20 @@ import ChallengeCore
 
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
-    private let memoryDataSource: {Name}MemoryDataSourceContract
+    private let localDataSource: {Name}LocalDataSourceContract
+    private let mapper = {Name}Mapper()
 
     func get{Name}Detail(identifier: Int, cachePolicy: CachePolicy) async throws -> {Name} {
         switch cachePolicy {
         case .localFirst:
             // Try cache first
-            if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
-                return cached.toDomain()
+            if let cached = await localDataSource.get{Name}Detail(identifier: identifier) {
+                return mapper.map(cached)
             }
             // Fetch from remote and cache
             let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
-            await memoryDataSource.save{Name}Detail(dto)
-            return dto.toDomain()
+            await localDataSource.save{Name}Detail(dto)
+            return mapper.map(dto)
 
         case .remoteFirst:
             // Always fetch from remote, fallback to cache on error

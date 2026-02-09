@@ -14,7 +14,8 @@ This library provides a type-safe HTTP client for making network requests. It us
 | `HTTPClient.swift` | **public** | Implementation using URLSession |
 | `Endpoint.swift` | **public** | Request configuration |
 | `HTTPMethod.swift` | **public** | Supported HTTP methods |
-| `HTTPError.swift` | **public** | Error types |
+| `HTTPError.swift` | **public** | HTTP error types |
+| `APIError.swift` | **public** | API-agnostic error types (used by DataSources and error mappers) |
 
 ## Usage
 

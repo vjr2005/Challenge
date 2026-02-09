@@ -291,21 +291,21 @@ Create `Sources/Data/Repositories/{Name}Repository.swift`:
 import Foundation
 
 struct {Name}Repository: {Name}RepositoryContract {
-    private let memoryDataSource: {Name}MemoryDataSourceContract
+    private let localDataSource: {Name}LocalDataSourceContract
 
-    init(memoryDataSource: {Name}MemoryDataSourceContract) {
-        self.memoryDataSource = memoryDataSource
+    init(localDataSource: {Name}LocalDataSourceContract) {
+        self.localDataSource = localDataSource
     }
 
     func get{Name}(identifier: Int) async -> {Name}? {
-        guard let dto = await memoryDataSource.get{Name}(identifier: identifier) else {
+        guard let dto = await localDataSource.get{Name}(identifier: identifier) else {
             return nil
         }
         return dto.toDomain()
     }
 
     func save{Name}(_ item: {Name}) async {
-        await memoryDataSource.save{Name}(item.toDTO())
+        await localDataSource.save{Name}(item.toDTO())
     }
 }
 
@@ -361,19 +361,19 @@ import Testing
 @testable import Challenge{Feature}
 
 struct {Name}RepositoryTests {
-    private let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+    private let localDataSourceMock = {Name}LocalDataSourceMock()
     private let sut: {Name}Repository
 
     init() {
-        sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
+        sut = {Name}Repository(localDataSource: localDataSourceMock)
     }
 
     // MARK: - Get Tests
 
-    @Test("Returns nil when not found in memory")
-    func returnsNilWhenNotFoundInMemory() async {
+    @Test("Returns nil when not found in local data source")
+    func returnsNilWhenNotFound() async {
         // Given
-        memoryDataSourceMock.getResult = nil
+        localDataSourceMock.getResult = nil
 
         // When
         let result = await sut.get{Name}(identifier: 1)
@@ -386,7 +386,7 @@ struct {Name}RepositoryTests {
     func returnsTransformedDomainModelWhenFound() async {
         // Given
         let dto = {Name}DTO(id: 1, name: "Test", status: "Active")
-        memoryDataSourceMock.getResult = dto
+        localDataSourceMock.getResult = dto
 
         // When
         let result = await sut.get{Name}(identifier: 1)
@@ -398,8 +398,8 @@ struct {Name}RepositoryTests {
 
     // MARK: - Save Tests
 
-    @Test("Saves item to memory data source")
-    func savesItemToMemoryDataSource() async {
+    @Test("Saves item to local data source")
+    func savesItemToLocalDataSource() async {
         // Given
         let item = {Name}(id: 1, name: "Test", status: .active)
 
@@ -407,8 +407,8 @@ struct {Name}RepositoryTests {
         await sut.save{Name}(item)
 
         // Then
-        #expect(memoryDataSourceMock.saveCallCount == 1)
-        #expect(memoryDataSourceMock.lastSaved?.id == 1)
+        #expect(localDataSourceMock.saveCallCount == 1)
+        #expect(localDataSourceMock.lastSaved?.id == 1)
     }
 }
 ```
@@ -445,16 +445,16 @@ import Foundation
 
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
-    private let memoryDataSource: {Name}MemoryDataSourceContract
+    private let localDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
-        memoryDataSource: {Name}MemoryDataSourceContract
+        localDataSource: {Name}LocalDataSourceContract
     ) {
         self.remoteDataSource = remoteDataSource
-        self.memoryDataSource = memoryDataSource
+        self.localDataSource = localDataSource
     }
 
     func get{Name}Detail(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
@@ -485,21 +485,21 @@ private extension {Name}Repository {
 
 private extension {Name}Repository {
     func get{Name}DetailLocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-        if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
+        if let cached = await localDataSource.get{Name}Detail(identifier: identifier) {
             return mapper.map(cached)
         }
         let dto = try await fetchFromRemote(identifier: identifier)
-        await memoryDataSource.save{Name}Detail(dto)
+        await localDataSource.save{Name}Detail(dto)
         return mapper.map(dto)
     }
 
     func get{Name}DetailRemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await fetchFromRemote(identifier: identifier)
-            await memoryDataSource.save{Name}Detail(dto)
+            await localDataSource.save{Name}Detail(dto)
             return mapper.map(dto)
         } catch {
-            if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
+            if let cached = await localDataSource.get{Name}Detail(identifier: identifier) {
                 return mapper.map(cached)
             }
             throw error
@@ -553,13 +553,13 @@ import Testing
 
 struct {Name}RepositoryTests {
     private let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-    private let memoryDataSourceMock = {Name}MemoryDataSourceMock()
+    private let localDataSourceMock = {Name}LocalDataSourceMock()
     private let sut: {Name}Repository
 
     init() {
         sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            localDataSource: localDataSourceMock
         )
     }
 
@@ -569,7 +569,7 @@ struct {Name}RepositoryTests {
     func localFirstReturnsCachedWhenAvailable() async throws {
         // Given
         let dto = {Name}DTO(id: 1, name: "Cached", status: "Active")
-        memoryDataSourceMock.detailToReturn = dto
+        localDataSourceMock.detailToReturn = dto
 
         // When
         let value = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .localFirst)
@@ -583,7 +583,7 @@ struct {Name}RepositoryTests {
     func localFirstDoesNotCallRemoteWhenCacheHit() async throws {
         // Given
         let dto = {Name}DTO(id: 1, name: "Cached", status: "Active")
-        memoryDataSourceMock.detailToReturn = dto
+        localDataSourceMock.detailToReturn = dto
 
         // When
         _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .localFirst)
@@ -616,7 +616,7 @@ struct {Name}RepositoryTests {
         _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.save{Name}DetailCallCount == 1)
+        #expect(localDataSourceMock.save{Name}DetailCallCount == 1)
     }
 
     // MARK: - RemoteFirst Policy
@@ -626,7 +626,7 @@ struct {Name}RepositoryTests {
         // Given
         let cachedDTO = {Name}DTO(id: 1, name: "Cached", status: "Inactive")
         let remoteDTO = {Name}DTO(id: 1, name: "Fresh", status: "Active")
-        memoryDataSourceMock.detailToReturn = cachedDTO
+        localDataSourceMock.detailToReturn = cachedDTO
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
@@ -647,15 +647,15 @@ struct {Name}RepositoryTests {
         _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
-        #expect(memoryDataSourceMock.save{Name}DetailCallCount == 1)
+        #expect(localDataSourceMock.save{Name}DetailCallCount == 1)
     }
 
     @Test("RemoteFirst falls back to cache on error")
     func remoteFirstFallsBackToCacheOnError() async throws {
         // Given
         let cachedDTO = {Name}DTO(id: 1, name: "Cached", status: "Active")
-        memoryDataSourceMock.detailToReturn = cachedDTO
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        localDataSourceMock.detailToReturn = cachedDTO
+        remoteDataSourceMock.result = .failure(APIError.invalidResponse)
 
         // When
         let value = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .remoteFirst)
@@ -667,7 +667,7 @@ struct {Name}RepositoryTests {
     @Test("RemoteFirst throws error when remote fails and no cache")
     func remoteFirstThrowsErrorWhenRemoteFailsAndNoCache() async throws {
         // Given
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.result = .failure(APIError.invalidResponse)
 
         // When / Then
         await #expect(throws: {Feature}Error.loadFailed()) {
@@ -701,7 +701,7 @@ struct {Name}RepositoryTests {
         _ = try await sut.get{Name}Detail(identifier: 1, cachePolicy: .noCache)
 
         // Then
-        #expect(memoryDataSourceMock.save{Name}DetailCallCount == 0)
+        #expect(localDataSourceMock.save{Name}DetailCallCount == 0)
     }
 
     @Test("None policy does not check cache")
@@ -709,7 +709,7 @@ struct {Name}RepositoryTests {
         // Given
         let cachedDTO = {Name}DTO(id: 1, name: "Cached", status: "Inactive")
         let remoteDTO = {Name}DTO(id: 1, name: "Remote", status: "Active")
-        memoryDataSourceMock.detailToReturn = cachedDTO
+        localDataSourceMock.detailToReturn = cachedDTO
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
@@ -717,7 +717,7 @@ struct {Name}RepositoryTests {
 
         // Then
         #expect(value.name == "Remote")
-        #expect(memoryDataSourceMock.get{Name}DetailCallCount == 0)
+        #expect(localDataSourceMock.get{Name}DetailCallCount == 0)
     }
 
     // MARK: - Error Handling Tests
@@ -725,13 +725,13 @@ struct {Name}RepositoryTests {
     @Test("Does not save to cache when remote fails")
     func doesNotSaveToCacheWhenRemoteFails() async throws {
         // Given
-        remoteDataSourceMock.result = .failure(HTTPError.invalidResponse)
+        remoteDataSourceMock.result = .failure(APIError.invalidResponse)
 
         // When
         _ = try? await sut.get{Name}Detail(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.save{Name}DetailCallCount == 0)
+        #expect(localDataSourceMock.save{Name}DetailCallCount == 0)
     }
 }
 ```

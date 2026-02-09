@@ -32,13 +32,17 @@ Features/{Feature}/
 │   │       └── {Name}RepositoryContract.swift    # Contract (protocol)
 │   └── Data/
 │       ├── DataSources/
-│       │   ├── {Name}RemoteDataSource.swift      # See /datasource skill
-│       │   └── {Name}MemoryDataSource.swift      # See /datasource skill
+│       │   ├── Remote/
+│       │   │   ├── {Name}RemoteDataSourceContract.swift  # See /datasource skill
+│       │   │   └── {Name}RESTDataSource.swift            # See /datasource skill
+│       │   └── Local/
+│       │       ├── {Name}LocalDataSourceContract.swift   # See /datasource skill
+│       │       └── {Name}MemoryDataSource.swift          # See /datasource skill
 │       ├── DTOs/
 │       │   └── {Name}DTO.swift                   # See /datasource skill
 │       ├── Mappers/
 │       │   ├── {Name}Mapper.swift                # DTO to Domain mapping
-│       │   └── {Name}ErrorMapper.swift           # HTTPError to Domain error mapping
+│       │   └── {Name}ErrorMapper.swift           # APIError to Domain error mapping
 │       └── Repositories/
 │           └── {Name}Repository.swift            # Implementation
 └── Tests/
@@ -203,7 +207,7 @@ final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable 
 
 ## Error Handling
 
-Repositories transform data layer errors (e.g., `HTTPError`) into domain-specific errors using **typed throws**.
+Repositories transform data layer errors (e.g., `APIError`) into domain-specific errors using **typed throws**.
 
 ### Domain Error
 
@@ -294,14 +298,14 @@ struct {Name}ErrorMapperInput {
 
 struct {Name}ErrorMapper: MapperContract {
     func map(_ input: {Name}ErrorMapperInput) -> {Feature}Error {
-        guard let httpError = input.error as? HTTPError else {
+        guard let apiError = input.error as? APIError else {
             return .loadFailed(description: String(describing: input.error))
         }
-        return switch httpError {
-        case .statusCode(404, _):
+        return switch apiError {
+        case .notFound:
             .notFound(identifier: input.identifier)
-        case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed(description: String(describing: httpError))
+        case .invalidRequest, .invalidResponse, .serverError, .decodingFailed:
+            .loadFailed(description: String(describing: apiError))
         }
     }
 }
@@ -330,7 +334,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 
 **Rules:**
 - Use `throws({Feature}Error)` (typed throws) instead of generic `throws`
-- Map `HTTPError` cases to domain-specific errors via Error Mapper
+- Map `APIError` cases to domain-specific errors via Error Mapper
 - Include context in errors (e.g., `identifier`, `page`) for better debugging
 - Fallback to generic error (`.loadFailed`) for unexpected cases
 
@@ -395,21 +399,21 @@ private extension {Name}Repository {
 
 private extension {Name}Repository {
     func get{Name}LocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-        if let cached = await memoryDataSource.get{Name}(identifier: identifier) {
+        if let cached = await localDataSource.get{Name}(identifier: identifier) {
             return mapper.map(cached)
         }
         let dto = try await fetchFromRemote(identifier: identifier)
-        await memoryDataSource.save{Name}(dto)
+        await localDataSource.save{Name}(dto)
         return mapper.map(dto)
     }
 
     func get{Name}RemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await fetchFromRemote(identifier: identifier)
-            await memoryDataSource.save{Name}(dto)
+            await localDataSource.save{Name}(dto)
             return mapper.map(dto)
         } catch {
-            if let cached = await memoryDataSource.get{Name}(identifier: identifier) {
+            if let cached = await localDataSource.get{Name}(identifier: identifier) {
                 return mapper.map(cached)
             }
             throw error

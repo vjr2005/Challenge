@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @unchecked Sendable {
+final class CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract, @unchecked Sendable {
     // MARK: - Configurable Returns
 
     var characterToReturn: CharacterDTO?
@@ -21,7 +21,7 @@ final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @u
     private(set) var savePageLastResponse: CharactersResponseDTO?
     private(set) var savePageLastPage: Int?
 
-    // MARK: - CharacterMemoryDataSourceContract
+    // MARK: - CharacterLocalDataSourceContract
 
     func getCharacter(identifier: Int) -> CharacterDTO? {
         getCharacterCallCount += 1

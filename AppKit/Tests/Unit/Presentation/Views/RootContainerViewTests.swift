@@ -5,7 +5,7 @@ import Testing
 @testable import ChallengeAppKit
 
 struct RootContainerViewTests {
-	@Test("Initializes with app container and retains http client")
+	@Test("Initializes with app container and retains HTTP client")
 	func initializesWithAppContainer() {
 		// Given
 		let httpClientMock = HTTPClientMock()

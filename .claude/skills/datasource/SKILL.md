@@ -28,9 +28,13 @@ Features/{Feature}/
 ├── Sources/
 │   └── Data/
 │       ├── DataSources/
-│       │   ├── {Name}RemoteDataSource.swift
-│       │   ├── {Name}MemoryDataSource.swift
-│       │   └── {Name}LocalDataSource.swift    # Optional: UserDefaults persistence
+│       │   ├── Remote/
+│       │   │   ├── {Name}RemoteDataSourceContract.swift
+│       │   │   └── {Name}RESTDataSource.swift
+│       │   └── Local/
+│       │       ├── {Name}LocalDataSourceContract.swift
+│       │       ├── {Name}MemoryDataSource.swift
+│       │       └── {Name}LocalDataSource.swift    # Optional: UserDefaults persistence
 │       └── DTOs/
 │           └── {Name}DTO.swift
 └── Tests/
@@ -45,7 +49,7 @@ Features/{Feature}/
 
 ## RemoteDataSource Pattern
 
-### Contract
+### Contract (separate file: `Remote/{Name}RemoteDataSourceContract.swift`)
 
 ```swift
 protocol {Name}RemoteDataSourceContract: Sendable {
@@ -53,24 +57,36 @@ protocol {Name}RemoteDataSourceContract: Sendable {
 }
 ```
 
-**Rules:** Internal visibility, `Sendable`, `async throws`, return DTOs
+**Rules:** Internal visibility, `Sendable`, `async throws`, return DTOs. Contract lives in its own file, separate from implementations.
 
-### Implementation
+### Implementation (`Remote/{Name}RESTDataSource.swift`)
 
 ```swift
-struct {Name}RemoteDataSource: {Name}RemoteDataSourceContract {
-    private let httpClient: HTTPClientContract
+struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
+    private let httpClient: any HTTPClientContract
 
-    init(httpClient: HTTPClientContract) {
+    init(httpClient: any HTTPClientContract) {
         self.httpClient = httpClient
     }
 
     func fetch{Name}(id: Int) async throws -> {Name}DTO {
-        let endpoint = Endpoint(path: "/{resource}/\(id)")
-        return try await httpClient.request(endpoint)
+        let endpoint = Endpoint(path: "/api/{resource}/\(id)")
+        return try await request(endpoint)
+    }
+}
+
+private extension {Name}RESTDataSource {
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+        do {
+            return try await httpClient.request(endpoint)
+        } catch let error as HTTPError {
+            throw error.toAPIError
+        }
     }
 }
 ```
+
+**Note:** The REST implementation maps `HTTPError` → `APIError` internally. Error mappers in repositories work with `APIError`, not `HTTPError`.
 
 ### DTO (Data Transfer Object)
 
@@ -102,10 +118,10 @@ struct {Name}DTO: Decodable, Equatable {
 
 ## MemoryDataSource Pattern
 
-### Contract
+### Contract (separate file: `Local/{Name}LocalDataSourceContract.swift`)
 
 ```swift
-protocol {Name}MemoryDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Sendable {
     // MARK: - Single Item
     func get{Name}(identifier: Int) async -> {Name}DTO?
     func save{Name}(_ item: {Name}DTO) async
@@ -120,11 +136,12 @@ protocol {Name}MemoryDataSourceContract: Sendable {
 **Rules:**
 - `async` (no throws), return optional for get
 - `identifier` parameter name (not `id`) for consistency
+- Contract lives in its own file, separate from implementations
 
-### Implementation (Actor)
+### Implementation (Actor, `Local/{Name}MemoryDataSource.swift`)
 
 ```swift
-actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
+actor {Name}MemoryDataSource: {Name}LocalDataSourceContract {
     private var items: [Int: {Name}DTO] = [:]
     private var pages: [Int: {Name}sResponseDTO] = [:]
 
@@ -145,11 +162,11 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 
 ---
 
-## LocalDataSource Pattern
+## LocalDataSource Pattern (UserDefaults)
 
 For persistent local storage using `UserDefaults` (e.g., recent searches, user preferences).
 
-### Contract
+### Contract (separate file: `Local/{Name}LocalDataSourceContract.swift`)
 
 ```swift
 protocol {Name}LocalDataSourceContract: Sendable {
@@ -159,9 +176,9 @@ protocol {Name}LocalDataSourceContract: Sendable {
 }
 ```
 
-**Rules:** Internal visibility, `Sendable`, **synchronous** (no `async`)
+**Rules:** Internal visibility, `Sendable`, **synchronous** (no `async`). Contract lives in its own file.
 
-### Implementation
+### Implementation (`Local/{Name}LocalDataSource.swift`)
 
 ```swift
 struct {Name}LocalDataSource: {Name}LocalDataSourceContract {
@@ -229,8 +246,10 @@ Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
 
 | Component | Visibility | Location |
 |-----------|------------|----------|
-| Contract | internal | `Sources/Data/DataSources/` |
-| Implementation | internal | `Sources/Data/DataSources/` |
+| Remote Contract | internal | `Sources/Data/DataSources/Remote/` |
+| Remote Implementation | internal | `Sources/Data/DataSources/Remote/` |
+| Local Contract | internal | `Sources/Data/DataSources/Local/` |
+| Local Implementation | internal | `Sources/Data/DataSources/Local/` |
 | DTO | internal | `Sources/Data/DTOs/` |
 | Mocks | internal | `Tests/Mocks/` |
 
@@ -240,23 +259,23 @@ Import `{AppName}CoreMocks` for `Bundle+JSON` helper.
 
 ### RemoteDataSource
 
-- [ ] Create DTO with `nonisolated`
-- [ ] Create Contract with `async throws`
-- [ ] Create Implementation injecting HTTPClientContract
+- [ ] Create DTO
+- [ ] Create Contract in `Remote/` with `async throws`
+- [ ] Create RESTDataSource in `Remote/` injecting HTTPClientContract, mapping HTTPError → APIError
 - [ ] Create Mock in `Tests/Mocks/`
 - [ ] Create JSON fixtures in `Tests/Fixtures/`
 - [ ] Create tests using JSON fixtures
 
 ### MemoryDataSource
 
-- [ ] Create Contract with `async` methods
-- [ ] Create `actor` Implementation
+- [ ] Create Contract in `Local/` with `async` methods
+- [ ] Create `actor` Implementation in `Local/`
 - [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
 - [ ] Create tests
 
-### LocalDataSource
+### LocalDataSource (UserDefaults)
 
-- [ ] Create Contract with synchronous methods and `Sendable`
-- [ ] Create `struct` Implementation with `nonisolated(unsafe) let userDefaults`
+- [ ] Create Contract in `Local/` with synchronous methods and `Sendable`
+- [ ] Create `struct` Implementation in `Local/` with `nonisolated(unsafe) let userDefaults`
 - [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
 - [ ] Create tests using custom `UserDefaults` suite

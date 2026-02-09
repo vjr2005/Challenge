@@ -153,7 +153,7 @@ public final class CharacterContainer {
 
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.tracker = tracker
-        let remoteDataSource = CharacterRemoteDataSource(httpClient: httpClient)
+        let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
         let memoryDataSource = CharacterMemoryDataSource()
         let recentSearchesDataSource = RecentSearchesLocalDataSource()
         self.characterRepository = CharacterRepository(

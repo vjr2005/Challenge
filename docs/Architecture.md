@@ -102,7 +102,7 @@ The Repository pattern acts as a **boundary between Domain and Data layers**, pr
 │           ├── RemoteDataSource ──► HTTP/API (DTOs)                          │
 │           ├── MemoryDataSource ──► In-memory cache (DTOs)                   │
 │           ├── Mapper → DTO to Domain mapping                                │
-│           └── Error Mapper → HTTPError to Domain error mapping              │
+│           └── Error Mapper → APIError to Domain error mapping               │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -129,20 +129,20 @@ Each contract has its own implementation that handles **how** data is fetched, c
 ```swift
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
-    private let memoryDataSource: CharacterMemoryDataSourceContract
+    private let memoryDataSource: CharacterLocalDataSourceContract
 
     func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
         switch cachePolicy {
         case .localFirst:
             // 1. Check cache first
             if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-                return cached.toDomain()  // DTO → Domain
+                return mapper.map(cached)  // DTO → Domain via Mapper
             }
             // 2. Fetch from remote
             let dto = try await fetchFromRemote(identifier: identifier)
             // 3. Save to cache
             await memoryDataSource.saveCharacter(dto)
-            return dto.toDomain()
+            return mapper.map(dto)
 
         case .remoteFirst:
             // 1. Try remote first
@@ -231,14 +231,14 @@ struct CharacterErrorMapperInput {
 
 struct CharacterErrorMapper: MapperContract {
     func map(_ input: CharacterErrorMapperInput) -> CharacterError {
-        guard let httpError = input.error as? HTTPError else {
+        guard let apiError = input.error as? APIError else {
             return .loadFailed(description: String(describing: input.error))
         }
-        return switch httpError {
-        case .statusCode(404, _):
+        return switch apiError {
+        case .notFound:
             .notFound(identifier: input.identifier)
-        case .invalidURL, .invalidResponse, .statusCode:
-            .loadFailed(description: String(describing: httpError))
+        case .invalidRequest, .invalidResponse, .serverError, .decodingFailed:
+            .loadFailed(description: String(describing: apiError))
         }
     }
 }

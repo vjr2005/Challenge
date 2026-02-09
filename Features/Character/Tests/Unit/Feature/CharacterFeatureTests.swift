@@ -1,5 +1,6 @@
 import ChallengeCore
 import ChallengeCoreMocks
+import ChallengeNetworking
 import ChallengeNetworkingMocks
 import Testing
 
@@ -8,13 +9,12 @@ import Testing
 struct CharacterFeatureTests {
     // MARK: - Properties
 
-    private let httpClientMock = HTTPClientMock()
     private let sut: CharacterFeature
 
     // MARK: - Initialization
 
     init() {
-        sut = CharacterFeature(httpClient: httpClientMock, tracker: TrackerMock())
+        sut = CharacterFeature(httpClient: HTTPClientMock(), tracker: TrackerMock())
     }
 
     // MARK: - Deep Link Handler

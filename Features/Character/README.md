@@ -47,9 +47,14 @@ Character/
 │   │   │   ├── CharactersPageRepository.swift
 │   │   │   └── RecentSearchesRepository.swift
 │   │   ├── DataSources/
-│   │   │   ├── CharacterRemoteDataSource.swift
-│   │   │   ├── CharacterMemoryDataSource.swift
-│   │   │   └── RecentSearchesLocalDataSource.swift
+│   │   │   ├── Remote/
+│   │   │   │   ├── CharacterRemoteDataSourceContract.swift
+│   │   │   │   └── CharacterRESTDataSource.swift
+│   │   │   └── Local/
+│   │   │       ├── CharacterLocalDataSourceContract.swift
+│   │   │       ├── CharacterMemoryDataSource.swift
+│   │   │       ├── RecentSearchesLocalDataSourceContract.swift
+│   │   │       └── RecentSearchesLocalDataSource.swift
 │   │   └── DTOs/
 │   │       ├── CharacterDTO.swift
 │   │       ├── CharactersResponseDTO.swift

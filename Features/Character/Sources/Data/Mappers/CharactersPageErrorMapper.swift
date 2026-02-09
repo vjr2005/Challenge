@@ -9,14 +9,14 @@ struct CharactersPageErrorMapperInput {
 
 struct CharactersPageErrorMapper: MapperContract {
 	func map(_ input: CharactersPageErrorMapperInput) -> CharactersPageError {
-		guard let httpError = input.error as? HTTPError else {
+		guard let apiError = input.error as? APIError else {
 			return .loadFailed(description: String(describing: input.error))
 		}
-		return switch httpError {
-		case .statusCode(404, _):
+		return switch apiError {
+		case .notFound:
 			.invalidPage(page: input.page)
-		case .invalidURL, .invalidResponse, .statusCode:
-			.loadFailed(description: String(describing: httpError))
+		case .invalidRequest, .invalidResponse, .serverError, .decodingFailed:
+			.loadFailed(description: String(describing: apiError))
 		}
 	}
 }

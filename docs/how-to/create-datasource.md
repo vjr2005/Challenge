@@ -15,14 +15,18 @@ Features/{Feature}/
 ├── Sources/
 │   └── Data/
 │       ├── DataSources/
-│       │   ├── {Name}RemoteDataSource.swift
-│       │   └── {Name}MemoryDataSource.swift
+│       │   ├── Remote/
+│       │   │   ├── {Name}RemoteDataSourceContract.swift
+│       │   │   └── {Name}RESTDataSource.swift
+│       │   └── Local/
+│       │       ├── {Name}LocalDataSourceContract.swift
+│       │       └── {Name}MemoryDataSource.swift
 │       └── DTOs/
 │           └── {Name}DTO.swift
 └── Tests/
     ├── Unit/
     │   └── Data/
-    │       ├── {Name}RemoteDataSourceTests.swift
+    │       ├── {Name}RESTDataSourceTests.swift
     │       └── {Name}MemoryDataSourceTests.swift
     └── Shared/
         ├── Mocks/
@@ -55,33 +59,53 @@ struct {Name}DTO: Decodable, Equatable {
 
 > **Note:** DTOs are intentionally anemic - they exist purely to transfer data. No behavior, no `toDomain()` methods. Mapping belongs in the Repository.
 
-### 2. Create RemoteDataSource
+### 2. Create RemoteDataSource Contract
 
-Create `Sources/Data/DataSources/{Name}RemoteDataSource.swift`:
+Create `Sources/Data/DataSources/Remote/{Name}RemoteDataSourceContract.swift`:
 
 ```swift
-import ChallengeNetworking
 import Foundation
 
 protocol {Name}RemoteDataSourceContract: Sendable {
     func fetch{Name}(identifier: Int) async throws -> {Name}DTO
 }
+```
 
-struct {Name}RemoteDataSource: {Name}RemoteDataSourceContract {
-    private let httpClient: HTTPClientContract
+### 3. Create REST Implementation
 
-    init(httpClient: HTTPClientContract) {
+Create `Sources/Data/DataSources/Remote/{Name}RESTDataSource.swift`:
+
+```swift
+import ChallengeNetworking
+import Foundation
+
+struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
+    private let httpClient: any HTTPClientContract
+
+    init(httpClient: any HTTPClientContract) {
         self.httpClient = httpClient
     }
 
     func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
         let endpoint = Endpoint(path: "/{resource}/\(identifier)")
-        return try await httpClient.request(endpoint)
+        return try await request(endpoint)
+    }
+}
+
+private extension {Name}RESTDataSource {
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+        do {
+            return try await httpClient.request(endpoint)
+        } catch let error as HTTPError {
+            throw error.toAPIError
+        }
     }
 }
 ```
 
-### 3. Create JSON fixture
+> **Note:** The REST implementation maps `HTTPError` → `APIError` internally. Error mappers in repositories work with `APIError`, not `HTTPError`.
+
+### 4. Create JSON fixture
 
 Create `Tests/Shared/Fixtures/{name}.json`:
 
@@ -92,7 +116,7 @@ Create `Tests/Shared/Fixtures/{name}.json`:
 }
 ```
 
-### 4. Create Mock
+### 5. Create Mock
 
 Create `Tests/Shared/Mocks/{Name}RemoteDataSourceMock.swift`:
 
@@ -118,9 +142,9 @@ private enum NotConfiguredError: Error {
 }
 ```
 
-### 5. Create tests
+### 6. Create tests
 
-Create `Tests/Unit/Data/{Name}RemoteDataSourceTests.swift`:
+Create `Tests/Unit/Data/{Name}RESTDataSourceTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -130,12 +154,12 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {Name}RemoteDataSourceTests {
+struct {Name}RESTDataSourceTests {
     private let httpClientMock = HTTPClientMock()
-    private let sut: {Name}RemoteDataSource
+    private let sut: {Name}RESTDataSource
 
     init() {
-        sut = {Name}RemoteDataSource(httpClient: httpClientMock)
+        sut = {Name}RESTDataSource(httpClient: httpClientMock)
     }
 
     // MARK: - Endpoint Tests
@@ -187,7 +211,7 @@ struct {Name}RemoteDataSourceTests {
 
 // MARK: - Private
 
-private extension {Name}RemoteDataSourceTests {
+private extension {Name}RESTDataSourceTests {
     func loadJSONData(_ filename: String) throws -> Data {
         try Bundle.module.loadJSONData(filename)
     }
@@ -202,14 +226,14 @@ private enum TestError: Error {
 
 ## Part B: Create MemoryDataSource
 
-### 1. Create MemoryDataSource
+### 1. Create LocalDataSource Contract
 
-Create `Sources/Data/DataSources/{Name}MemoryDataSource.swift`:
+Create `Sources/Data/DataSources/Local/{Name}LocalDataSourceContract.swift`:
 
 ```swift
 import Foundation
 
-protocol {Name}MemoryDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Sendable {
     // MARK: - Single Item
     func get{Name}(identifier: Int) async -> {Name}DTO?
     func save{Name}(_ item: {Name}DTO) async
@@ -218,8 +242,16 @@ protocol {Name}MemoryDataSourceContract: Sendable {
     func getPage(_ page: Int) async -> {Name}sResponseDTO?
     func savePage(_ response: {Name}sResponseDTO, page: Int) async
 }
+```
 
-actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
+### 2. Create MemoryDataSource Implementation
+
+Create `Sources/Data/DataSources/Local/{Name}MemoryDataSource.swift`:
+
+```swift
+import Foundation
+
+actor {Name}MemoryDataSource: {Name}LocalDataSourceContract {
     private var items: [Int: {Name}DTO] = [:]
     private var pages: [Int: {Name}sResponseDTO] = [:]
 
@@ -247,7 +279,7 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 
 > **Note:** Use `actor` for thread-safe storage. Methods inside actor don't need `async` keyword in implementation.
 
-### 2. Create Mock
+### 3. Create Mock
 
 Create `Tests/Shared/Mocks/{Name}MemoryDataSourceMock.swift`:
 
@@ -256,7 +288,7 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @unchecked Sendable {
+final class {Name}MemoryDataSourceMock: {Name}LocalDataSourceContract, @unchecked Sendable {
     var itemToReturn: {Name}DTO?
     var pageToReturn: {Name}sResponseDTO?
     private(set) var get{Name}CallCount = 0
@@ -286,7 +318,7 @@ final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @uncheck
 }
 ```
 
-### 3. Create tests
+### 4. Create tests
 
 Create `Tests/Unit/Data/{Name}MemoryDataSourceTests.swift`:
 

@@ -407,10 +407,10 @@ When mocking `actor` types (e.g., MemoryDataSource), use a plain `final class` w
 
 ```swift
 // Original in main module
-actor CharacterMemoryDataSource: CharacterMemoryDataSourceContract { }
+actor CharacterMemoryDataSource: CharacterLocalDataSourceContract { }
 
 // Mock in test module - plain class, no actor isolation
-final class CharacterMemoryDataSourceMock: CharacterMemoryDataSourceContract, @unchecked Sendable {
+final class CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract, @unchecked Sendable {
     var characterToReturn: CharacterDTO?
     private(set) var saveCallCount = 0
     private(set) var saveLastValue: CharacterDTO?

@@ -3,13 +3,13 @@ import Foundation
 
 struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
-	private let memoryDataSource: CharacterMemoryDataSourceContract
+	private let memoryDataSource: CharacterLocalDataSourceContract
 	private let mapper = CharactersPageMapper()
 	private let errorMapper = CharactersPageErrorMapper()
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
-		memoryDataSource: CharacterMemoryDataSourceContract
+		memoryDataSource: CharacterLocalDataSourceContract
 	) {
 		self.remoteDataSource = remoteDataSource
 		self.memoryDataSource = memoryDataSource

@@ -10,13 +10,13 @@ struct CharactersPageErrorMapperTests {
 
 	private let sut = CharactersPageErrorMapper()
 
-	// MARK: - HTTP Error Tests
+	// MARK: - API Error Tests
 
-	@Test("Maps HTTP 404 to invalidPage error with correct page")
-	func mapsHTTP404ToInvalidPage() {
+	@Test("Maps APIError.notFound to invalidPage error with correct page")
+	func mapsNotFoundToInvalidPage() {
 		// Given
 		let input = CharactersPageErrorMapperInput(
-			error: HTTPError.statusCode(404, Data()),
+			error: APIError.notFound,
 			page: 5
 		)
 
@@ -27,11 +27,11 @@ struct CharactersPageErrorMapperTests {
 		#expect(result == .invalidPage(page: 5))
 	}
 
-	@Test("Maps HTTP 500 to loadFailed error")
-	func mapsHTTP500ToLoadFailed() {
+	@Test("Maps APIError.serverError to loadFailed error")
+	func mapsServerErrorToLoadFailed() {
 		// Given
 		let input = CharactersPageErrorMapperInput(
-			error: HTTPError.statusCode(500, Data()),
+			error: APIError.serverError(statusCode: 500),
 			page: 1
 		)
 
@@ -42,11 +42,11 @@ struct CharactersPageErrorMapperTests {
 		#expect(result == .loadFailed())
 	}
 
-	@Test("Maps invalidURL to loadFailed error")
-	func mapsInvalidURLToLoadFailed() {
+	@Test("Maps APIError.invalidRequest to loadFailed error")
+	func mapsInvalidRequestToLoadFailed() {
 		// Given
 		let input = CharactersPageErrorMapperInput(
-			error: HTTPError.invalidURL,
+			error: APIError.invalidRequest,
 			page: 1
 		)
 
@@ -57,11 +57,26 @@ struct CharactersPageErrorMapperTests {
 		#expect(result == .loadFailed())
 	}
 
-	@Test("Maps invalidResponse to loadFailed error")
+	@Test("Maps APIError.invalidResponse to loadFailed error")
 	func mapsInvalidResponseToLoadFailed() {
 		// Given
 		let input = CharactersPageErrorMapperInput(
-			error: HTTPError.invalidResponse,
+			error: APIError.invalidResponse,
+			page: 1
+		)
+
+		// When
+		let result = sut.map(input)
+
+		// Then
+		#expect(result == .loadFailed())
+	}
+
+	@Test("Maps APIError.decodingFailed to loadFailed error")
+	func mapsDecodingFailedToLoadFailed() {
+		// Given
+		let input = CharactersPageErrorMapperInput(
+			error: APIError.decodingFailed(description: "test"),
 			page: 1
 		)
 
@@ -89,11 +104,11 @@ struct CharactersPageErrorMapperTests {
 
 	// MARK: - Description Propagation
 
-	@Test("Maps HTTP error description into loadFailed")
-	func mapsHTTPErrorDescriptionIntoLoadFailed() {
+	@Test("Maps API error description into loadFailed")
+	func mapsAPIErrorDescriptionIntoLoadFailed() {
 		// Given
 		let input = CharactersPageErrorMapperInput(
-			error: HTTPError.statusCode(500, Data()),
+			error: APIError.serverError(statusCode: 500),
 			page: 1
 		)
 

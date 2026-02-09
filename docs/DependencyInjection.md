@@ -50,12 +50,12 @@ protocol CharactersPageRepositoryContract: Sendable {
 // Concrete implementations (Data layer)
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: any CharacterRemoteDataSourceContract
-    private let memoryDataSource: any CharacterMemoryDataSourceContract
+    private let memoryDataSource: any CharacterLocalDataSourceContract
 
     // Dependencies injected through initializer
     init(
         remoteDataSource: any CharacterRemoteDataSourceContract,
-        memoryDataSource: any CharacterMemoryDataSourceContract
+        memoryDataSource: any CharacterLocalDataSourceContract
     ) {
         self.remoteDataSource = remoteDataSource
         self.memoryDataSource = memoryDataSource
@@ -69,7 +69,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 |-------|-------------------|---------|
 | **Presentation** | `CharacterListViewModelContract`, `NavigatorContract`, `TrackerContract` | ViewModel abstractions for Views |
 | **Domain** | `GetCharactersPageUseCaseContract`, `CharacterRepositoryContract`, `CharactersPageRepositoryContract` | Business logic contracts |
-| **Data** | `CharacterRemoteDataSourceContract`, `HTTPClientContract` | Data access abstractions |
+| **Data** | `CharacterRemoteDataSourceContract`, `CharacterLocalDataSourceContract`, `HTTPClientContract` | Data access abstractions |
 
 ## Container Structure
 
@@ -128,7 +128,7 @@ public final class CharacterContainer {
 
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.tracker = tracker
-        let remoteDataSource = CharacterRemoteDataSource(httpClient: httpClient)
+        let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
         let memoryDataSource = CharacterMemoryDataSource()
         let recentSearchesDataSource = RecentSearchesLocalDataSource()
         self.characterRepository = CharacterRepository(
@@ -184,7 +184,7 @@ AppContainer
             │
             └── CharacterContainer
                     │
-                    ├── CharacterRemoteDataSource ← HTTPClient
+                    ├── CharacterRESTDataSource ← HTTPClient
                     ├── CharacterMemoryDataSource
                     ├── RecentSearchesLocalDataSource
                     │

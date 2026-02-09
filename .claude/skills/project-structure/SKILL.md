@@ -101,8 +101,12 @@ FeatureName/
 │   │       └── {Name}RepositoryContract.swift  # Repository contracts
 │   ├── Data/
 │   │   ├── DataSources/
-│   │   │   ├── {Name}RemoteDataSource.swift
-│   │   │   └── {Name}MemoryDataSource.swift
+│   │   │   ├── Remote/
+│   │   │   │   ├── {Name}RemoteDataSourceContract.swift
+│   │   │   │   └── {Name}RESTDataSource.swift
+│   │   │   └── Local/
+│   │   │       ├── {Name}LocalDataSourceContract.swift
+│   │   │       └── {Name}MemoryDataSource.swift
 │   │   ├── DTOs/
 │   │   │   └── {Name}DTO.swift
 │   │   ├── Mappers/
@@ -507,7 +511,8 @@ AppKit/
 | Repository | `{Name}Repository.swift` | `CharacterRepository.swift` |
 | Mapper | `{Name}Mapper.swift` | `CharacterMapper.swift` |
 | Contract | `{Name}Contract.swift` | `CharacterRepositoryContract.swift` |
-| DataSource | `{Name}{Type}DataSource.swift` | `CharacterRemoteDataSource.swift` |
+| DataSource Contract | `{Name}{Type}DataSourceContract.swift` | `CharacterRemoteDataSourceContract.swift` |
+| DataSource Implementation | `{Name}{Impl}DataSource.swift` | `CharacterRESTDataSource.swift`, `CharacterMemoryDataSource.swift` |
 | Navigator | `{ScreenName}Navigator.swift` | `CharacterDetailNavigator.swift` |
 | NavigatorContract | `{ScreenName}NavigatorContract.swift` | `CharacterDetailNavigatorContract.swift` |
 | Tracker | `{ScreenName}Tracker.swift` | `CharacterDetailTracker.swift` |
