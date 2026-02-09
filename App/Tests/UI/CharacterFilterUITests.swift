@@ -53,6 +53,8 @@ final class CharacterFilterUITests: UITestCase {
 		characterFilter { robot in
 			robot.verifyIsVisible()
 			robot.tapStatusChip("Alive")
+			robot.tapStatusChip("Alive")
+			robot.tapStatusChip("Alive")
 			robot.tapApply()
 		}
 
