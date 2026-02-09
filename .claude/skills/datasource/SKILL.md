@@ -57,7 +57,7 @@ protocol {Name}RemoteDataSourceContract: Sendable {
 }
 ```
 
-**Rules:** Internal visibility, `Sendable`, `async throws`, return DTOs. Contract lives in its own file, separate from implementations.
+**Rules:** Internal visibility, `Sendable`, `async throws`. Contract lives in its own file, separate from implementations. **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects.
 
 ### Implementation (`Remote/{Name}RESTDataSource.swift`)
 

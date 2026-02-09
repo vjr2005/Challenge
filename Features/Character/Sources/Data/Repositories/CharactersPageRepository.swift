@@ -5,6 +5,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterLocalDataSourceContract
 	private let mapper = CharactersPageMapper()
+	private let filterMapper = CharacterFilterMapper()
 	private let errorMapper = CharactersPageErrorMapper()
 
 	init(
@@ -28,7 +29,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 
 	func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		do {
-			let filterDTO = filter.toDTO()
+			let filterDTO = filterMapper.map(filter)
 			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filterDTO)
 			return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
 		} catch {
@@ -88,19 +89,5 @@ private extension CharactersPageRepository {
 	func getCharactersPageNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
 		let response = try await fetchFromRemote(page: page)
 		return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
-	}
-}
-
-// MARK: - CharacterFilter to DTO
-
-private extension CharacterFilter {
-	func toDTO() -> CharacterFilterDTO {
-		CharacterFilterDTO(
-			name: name,
-			status: status?.rawValue.lowercased(),
-			species: species,
-			type: type,
-			gender: gender?.rawValue.lowercased()
-		)
 	}
 }
