@@ -120,9 +120,10 @@ struct {Name}: Equatable {
 ### Contract (Protocol)
 
 ```swift
+import ChallengeCore
+
 protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(id: Int) async throws -> {Name}
-    func getAll{Name}s() async throws -> [{Name}]
+    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
 ```
 
@@ -132,6 +133,8 @@ protocol {Name}RepositoryContract: Sendable {
 - **Internal visibility**
 - Conform to `Sendable`
 - **Return Domain models, NOT DTOs**
+- Use **typed throws** (`throws({Feature}Error)`) instead of generic `throws`
+- Include `cachePolicy: CachePolicy` parameter for repositories with caching
 
 ### DTO to Domain Mapping
 
@@ -181,11 +184,11 @@ struct {Name}Repository: {Name}RepositoryContract {
 final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
     var result: Result<{Name}, Error> = .failure(NotConfiguredError.notConfigured)
     private(set) var getCallCount = 0
-    private(set) var lastRequestedId: Int?
+    private(set) var lastRequestedIdentifier: Int?
 
-    func get{Name}(id: Int) async throws -> {Name} {
+    func get{Name}(identifier: Int) async throws -> {Name} {
         getCallCount += 1
-        lastRequestedId = id
+        lastRequestedIdentifier = identifier
         return try result.get()
     }
 }
@@ -215,7 +218,7 @@ Features/{Feature}/
 ```swift
 public enum {Feature}Error: Error, Equatable, LocalizedError {
     case loadFailed(description: String = "")
-    case notFound(id: Int)
+    case notFound(identifier: Int)
     case invalidPage(page: Int)
 
     public static func == (lhs: {Feature}Error, rhs: {Feature}Error) -> Bool {
@@ -235,8 +238,8 @@ public enum {Feature}Error: Error, Equatable, LocalizedError {
         switch self {
         case .loadFailed:
             "{feature}Error.loadFailed".localized()
-        case .notFound(let id):
-            "{feature}Error.notFound %lld".localized(id)
+        case .notFound(let identifier):
+            "{feature}Error.notFound %lld".localized(identifier)
         case .invalidPage(let page):
             "{feature}Error.invalidPage %lld".localized(page)
         }
@@ -248,8 +251,8 @@ extension {Feature}Error: CustomDebugStringConvertible {
         switch self {
         case .loadFailed(let description):
             description
-        case .notFound(let id):
-            "notFound(id: \(id))"
+        case .notFound(let identifier):
+            "notFound(identifier: \(identifier))"
         case .invalidPage(let page):
             "invalidPage(page: \(page))"
         }
@@ -391,31 +394,31 @@ private extension {Name}Repository {
 // MARK: - Cache Strategies
 
 private extension {Name}Repository {
-    func get{Name}DetailLocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-        if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
-            return cached.toDomain()
+    func get{Name}LocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
+        if let cached = await memoryDataSource.get{Name}(identifier: identifier) {
+            return mapper.map(cached)
         }
         let dto = try await fetchFromRemote(identifier: identifier)
-        await memoryDataSource.save{Name}Detail(dto)
-        return dto.toDomain()
+        await memoryDataSource.save{Name}(dto)
+        return mapper.map(dto)
     }
 
-    func get{Name}DetailRemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
+    func get{Name}RemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await fetchFromRemote(identifier: identifier)
-            await memoryDataSource.save{Name}Detail(dto)
-            return dto.toDomain()
+            await memoryDataSource.save{Name}(dto)
+            return mapper.map(dto)
         } catch {
-            if let cached = await memoryDataSource.get{Name}Detail(identifier: identifier) {
-                return cached.toDomain()
+            if let cached = await memoryDataSource.get{Name}(identifier: identifier) {
+                return mapper.map(cached)
             }
             throw error
         }
     }
 
-    func get{Name}DetailNoCache(identifier: Int) async throws({Feature}Error) -> {Name} {
+    func get{Name}NoCache(identifier: Int) async throws({Feature}Error) -> {Name} {
         let dto = try await fetchFromRemote(identifier: identifier)
-        return dto.toDomain()
+        return mapper.map(dto)
     }
 }
 ```

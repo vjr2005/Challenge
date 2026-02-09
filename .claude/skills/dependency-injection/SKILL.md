@@ -46,15 +46,18 @@ ChallengeApp
 ```
 App/
 ├── Sources/
-│   ├── {AppName}App.swift              # Minimal entry point
+│   └── {AppName}App.swift              # Minimal entry point
+
+AppKit/
+├── Sources/
 │   ├── AppContainer.swift              # Composition Root (centralized DI)
-│   ├── Navigation/
-│   │   └── AppNavigationRedirect.swift # Connects features via redirects
-│   └── Presentation/
-│       └── Views/
-│           ├── NavigationContainerView.swift    # Reusable NavigationStack + push + modal bindings
-│           ├── RootContainerView.swift      # Root level, uses NavigationContainerView + onOpenURL
-│           └── ModalContainerView.swift     # Creates own coordinator, uses NavigationContainerView
+│   ├── Presentation/
+│   │   ├── Navigation/
+│   │   │   └── AppNavigationRedirect.swift # Connects features via redirects
+│   │   └── Views/
+│   │       ├── NavigationContainerView.swift    # Reusable NavigationStack + push + modal bindings
+│   │       ├── RootContainerView.swift      # Root level, uses NavigationContainerView + onOpenURL
+│   │       └── ModalContainerView.swift     # Creates own coordinator, uses NavigationContainerView
 
 Features/{Feature}/
 ├── Sources/
@@ -104,7 +107,7 @@ Features/{Feature}/
 ## AppContainer (Composition Root)
 
 ```swift
-// App/Sources/AppContainer.swift
+// AppKit/Sources/AppContainer.swift
 import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
@@ -112,12 +115,13 @@ import ChallengeNetworking
 import ChallengeSystem
 import SwiftUI
 
-struct AppContainer {
+public struct AppContainer {
     // MARK: - Shared Dependencies
 
-    let httpClient: any HTTPClientContract
-    let tracker: any TrackerContract
-    let imageLoader: any ImageLoaderContract
+    public let launchEnvironment: LaunchEnvironment
+    public let httpClient: any HTTPClientContract
+    public let tracker: any TrackerContract
+    public let imageLoader: any ImageLoaderContract
 
     // MARK: - Features
 
@@ -125,40 +129,65 @@ struct AppContainer {
     private let characterFeature: CharacterFeature
     private let systemFeature: SystemFeature
 
-    var features: [any FeatureContract] {
+    public var features: [any FeatureContract] {
         [homeFeature, characterFeature, systemFeature]
     }
 
     // MARK: - Init
 
-    init(
+    public init(
+        launchEnvironment: LaunchEnvironment = LaunchEnvironment(),
         httpClient: (any HTTPClientContract)? = nil,
         tracker: (any TrackerContract)? = nil,
         imageLoader: (any ImageLoaderContract)? = nil
     ) {
+        self.launchEnvironment = launchEnvironment
         self.imageLoader = imageLoader ?? CachedImageLoader()
         self.httpClient = httpClient ?? HTTPClient(
-            baseURL: AppEnvironment.current.rickAndMorty.baseURL
+            baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL
         )
-        self.tracker = tracker ?? Tracker(providers: Self.makeTrackingProviders())
+        let providers = Self.makeTrackingProviders()
+        providers.forEach { $0.configure() }
+        self.tracker = tracker ?? Tracker(providers: providers)
 
         homeFeature = HomeFeature(tracker: self.tracker)
         characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
         systemFeature = SystemFeature(tracker: self.tracker)
     }
 
-    func handle(url: URL, navigator: any NavigatorContract) {
+    // MARK: - Navigation Resolution
+
+    /// Resolves any navigation to a view by iterating through features.
+    /// Falls back to NotFoundView if no feature can handle the navigation.
+    public func resolve(
+        _ navigation: any NavigationContract,
+        navigator: any NavigatorContract
+    ) -> AnyView {
+        for feature in features {
+            if let view = feature.resolve(navigation, navigator: navigator) {
+                return view
+            }
+        }
+        // Fallback to SystemFeature's main view (NotFoundView)
+        return systemFeature.makeMainView(navigator: navigator)
+    }
+
+    // MARK: - Deep Link Handling
+
+    public func handle(url: URL, navigator: any NavigatorContract) {
         for feature in features {
             if let navigation = feature.deepLinkHandler?.resolve(url) {
                 navigator.navigate(to: navigation)
                 return
             }
         }
+        // If no feature can handle the URL, navigate to NotFound
+        navigator.navigate(to: UnknownNavigation.notFound)
     }
 
     // MARK: - Factory Methods
 
-    func makeRootView(navigator: any NavigatorContract) -> AnyView {
+    public func makeRootView(navigator: any NavigatorContract) -> AnyView {
         homeFeature.makeMainView(navigator: navigator)
     }
 }
@@ -229,8 +258,8 @@ public final class {Feature}Container {
     ) -> {Name}DetailViewModel {
         {Name}DetailViewModel(
             identifier: identifier,
-            get{Name}DetailUseCase: Get{Name}DetailUseCase(repository: repository),
-            refresh{Name}DetailUseCase: Refresh{Name}DetailUseCase(repository: repository),
+            get{Name}UseCase: Get{Name}UseCase(repository: repository),
+            refresh{Name}UseCase: Refresh{Name}UseCase(repository: repository),
             navigator: {Name}DetailNavigator(navigator: navigator),
             tracker: {Name}DetailTracker(tracker: tracker)
         )
@@ -238,14 +267,13 @@ public final class {Feature}Container {
 }
 ```
 
-**Key Changes:**
-- Use `Detail` suffix for single-item UseCases: `Get{Name}DetailUseCase`, `Refresh{Name}DetailUseCase`
+**Key Points:**
 - Inject **separate Get and Refresh UseCases** for each ViewModel
 - Get UseCases use `localFirst` cache policy (fast initial load)
 - Refresh UseCases use `remoteFirst` cache policy (pull-to-refresh)
 
 **Rules:**
-- **public final class** with `Sendable` conformance
+- **public final class**
 - Receives `httpClient` and `tracker` from Feature (injected by AppContainer)
 - Only stores what factory methods need after `init` (`tracker`, repositories)
 - DataSources are **local variables in `init`** — only needed to build repositories
@@ -405,7 +433,7 @@ public struct {Feature}Feature: FeatureContract {
 ```
 
 **Rules:**
-- **public struct** implementing `Feature` protocol
+- **public struct** implementing `FeatureContract` protocol
 - **Required httpClient and tracker** in init (injected by AppContainer)
 - Creates and owns its **Container**
 - **deepLinkHandler** property (optional) - Returns handler instance if feature handles deep links
@@ -513,7 +541,8 @@ public final class HomeContainer {
 | {Feature}Feature | **public** | Entry point struct |
 | {Feature}Container | **public** | Created by Feature |
 | Feature.deepLinkHandler | **public** (optional) | Used by AppContainer if feature handles deep links |
-| Feature.applyNavigationDestination() | **public** | Called via withNavigationDestinations |
+| Feature.makeMainView() | **public** | Creates the feature's default entry point view |
+| Feature.resolve() | **public** | Returns view for navigation or nil if not handled |
 | Container factory methods | **internal** | Called by Feature |
 | {Feature}IncomingNavigation | **public** | Used by AppNavigationRedirect |
 | {Feature}OutgoingNavigation | **public** | Used by AppNavigationRedirect |
@@ -658,7 +687,7 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] Create `AppNavigationRedirect.swift` in `AppKit/Sources/Presentation/Navigation/`
 - [ ] Create `RootContainerView.swift` in `AppKit/Sources/Presentation/Views/`
 - [ ] Create `{Feature}Container.swift` for dependency composition
-- [ ] Create `{Feature}Feature.swift` as struct implementing `Feature` protocol
+- [ ] Create `{Feature}Feature.swift` as struct implementing `FeatureContract` protocol
 - [ ] Feature requires `httpClient` and `tracker` in init (no optional default)
 - [ ] Feature creates Container in init, passing `tracker`
 - [ ] Feature implements `FeatureContract` protocol
@@ -681,7 +710,6 @@ struct HomeNavigator: HomeNavigatorContract {
 - [ ] `AppContainer` has `makeTrackingProviders()` static factory method
 - [ ] `AppContainer` has `makeRootView(navigator:)` factory method
 - [ ] `ChallengeApp` imports `ChallengeAppKit` and uses `RootContainerView`
-- [ ] `RootContainerView` uses `.navigationDestination(for: AnyNavigation.self)`
 - [ ] `NavigationContainerView` in `AppKit/Sources/Presentation/Views/` (NavigationStack + push + modals)
 - [ ] `RootContainerView` uses `NavigationContainerView` + `.imageLoader()` + `.onOpenURL`
 - [ ] `ModalContainerView` in `AppKit/Sources/Presentation/Views/`

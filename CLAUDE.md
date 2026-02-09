@@ -59,7 +59,7 @@ Use these skills for detailed implementation patterns:
 | `/view` | SwiftUI Views, previews, accessibility identifiers |
 | `/snapshot` | Snapshot tests with SnapshotTesting library |
 | `/navigator` | Navigation with Navigator pattern and Deep Links |
-| `/dependencyInjection` | Containers, feature entry points, dependency wiring |
+| `/dependency-injection` | Containers, feature entry points, dependency wiring |
 | `/clean-code` | Dead code detection and removal using Periphery |
 
 ---

@@ -210,9 +210,9 @@ Create `Sources/Data/DataSources/{Name}MemoryDataSource.swift`:
 import Foundation
 
 protocol {Name}MemoryDataSourceContract: Sendable {
-    // MARK: - Single Item (Detail)
-    func get{Name}Detail(identifier: Int) async -> {Name}DTO?
-    func save{Name}Detail(_ item: {Name}DTO) async
+    // MARK: - Single Item
+    func get{Name}(identifier: Int) async -> {Name}DTO?
+    func save{Name}(_ item: {Name}DTO) async
 
     // MARK: - Paginated Results (optional)
     func getPage(_ page: Int) async -> {Name}sResponseDTO?
@@ -225,11 +225,11 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 
     // MARK: - Single Item
 
-    func get{Name}Detail(identifier: Int) -> {Name}DTO? {
+    func get{Name}(identifier: Int) -> {Name}DTO? {
         items[identifier]
     }
 
-    func save{Name}Detail(_ item: {Name}DTO) {
+    func save{Name}(_ item: {Name}DTO) {
         items[item.id] = item
     }
 
@@ -245,7 +245,7 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 }
 ```
 
-> **Note:** Use `actor` for thread-safe storage. Methods inside actor don't need `async` keyword in implementation. Use `Detail` suffix for single-item methods.
+> **Note:** Use `actor` for thread-safe storage. Methods inside actor don't need `async` keyword in implementation.
 
 ### 2. Create Mock
 
@@ -257,22 +257,22 @@ import Foundation
 @testable import Challenge{Feature}
 
 final class {Name}MemoryDataSourceMock: {Name}MemoryDataSourceContract, @unchecked Sendable {
-    var detailToReturn: {Name}DTO?
+    var itemToReturn: {Name}DTO?
     var pageToReturn: {Name}sResponseDTO?
-    private(set) var get{Name}DetailCallCount = 0
-    private(set) var save{Name}DetailCallCount = 0
-    private(set) var lastSavedDetail: {Name}DTO?
+    private(set) var get{Name}CallCount = 0
+    private(set) var save{Name}CallCount = 0
+    private(set) var lastSaved{Name}: {Name}DTO?
     private(set) var getPageCallCount = 0
     private(set) var savePageCallCount = 0
 
-    func get{Name}Detail(identifier: Int) async -> {Name}DTO? {
-        get{Name}DetailCallCount += 1
-        return detailToReturn
+    func get{Name}(identifier: Int) async -> {Name}DTO? {
+        get{Name}CallCount += 1
+        return itemToReturn
     }
 
-    func save{Name}Detail(_ item: {Name}DTO) async {
-        save{Name}DetailCallCount += 1
-        lastSavedDetail = item
+    func save{Name}(_ item: {Name}DTO) async {
+        save{Name}CallCount += 1
+        lastSaved{Name} = item
     }
 
     func getPage(_ page: Int) async -> {Name}sResponseDTO? {
@@ -298,44 +298,44 @@ import Testing
 struct {Name}MemoryDataSourceTests {
     private let sut = {Name}MemoryDataSource()
 
-    // MARK: - Get Detail Tests
+    // MARK: - Get Tests
 
-    @Test("Get detail returns nil when not stored")
-    func getDetailReturnsNilWhenNotStored() async {
+    @Test("Get returns nil when not stored")
+    func getReturnsNilWhenNotStored() async {
         // When
-        let result = await sut.get{Name}Detail(identifier: 1)
+        let result = await sut.get{Name}(identifier: 1)
 
         // Then
         #expect(result == nil)
     }
 
-    @Test("Get detail returns stored item")
-    func getDetailReturnsStoredItem() async {
+    @Test("Get returns stored item")
+    func getReturnsStoredItem() async {
         // Given
         let item = {Name}DTO(id: 1, name: "Test")
-        await sut.save{Name}Detail(item)
+        await sut.save{Name}(item)
 
         // When
-        let result = await sut.get{Name}Detail(identifier: 1)
+        let result = await sut.get{Name}(identifier: 1)
 
         // Then
         #expect(result == item)
     }
 
-    // MARK: - Save Detail Tests
+    // MARK: - Save Tests
 
-    @Test("Save detail overwrites existing item")
-    func saveDetailOverwritesExistingItem() async {
+    @Test("Save overwrites existing item")
+    func saveOverwritesExistingItem() async {
         // Given
         let original = {Name}DTO(id: 1, name: "Original")
         let updated = {Name}DTO(id: 1, name: "Updated")
-        await sut.save{Name}Detail(original)
+        await sut.save{Name}(original)
 
         // When
-        await sut.save{Name}Detail(updated)
+        await sut.save{Name}(updated)
 
         // Then
-        let result = await sut.get{Name}Detail(identifier: 1)
+        let result = await sut.get{Name}(identifier: 1)
         #expect(result?.name == "Updated")
     }
 }

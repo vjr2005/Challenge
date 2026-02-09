@@ -29,7 +29,8 @@ Features/{Feature}/
 │   └── Data/
 │       ├── DataSources/
 │       │   ├── {Name}RemoteDataSource.swift
-│       │   └── {Name}MemoryDataSource.swift
+│       │   ├── {Name}MemoryDataSource.swift
+│       │   └── {Name}LocalDataSource.swift    # Optional: UserDefaults persistence
 │       └── DTOs/
 │           └── {Name}DTO.swift
 └── Tests/
@@ -105,10 +106,10 @@ struct {Name}DTO: Decodable, Equatable {
 
 ```swift
 protocol {Name}MemoryDataSourceContract: Sendable {
-    // MARK: - Single Item (Detail)
-    func get{Name}Detail(identifier: Int) async -> {Name}DTO?
-    func save{Name}Detail(_ item: {Name}DTO) async
-    func delete{Name}Detail(identifier: Int) async
+    // MARK: - Single Item
+    func get{Name}(identifier: Int) async -> {Name}DTO?
+    func save{Name}(_ item: {Name}DTO) async
+    func delete{Name}(identifier: Int) async
 
     // MARK: - Paginated Results (optional)
     func getPage(_ page: Int) async -> {Name}sResponseDTO?
@@ -118,7 +119,6 @@ protocol {Name}MemoryDataSourceContract: Sendable {
 
 **Rules:**
 - `async` (no throws), return optional for get
-- Use `Detail` suffix for single-item methods to distinguish from list operations
 - `identifier` parameter name (not `id`) for consistency
 
 ### Implementation (Actor)
@@ -130,9 +130,9 @@ actor {Name}MemoryDataSource: {Name}MemoryDataSourceContract {
 
     // MARK: - Single Item
 
-    func get{Name}Detail(identifier: Int) -> {Name}DTO? { items[identifier] }
-    func save{Name}Detail(_ item: {Name}DTO) { items[item.id] = item }
-    func delete{Name}Detail(identifier: Int) { items.removeValue(forKey: identifier) }
+    func get{Name}(identifier: Int) -> {Name}DTO? { items[identifier] }
+    func save{Name}(_ item: {Name}DTO) { items[item.id] = item }
+    func delete{Name}(identifier: Int) { items.removeValue(forKey: identifier) }
 
     // MARK: - Paginated Results
 

@@ -52,7 +52,7 @@ The codebase adheres to SOLID principles to ensure maintainable, extensible, and
 |-----------|-------------|---------------------|
 | **S**ingle Responsibility | Each class/struct has only one reason to change | `GetCharactersPageUseCase` only handles fetching characters page; `CharacterViewModel` only manages character list state |
 | **O**pen/Closed | Open for extension, closed for modification | Protocols like `CharacterRepositoryContract` allow new implementations without modifying existing code |
-| **L**iskov Substitution | Subtypes must be substitutable for their base types | `RemoteCharacterDataSource` and `MemoryCharacterDataSource` are interchangeable via `CharacterDataSourceContract` |
+| **L**iskov Substitution | Subtypes must be substitutable for their base types | `CharacterRepositoryMock` substitutes `CharacterRepository` via `CharacterRepositoryContract` in tests |
 | **I**nterface Segregation | Prefer small, specific protocols over large ones | Separate contracts for `CharacterRepositoryContract`, `CharactersPageRepositoryContract` instead of one large protocol |
 | **D**ependency Inversion | Depend on abstractions, not concrete implementations | ViewModels depend on UseCase protocols; Repositories depend on DataSource protocols |
 
@@ -195,15 +195,25 @@ struct Character: Equatable {
     let imageURL: URL?           // Proper URL type
 }
 
-// Mapping in Repository
-private extension CharacterDTO {
-    func toDomain() -> Character {
+// Mapping via MapperContract (in Data/Mappers/)
+struct CharacterMapper: MapperContract {
+    func map(_ input: CharacterDTO) -> Character {
         Character(
-            id: id,
-            name: name,
-            status: CharacterStatus(from: status),
-            imageURL: URL(string: image)
+            id: input.id,
+            name: input.name,
+            status: CharacterStatus(from: input.status),
+            imageURL: URL(string: input.image)
         )
+    }
+}
+
+// Usage in Repository
+struct CharacterRepository: CharacterRepositoryContract {
+    private let mapper = CharacterMapper()
+
+    func getCharacter(...) async throws(CharacterError) -> Character {
+        let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
+        return mapper.map(dto)  // DTO → Domain via Mapper
     }
 }
 ```

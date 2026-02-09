@@ -636,7 +636,7 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}ViewModelTests {
-    @Test
+    @Test("Initial state is idle")
     func initialStateIsIdle() {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
@@ -648,7 +648,7 @@ struct {Name}ViewModelTests {
         #expect(sut.state == .idle)
     }
 
-    @Test
+    @Test("Load sets loaded state on success")
     func loadSetsLoadedStateOnSuccess() async {
         // Given
         let expected = {Name}.stub()
@@ -659,13 +659,13 @@ struct {Name}ViewModelTests {
         let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
-        await sut.load(id: 1)
+        await sut.load(identifier: 1)
 
         // Then
         #expect(sut.state == .loaded(expected))
     }
 
-    @Test
+    @Test("Load sets error state on failure")
     func loadSetsErrorStateOnFailure() async {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
@@ -675,14 +675,14 @@ struct {Name}ViewModelTests {
         let sut = {Name}ViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
-        await sut.load(id: 1)
+        await sut.load(identifier: 1)
 
         // Then
         #expect(sut.state == .error(TestError.network))
     }
 
-    @Test
-    func loadCallsUseCaseWithCorrectId() async {
+    @Test("Load calls use case with correct identifier")
+    func loadCallsUseCaseWithCorrectIdentifier() async {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
         useCaseMock.result = .success(.stub())
@@ -691,14 +691,14 @@ struct {Name}ViewModelTests {
         let sut = {Name}DetailViewModel(get{Name}UseCase: useCaseMock, navigator: navigatorMock, tracker: trackerMock)
 
         // When
-        await sut.load(id: 42)
+        await sut.load(identifier: 42)
 
         // Then
         #expect(useCaseMock.executeCallCount == 1)
-        #expect(useCaseMock.lastRequestedId == 42)
+        #expect(useCaseMock.lastRequestedIdentifier == 42)
     }
 
-    @Test
+    @Test("Did select item navigates to detail")
     func didSelectItemNavigatesToDetail() {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
@@ -713,7 +713,7 @@ struct {Name}ViewModelTests {
         #expect(navigatorMock.navigateToDetailIds == [42])
     }
 
-    @Test
+    @Test("Did tap on back calls navigator")
     func didTapOnBackCallsNavigator() {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()
@@ -728,7 +728,7 @@ struct {Name}ViewModelTests {
         #expect(navigatorMock.goBackCallCount == 1)
     }
 
-    @Test
+    @Test("didAppear tracks screen viewed")
     func didAppearTracksScreenViewed() async {
         // Given
         let useCaseMock = Get{Name}UseCaseMock()

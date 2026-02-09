@@ -734,7 +734,6 @@ import Testing
 
 @testable import Challenge{Feature}
 
-@Suite(.timeLimit(.minutes(1)))
 struct {ScreenName}ViewModelTests {
     private let navigatorMock = {ScreenName}NavigatorMock()
     private let trackerMock = {ScreenName}TrackerMock()
