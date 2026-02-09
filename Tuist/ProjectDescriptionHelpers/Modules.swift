@@ -11,6 +11,7 @@ public enum Modules {
 		ResourcesModule.module,
 		DesignSystemModule.module,
 		CharacterModule.module,
+		EpisodeModule.module,
 		HomeModule.module,
 		SystemModule.module,
 		AppKitModule.module,
@@ -36,6 +37,7 @@ public enum Modules {
 			+ ResourcesModule.targetReferences
 			+ DesignSystemModule.targetReferences
 			+ CharacterModule.targetReferences
+			+ EpisodeModule.targetReferences
 			+ HomeModule.targetReferences
 			+ SystemModule.targetReferences
 			+ AppKitModule.targetReferences

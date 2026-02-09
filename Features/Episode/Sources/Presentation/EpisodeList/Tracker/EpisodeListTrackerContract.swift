@@ -1,0 +1,3 @@
+protocol EpisodeListTrackerContract {
+    func trackScreenViewed()
+}
