@@ -66,7 +66,12 @@ public struct AppContainer {
 
 	public func handle(url: URL, navigator: any NavigatorContract) {
 		for feature in features {
-			if let navigation = feature.deepLinkHandler?.resolve(url) {
+			guard let handler = feature.deepLinkHandler,
+				  url.scheme == handler.scheme,
+				  url.host == handler.host else {
+				continue
+			}
+			if let navigation = handler.resolve(url) {
 				navigator.navigate(to: navigation)
 				return
 			}
