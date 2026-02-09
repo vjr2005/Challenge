@@ -1,6 +1,6 @@
 import XCTest
 
-struct CharacterFilterRobot: RobotContract {
+struct CharacterFilterRobot {
 	let app: XCUIApplication
 }
 

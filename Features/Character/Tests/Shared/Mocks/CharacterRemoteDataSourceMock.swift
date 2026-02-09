@@ -8,13 +8,11 @@ final class CharacterRemoteDataSourceMock: CharacterRemoteDataSourceContract, @u
 	var charactersResult: Result<CharactersResponseDTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetchCharacterCallCount = 0
 	private(set) var fetchCharactersCallCount = 0
-	private(set) var lastFetchedIdentifier: Int?
 	private(set) var lastFetchedPage: Int?
 	private(set) var lastFetchedFilter: CharacterFilter?
 
 	func fetchCharacter(identifier: Int) async throws -> CharacterDTO {
 		fetchCharacterCallCount += 1
-		lastFetchedIdentifier = identifier
 		return try result.get()
 	}
 

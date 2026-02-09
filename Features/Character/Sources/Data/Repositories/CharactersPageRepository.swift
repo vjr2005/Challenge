@@ -1,5 +1,4 @@
 import ChallengeCore
-import ChallengeNetworking
 import Foundation
 
 struct CharactersPageRepository: CharactersPageRepositoryContract {

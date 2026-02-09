@@ -1,11 +1,6 @@
 import SwiftMockServer
 import XCTest
 
-/// Base protocol for all screen robots.
-protocol RobotContract {
-	var app: XCUIApplication { get }
-}
-
 /// Base class for UI tests with mock server support.
 nonisolated class UITestCase: XCTestCase {
 	private(set) var serverMock: MockServer!

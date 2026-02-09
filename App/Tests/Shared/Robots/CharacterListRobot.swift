@@ -1,6 +1,6 @@
 import XCTest
 
-struct CharacterListRobot: RobotContract {
+struct CharacterListRobot {
 	let app: XCUIApplication
 }
 
@@ -85,14 +85,6 @@ extension CharacterListRobot {
 	}
 
 	@discardableResult
-	func tapSearchField(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let searchField = app.searchFields.firstMatch
-		XCTAssertTrue(searchField.waitForExistence(timeout: 5), file: file, line: line)
-		searchField.tap()
-		return self
-	}
-
-	@discardableResult
 	func tapRecentSearch(query: String, file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let identifier = AccessibilityIdentifier.recentSearch(query: query)
 		let suggestion = app.buttons[identifier].firstMatch
@@ -145,13 +137,6 @@ extension CharacterListRobot {
 		let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
 		let row = app.descendants(matching: .any)[accessibilityId].firstMatch
 		XCTAssertFalse(row.waitForExistence(timeout: 2), "Character row \(identifier) should not exist", file: file, line: line)
-		return self
-	}
-
-	@discardableResult
-	func verifyEmptyStateIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let emptyState = app.descendants(matching: .any)[AccessibilityIdentifier.emptyStateTitle]
-		XCTAssertTrue(emptyState.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
 
@@ -209,7 +194,6 @@ extension CharacterListRobot {
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterList.scrollView"
 	static let loadMoreButton = "characterList.loadMore.button"
-	static let emptyStateTitle = "characterList.emptyState.title"
 	static let emptySearchStateTitle = "characterList.emptySearchState.title"
 	static let errorTitle = "characterList.errorView.title"
 	static let retryButton = "characterList.errorView.button"
