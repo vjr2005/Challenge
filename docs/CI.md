@@ -11,6 +11,8 @@ The project uses [GitHub Actions](https://github.com/features/actions) to run qu
 | `pull_request` | Automatically on every PR targeting `main` |
 | `workflow_dispatch` | Manually from **Actions** > **Quality Checks** > **Run workflow** |
 
+<img src="screenshots/manual-trigger.png" width="100%">
+
 ### Jobs
 
 The CI workflow (`.github/workflows/quality-checks.yml`) runs three jobs in parallel:
