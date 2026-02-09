@@ -11,6 +11,7 @@ public enum AppKitModule {
 			.target(name: "\(appName)Core"),
 			.target(name: "\(appName)Home"),
 			.target(name: "\(appName)Character"),
+			.target(name: "\(appName)Episode"),
 			.target(name: "\(appName)System"),
 			.target(name: "\(appName)Networking"),
 		],

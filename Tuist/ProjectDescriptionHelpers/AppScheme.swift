@@ -21,6 +21,7 @@ public enum AppScheme {
 				"\(appName)NetworkingTests",
 				"\(appName)DesignSystemTests",
 				"\(appName)CharacterTests",
+				"\(appName)EpisodeTests",
 				"\(appName)HomeTests",
 				"\(appName)SystemTests",
 				// Snapshot Tests

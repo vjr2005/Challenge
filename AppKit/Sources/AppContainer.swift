@@ -1,5 +1,6 @@
 import ChallengeCharacter
 import ChallengeCore
+import ChallengeEpisode
 import ChallengeHome
 import ChallengeNetworking
 import ChallengeSystem
@@ -17,10 +18,11 @@ public struct AppContainer {
 
 	private let homeFeature: HomeFeature
 	private let characterFeature: CharacterFeature
+	private let episodeFeature: EpisodeFeature
 	private let systemFeature: SystemFeature
 
 	public var features: [any FeatureContract] {
-		[homeFeature, characterFeature, systemFeature]
+		[homeFeature, characterFeature, episodeFeature, systemFeature]
 	}
 
 	// MARK: - Init
@@ -42,6 +44,7 @@ public struct AppContainer {
 
 		homeFeature = HomeFeature(tracker: self.tracker)
 		characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+		episodeFeature = EpisodeFeature(tracker: self.tracker)
 		systemFeature = SystemFeature(tracker: self.tracker)
 	}
 

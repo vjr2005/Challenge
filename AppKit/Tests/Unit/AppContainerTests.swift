@@ -82,8 +82,8 @@ struct AppContainerTests {
 
 	// MARK: - Features
 
-	@Test("Features returns three features")
-	func featuresReturnsThreeFeatures() {
+	@Test("Features returns four features")
+	func featuresReturnsFourFeatures() {
 		// Given
 		let sut = AppContainer(httpClient: HTTPClientMock(), tracker: TrackerMock())
 
@@ -91,7 +91,7 @@ struct AppContainerTests {
 		let features = sut.features
 
 		// Then
-		#expect(features.count == 3)
+		#expect(features.count == 4)
 	}
 
 	// MARK: - Resolve
