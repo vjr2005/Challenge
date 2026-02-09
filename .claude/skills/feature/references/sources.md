@@ -1,312 +1,249 @@
 # Source Templates
 
-Placeholders:
-- `{Feature}` — PascalCase feature name (e.g., `Episode`)
-- `{Screen}` — PascalCase screen name (e.g., `EpisodeList`)
-- `{feature}` — lowercase deep link host (e.g., `episode`)
-- `{deepLinkPath}` — deep link path (e.g., `/list`)
-- `{eventPrefix}` — snake_case of Screen (e.g., `episode_list`)
+Placeholders: `{Feature}` (PascalCase), `{Screen}` (PascalCase), `{feature}` (lowercase host), `{deepLinkPath}` (path), `{eventPrefix}` (snake_case of Screen).
 
 ---
 
-## Navigation
-
-### {Feature}IncomingNavigation.swift
-
-Path: `Sources/Presentation/Navigation/{Feature}IncomingNavigation.swift`
+### {Feature}IncomingNavigation.swift — `Sources/Presentation/Navigation/`
 
 ```swift
 import ChallengeCore
 
 public enum {Feature}IncomingNavigation: IncomingNavigationContract {
-    case main
+	case main
 }
 ```
 
-### {Feature}DeepLinkHandler.swift
-
-Path: `Sources/Presentation/Navigation/{Feature}DeepLinkHandler.swift`
+### {Feature}DeepLinkHandler.swift — `Sources/Presentation/Navigation/`
 
 ```swift
 import ChallengeCore
 import Foundation
 
 struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
-    let scheme = "challenge"
-    let host = "{feature}"
+	let scheme = "challenge"
+	let host = "{feature}"
 
-    func resolve(_ url: URL) -> (any NavigationContract)? {
-        switch url.path {
-        case "{deepLinkPath}":
-            {Feature}IncomingNavigation.main
+	func resolve(_ url: URL) -> (any NavigationContract)? {
+		switch url.path {
+		case "{deepLinkPath}":
+			{Feature}IncomingNavigation.main
 
-        default:
-            nil
-        }
-    }
+		default:
+			nil
+		}
+	}
 }
 ```
 
----
-
-## Navigator
-
-### {Screen}NavigatorContract.swift
-
-Path: `Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift`
+### {Screen}NavigatorContract.swift — `Sources/Presentation/{Screen}/Navigator/`
 
 ```swift
 protocol {Screen}NavigatorContract {
-    // Add navigation methods as the feature grows
+	// Add navigation methods as the feature grows
 }
 ```
 
-### {Screen}Navigator.swift
-
-Path: `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`
-
-No `any` on internal `NavigatorContract` — follows project convention.
+### {Screen}Navigator.swift — `Sources/Presentation/{Screen}/Navigator/`
 
 ```swift
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let navigator: NavigatorContract
+	private let navigator: NavigatorContract
 
-    init(navigator: NavigatorContract) {
-        self.navigator = navigator
-    }
+	init(navigator: NavigatorContract) {
+		self.navigator = navigator
+	}
 }
 ```
 
----
-
-## Tracker
-
-### {Screen}TrackerContract.swift
-
-Path: `Sources/Presentation/{Screen}/Tracker/{Screen}TrackerContract.swift`
+### {Screen}TrackerContract.swift — `Sources/Presentation/{Screen}/Tracker/`
 
 ```swift
 protocol {Screen}TrackerContract {
-    func trackScreenViewed()
+	func trackScreenViewed()
 }
 ```
 
-### {Screen}Tracker.swift
-
-Path: `Sources/Presentation/{Screen}/Tracker/{Screen}Tracker.swift`
-
-No `any` on internal `TrackerContract`.
+### {Screen}Tracker.swift — `Sources/Presentation/{Screen}/Tracker/`
 
 ```swift
 import ChallengeCore
 
 struct {Screen}Tracker: {Screen}TrackerContract {
-    private let tracker: TrackerContract
+	private let tracker: TrackerContract
 
-    init(tracker: TrackerContract) {
-        self.tracker = tracker
-    }
+	init(tracker: TrackerContract) {
+		self.tracker = tracker
+	}
 
-    func trackScreenViewed() {
-        tracker.track({Screen}Event.screenViewed)
-    }
+	func trackScreenViewed() {
+		tracker.track({Screen}Event.screenViewed)
+	}
 }
 ```
 
-### {Screen}Event.swift
-
-Path: `Sources/Presentation/{Screen}/Tracker/{Screen}Event.swift`
+### {Screen}Event.swift — `Sources/Presentation/{Screen}/Tracker/`
 
 ```swift
 import ChallengeCore
 
 enum {Screen}Event: TrackingEventContract {
-    case screenViewed
+	case screenViewed
 
-    var name: String {
-        switch self {
-        case .screenViewed:
-            "{eventPrefix}_viewed"
-        }
-    }
+	var name: String {
+		switch self {
+		case .screenViewed:
+			"{eventPrefix}_viewed"
+		}
+	}
 
-    var properties: [String: String] {
-        switch self {
-        case .screenViewed:
-            [:]
-        }
-    }
+	var properties: [String: String] {
+		switch self {
+		case .screenViewed:
+			[:]
+		}
+	}
 }
 ```
 
----
-
-## ViewModel
-
-### {Screen}ViewModelContract.swift
-
-Path: `Sources/Presentation/{Screen}/ViewModels/{Screen}ViewModelContract.swift`
+### {Screen}ViewModelContract.swift — `Sources/Presentation/{Screen}/ViewModels/`
 
 ```swift
 protocol {Screen}ViewModelContract: AnyObject {
-    func didAppear()
+	func didAppear()
 }
 ```
 
-### {Screen}ViewModel.swift
-
-Path: `Sources/Presentation/{Screen}/ViewModels/{Screen}ViewModel.swift`
-
-No `@Observable` (no observable state), no imports (all types internal), no `any`.
+### {Screen}ViewModel.swift — `Sources/Presentation/{Screen}/ViewModels/`
 
 ```swift
 final class {Screen}ViewModel: {Screen}ViewModelContract {
-    // MARK: - Dependencies
+	// MARK: - Dependencies
 
-    private let navigator: {Screen}NavigatorContract
-    private let tracker: {Screen}TrackerContract
+	private let navigator: {Screen}NavigatorContract
+	private let tracker: {Screen}TrackerContract
 
-    // MARK: - Init
+	// MARK: - Init
 
-    init(
-        navigator: {Screen}NavigatorContract,
-        tracker: {Screen}TrackerContract
-    ) {
-        self.navigator = navigator
-        self.tracker = tracker
-    }
+	init(
+		navigator: {Screen}NavigatorContract,
+		tracker: {Screen}TrackerContract
+	) {
+		self.navigator = navigator
+		self.tracker = tracker
+	}
 
-    // MARK: - {Screen}ViewModelContract
+	// MARK: - {Screen}ViewModelContract
 
-    func didAppear() {
-        tracker.trackScreenViewed()
-    }
+	func didAppear() {
+		tracker.trackScreenViewed()
+	}
 }
 ```
 
----
-
-## View
-
-### {Screen}View.swift
-
-Path: `Sources/Presentation/{Screen}/Views/{Screen}View.swift`
+### {Screen}View.swift — `Sources/Presentation/{Screen}/Views/`
 
 ```swift
 import ChallengeDesignSystem
 import SwiftUI
 
 struct {Screen}View<ViewModel: {Screen}ViewModelContract>: View {
-    // MARK: - Properties
+	// MARK: - Properties
 
-    @State private var viewModel: ViewModel
+	@State private var viewModel: ViewModel
 
-    // MARK: - Init
+	// MARK: - Init
 
-    init(viewModel: ViewModel) {
-        _viewModel = State(initialValue: viewModel)
-    }
+	init(viewModel: ViewModel) {
+		_viewModel = State(initialValue: viewModel)
+	}
 
-    // MARK: - Body
+	// MARK: - Body
 
-    var body: some View {
-        Text("{Feature}")
-            .onFirstAppear {
-                viewModel.didAppear()
-            }
-    }
+	var body: some View {
+		Text("{Feature}")
+			.onFirstAppear {
+				viewModel.didAppear()
+			}
+	}
 }
 
 /*
 #if DEBUG
 #Preview {
-    {Screen}View(viewModel: {Screen}ViewModelStub())
+	{Screen}View(viewModel: {Screen}ViewModelStub())
 }
 #endif
 */
 ```
 
----
-
-## Container
-
-### {Feature}Container.swift
-
-Path: `Sources/{Feature}Container.swift`
-
-Uses `any` only on public protocols from Core module.
+### {Feature}Container.swift — `Sources/`
 
 ```swift
 import ChallengeCore
 
 public final class {Feature}Container {
-    // MARK: - Dependencies
+	// MARK: - Dependencies
 
-    private let tracker: any TrackerContract
+	private let tracker: any TrackerContract
 
-    // MARK: - Init
+	// MARK: - Init
 
-    public init(tracker: any TrackerContract) {
-        self.tracker = tracker
-    }
+	public init(tracker: any TrackerContract) {
+		self.tracker = tracker
+	}
 
-    // MARK: - Factories
+	// MARK: - Factories
 
-    func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
-        {Screen}ViewModel(
-            navigator: {Screen}Navigator(navigator: navigator),
-            tracker: {Screen}Tracker(tracker: tracker)
-        )
-    }
+	func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
+		{Screen}ViewModel(
+			navigator: {Screen}Navigator(navigator: navigator),
+			tracker: {Screen}Tracker(tracker: tracker)
+		)
+	}
 }
 ```
 
----
-
-## Feature
-
-### {Feature}Feature.swift
-
-Path: `Sources/{Feature}Feature.swift`
+### {Feature}Feature.swift — `Sources/`
 
 ```swift
 import ChallengeCore
 import SwiftUI
 
 public struct {Feature}Feature: FeatureContract {
-    // MARK: - Dependencies
+	// MARK: - Dependencies
 
-    private let container: {Feature}Container
+	private let container: {Feature}Container
 
-    // MARK: - Init
+	// MARK: - Init
 
-    public init(tracker: any TrackerContract) {
-        self.container = {Feature}Container(tracker: tracker)
-    }
+	public init(tracker: any TrackerContract) {
+		self.container = {Feature}Container(tracker: tracker)
+	}
 
-    // MARK: - FeatureContract
+	// MARK: - FeatureContract
 
-    public var deepLinkHandler: (any DeepLinkHandlerContract)? {
-        {Feature}DeepLinkHandler()
-    }
+	public var deepLinkHandler: (any DeepLinkHandlerContract)? {
+		{Feature}DeepLinkHandler()
+	}
 
-    public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView({Screen}View(viewModel: container.make{Screen}ViewModel(navigator: navigator)))
-    }
+	public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+		AnyView({Screen}View(viewModel: container.make{Screen}ViewModel(navigator: navigator)))
+	}
 
-    public func resolve(
-        _ navigation: any NavigationContract,
-        navigator: any NavigatorContract
-    ) -> AnyView? {
-        guard let navigation = navigation as? {Feature}IncomingNavigation else {
-            return nil
-        }
-        switch navigation {
-        case .main:
-            return makeMainView(navigator: navigator)
-        }
-    }
+	public func resolve(
+		_ navigation: any NavigationContract,
+		navigator: any NavigatorContract
+	) -> AnyView? {
+		guard let navigation = navigation as? {Feature}IncomingNavigation else {
+			return nil
+		}
+		switch navigation {
+		case .main:
+			return makeMainView(navigator: navigator)
+		}
+	}
 }
 ```

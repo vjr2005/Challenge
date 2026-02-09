@@ -1,11 +1,11 @@
 ---
 name: feature
-description: Creates a new feature module with minimal viable structure. Use when bootstrapping a new feature from scratch, scaffolding the Tuist module, Container, Feature entry point, DeepLinkHandler, and initial screen with placeholder Text view. Includes all unit tests, mocks, and stubs. For adding domain/data layers afterward, use /datasource, /repository, /usecase. For enhancing views, use /view, /viewmodel, /navigator.
+description: Creates a new feature module with minimal viable structure. Use when bootstrapping a new feature from scratch, scaffolding the Tuist module, Container, Feature entry point, DeepLinkHandler, and initial screen with placeholder Text view. Includes all unit tests, mocks, stubs, and app integration. For adding domain/data layers afterward, use /datasource, /repository, /usecase. For enhancing views, use /view, /viewmodel, /navigator.
 ---
 
 # Skill: Feature
 
-Create a new feature module with the minimum viable structure: Tuist module, Feature entry point, Container, DeepLinkHandler, and one screen with placeholder `Text`.
+Create a new feature module with the minimum viable structure: Tuist module, Feature entry point, Container, DeepLinkHandler, and one screen with placeholder `Text`. Integrates into the app.
 
 ## Parameters
 
@@ -18,9 +18,7 @@ Gather from user before starting:
 | Deep link host | lowercase | `episode` |
 | Deep link path | path | `/list` |
 
-Derived values:
-- **Module name**: `Challenge{Feature}` (e.g., `ChallengeEpisode`)
-- **Event prefix**: snake_case of Screen (e.g., `episode_list`)
+Derived: module name = `Challenge{Feature}`, event prefix = snake_case of Screen.
 
 ## File Structure
 
@@ -69,6 +67,14 @@ Features/{Feature}/
             └── {Screen}ViewModelStub.swift
 ```
 
+## Conventions
+
+- **No `@Observable`** on minimal ViewModels (no observable state). Only add when ViewModel has `private(set) var`.
+- **No `any` keyword** on internal protocol types. Only on public protocols from other modules (e.g., `any TrackerContract` in Container).
+- **No imports** in ViewModel when all types are internal to the module.
+- **Deep link paths** are scoped per host — `/list` under `episode` host is independent from `/list` under `character` host.
+- Tuist module uses `\(appName)` string interpolation for target names.
+
 ## Workflow
 
 ### Step 1: Tuist Module
@@ -79,26 +85,26 @@ Create `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`:
 import ProjectDescription
 
 public enum {Feature}Module {
-    public static let module = FrameworkModule.create(
-        name: "{Feature}",
-        baseFolder: "Features",
-        path: "{Feature}",
-        dependencies: [
-            .target(name: "\(appName)Core"),
-            .target(name: "\(appName)DesignSystem"),
-            .target(name: "\(appName)Resources"),
-        ],
-        testDependencies: [
-            .target(name: "\(appName)CoreMocks"),
-        ],
-        snapshotTestDependencies: [
-            .target(name: "\(appName)CoreMocks"),
-        ]
-    )
+	public static let module = FrameworkModule.create(
+		name: "{Feature}",
+		baseFolder: "Features",
+		path: "{Feature}",
+		dependencies: [
+			.target(name: "\(appName)Core"),
+			.target(name: "\(appName)DesignSystem"),
+			.target(name: "\(appName)Resources"),
+		],
+		testDependencies: [
+			.target(name: "\(appName)CoreMocks"),
+		],
+		snapshotTestDependencies: [
+			.target(name: "\(appName)CoreMocks"),
+		]
+	)
 
-    public static let targetReferences: [TargetReference] = [
-        .target("\(appName){Feature}"),
-    ]
+	public static let targetReferences: [TargetReference] = [
+		.target("\(appName){Feature}"),
+	]
 }
 ```
 
@@ -108,48 +114,46 @@ Register in `Modules.swift`:
 
 ### Step 2: Source Files
 
-Create all source files under `Features/{Feature}/Sources/`. See [sources.md](references/sources.md) for templates.
+Create all source files from [sources.md](references/sources.md).
 
-Creation order:
-1. Navigation: `{Feature}IncomingNavigation`, `{Feature}DeepLinkHandler`
-2. Navigator: `{Screen}NavigatorContract`, `{Screen}Navigator`
-3. Tracker: `{Screen}TrackerContract`, `{Screen}Tracker`, `{Screen}Event`
-4. ViewModel: `{Screen}ViewModelContract`, `{Screen}ViewModel`
-5. View: `{Screen}View`
-6. DI: `{Feature}Container`, `{Feature}Feature`
+Order: IncomingNavigation → DeepLinkHandler → NavigatorContract → Navigator → TrackerContract → Tracker → Event → ViewModelContract → ViewModel → View → Container → Feature.
 
 ### Step 3: Test Files
 
-Create all test files under `Features/{Feature}/Tests/`. See [tests.md](references/tests.md) for templates.
+Create all test files from [tests.md](references/tests.md).
 
-1. Mocks: `{Screen}NavigatorMock`, `{Screen}TrackerMock`
-2. Stubs: `{Screen}ViewModelStub`
-3. Unit tests: `{Feature}FeatureTests`, `{Feature}DeepLinkHandlerTests`, `{Screen}NavigatorTests`, `{Screen}TrackerTests`, `{Screen}EventTests`, `{Screen}ViewModelTests`
+Order: Mocks → Stubs → Unit tests.
 
-### Step 4: Verify
+### Step 4: App Integration
+
+Wire the feature into the app — 4 files to modify:
+
+**`Tuist/ProjectDescriptionHelpers/Modules/AppKitModule.swift`** — Add dependency:
+```swift
+.target(name: "\(appName){Feature}"),
+```
+
+**`Tuist/ProjectDescriptionHelpers/AppScheme.swift`** — Add test target:
+```swift
+"\(appName){Feature}Tests",
+```
+Add `"\(appName){Feature}SnapshotTests"` only if snapshot tests exist.
+
+**`AppKit/Sources/AppContainer.swift`** — Three changes:
+1. Add import: `import Challenge{Feature}`
+2. Add property: `private let {feature}Feature: {Feature}Feature`
+3. Initialize in `init`: `{feature}Feature = {Feature}Feature(tracker: self.tracker)`
+4. Add to `features` array
+
+**`AppKit/Tests/Unit/AppContainerTests.swift`** — Increment features count assertion.
+
+### Step 5: Verify
 
 ```bash
 mise x -- tuist test --skip-ui-tests
 ```
 
-## Important Conventions
-
-- **No `@Observable`** on minimal ViewModels (no observable state). Only add `@Observable` when the ViewModel has `private(set) var` state properties.
-- **No `any` keyword** on internal protocol types. Only use `any` on public protocols from other modules (e.g., `any TrackerContract` in Container init).
-- **No imports** needed in ViewModel when all types are internal to the module.
-- Tuist module uses `\(appName)` string interpolation for target names (e.g., `"\(appName)Core"`).
-
-## Integration (Manual — After Feature Is Ready)
-
-These steps wire the feature into the app. Perform when ready to use:
-
-1. **AppContainer**: Add `{Feature}Feature` instance and register in `features` array
-2. **AppKitModule**: Add `Challenge{Feature}` to dependencies (and `Challenge{Feature}Mocks` to test dependencies)
-3. **AppScheme**: Add `Challenge{Feature}Tests` and `Challenge{Feature}SnapshotTests` (if exists) to Dev scheme
-
 ## Extending the Feature
-
-Use other skills to add layers incrementally:
 
 | Need | Skill |
 |------|-------|
