@@ -1,24 +1,123 @@
 ---
 name: repository
-description: Creates Repositories that abstract data access. Use when creating repositories, transforming DTOs to domain models, or implementing local-first caching.
+description: Creates Repositories that abstract data access. Use when creating repositories, transforming DTOs to domain models, or implementing local-first caching. Supports remote-only, local-only, and cached (remote + local) repositories with CachePolicy.
 ---
 
 # Skill: Repository
 
 Guide for creating Repositories that abstract data access following Clean Architecture.
 
-## When to use this skill
+## References
 
-- Create a new Repository to abstract data sources
-- Transform DTOs to Domain models
-- Provide a clean API for Use Cases
-- Implement caching with local-first policy
+Each reference contains full templates: contract, implementation, mock, and tests.
 
-## Additional resources
+- **Remote only**: See [references/remote-only.md](references/remote-only.md)
+- **Local only**: See [references/local-only.md](references/local-only.md)
+- **Cache — localFirst only**: See [references/cache-local-first.md](references/cache-local-first.md)
+- **Cache — remoteFirst only**: See [references/cache-remote-first.md](references/cache-remote-first.md)
+- **Cache — noCache only**: See [references/cache-no-cache.md](references/cache-no-cache.md)
+- **Cache — All configurable (recommended)**: See [references/cache-all.md](references/cache-all.md)
 
-- For complete implementation examples, see [examples.md](examples.md)
+---
 
-## File structure
+## Workflow
+
+### Step 1 — Identify Existing DataSources
+
+Before creating a Repository, scan the feature's `Sources/Data/DataSources/` directory to discover what already exists.
+
+- **DataSources found?** → Go to Step 2
+- **No DataSources found?** → Ask the user which DataSource to create first, then invoke the `/datasource` skill. Return here after completion.
+
+### Step 2 — Select Target DataSource
+
+Present the discovered DataSources to the user and ask:
+
+> "Which DataSource(s) should this Repository use?"
+
+Possible combinations:
+
+| Scenario | DataSources | Next step |
+|----------|-------------|-----------|
+| Remote only | `RemoteDataSource` only | → Step 3a |
+| Local only (memory) | `MemoryDataSource` only | → Step 3b |
+| Local only (persistent) | `LocalDataSource` (UserDefaults) only | → Step 3b |
+| Both (cached) | `RemoteDataSource` + `MemoryDataSource` | → Step 3c |
+
+If the user wants a cached repository but **no local DataSource exists**:
+
+> "There is no local DataSource for caching. Do you want to create one using the `/datasource` skill?"
+
+If yes → invoke `/datasource` to create the Memory DataSource, then return to Step 3c.
+
+### Step 3a — Remote Only Repository
+
+Implement using [references/remote-only.md](references/remote-only.md).
+
+Checklist:
+- [ ] Domain model (`Equatable`, `let` properties, in `Domain/Models/`)
+- [ ] Domain error enum in `Domain/Errors/` (typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
+- [ ] Contract in `Domain/Repositories/` (typed throws, `Sendable`)
+- [ ] Mapper in `Data/Mappers/` (`MapperContract`)
+- [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
+- [ ] Implementation in `Data/Repositories/` (injects RemoteDataSource, uses Mapper + Error Mapper)
+- [ ] Mock in `Tests/Mocks/`
+- [ ] Mapper tests, Error Mapper tests, Repository tests
+- [ ] Localized strings for error messages
+
+### Step 3b — Local Only Repository
+
+Implement using [references/local-only.md](references/local-only.md).
+
+Checklist:
+- [ ] Domain model (`Equatable`, `let` properties, in `Domain/Models/`)
+- [ ] Domain error enum in `Domain/Errors/`
+- [ ] Contract in `Domain/Repositories/` (typed throws, `Sendable`)
+- [ ] Mapper in `Data/Mappers/` (`MapperContract`)
+- [ ] Implementation in `Data/Repositories/` (injects LocalDataSource, uses Mapper)
+- [ ] Domain-to-DTO mapping (for saving)
+- [ ] Mock in `Tests/Mocks/`
+- [ ] Tests
+
+### Step 3c — Cached Repository (Remote + Local)
+
+**Ask the user which cache policy to apply:**
+
+> "Which cache policy should this Repository use?"
+>
+> - **localFirst** — Cache first, remote if cache miss. Saves remote result to cache.
+> - **remoteFirst** — Remote first, cache as fallback on error. Saves remote result to cache.
+> - **noCache** — Remote only, no cache interaction.
+> - **All (configurable)** — Accept `CachePolicy` parameter, implement all three strategies.
+
+For most repositories, **"All (configurable)"** is recommended — callers decide the policy per request.
+
+| User choice | Reference to use |
+|-------------|-----------------|
+| localFirst | [references/cache-local-first.md](references/cache-local-first.md) |
+| remoteFirst | [references/cache-remote-first.md](references/cache-remote-first.md) |
+| noCache | [references/cache-no-cache.md](references/cache-no-cache.md) |
+| All (configurable) | [references/cache-all.md](references/cache-all.md) |
+
+Checklist (for All configurable — adapt for single-policy variants):
+- [ ] Import `ChallengeCore` (provides `CachePolicy` and `MapperContract`)
+- [ ] Domain model (`Equatable`, `let` properties, in `Domain/Models/`)
+- [ ] Domain error enum in `Domain/Errors/` (typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
+- [ ] Contract in `Domain/Repositories/` with `cachePolicy: CachePolicy` parameter
+- [ ] Mapper in `Data/Mappers/` (`MapperContract`)
+- [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
+- [ ] Implementation in `Data/Repositories/` (injects both DataSources, uses Mapper + Error Mapper)
+- [ ] Extract `fetchFromRemote` helper (avoids duplication)
+- [ ] Implement cache strategies
+- [ ] Mock in `Tests/Mocks/` (tracks `cachePolicy`)
+- [ ] Mapper tests, Error Mapper tests
+- [ ] Tests for each cache strategy
+- [ ] Tests for error handling
+- [ ] Localized strings for error messages
+
+---
+
+## File Structure
 
 ```
 Features/{Feature}/
@@ -31,18 +130,11 @@ Features/{Feature}/
 │   │   └── Repositories/
 │   │       └── {Name}RepositoryContract.swift    # Contract (protocol)
 │   └── Data/
-│       ├── DataSources/
-│       │   ├── Remote/
-│       │   │   ├── {Name}RemoteDataSourceContract.swift  # See /datasource skill
-│       │   │   └── {Name}RESTDataSource.swift            # See /datasource skill
-│       │   └── Local/
-│       │       ├── {Name}LocalDataSourceContract.swift   # See /datasource skill
-│       │       └── {Name}MemoryDataSource.swift          # See /datasource skill
-│       ├── DTOs/
-│       │   └── {Name}DTO.swift                   # See /datasource skill
+│       ├── DataSources/                          # See /datasource skill
+│       ├── DTOs/                                 # See /datasource skill
 │       ├── Mappers/
-│       │   ├── {Name}Mapper.swift                # DTO to Domain mapping
-│       │   └── {Name}ErrorMapper.swift           # APIError to Domain error mapping
+│       │   ├── {Name}Mapper.swift                # DTO → Domain mapping
+│       │   └── {Name}ErrorMapper.swift           # APIError → Domain error
 │       └── Repositories/
 │           └── {Name}Repository.swift            # Implementation
 └── Tests/
@@ -52,19 +144,10 @@ Features/{Feature}/
     │       └── {Name}ErrorMapperTests.swift
     ├── Domain/
     │   └── Errors/
-    │       └── {Feature}ErrorTests.swift         # Error tests
+    │       └── {Feature}ErrorTests.swift
     └── Mocks/
         └── {Name}RepositoryMock.swift
 ```
-
-## Repository Scenarios
-
-| Scenario | DataSources | Use case |
-|----------|-------------|----------|
-| Remote only | `RemoteDataSource` | Simple API consumption |
-| Local only (memory) | `MemoryDataSource` | Offline-first, local state |
-| Local only (persistent) | `LocalDataSource` | UserDefaults-backed storage (e.g., recent searches) |
-| Both (local-first) | `RemoteDataSource` + `MemoryDataSource` | Caching with remote fallback |
 
 ---
 
@@ -72,14 +155,7 @@ Features/{Feature}/
 
 ### Domain Model (Rich, not Anemic)
 
-> *"The basic symptom of an Anemic Domain Model is that at first blush it looks like the real thing... but there is hardly any behavior on these objects, making them little more than bags of getters and setters."*
-> — Martin Fowler, [Anemic Domain Model](https://martinfowler.com/bliki/AnemicDomainModel.html)
-
-Domain models **should have behavior** that is intrinsic to the concept they represent. Unlike DTOs (which are intentionally anemic), domain models can include:
-
-- Factory methods (e.g., `.empty()`)
-- Computed properties
-- Business rules and validations
+Domain models **should have behavior** intrinsic to the concept they represent (unlike DTOs, which are intentionally anemic):
 
 ```swift
 struct {Name}: Equatable {
@@ -87,39 +163,17 @@ struct {Name}: Equatable {
     let name: String
     let items: [Item]
 
-    // ✓ Factory method - valid domain concept
     static func empty() -> {Name} {
         {Name}(id: 0, name: "", items: [])
     }
 
-    // ✓ Computed property - business logic
     var totalValue: Decimal {
         items.reduce(0) { $0 + $1.price }
-    }
-
-    // ✓ Business rule
-    func canBeProcessed() -> Bool {
-        !items.isEmpty && totalValue > 0
     }
 }
 ```
 
-**What belongs in Domain Model:**
-- Factory methods for valid domain states
-- Computed properties derived from its data
-- Business rules intrinsic to the concept
-
-**What does NOT belong in Domain Model:**
-- Persistence logic (`save()`, `fetch()`) → Repository
-- Presentation logic (`displayName()`) → ViewModel
-- Serialization (`toJSON()`) → DTO
-
-**Rules:**
-- Located in `Domain/Models/`
-- **Internal visibility**
-- Conform to `Equatable`
-- Use `let` properties (immutable)
-- **May include behavior** that is intrinsic to the domain concept
+**Rules:** `Domain/Models/`, internal visibility, `Equatable`, `let` properties, may include factory methods / computed properties / business rules. No persistence, presentation, or serialization logic.
 
 ### Contract (Protocol)
 
@@ -131,30 +185,13 @@ protocol {Name}RepositoryContract: Sendable {
 }
 ```
 
-**Rules:**
-- Located in `Domain/Repositories/`
-- `Contract` suffix
-- **Internal visibility**
-- Conform to `Sendable`
-- **Return Domain models, NOT DTOs**
-- Use **typed throws** (`throws({Feature}Error)`) instead of generic `throws`
-- Include `cachePolicy: CachePolicy` parameter for repositories with caching
+**Rules:** `Domain/Repositories/`, `Contract` suffix, internal, `Sendable`, return Domain models (not DTOs), typed throws. Include `cachePolicy: CachePolicy` for cached repos.
 
-### DTO to Domain Mapping
+**Naming:** `get{Name}` (singular), `get{Name}sPage` (paginated list), `search{Name}sPage` (search). Separate contracts per ISP when concerns differ.
 
-Mapping logic lives in dedicated **Mapper types** that conform to `MapperContract` (from `ChallengeCore`). Each Mapper is a pure, stateless struct that transforms DTOs into Domain models. Repositories use Mappers as concrete types (not injected via protocol), since they are deterministic and don't need mocking.
+### DTO → Domain Mapping
 
 ```swift
-// Libraries/Core/Sources/Data/MapperContract.swift
-public protocol MapperContract<Input, Output>: Sendable {
-    associatedtype Input
-    associatedtype Output
-    func map(_ input: Input) -> Output
-}
-```
-
-```swift
-// In Sources/Data/Mappers/{Name}Mapper.swift
 import ChallengeCore
 
 struct {Name}Mapper: MapperContract {
@@ -164,130 +201,11 @@ struct {Name}Mapper: MapperContract {
 }
 ```
 
-```swift
-// In {Name}Repository.swift
-struct {Name}Repository: {Name}RepositoryContract {
-    private let mapper = {Name}Mapper()
+Pure stateless structs, `MapperContract` from `ChallengeCore`. Used as concrete types in repositories (not injected). Composable: mappers can delegate to other mappers.
 
-    func get{Name}(identifier: Int) async throws -> {Name} {
-        let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
-        return mapper.map(dto)
-    }
-}
-```
-
-**Why Mapper types?**
-- Single Responsibility: Repositories handle data access, Mappers handle transformation
-- Independently testable without data source mocks
-- Composable: Mappers can delegate to other Mappers (e.g., `CharacterMapper` uses `LocationMapper`)
-- DTOs remain anemic (no knowledge of Domain models)
-
-### Mock
+### Error Mapping
 
 ```swift
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
-    var result: Result<{Name}, Error> = .failure(NotConfiguredError.notConfigured)
-    private(set) var getCallCount = 0
-    private(set) var lastRequestedIdentifier: Int?
-
-    func get{Name}(identifier: Int) async throws -> {Name} {
-        getCallCount += 1
-        lastRequestedIdentifier = identifier
-        return try result.get()
-    }
-}
-```
-
-**Rules:**
-- Located in `Tests/Mocks/`
-- Requires `@testable import`
-- `@unchecked Sendable` for mutable state
-
----
-
-## Error Handling
-
-Repositories transform data layer errors (e.g., `APIError`) into domain-specific errors using **typed throws**.
-
-### Domain Error
-
-```
-Features/{Feature}/
-└── Sources/
-    └── Domain/
-        └── Errors/
-            └── {Feature}Error.swift
-```
-
-```swift
-public enum {Feature}Error: Error, Equatable, LocalizedError {
-    case loadFailed(description: String = "")
-    case notFound(identifier: Int)
-    case invalidPage(page: Int)
-
-    public static func == (lhs: {Feature}Error, rhs: {Feature}Error) -> Bool {
-        switch (lhs, rhs) {
-        case (.loadFailed, .loadFailed):
-            true
-        case let (.notFound(lhsId), .notFound(rhsId)):
-            lhsId == rhsId
-        case let (.invalidPage(lhsPage), .invalidPage(rhsPage)):
-            lhsPage == rhsPage
-        default:
-            false
-        }
-    }
-
-    public var errorDescription: String? {
-        switch self {
-        case .loadFailed:
-            "{feature}Error.loadFailed".localized()
-        case .notFound(let identifier):
-            "{feature}Error.notFound %lld".localized(identifier)
-        case .invalidPage(let page):
-            "{feature}Error.invalidPage %lld".localized(page)
-        }
-    }
-}
-
-extension {Feature}Error: CustomDebugStringConvertible {
-    public var debugDescription: String {
-        switch self {
-        case .loadFailed(let description):
-            description
-        case .notFound(let identifier):
-            "notFound(identifier: \(identifier))"
-        case .invalidPage(let page):
-            "invalidPage(page: \(page))"
-        }
-    }
-}
-```
-
-**Rules:**
-- Located in `Domain/Errors/`
-- **Public visibility** (used by presentation layer)
-- Conform to `Error`, `Equatable`, `LocalizedError` (`Sendable` is inferred by approachable concurrency)
-- Use localized strings from Resources module
-- `.loadFailed` carries a `description` (default `""`) with the original error info for debugging/tracking
-- Custom `Equatable`: ignores `description` (it's debug metadata, not domain identity)
-- `CustomDebugStringConvertible`: `debugDescription` returns the raw error info — ViewModels use `error.debugDescription` when sending to the tracker
-- `errorDescription` (for the user) and `debugDescription` (for tracking) are separate concerns
-
-### Typed Throws in Contract
-
-```swift
-protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name}
-}
-```
-
-### Error Mapping with Error Mappers
-
-Error mapping logic lives in dedicated **Error Mapper types** that conform to `MapperContract`, following the same pattern as data mappers. This keeps repositories focused on data access orchestration while error transformation is independently testable.
-
-```swift
-// In Sources/Data/Mappers/{Name}ErrorMapper.swift
 import ChallengeCore
 import ChallengeNetworking
 
@@ -311,119 +229,54 @@ struct {Name}ErrorMapper: MapperContract {
 }
 ```
 
-```swift
-// In {Name}Repository.swift
-struct {Name}Repository: {Name}RepositoryContract {
-    private let errorMapper = {Name}ErrorMapper()
+### Domain Error
 
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        do {
-            let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
-            return mapper.map(dto)
-        } catch {
-            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
+```swift
+public enum {Feature}Error: Error, Equatable, LocalizedError {
+    case loadFailed(description: String = "")
+    case notFound(identifier: Int)
+
+    public static func == (lhs: {Feature}Error, rhs: {Feature}Error) -> Bool {
+        switch (lhs, rhs) {
+        case (.loadFailed, .loadFailed): true
+        case let (.notFound(lhsId), .notFound(rhsId)): lhsId == rhsId
+        default: false
+        }
+    }
+
+    public var errorDescription: String? {
+        switch self {
+        case .loadFailed:
+            "{feature}Error.loadFailed".localized()
+        case .notFound(let identifier):
+            "{feature}Error.notFound %lld".localized(identifier)
+        }
+    }
+}
+
+extension {Feature}Error: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .loadFailed(let description): description
+        case .notFound(let identifier): "notFound(identifier: \(identifier))"
         }
     }
 }
 ```
 
-**Why Error Mapper types?**
-- Single Responsibility: Repositories handle data access, Error Mappers handle error transformation
-- Independently testable without data source mocks
-- Consistent with data Mapper pattern (`MapperContract`)
-
-**Rules:**
-- Use `throws({Feature}Error)` (typed throws) instead of generic `throws`
-- Map `APIError` cases to domain-specific errors via Error Mapper
-- Include context in errors (e.g., `identifier`, `page`) for better debugging
-- Fallback to generic error (`.loadFailed`) for unexpected cases
+**Rules:** Public, `Error` + `Equatable` + `LocalizedError`, custom `==` ignores `description`, `CustomDebugStringConvertible` for tracker, localized strings from Resources.
 
 ---
 
 ## CachePolicy
 
-Use `CachePolicy` enum (from `ChallengeCore`) to control cache behavior:
+Defined in `ChallengeCore`, shared across features:
 
 ```swift
-// Libraries/Core/Sources/Data/CachePolicy.swift
 public enum CachePolicy {
-    case localFirst   // Cache first, remote if not found (default)
-    case remoteFirst  // Remote first, cache as fallback on error
-    case noCache      // Only remote, no cache interaction
-}
-```
-
-> **Note:** `CachePolicy` is defined in `ChallengeCore` so it can be reused across features. Import `ChallengeCore` in any file that references it.
-
-### Contract with CachePolicy
-
-```swift
-import ChallengeCore
-
-protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
-}
-```
-
-**Naming Convention:**
-- Use singular for single-item methods: `get{Name}`
-- Use `Page` suffix for list methods: `get{Name}sPage`, `search{Name}sPage`
-- This avoids confusion between `getCharacter` and `getCharactersPage`
-
-### Cache Strategies
-
-| Policy | Behavior |
-|--------|----------|
-| `.localFirst` | Cache → Remote (if miss) → Save to cache |
-| `.remoteFirst` | Remote → Save to cache → Cache (if error) |
-| `.noCache` | Remote only, no cache interaction |
-
-### Implementation Pattern
-
-Extract remote fetching into a helper to avoid code duplication:
-
-```swift
-// MARK: - Remote Fetch Helper
-
-private extension {Name}Repository {
-    func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
-        do {
-            return try await remoteDataSource.fetch{Name}(identifier: identifier)
-        } catch {
-            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
-        }
-    }
-}
-
-// MARK: - Cache Strategies
-
-private extension {Name}Repository {
-    func get{Name}LocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-        if let cached = await localDataSource.get{Name}(identifier: identifier) {
-            return mapper.map(cached)
-        }
-        let dto = try await fetchFromRemote(identifier: identifier)
-        await localDataSource.save{Name}(dto)
-        return mapper.map(dto)
-    }
-
-    func get{Name}RemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-        do {
-            let dto = try await fetchFromRemote(identifier: identifier)
-            await localDataSource.save{Name}(dto)
-            return mapper.map(dto)
-        } catch {
-            if let cached = await localDataSource.get{Name}(identifier: identifier) {
-                return mapper.map(cached)
-            }
-            throw error
-        }
-    }
-
-    func get{Name}NoCache(identifier: Int) async throws({Feature}Error) -> {Name} {
-        let dto = try await fetchFromRemote(identifier: identifier)
-        return mapper.map(dto)
-    }
+    case localFirst   // Cache → Remote (if miss) → Save to cache
+    case remoteFirst  // Remote → Save to cache → Cache (if error)
+    case noCache      // Remote only, no cache interaction
 }
 ```
 
@@ -434,55 +287,9 @@ private extension {Name}Repository {
 | Component | Visibility | Location |
 |-----------|------------|----------|
 | Domain Model | internal | `Sources/Domain/Models/` |
+| Domain Error | **public** | `Sources/Domain/Errors/` |
 | Contract | internal | `Sources/Domain/Repositories/` |
 | Implementation | internal | `Sources/Data/Repositories/` |
 | Mapper | internal | `Sources/Data/Mappers/` |
+| Error Mapper | internal | `Sources/Data/Mappers/` |
 | Mock | internal | `Tests/Mocks/` |
-
----
-
-## Checklists
-
-### Remote Only Repository
-
-- [ ] Create Domain model with Equatable conformance
-- [ ] Create Domain error enum in Domain/Errors/ with typed throws
-- [ ] Create Contract in Domain/Repositories/ using typed throws
-- [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Error Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Implementation injecting RemoteDataSource, using Mapper and Error Mapper
-- [ ] Create Mock in Tests/Mocks/
-- [ ] Create Mapper tests verifying transformation
-- [ ] Create Error Mapper tests verifying error transformation
-- [ ] Create Repository tests verifying data access and generic error handling
-- [ ] Add localized strings for error messages
-
-### Local Only Repository
-
-- [ ] Create Domain model with Equatable conformance
-- [ ] Create Domain error enum in Domain/Errors/
-- [ ] Create Contract in Domain/Repositories/ using typed throws
-- [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Implementation injecting MemoryDataSource, using Mapper
-- [ ] Add Domain to DTO mapping (for saving)
-- [ ] Create Mock and tests
-
-### Repository with CachePolicy (Both DataSources)
-
-- [ ] Import `ChallengeCore` (provides `CachePolicy` and `MapperContract`)
-- [ ] Create Domain model with Equatable conformance
-- [ ] Create Domain error enum in Domain/Errors/ with typed throws
-- [ ] Create Contract in Domain/Repositories/ with cachePolicy parameter
-- [ ] Create Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Error Mapper in Data/Mappers/ conforming to `MapperContract`
-- [ ] Create Implementation injecting both DataSources, using Mapper and Error Mapper
-- [ ] Extract remote fetch helper methods
-- [ ] Implement cache strategies (localFirst, remoteFirst, none)
-- [ ] Create Mapper tests verifying transformation
-- [ ] Create Error Mapper tests verifying error transformation
-- [ ] Create tests for localFirst (cache hit → no remote call)
-- [ ] Create tests for localFirst (cache miss → remote + save)
-- [ ] Create tests for remoteFirst (always remote, cache fallback on error)
-- [ ] Create tests for none (remote only, no cache interaction)
-- [ ] Create tests for generic error handling in repository
-- [ ] Add localized strings for error messages
