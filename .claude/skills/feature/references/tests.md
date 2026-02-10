@@ -169,7 +169,7 @@ struct {Feature}DeepLinkHandlerTests {
 	@Test("Resolve main path returns main navigation")
 	func resolveMainPathReturnsMainNavigation() throws {
 		// Given
-		let url = try #require(URL(string: "challenge://{feature}{deepLinkPath}"))
+		let url = try #require(URL(string: "challenge://{feature}/{deepLinkPath}"))
 
 		// When
 		let result = sut.resolve(url)
@@ -183,6 +183,18 @@ struct {Feature}DeepLinkHandlerTests {
 	func resolveUnknownPathReturnsNil() throws {
 		// Given
 		let url = try #require(URL(string: "challenge://{feature}/unknown"))
+
+		// When
+		let result = sut.resolve(url)
+
+		// Then
+		#expect(result == nil)
+	}
+
+	@Test("Resolve empty path returns nil")
+	func resolveEmptyPathReturnsNil() throws {
+		// Given
+		let url = try #require(URL(string: "challenge://{feature}"))
 
 		// When
 		let result = sut.resolve(url)

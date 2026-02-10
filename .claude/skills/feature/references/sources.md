@@ -1,6 +1,6 @@
 # Source Templates
 
-Placeholders: `{Feature}` (PascalCase), `{Screen}` (PascalCase), `{feature}` (lowercase host), `{deepLinkPath}` (path), `{eventPrefix}` (snake_case of Screen).
+Placeholders: `{Feature}` (PascalCase), `{Screen}` (PascalCase), `{feature}` (lowercase host), `{deepLinkPath}` (path segment, no slash, e.g. `list`), `{eventPrefix}` (snake_case of Screen).
 
 ---
 
@@ -25,16 +25,22 @@ struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
 	let host = "{feature}"
 
 	func resolve(_ url: URL) -> (any NavigationContract)? {
-		switch url.path {
+		let pathComponents = url.pathComponents
+		guard pathComponents.count >= 2 else {
+			return nil
+		}
+		switch pathComponents[1] {
 		case "{deepLinkPath}":
-			{Feature}IncomingNavigation.main
+			return {Feature}IncomingNavigation.main
 
 		default:
-			nil
+			return nil
 		}
 	}
 }
 ```
+
+> **Convention:** Deep links use path-based URLs — parameters are embedded in the path (e.g., `challenge://episode/character/42`), never as query items. When the feature grows and needs parameterized routes, parse `pathComponents` (e.g., `pathComponents[2]` for an identifier).
 
 ### {Screen}NavigatorContract.swift — `Sources/Presentation/{Screen}/Navigator/`
 

@@ -468,15 +468,20 @@ struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
     let host = "{feature}"  // e.g., "character"
 
     func resolve(_ url: URL) -> (any NavigationContract)? {
-        switch url.path {
-        case "/list":
+        let pathComponents = url.pathComponents
+        guard pathComponents.count >= 2 else {
+            return nil
+        }
+        switch pathComponents[1] {
+        case "list":
             return {Feature}IncomingNavigation.list
 
-        case "/detail":
-            guard let id = url.queryParameter("id").flatMap(Int.init) else {
+        case "detail":
+            guard pathComponents.count >= 3,
+                  let identifier = Int(pathComponents[2]) else {
                 return nil
             }
-            return {Feature}IncomingNavigation.detail(identifier: id)
+            return {Feature}IncomingNavigation.detail(identifier: identifier)
 
         default:
             return nil
@@ -485,11 +490,11 @@ struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
 }
 ```
 
-**URL Format:** `challenge://{feature}/{path}?param=value`
+**URL Format:** `challenge://{feature}/{path}/{param}` — parameters are embedded in the path, never as query items.
 
 Examples:
 - `challenge://character/list`
-- `challenge://character/detail?id=42`
+- `challenge://character/detail/42`
 
 ---
 
@@ -847,30 +852,56 @@ import Testing
 @testable import Challenge{Feature}
 
 struct {Feature}DeepLinkHandlerTests {
-    @Test
-    func resolvesListURL() throws {
+    @Test("Resolve list path returns list navigation")
+    func resolveListPathReturnsListNavigation() throws {
         // Given
         let sut = {Feature}DeepLinkHandler()
         let url = try #require(URL(string: "challenge://{feature}/list"))
 
         // When
-        let value = sut.resolve(url)
+        let result = sut.resolve(url)
 
         // Then
-        #expect(value as? {Feature}IncomingNavigation == .list)
+        #expect(result as? {Feature}IncomingNavigation == .list)
     }
 
-    @Test
-    func resolvesDetailURL() throws {
+    @Test("Resolve detail path with valid id returns detail navigation")
+    func resolveDetailPathWithValidIdReturnsDetailNavigation() throws {
         // Given
         let sut = {Feature}DeepLinkHandler()
-        let url = try #require(URL(string: "challenge://{feature}/detail?id=42"))
+        let url = try #require(URL(string: "challenge://{feature}/detail/42"))
 
         // When
-        let value = sut.resolve(url)
+        let result = sut.resolve(url)
 
         // Then
-        #expect(value as? {Feature}IncomingNavigation == .detail(identifier: 42))
+        #expect(result as? {Feature}IncomingNavigation == .detail(identifier: 42))
+    }
+
+    @Test("Resolve detail path without id returns nil")
+    func resolveDetailPathWithoutIdReturnsNil() throws {
+        // Given
+        let sut = {Feature}DeepLinkHandler()
+        let url = try #require(URL(string: "challenge://{feature}/detail"))
+
+        // When
+        let result = sut.resolve(url)
+
+        // Then
+        #expect(result == nil)
+    }
+
+    @Test("Resolve unknown path returns nil")
+    func resolveUnknownPathReturnsNil() throws {
+        // Given
+        let sut = {Feature}DeepLinkHandler()
+        let url = try #require(URL(string: "challenge://{feature}/unknown"))
+
+        // When
+        let result = sut.resolve(url)
+
+        // Then
+        #expect(result == nil)
     }
 }
 ```

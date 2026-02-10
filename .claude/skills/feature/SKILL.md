@@ -16,7 +16,7 @@ Gather from user before starting:
 | Feature | PascalCase | `Episode` |
 | Screen | PascalCase | `EpisodeList` |
 | Deep link host | lowercase | `episode` |
-| Deep link path | path | `/list` |
+| Deep link path segment | lowercase, no slash | `list` |
 
 Derived: module name = `Challenge{Feature}`, event prefix = snake_case of Screen.
 
@@ -73,6 +73,7 @@ Features/{Feature}/
 - **No `any` keyword** on internal protocol types. Only on public protocols from other modules (e.g., `any TrackerContract` in Container).
 - **No imports** in ViewModel when all types are internal to the module.
 - **Deep link paths** are scoped per host — `/list` under `episode` host is independent from `/list` under `character` host.
+- **Deep links use path-based URLs** — parameters are embedded in the path (e.g., `challenge://character/detail/42`), never as query items (`?id=42`). Use `url.pathComponents` for parsing.
 - Tuist module uses `\(appName)` string interpolation for target names.
 - **Features always receive `HTTPClientContract`** as their network dependency — never specific clients like `GraphQLClientContract`. The Container is responsible for creating specific clients (e.g., `GraphQLClient`) internally from the `HTTPClientContract`. This keeps features decoupled from transport details.
 - **Features that don't need networking** only receive `tracker: any TrackerContract`.
