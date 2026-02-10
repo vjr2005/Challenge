@@ -27,7 +27,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
-      TUIST_TEST_DERIVED_DATA_PATH: derived_data
+      DERIVED_DATA_PATH: derived_data
 
     steps:
       - name: Checkout
@@ -54,7 +54,8 @@ jobs:
               --device "$TUIST_TEST_DEVICE" \
               --os "$TUIST_TEST_OS" \
               --result-bundle-path "$RESULT_PATH" \
-              --clean; then
+              --clean \
+              -- -derivedDataPath "$DERIVED_DATA_PATH"; then
               echo "Run $i: PASSED"
               PASSED=$((PASSED + 1))
             else

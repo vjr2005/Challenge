@@ -22,7 +22,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
-      TUIST_TEST_DERIVED_DATA_PATH: derived_data
+      DERIVED_DATA_PATH: derived_data
       RESULT_BUNDLE_PATH: test_output/UnitSnapshot.xcresult
 
     steps:
@@ -41,7 +41,8 @@ jobs:
           mise x -- tuist test "Challenge (Dev)" \
             --device "$TUIST_TEST_DEVICE" \
             --os "$TUIST_TEST_OS" \
-            --result-bundle-path "$RESULT_BUNDLE_PATH"
+            --result-bundle-path "$RESULT_BUNDLE_PATH" \
+            -- -derivedDataPath "$DERIVED_DATA_PATH"
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
@@ -63,7 +64,7 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          INDEX_STORE="${TUIST_TEST_DERIVED_DATA_PATH}/Index.noindex/DataStore"
+          INDEX_STORE="${DERIVED_DATA_PATH}/Index.noindex/DataStore"
           if [ -d "$INDEX_STORE" ]; then
             echo "Reusing index store: $INDEX_STORE"
             OUTPUT=$(mise x -- periphery scan --skip-build --index-store-path "$INDEX_STORE" 2>&1)
@@ -144,7 +145,7 @@ jobs:
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
       TUIST_TEST_OS: "26.1"
-      TUIST_TEST_DERIVED_DATA_PATH: derived_data
+      DERIVED_DATA_PATH: derived_data
       RESULT_BUNDLE_PATH: test_output/UITests.xcresult
 
     steps:
@@ -163,7 +164,8 @@ jobs:
           mise x -- tuist test "ChallengeUITests" \
             --device "$TUIST_TEST_DEVICE" \
             --os "$TUIST_TEST_OS" \
-            --result-bundle-path "$RESULT_BUNDLE_PATH"
+            --result-bundle-path "$RESULT_BUNDLE_PATH" \
+            -- -derivedDataPath "$DERIVED_DATA_PATH"
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
