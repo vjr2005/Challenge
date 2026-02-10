@@ -6,9 +6,9 @@ iOS application built with **Swift 6**, **SwiftUI**, **Clean Architecture**, and
 
 ## Screenshots
 
-| Home | About | Character List | Filters | Character Detail |
-|:----:|:-----:|:--------------:|:-------:|:----------------:|
-| <img src="docs/screenshots/home.png" width="180"> | <img src="docs/screenshots/about.png" width="180"> | <img src="docs/screenshots/character-list.png" width="180"> | <img src="docs/screenshots/filters.png" width="180"> | <img src="docs/screenshots/character-detail.png" width="180"> |
+| Home | About | Character List | Filters | Character Detail | Character Episodes |
+|:----:|:-----:|:--------------:|:-------:|:----------------:|:------------------:|
+| <img src="docs/screenshots/home.png" width="180"> | <img src="docs/screenshots/about.png" width="180"> | <img src="docs/screenshots/character-list.png" width="180"> | <img src="docs/screenshots/filters.png" width="180"> | <img src="docs/screenshots/character-detail.png" width="180"> | <img src="docs/screenshots/character-episodes.png" width="180"> |
 
 ## Requirements
 
@@ -64,6 +64,7 @@ Self-contained modules with Presentation, Domain, and Data layers:
 | Module | Description |
 |--------|-------------|
 | **ChallengeCharacter** | Character list and detail screens (Rick & Morty API) |
+| **ChallengeEpisode** | Character episodes screen (Rick & Morty GraphQL API) |
 | **ChallengeHome** | Home screen with animated logo |
 | **ChallengeSystem** | System settings and configuration |
 
@@ -163,6 +164,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 
 **Features**
 - [ChallengeCharacter](Features/Character/README.md)
+- [ChallengeEpisode](Features/Episode/README.md)
 - [ChallengeHome](Features/Home/README.md)
 - [ChallengeSystem](Features/System/README.md)
 
