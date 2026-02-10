@@ -11,6 +11,12 @@ public struct GraphQLResponseError: Decodable, Equatable, Sendable {
 	/// The path to the field that caused the error.
 	public let path: [String]?
 
+	public init(message: String, locations: [Location]?, path: [String]?) {
+		self.message = message
+		self.locations = locations
+		self.path = path
+	}
+
 	nonisolated public static func == (lhs: GraphQLResponseError, rhs: GraphQLResponseError) -> Bool {
 		lhs.message == rhs.message && lhs.locations == rhs.locations && lhs.path == rhs.path
 	}
@@ -22,6 +28,11 @@ public struct GraphQLResponseError: Decodable, Equatable, Sendable {
 
 		/// The column number.
 		public let column: Int
+
+		public init(line: Int, column: Int) {
+			self.line = line
+			self.column = column
+		}
 
 		nonisolated public static func == (lhs: Location, rhs: Location) -> Bool {
 			lhs.line == rhs.line && lhs.column == rhs.column

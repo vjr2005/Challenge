@@ -7,6 +7,17 @@ description: Creates DataSources for data access. Use when creating RemoteDataSo
 
 Guide for creating DataSources following the Repository pattern.
 
+## Before Creating — Clarify Requirements
+
+**CRITICAL:** Do NOT assume the API schema or operations. Ask the user before writing any code:
+
+1. **Operations**: Which operations does the contract need and with what parameters? (e.g., paginated list, single item by ID, both, with filters, etc.)
+2. **Entity fields**: What fields does the DTO need? For GraphQL, the user can provide the query directly — derive DTOs from its response shape. Otherwise, ask for the fields or API documentation. Never fetch external API docs on your own.
+
+Only proceed to implementation after the user confirms these details.
+
+---
+
 ## DataSource Types
 
 | Type | Transport | Implementation | Error Mapper |
