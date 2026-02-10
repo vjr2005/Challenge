@@ -39,6 +39,18 @@ struct CharacterEpisodesEventTests {
 		#expect(CharacterEpisodesEvent.pullToRefreshTriggered.properties == [:])
 	}
 
+	// MARK: - Character Avatar Tapped
+
+	@Test("Character avatar tapped has correct name")
+	func characterAvatarTappedHasCorrectName() {
+		#expect(CharacterEpisodesEvent.characterAvatarTapped(identifier: 1).name == "character_episodes_character_avatar_tapped")
+	}
+
+	@Test("Character avatar tapped has character id property")
+	func characterAvatarTappedHasCharacterIdProperty() {
+		#expect(CharacterEpisodesEvent.characterAvatarTapped(identifier: 42).properties == ["character_id": "42"])
+	}
+
 	// MARK: - Load Error
 
 	@Test("Load error has correct name")

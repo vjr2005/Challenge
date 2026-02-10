@@ -14,6 +14,8 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 			redirect(outgoing)
 		case let outgoing as CharacterOutgoingNavigation:
 			redirect(outgoing)
+		case let outgoing as EpisodeOutgoingNavigation:
+			redirect(outgoing)
 		default:
 			nil
 		}
@@ -30,8 +32,15 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 
 	private func redirect(_ navigation: CharacterOutgoingNavigation) -> any NavigationContract {
 		switch navigation {
-		case .episodes(let characterIdentifier):
+		case let .episodes(characterIdentifier):
 			EpisodeIncomingNavigation.characterEpisodes(characterIdentifier: characterIdentifier)
+		}
+	}
+
+	private func redirect(_ navigation: EpisodeOutgoingNavigation) -> any NavigationContract {
+		switch navigation {
+		case let .characterDetail(identifier):
+			CharacterIncomingNavigation.detail(identifier: identifier)
 		}
 	}
 }

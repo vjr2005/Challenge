@@ -46,6 +46,11 @@ final class CharacterEpisodesViewModel: CharacterEpisodesViewModelContract {
 		tracker.trackPullToRefreshTriggered()
 		await refresh()
 	}
+
+	func didTapOnCharacter(identifier: Int) {
+		tracker.trackCharacterAvatarTapped(identifier: identifier)
+		navigator.navigateToCharacterDetail(identifier: identifier)
+	}
 }
 
 // MARK: - Private

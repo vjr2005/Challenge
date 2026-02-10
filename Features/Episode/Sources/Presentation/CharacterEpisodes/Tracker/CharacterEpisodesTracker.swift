@@ -19,6 +19,10 @@ struct CharacterEpisodesTracker: CharacterEpisodesTrackerContract {
 		tracker.track(CharacterEpisodesEvent.pullToRefreshTriggered)
 	}
 
+	func trackCharacterAvatarTapped(identifier: Int) {
+		tracker.track(CharacterEpisodesEvent.characterAvatarTapped(identifier: identifier))
+	}
+
 	func trackLoadError(description: String) {
 		tracker.track(CharacterEpisodesEvent.loadError(description: description))
 	}

@@ -5,4 +5,5 @@ protocol CharacterEpisodesViewModelContract: AnyObject {
 	func didAppear() async
 	func didTapOnRetryButton() async
 	func didPullToRefresh() async
+	func didTapOnCharacter(identifier: Int)
 }

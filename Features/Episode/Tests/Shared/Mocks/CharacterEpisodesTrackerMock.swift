@@ -4,6 +4,7 @@ final class CharacterEpisodesTrackerMock: CharacterEpisodesTrackerContract {
 	private(set) var screenViewedCharacterIdentifiers: [Int] = []
 	private(set) var retryButtonTappedCallCount = 0
 	private(set) var pullToRefreshTriggeredCallCount = 0
+	private(set) var characterAvatarTappedIdentifiers: [Int] = []
 	private(set) var loadErrorDescriptions: [String] = []
 	private(set) var refreshErrorDescriptions: [String] = []
 
@@ -17,6 +18,10 @@ final class CharacterEpisodesTrackerMock: CharacterEpisodesTrackerContract {
 
 	func trackPullToRefreshTriggered() {
 		pullToRefreshTriggeredCallCount += 1
+	}
+
+	func trackCharacterAvatarTapped(identifier: Int) {
+		characterAvatarTappedIdentifiers.append(identifier)
 	}
 
 	func trackLoadError(description: String) {

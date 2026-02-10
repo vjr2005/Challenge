@@ -51,6 +51,18 @@ struct CharacterEpisodesTrackerTests {
 		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_pull_to_refresh", properties: [:]))
 	}
 
+	// MARK: - Track Character Avatar Tapped
+
+	@Test("Track character avatar tapped dispatches correct event")
+	func trackCharacterAvatarTappedDispatchesCorrectEvent() {
+		// When
+		sut.trackCharacterAvatarTapped(identifier: 42)
+
+		// Then
+		#expect(trackerMock.trackedEvents.count == 1)
+		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_character_avatar_tapped", properties: ["character_id": "42"]))
+	}
+
 	// MARK: - Track Load Error
 
 	@Test("Track load error dispatches correct event")

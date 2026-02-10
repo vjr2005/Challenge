@@ -138,17 +138,21 @@ private extension CharacterEpisodesView {
 	}
 
 	func characterAvatar(_ character: EpisodeCharacter) -> some View {
-		VStack(spacing: theme.spacing.xs) {
-			DSAsyncImage(url: character.imageURL, accessibilityIdentifier: AccessibilityIdentifier.characterAvatar(id: character.id))
-				.frame(width: theme.dimensions.xxl, height: theme.dimensions.xxl)
-				.clipShape(Circle())
+		Button {
+			viewModel.didTapOnCharacter(identifier: character.id)
+		} label: {
+			VStack(spacing: theme.spacing.xs) {
+				DSAsyncImage(url: character.imageURL, accessibilityIdentifier: AccessibilityIdentifier.characterAvatar(id: character.id))
+					.frame(width: theme.dimensions.xxl, height: theme.dimensions.xxl)
+					.clipShape(Circle())
 
-			Text(character.name)
-				.font(theme.typography.caption2)
-				.foregroundStyle(theme.colors.textSecondary)
-				.lineLimit(2)
-				.multilineTextAlignment(.center)
-				.frame(width: theme.dimensions.xxxl)
+				Text(character.name)
+					.font(theme.typography.caption2)
+					.foregroundStyle(theme.colors.textSecondary)
+					.lineLimit(2)
+					.multilineTextAlignment(.center)
+					.frame(width: theme.dimensions.xxxl)
+			}
 		}
 	}
 }
@@ -226,6 +230,7 @@ private final class CharacterEpisodesViewModelPreviewStub: CharacterEpisodesView
 	func didAppear() async {}
 	func didTapOnRetryButton() async {}
 	func didPullToRefresh() async {}
+	func didTapOnCharacter(identifier: Int) {}
 }
 
 private extension EpisodeCharacterWithEpisodes {

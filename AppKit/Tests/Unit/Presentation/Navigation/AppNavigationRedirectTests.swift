@@ -52,4 +52,17 @@ struct AppNavigationRedirectTests {
 		let episodeNavigation = try #require(result as? EpisodeIncomingNavigation)
 		#expect(episodeNavigation == .characterEpisodes(characterIdentifier: characterIdentifier))
 	}
+
+	@Test("Redirects episode outgoing character detail navigation to character detail")
+	func redirectEpisodeOutgoingCharacterDetailToCharacterDetail() throws {
+		// Given
+		let identifier = 42
+
+		// When
+		let result = sut.redirect(EpisodeOutgoingNavigation.characterDetail(identifier: identifier))
+
+		// Then
+		let characterNavigation = try #require(result as? CharacterIncomingNavigation)
+		#expect(characterNavigation == .detail(identifier: identifier))
+	}
 }

@@ -23,4 +23,8 @@ final class CharacterEpisodesViewModelStub: CharacterEpisodesViewModelContract {
 	func didPullToRefresh() async {
 		// No-op: state is fixed for snapshots
 	}
+
+	func didTapOnCharacter(identifier: Int) {
+		// No-op: state is fixed for snapshots
+	}
 }

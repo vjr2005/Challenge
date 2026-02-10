@@ -15,10 +15,19 @@ struct CharacterEpisodesNavigatorTests {
         sut = CharacterEpisodesNavigator(navigator: navigatorMock)
     }
 
-    // MARK: - Init Test
+    // MARK: - Navigate To Character Detail
 
-    @Test("Init does not crash")
-    func initDoesNotCrash() {
-        _ = sut
+    @Test("Navigate to character detail uses correct navigation destination")
+    func navigateToCharacterDetailUsesCorrectNavigation() {
+        // Given
+        let identifier = 42
+
+        // When
+        sut.navigateToCharacterDetail(identifier: identifier)
+
+        // Then
+        #expect(navigatorMock.navigatedDestinations.count == 1)
+        let destination = navigatorMock.navigatedDestinations.first as? EpisodeOutgoingNavigation
+        #expect(destination == .characterDetail(identifier: identifier))
     }
 }

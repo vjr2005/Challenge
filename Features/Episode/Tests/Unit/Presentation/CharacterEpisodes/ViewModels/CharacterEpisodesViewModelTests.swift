@@ -214,4 +214,25 @@ struct CharacterEpisodesViewModelTests {
 		// Then
 		#expect(trackerMock.refreshErrorDescriptions.count == 1)
 	}
+
+	// MARK: - Did Tap On Character
+
+	@Test("didTapOnCharacter navigates to character detail")
+	func didTapOnCharacterNavigatesToCharacterDetail() {
+		// When
+		sut.didTapOnCharacter(identifier: 42)
+
+		// Then
+		#expect(navigatorMock.navigateToCharacterDetailCallCount == 1)
+		#expect(navigatorMock.lastNavigateToCharacterDetailIdentifier == 42)
+	}
+
+	@Test("didTapOnCharacter tracks character avatar tapped")
+	func didTapOnCharacterTracksCharacterAvatarTapped() {
+		// When
+		sut.didTapOnCharacter(identifier: 42)
+
+		// Then
+		#expect(trackerMock.characterAvatarTappedIdentifiers == [42])
+	}
 }
