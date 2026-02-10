@@ -178,6 +178,54 @@ final class CharacterFlowUITests: UITestCase {
 	}
 
 	@MainActor
+	func testEpisodesShowsErrorAndRetryLoadsThenNavigatesToCharacterDetail() async throws {
+		// Given — episodes fail on initial load (no cache fallback)
+		try await givenCharacterEpisodesFailsButListAndDetailSucceeds()
+
+		// When
+		launch()
+
+		// Then
+		home { robot in
+			robot.tapCharacterButton()
+		}
+
+		characterList { robot in
+			robot.verifyIsVisible()
+			robot.tapCharacter(identifier: 1)
+		}
+
+		characterDetail { robot in
+			robot.verifyIsVisible()
+			robot.tapEpisodes()
+		}
+
+		characterEpisodes { robot in
+			robot.verifyErrorIsVisible()
+		}
+
+		// Recover GraphQL for retry
+		try await givenCharacterEpisodesRecovers()
+
+		characterEpisodes { robot in
+			robot.tapRetry()
+			robot.verifyIsVisible()
+			robot.verifyEpisodeExists(identifier: 1)
+
+			// Pull to refresh with cached data succeeds
+			robot.pullToRefresh()
+			robot.verifyIsVisible()
+
+			// Tap first character avatar from the first episode
+			robot.tapCharacter(identifier: 1)
+		}
+
+		characterDetail { robot in
+			robot.verifyIsVisible()
+		}
+	}
+
+	@MainActor
 	func testDetailShowsErrorAndRetryLoadsContent() async throws {
 		// Given
 		try await givenCharacterDetailFailsButListSucceeds()

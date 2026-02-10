@@ -107,6 +107,18 @@ When using `accessibilityIdentifier: "characterList.row.1"`:
 
 ---
 
+## Build & Verify
+
+After writing UI tests, run **only** the UI tests to verify compilation and execution:
+
+```bash
+mise x -- tuist test --skip-unit-tests 2>&1 | tee /tmp/ui-tests.txt | tail -30
+```
+
+Do **not** run the full test suite (`mise x -- tuist test`) — UI tests are independent and only need the UI test target.
+
+---
+
 ## Checklist
 
 ### Robot Implementation

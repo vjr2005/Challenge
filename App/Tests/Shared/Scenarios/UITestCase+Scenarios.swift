@@ -134,6 +134,55 @@ extension UITestCase {
 			return .status(.notFound)
 		}
 	}
+
+	/// Configures avatars, character list, detail, and episodes (GraphQL) responses. Use before `launch()`.
+	func givenCharacterListDetailAndEpisodesSucceeds() async throws {
+		let baseURL = try XCTUnwrap(serverBaseURL)
+		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+		let characterData = Data.fixture("character", baseURL: baseURL)
+		let episodesData = Data.fixture("episodes_by_character_response", baseURL: baseURL)
+		let imageData = Data.stubAvatarImage
+
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if request.path.contains("/graphql") {
+				return .json(episodesData)
+			}
+			if request.path.contains("/character/") {
+				return .json(characterData)
+			}
+			if request.path.contains("/character") {
+				return .json(charactersData)
+			}
+			return .status(.notFound)
+		}
+	}
+
+	/// Configures avatars, character list, and detail to succeed, but GraphQL episodes returns 500. Use before `launch()`.
+	func givenCharacterEpisodesFailsButListAndDetailSucceeds() async throws {
+		let baseURL = try XCTUnwrap(serverBaseURL)
+		let charactersData = Data.fixture("characters_response", baseURL: baseURL)
+		let characterData = Data.fixture("character", baseURL: baseURL)
+		let imageData = Data.stubAvatarImage
+
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if request.path.contains("/graphql") {
+				return .status(.internalServerError)
+			}
+			if request.path.contains("/character/") {
+				return .json(characterData)
+			}
+			if request.path.contains("/character") {
+				return .json(charactersData)
+			}
+			return .status(.notFound)
+		}
+	}
 }
 
 // MARK: - Recovery Scenarios
@@ -155,5 +204,18 @@ extension UITestCase {
 		let characterData = Data.fixture("character", baseURL: baseURL)
 
 		await serverMock.registerPrefix(.GET, "/api/character/") { _ in .json(characterData) }
+	}
+
+	/// Registers GraphQL episodes route for retry recovery. Use mid-test after initial failure.
+	func givenCharacterEpisodesRecovers() async throws {
+		let baseURL = try XCTUnwrap(serverBaseURL)
+		let episodesData = Data.fixture("episodes_by_character_response", baseURL: baseURL)
+
+		await serverMock.register(.POST, "/graphql") { _ in .json(episodesData) }
+	}
+
+	/// Registers GraphQL episodes route to return 500. Use mid-test to simulate refresh failure.
+	func givenCharacterEpisodesFails() async {
+		await serverMock.register(.POST, "/graphql") { _ in .status(.internalServerError) }
 	}
 }

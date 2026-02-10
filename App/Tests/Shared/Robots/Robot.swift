@@ -72,4 +72,9 @@ nonisolated class UITestCase: XCTestCase {
 	func about(actions: (AboutRobot) -> Void) {
 		actions(AboutRobot(app: app))
 	}
+
+	@MainActor
+	func characterEpisodes(actions: (CharacterEpisodesRobot) -> Void) {
+		actions(CharacterEpisodesRobot(app: app))
+	}
 }

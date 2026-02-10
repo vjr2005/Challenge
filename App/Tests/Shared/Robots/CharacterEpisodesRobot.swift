@@ -1,20 +1,12 @@
 import XCTest
 
-struct CharacterDetailRobot {
+struct CharacterEpisodesRobot {
 	let app: XCUIApplication
 }
 
 // MARK: - Actions
 
-extension CharacterDetailRobot {
-	@discardableResult
-	func tapBack(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let backButton = app.buttons[AccessibilityIdentifier.backButton]
-		XCTAssertTrue(backButton.waitForExistence(timeout: 5), file: file, line: line)
-		backButton.tap()
-		return self
-	}
-
+extension CharacterEpisodesRobot {
 	@discardableResult
 	func pullToRefresh(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
@@ -34,20 +26,21 @@ extension CharacterDetailRobot {
 	}
 
 	@discardableResult
-	func tapEpisodes(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let episodesButton = app.buttons[AccessibilityIdentifier.episodesButton]
-		XCTAssertTrue(episodesButton.waitForExistence(timeout: 5), file: file, line: line)
-		episodesButton.tap()
+	func tapCharacter(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let accessibilityId = AccessibilityIdentifier.characterAvatar(id: identifier)
+		let avatar = app.descendants(matching: .any)[accessibilityId].firstMatch
+		XCTAssertTrue(avatar.waitForExistence(timeout: 10), file: file, line: line)
+		avatar.tap()
 		return self
 	}
 }
 
 // MARK: - Verifications
 
-extension CharacterDetailRobot {
+extension CharacterEpisodesRobot {
 	@discardableResult
 	func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let view = app.descendants(matching: .any)[AccessibilityIdentifier.name]
+		let view = app.scrollViews[AccessibilityIdentifier.scrollView]
 		XCTAssertTrue(view.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
@@ -58,15 +51,28 @@ extension CharacterDetailRobot {
 		XCTAssertTrue(errorTitle.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
+
+	@discardableResult
+	func verifyEpisodeExists(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let accessibilityId = AccessibilityIdentifier.episodeCard(id: identifier)
+		let episode = app.descendants(matching: .any)[accessibilityId].firstMatch
+		XCTAssertTrue(episode.waitForExistence(timeout: 10), file: file, line: line)
+		return self
+	}
 }
 
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
-	static let scrollView = "characterDetail.scrollView"
-	static let name = "characterDetail.name"
-	static let backButton = "characterDetail.backButton"
-	static let episodesButton = "characterDetail.episodesButton"
-	static let errorTitle = "characterDetail.errorView.title"
-	static let retryButton = "characterDetail.errorView.button"
+	static let scrollView = "characterEpisodes.scrollView"
+	static let errorTitle = "characterEpisodes.errorView.title"
+	static let retryButton = "characterEpisodes.errorView.button"
+
+	static func episodeCard(id: Int) -> String {
+		"characterEpisodes.episode.\(id)"
+	}
+
+	static func characterAvatar(id: Int) -> String {
+		"characterEpisodes.character.\(id)"
+	}
 }
