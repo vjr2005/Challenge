@@ -20,6 +20,12 @@ Each reference contains full templates: contract, implementation, mock, and test
 
 ---
 
+## Scope & Boundaries
+
+> **Important:** The `/repository` skill is responsible **only** for Domain and Data layer files (models, errors, contracts, mappers, repositories, mocks, stubs, tests). It does **NOT** modify Feature entry points (`{Feature}Feature.swift`), Containers (`{Feature}Container.swift`), AppContainer, or Tuist modules. Any changes to these files must be delegated to the `/feature` skill, which owns the wiring of dependencies into the feature.
+
+---
+
 ## Workflow
 
 ### Step 1 — Identify Existing DataSources

@@ -74,6 +74,9 @@ Features/{Feature}/
 - **No imports** in ViewModel when all types are internal to the module.
 - **Deep link paths** are scoped per host — `/list` under `episode` host is independent from `/list` under `character` host.
 - Tuist module uses `\(appName)` string interpolation for target names.
+- **Features always receive `HTTPClientContract`** as their network dependency — never specific clients like `GraphQLClientContract`. The Container is responsible for creating specific clients (e.g., `GraphQLClient`) internally from the `HTTPClientContract`. This keeps features decoupled from transport details.
+- **Features that don't need networking** only receive `tracker: any TrackerContract`.
+- **Features that need networking** receive `httpClient: any HTTPClientContract, tracker: any TrackerContract`.
 
 ## Workflow
 
@@ -142,7 +145,9 @@ Add `"\(appName){Feature}SnapshotTests"` only if snapshot tests exist.
 **`AppKit/Sources/AppContainer.swift`** — Three changes:
 1. Add import: `import Challenge{Feature}`
 2. Add property: `private let {feature}Feature: {Feature}Feature`
-3. Initialize in `init`: `{feature}Feature = {Feature}Feature(tracker: self.tracker)`
+3. Initialize in `init`:
+   - Without networking: `{feature}Feature = {Feature}Feature(tracker: self.tracker)`
+   - With networking: `{feature}Feature = {Feature}Feature(httpClient: self.httpClient, tracker: self.tracker)`
 4. Add to `features` array
 
 **`AppKit/Tests/Unit/AppContainerTests.swift`** — Increment features count assertion.

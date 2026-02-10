@@ -44,6 +44,8 @@ final class {Screen}ViewModelStub: {Screen}ViewModelContract {
 
 ### {Feature}FeatureTests.swift — `Tests/Unit/Feature/`
 
+Without networking:
+
 ```swift
 import ChallengeCore
 import ChallengeCoreMocks
@@ -104,6 +106,33 @@ struct {Feature}FeatureTests {
 		// Then
 		#expect(result == nil)
 	}
+}
+```
+
+With networking (when feature receives `httpClient`):
+
+```swift
+import ChallengeCore
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
+import SwiftUI
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {Feature}FeatureTests {
+	// MARK: - Properties
+
+	private let navigatorMock = NavigatorMock()
+	private let sut: {Feature}Feature
+
+	// MARK: - Init
+
+	init() {
+		sut = {Feature}Feature(httpClient: HTTPClientMock(), tracker: TrackerMock())
+	}
+
+	// ... same test methods as above ...
 }
 ```
 

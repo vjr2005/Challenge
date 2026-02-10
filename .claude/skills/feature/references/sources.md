@@ -181,6 +181,8 @@ struct {Screen}View<ViewModel: {Screen}ViewModelContract>: View {
 
 ### {Feature}Container.swift — `Sources/`
 
+Without networking (default for minimal features):
+
 ```swift
 import ChallengeCore
 
@@ -206,7 +208,51 @@ public final class {Feature}Container {
 }
 ```
 
+With networking (when DataSources/Repositories are added later):
+
+```swift
+import ChallengeCore
+import ChallengeNetworking
+
+public final class {Feature}Container {
+	// MARK: - Dependencies
+
+	private let tracker: any TrackerContract
+
+	// MARK: - Repositories
+
+	private let {name}Repository: {Name}RepositoryContract
+
+	// MARK: - Init
+
+	public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+		self.tracker = tracker
+		// Container creates specific clients internally — features never receive them
+		let graphQLClient = GraphQLClient(httpClient: httpClient)
+		let remoteDataSource = {Name}GraphQLDataSource(graphQLClient: graphQLClient)
+		let memoryDataSource = {Name}MemoryDataSource()
+		self.{name}Repository = {Name}Repository(
+			remoteDataSource: remoteDataSource,
+			memoryDataSource: memoryDataSource
+		)
+	}
+
+	// MARK: - Factories
+
+	func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
+		{Screen}ViewModel(
+			navigator: {Screen}Navigator(navigator: navigator),
+			tracker: {Screen}Tracker(tracker: tracker)
+		)
+	}
+}
+```
+
+> **Important:** Features always receive `HTTPClientContract` — never specific clients like `GraphQLClientContract`. The Container is responsible for creating transport-specific clients (e.g., `GraphQLClient`, `HTTPClient`) from the `HTTPClientContract`.
+
 ### {Feature}Feature.swift — `Sources/`
+
+Without networking:
 
 ```swift
 import ChallengeCore
@@ -221,6 +267,49 @@ public struct {Feature}Feature: FeatureContract {
 
 	public init(tracker: any TrackerContract) {
 		self.container = {Feature}Container(tracker: tracker)
+	}
+
+	// MARK: - FeatureContract
+
+	public var deepLinkHandler: (any DeepLinkHandlerContract)? {
+		{Feature}DeepLinkHandler()
+	}
+
+	public func makeMainView(navigator: any NavigatorContract) -> AnyView {
+		AnyView({Screen}View(viewModel: container.make{Screen}ViewModel(navigator: navigator)))
+	}
+
+	public func resolve(
+		_ navigation: any NavigationContract,
+		navigator: any NavigatorContract
+	) -> AnyView? {
+		guard let navigation = navigation as? {Feature}IncomingNavigation else {
+			return nil
+		}
+		switch navigation {
+		case .main:
+			return makeMainView(navigator: navigator)
+		}
+	}
+}
+```
+
+With networking (when DataSources/Repositories are added later):
+
+```swift
+import ChallengeCore
+import ChallengeNetworking
+import SwiftUI
+
+public struct {Feature}Feature: FeatureContract {
+	// MARK: - Dependencies
+
+	private let container: {Feature}Container
+
+	// MARK: - Init
+
+	public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+		self.container = {Feature}Container(httpClient: httpClient, tracker: tracker)
 	}
 
 	// MARK: - FeatureContract
