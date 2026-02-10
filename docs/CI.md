@@ -6,10 +6,11 @@ The project uses [GitHub Actions](https://github.com/features/actions) to run qu
 
 ### Triggers
 
-| Trigger | When |
-|---------|------|
-| `pull_request` | Automatically on every PR targeting `main` |
-| `workflow_dispatch` | Manually from **Actions** > **Quality Checks** > **Run workflow** |
+| Trigger | Workflow | When |
+|---------|----------|------|
+| `pull_request` | Quality Checks | Automatically on every PR targeting `main` |
+| `workflow_dispatch` | Quality Checks | Manually from **Actions** > **Quality Checks** > **Run workflow** |
+| `workflow_dispatch` | [Run Single Test](#run-single-test) | Manually — runs a specific test N times to reproduce flaky failures |
 
 ### Jobs
 
@@ -120,6 +121,28 @@ When triggered by a PR, the same summary is posted as a PR comment.
 Additionally, you can run the workflow manually from **Actions** > **Quality Checks** > **Run workflow**.
 
 <img src="screenshots/manual-trigger.png" width="100%">
+
+## Run Single Test
+
+A separate workflow (`.github/workflows/run-single-test.yml`) allows running a specific test N times on CI. This is useful for reproducing flaky tests that only fail on CI runners.
+
+### Trigger
+
+Manual only: **Actions** > **Run Single Test** > **Run workflow**.
+
+### Inputs
+
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `test-target` | Yes | — | Test identifier in `TestTarget/TestClass/testMethod` format (e.g., `ChallengeUITests/CharacterFlowUITests/testEpisodesShowsErrorAndRetryLoadsThenNavigatesToCharacterDetail`) |
+| `repeat-count` | No | `1` | Number of times to run the test |
+
+### Behavior
+
+- Each run uses `--clean` to bypass Tuist cache and force a fresh execution.
+- The workflow logs a pass/fail result per run and prints a summary at the end.
+- If **any** run fails, the workflow fails.
+- All `.xcresult` bundles are uploaded as a single artifact (`test-results`, 7-day retention) for post-mortem inspection.
 
 ## GitHub Configuration
 

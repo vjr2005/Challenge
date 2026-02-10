@@ -9,7 +9,7 @@ on:
       repeat-count:
         description: "Number of times to run the test"
         required: false
-        default: "3"
+        default: "1"
 
 concurrency:
   group: single-test-${{ github.ref }}
