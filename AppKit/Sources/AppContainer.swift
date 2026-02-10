@@ -44,7 +44,7 @@ public struct AppContainer {
 
 		homeFeature = HomeFeature(tracker: self.tracker)
 		characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
-		episodeFeature = EpisodeFeature(tracker: self.tracker)
+		episodeFeature = EpisodeFeature(httpClient: self.httpClient, tracker: self.tracker)
 		systemFeature = SystemFeature(tracker: self.tracker)
 	}
 

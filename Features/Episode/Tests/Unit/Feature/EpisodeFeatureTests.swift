@@ -1,5 +1,6 @@
 import ChallengeCore
 import ChallengeCoreMocks
+import ChallengeNetworkingMocks
 import SwiftUI
 import Testing
 
@@ -14,7 +15,7 @@ struct EpisodeFeatureTests {
     // MARK: - Init
 
     init() {
-        sut = EpisodeFeature(tracker: TrackerMock())
+        sut = EpisodeFeature(httpClient: HTTPClientMock(), tracker: TrackerMock())
     }
 
     // MARK: - Deep Link Handler

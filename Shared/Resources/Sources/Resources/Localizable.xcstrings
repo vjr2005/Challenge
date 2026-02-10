@@ -1173,6 +1173,40 @@
           }
         }
       }
+    },
+    "episodeError.loadFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load episodes. Please try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error al cargar los episodios. Por favor, inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "episodeError.notFound %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episodes for character with ID %lld were not found."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron los episodios del personaje con ID %lld."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

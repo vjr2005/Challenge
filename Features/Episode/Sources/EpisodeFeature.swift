@@ -1,4 +1,5 @@
 import ChallengeCore
+import ChallengeNetworking
 import SwiftUI
 
 public struct EpisodeFeature: FeatureContract {
@@ -8,8 +9,8 @@ public struct EpisodeFeature: FeatureContract {
 
     // MARK: - Init
 
-    public init(tracker: any TrackerContract) {
-        self.container = EpisodeContainer(tracker: tracker)
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+        self.container = EpisodeContainer(httpClient: httpClient, tracker: tracker)
     }
 
     // MARK: - FeatureContract
