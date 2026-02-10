@@ -1,4 +1,5 @@
 import ChallengeCharacter
+import ChallengeEpisode
 import ChallengeHome
 import Testing
 
@@ -37,5 +38,18 @@ struct AppNavigationRedirectTests {
 
 		// Then
 		#expect(result == nil)
+	}
+
+	@Test("Redirects character outgoing episodes navigation to episode character episodes")
+	func redirectCharacterOutgoingEpisodesToEpisodeCharacterEpisodes() throws {
+		// Given
+		let characterIdentifier = 42
+
+		// When
+		let result = sut.redirect(CharacterOutgoingNavigation.episodes(characterIdentifier: characterIdentifier))
+
+		// Then
+		let episodeNavigation = try #require(result as? EpisodeIncomingNavigation)
+		#expect(episodeNavigation == .characterEpisodes(characterIdentifier: characterIdentifier))
 	}
 }

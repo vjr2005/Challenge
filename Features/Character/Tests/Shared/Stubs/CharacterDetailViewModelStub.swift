@@ -27,4 +27,8 @@ final class CharacterDetailViewModelStub: CharacterDetailViewModelContract {
 	func didTapOnBack() {
 		// No-op: navigation not tested in snapshots
 	}
+
+	func didTapOnEpisodes() {
+		// No-op: navigation not tested in snapshots
+	}
 }

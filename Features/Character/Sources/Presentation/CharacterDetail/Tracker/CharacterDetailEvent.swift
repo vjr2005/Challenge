@@ -6,6 +6,7 @@ enum CharacterDetailEvent: TrackingEventContract {
     case pullToRefreshTriggered
     case backButtonTapped
     case loadError(description: String)
+    case episodesButtonTapped(identifier: Int)
     case refreshError(description: String)
 
     var name: String {
@@ -18,6 +19,8 @@ enum CharacterDetailEvent: TrackingEventContract {
             "character_detail_pull_to_refresh"
         case .backButtonTapped:
             "character_detail_back_tapped"
+        case .episodesButtonTapped:
+            "character_detail_episodes_tapped"
         case .loadError:
             "character_detail_load_error"
         case .refreshError:
@@ -27,7 +30,7 @@ enum CharacterDetailEvent: TrackingEventContract {
 
     var properties: [String: String] {
         switch self {
-        case .screenViewed(let identifier):
+        case .screenViewed(let identifier), .episodesButtonTapped(let identifier):
             ["id": "\(identifier)"]
         case .loadError(let description), .refreshError(let description):
             ["description": description]

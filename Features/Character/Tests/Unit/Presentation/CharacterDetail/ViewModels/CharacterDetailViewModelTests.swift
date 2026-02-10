@@ -115,6 +115,16 @@ struct CharacterDetailViewModelTests {
         #expect(navigatorMock.goBackCallCount == 1)
     }
 
+    @Test("Tap on episodes navigates to episodes with correct identifier")
+    func didTapOnEpisodesNavigatesToEpisodes() {
+        // When
+        sut.didTapOnEpisodes()
+
+        // Then
+        #expect(navigatorMock.navigateToEpisodesCallCount == 1)
+        #expect(navigatorMock.lastNavigateToEpisodesCharacterIdentifier == identifier)
+    }
+
     // MARK: - didPullToRefresh
 
     @Test("didPullToRefresh updates character with fresh data from API")
@@ -225,6 +235,15 @@ struct CharacterDetailViewModelTests {
 
         // Then
         #expect(trackerMock.backButtonTappedCallCount == 1)
+    }
+
+    @Test("didTapOnEpisodes tracks episodes button tapped with identifier")
+    func didTapOnEpisodesTracksEpisodesButtonTapped() {
+        // When
+        sut.didTapOnEpisodes()
+
+        // Then
+        #expect(trackerMock.episodesButtonTappedIdentifiers == [identifier])
     }
 
     // MARK: - Error Tracking

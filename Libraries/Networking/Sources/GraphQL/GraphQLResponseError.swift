@@ -17,7 +17,7 @@ public struct GraphQLResponseError: Decodable, Equatable, Sendable {
 		self.path = path
 	}
 
-	nonisolated public static func == (lhs: GraphQLResponseError, rhs: GraphQLResponseError) -> Bool {
+	nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
 		lhs.message == rhs.message && lhs.locations == rhs.locations && lhs.path == rhs.path
 	}
 
@@ -34,7 +34,7 @@ public struct GraphQLResponseError: Decodable, Equatable, Sendable {
 			self.column = column
 		}
 
-		nonisolated public static func == (lhs: Location, rhs: Location) -> Bool {
+		nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
 			lhs.line == rhs.line && lhs.column == rhs.column
 		}
 	}

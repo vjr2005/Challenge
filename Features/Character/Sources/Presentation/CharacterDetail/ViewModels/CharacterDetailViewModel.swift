@@ -43,6 +43,11 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
         tracker.trackBackButtonTapped()
         navigator.goBack()
     }
+
+    func didTapOnEpisodes() {
+        tracker.trackEpisodesButtonTapped(identifier: identifier)
+        navigator.navigateToEpisodes(characterIdentifier: identifier)
+    }
 }
 
 // MARK: - Private

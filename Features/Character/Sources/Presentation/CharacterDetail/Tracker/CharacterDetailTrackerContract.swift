@@ -3,6 +3,7 @@ protocol CharacterDetailTrackerContract {
     func trackRetryButtonTapped()
     func trackPullToRefreshTriggered()
     func trackBackButtonTapped()
+    func trackEpisodesButtonTapped(identifier: Int)
     func trackLoadError(description: String)
     func trackRefreshError(description: String)
 }

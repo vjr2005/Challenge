@@ -6,5 +6,6 @@ protocol CharacterDetailViewModelContract: AnyObject {
 	func didTapOnRetryButton() async
 	func didPullToRefresh() async
 	func didTapOnBack()
+	func didTapOnEpisodes()
 }
 

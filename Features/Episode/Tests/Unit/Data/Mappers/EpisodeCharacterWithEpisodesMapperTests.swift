@@ -61,6 +61,18 @@ struct EpisodeCharacterWithEpisodesMapperTests {
 		#expect(result.imageURL == URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
 	}
 
+	@Test("Maps non-numeric character id to zero")
+	func mapsNonNumericCharacterIdToZero() {
+		// Given
+		let dto = EpisodeCharacterWithEpisodesDTO(id: "invalid", name: "", image: "", episodes: [])
+
+		// When
+		let result = sut.map(dto)
+
+		// Then
+		#expect(result.id == 0)
+	}
+
 	@Test("Maps episodes count")
 	func mapsEpisodesCount() throws {
 		// Given

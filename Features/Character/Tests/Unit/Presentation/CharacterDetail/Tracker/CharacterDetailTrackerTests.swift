@@ -57,6 +57,16 @@ struct CharacterDetailTrackerTests {
         #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_back_tapped", properties: [:]))
     }
 
+    @Test("Track episodes button tapped dispatches correct event with identifier")
+    func trackEpisodesButtonTappedDispatchesCorrectEvent() {
+        // When
+        sut.trackEpisodesButtonTapped(identifier: 42)
+
+        // Then
+        #expect(trackerMock.trackedEvents.count == 1)
+        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_episodes_tapped", properties: ["id": "42"]))
+    }
+
     @Test("Track load error dispatches event with description")
     func trackLoadErrorDispatchesCorrectEvent() {
         // When

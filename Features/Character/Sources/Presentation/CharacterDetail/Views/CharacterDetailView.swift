@@ -82,6 +82,7 @@ private extension CharacterDetailView {
 				headerSection(character)
 				infoCard(character)
 				locationCard(character)
+				episodesCard
 			}
 			.padding(.horizontal, theme.spacing.lg)
 			.padding(.top, theme.spacing.sm)
@@ -105,7 +106,7 @@ private extension CharacterDetailView {
 
 	func characterImage(_ character: Character) -> some View {
 		DSAsyncImage(url: character.imageURL)
-			.frame(width: 150, height: 150)
+			.frame(width: theme.dimensions.xxxxl, height: theme.dimensions.xxxxl)
 			.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.xl))
 			.shadow(theme.shadow.medium)
 	}
@@ -169,6 +170,31 @@ private extension CharacterDetailView {
 			.frame(maxWidth: .infinity, alignment: .leading)
 		}
 	}
+
+	var episodesCard: some View {
+		DSCard(padding: theme.spacing.xl) {
+			VStack(alignment: .leading, spacing: theme.spacing.lg) {
+				Label {
+					Text(LocalizedStrings.episodes)
+						.font(theme.typography.headline)
+						.foregroundStyle(theme.colors.textPrimary)
+				} icon: {
+					Image(systemName: "film")
+						.foregroundStyle(theme.colors.accent)
+				}
+
+				DSButton(
+					LocalizedStrings.viewEpisodes,
+					icon: "play.circle",
+					variant: .tertiary,
+					accessibilityIdentifier: AccessibilityIdentifier.episodesButton
+				) {
+					viewModel.didTapOnEpisodes()
+				}
+			}
+			.frame(maxWidth: .infinity, alignment: .leading)
+		}
+	}
 }
 
 // MARK: - LocalizedStrings
@@ -178,6 +204,8 @@ private enum LocalizedStrings {
 	static var loading: String { "characterDetail.loading".localized() }
 	static var information: String { "characterDetail.information".localized() }
 	static var locations: String { "characterDetail.locations".localized() }
+	static var episodes: String { "characterDetail.episodes".localized() }
+	static var viewEpisodes: String { "characterDetail.viewEpisodes".localized() }
 
 	enum Error {
 		static var title: String { "characterDetail.error.title".localized() }
@@ -195,6 +223,7 @@ private enum AccessibilityIdentifier {
 	static let scrollView = "characterDetail.scrollView"
 	static let name = "characterDetail.name"
 	static let backButton = "characterDetail.backButton"
+	static let episodesButton = "characterDetail.episodesButton"
 	static let errorView = "characterDetail.errorView"
 }
 
@@ -236,6 +265,7 @@ private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewMode
 	func didTapOnRetryButton() async {}
 	func didPullToRefresh() async {}
 	func didTapOnBack() {}
+	func didTapOnEpisodes() {}
 }
 
 private extension Character {

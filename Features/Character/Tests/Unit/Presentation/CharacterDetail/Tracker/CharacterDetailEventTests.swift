@@ -83,6 +83,26 @@ struct CharacterDetailEventTests {
         #expect(sut.properties == [:])
     }
 
+    // MARK: - episodesButtonTapped
+
+    @Test("Episodes button tapped event has correct name")
+    func episodesButtonTappedEventHasCorrectName() {
+        // Given
+        let sut = CharacterDetailEvent.episodesButtonTapped(identifier: 42)
+
+        // Then
+        #expect(sut.name == "character_detail_episodes_tapped")
+    }
+
+    @Test("Episodes button tapped event has identifier in properties")
+    func episodesButtonTappedEventHasIdentifierInProperties() {
+        // Given
+        let sut = CharacterDetailEvent.episodesButtonTapped(identifier: 42)
+
+        // Then
+        #expect(sut.properties == ["id": "42"])
+    }
+
     // MARK: - loadError
 
     @Test("Load error event has correct name")

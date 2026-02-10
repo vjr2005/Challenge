@@ -23,6 +23,10 @@ struct CharacterDetailTracker: CharacterDetailTrackerContract {
         tracker.track(CharacterDetailEvent.backButtonTapped)
     }
 
+    func trackEpisodesButtonTapped(identifier: Int) {
+        tracker.track(CharacterDetailEvent.episodesButtonTapped(identifier: identifier))
+    }
+
     func trackLoadError(description: String) {
         tracker.track(CharacterDetailEvent.loadError(description: description))
     }

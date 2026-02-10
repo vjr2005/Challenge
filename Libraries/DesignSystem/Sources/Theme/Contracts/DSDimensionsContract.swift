@@ -25,4 +25,7 @@ public protocol DSDimensionsContract: Sendable {
 
 	/// Extra extra extra large dimension (56pt)
 	var xxxl: CGFloat { get }
+
+	/// Extra extra extra extra large dimension (150pt)
+	var xxxxl: CGFloat { get }
 }

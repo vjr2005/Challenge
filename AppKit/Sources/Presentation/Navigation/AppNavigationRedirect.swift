@@ -1,5 +1,6 @@
 import ChallengeCharacter
 import ChallengeCore
+import ChallengeEpisode
 import ChallengeHome
 
 /// Redirects outgoing navigation from features to their target feature navigation.
@@ -10,6 +11,8 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 	public func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
 		switch navigation {
 		case let outgoing as HomeOutgoingNavigation:
+			redirect(outgoing)
+		case let outgoing as CharacterOutgoingNavigation:
 			redirect(outgoing)
 		default:
 			nil
@@ -22,6 +25,13 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
 		switch navigation {
 		case .characters:
 			CharacterIncomingNavigation.list
+		}
+	}
+
+	private func redirect(_ navigation: CharacterOutgoingNavigation) -> any NavigationContract {
+		switch navigation {
+		case .episodes(let characterIdentifier):
+			EpisodeIncomingNavigation.characterEpisodes(characterIdentifier: characterIdentifier)
 		}
 	}
 }

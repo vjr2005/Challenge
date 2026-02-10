@@ -290,6 +290,40 @@
         }
       }
     },
+    "characterDetail.episodes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episodes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episodios"
+          }
+        }
+      }
+    },
+    "characterDetail.viewEpisodes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Episodes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver episodios"
+          }
+        }
+      }
+    },
     "characterDetail.error.title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1208,19 +1242,19 @@
         }
       }
     },
-    "characterEpisodes.episodes" : {
+    "characterEpisodes.airDate" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Episodes"
+            "value" : "Air Date"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Episodios"
+            "value" : "Fecha de emisión"
           }
         }
       }

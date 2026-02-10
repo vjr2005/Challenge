@@ -10,4 +10,8 @@ struct CharacterDetailNavigator: CharacterDetailNavigatorContract {
     func goBack() {
         navigator.goBack()
     }
+
+    func navigateToEpisodes(characterIdentifier: Int) {
+        navigator.navigate(to: CharacterOutgoingNavigation.episodes(characterIdentifier: characterIdentifier))
+    }
 }

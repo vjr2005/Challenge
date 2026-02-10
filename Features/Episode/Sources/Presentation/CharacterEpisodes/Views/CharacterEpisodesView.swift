@@ -81,7 +81,7 @@ private extension CharacterEpisodesView {
 		DSCard(padding: theme.spacing.xl) {
 			VStack(spacing: theme.spacing.lg) {
 				DSAsyncImage(url: data.imageURL, accessibilityIdentifier: AccessibilityIdentifier.headerImage)
-					.frame(width: 120, height: 120)
+					.frame(width: theme.dimensions.xxxxl, height: theme.dimensions.xxxxl)
 					.clipShape(Circle())
 					.shadow(theme.shadow.medium)
 
@@ -114,7 +114,7 @@ private extension CharacterEpisodesView {
 					.font(theme.typography.headline)
 					.foregroundStyle(theme.colors.textPrimary)
 
-				DSInfoRow(icon: "calendar", label: LocalizedStrings.episodes, value: episode.airDate)
+				DSInfoRow(icon: "calendar", label: LocalizedStrings.airDate, value: episode.airDate)
 
 				if !episode.characters.isEmpty {
 					VStack(alignment: .leading, spacing: theme.spacing.sm) {
@@ -140,7 +140,7 @@ private extension CharacterEpisodesView {
 	func characterAvatar(_ character: EpisodeCharacter) -> some View {
 		VStack(spacing: theme.spacing.xs) {
 			DSAsyncImage(url: character.imageURL, accessibilityIdentifier: AccessibilityIdentifier.characterAvatar(id: character.id))
-				.frame(width: 48, height: 48)
+				.frame(width: theme.dimensions.xxl, height: theme.dimensions.xxl)
 				.clipShape(Circle())
 
 			Text(character.name)
@@ -148,7 +148,7 @@ private extension CharacterEpisodesView {
 				.foregroundStyle(theme.colors.textSecondary)
 				.lineLimit(2)
 				.multilineTextAlignment(.center)
-				.frame(width: 56)
+				.frame(width: theme.dimensions.xxxl)
 		}
 	}
 }
@@ -156,9 +156,8 @@ private extension CharacterEpisodesView {
 // MARK: - LocalizedStrings
 
 private enum LocalizedStrings {
-	static var title: String { "characterEpisodes.title".localized() }
 	static var loading: String { "characterEpisodes.loading".localized() }
-	static var episodes: String { "characterEpisodes.episodes".localized() }
+	static var airDate: String { "characterEpisodes.airDate".localized() }
 	static var characters: String { "characterEpisodes.characters".localized() }
 
 	enum Error {

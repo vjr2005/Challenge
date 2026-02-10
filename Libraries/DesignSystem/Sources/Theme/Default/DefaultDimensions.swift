@@ -11,4 +11,5 @@ public struct DefaultDimensions: DSDimensionsContract {
 	public var xl: CGFloat { 32 }
 	public var xxl: CGFloat { 48 }
 	public var xxxl: CGFloat { 56 }
+	public var xxxxl: CGFloat { 150 }
 }

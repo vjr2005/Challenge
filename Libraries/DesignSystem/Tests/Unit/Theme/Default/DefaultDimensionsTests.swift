@@ -15,6 +15,7 @@ struct DefaultDimensionsTests {
 		#expect(sut.xl == 32)
 		#expect(sut.xxl == 48)
 		#expect(sut.xxxl == 56)
+		#expect(sut.xxxxl == 150)
 	}
 
 	@Test("Dimension values increase monotonically")
@@ -25,5 +26,6 @@ struct DefaultDimensionsTests {
 		#expect(sut.lg < sut.xl)
 		#expect(sut.xl < sut.xxl)
 		#expect(sut.xxl < sut.xxxl)
+		#expect(sut.xxxl < sut.xxxxl)
 	}
 }
