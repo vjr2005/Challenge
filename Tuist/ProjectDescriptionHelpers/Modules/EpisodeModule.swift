@@ -8,13 +8,16 @@ public enum EpisodeModule {
 		dependencies: [
 			.target(name: "\(appName)Core"),
 			.target(name: "\(appName)DesignSystem"),
+			.target(name: "\(appName)Networking"),
 			.target(name: "\(appName)Resources"),
 		],
 		testDependencies: [
 			.target(name: "\(appName)CoreMocks"),
+			.target(name: "\(appName)NetworkingMocks"),
 		],
 		snapshotTestDependencies: [
 			.target(name: "\(appName)CoreMocks"),
+			.target(name: "\(appName)NetworkingMocks"),
 		]
 	)
 

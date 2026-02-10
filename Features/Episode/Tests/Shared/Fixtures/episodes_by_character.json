@@ -1,0 +1,40 @@
+{
+	"character": {
+		"id": "1",
+		"name": "Rick Sanchez",
+		"image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
+		"episode": [
+			{
+				"id": "1",
+				"name": "Pilot",
+				"air_date": "December 2, 2013",
+				"episode": "S01E01",
+				"characters": [
+					{
+						"id": "1",
+						"name": "Rick Sanchez",
+						"image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg"
+					},
+					{
+						"id": "2",
+						"name": "Morty Smith",
+						"image": "https://rickandmortyapi.com/api/character/avatar/2.jpeg"
+					}
+				]
+			},
+			{
+				"id": "2",
+				"name": "Lawnmower Dog",
+				"air_date": "December 9, 2013",
+				"episode": "S01E02",
+				"characters": [
+					{
+						"id": "1",
+						"name": "Rick Sanchez",
+						"image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg"
+					}
+				]
+			}
+		]
+	}
+}
