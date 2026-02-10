@@ -206,16 +206,44 @@ extension UITestCase {
 		await serverMock.registerPrefix(.GET, "/api/character/") { _ in .json(characterData) }
 	}
 
-	/// Registers GraphQL episodes route for retry recovery. Use mid-test after initial failure.
+	/// Registers all routes for retry recovery with episodes succeeding. Use mid-test after initial failure.
 	func givenCharacterEpisodesRecovers() async throws {
 		let baseURL = try XCTUnwrap(serverBaseURL)
+		let characterData = Data.fixture("character", baseURL: baseURL)
 		let episodesData = Data.fixture("episodes_by_character_response", baseURL: baseURL)
+		let imageData = Data.stubAvatarImage
 
-		await serverMock.register(.POST, "/graphql") { _ in .json(episodesData) }
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if request.path.contains("/graphql") {
+				return .json(episodesData)
+			}
+			if request.path.contains("/character/") {
+				return .json(characterData)
+			}
+			return .status(.notFound)
+		}
 	}
 
-	/// Registers GraphQL episodes route to return 500. Use mid-test to simulate refresh failure.
-	func givenCharacterEpisodesFails() async {
-		await serverMock.register(.POST, "/graphql") { _ in .status(.internalServerError) }
+	/// Registers all routes with GraphQL episodes returning 500. Use mid-test to simulate refresh failure.
+	func givenCharacterEpisodesFails() async throws {
+		let baseURL = try XCTUnwrap(serverBaseURL)
+		let characterData = Data.fixture("character", baseURL: baseURL)
+		let imageData = Data.stubAvatarImage
+
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if request.path.contains("/graphql") {
+				return .status(.internalServerError)
+			}
+			if request.path.contains("/character/") {
+				return .json(characterData)
+			}
+			return .status(.notFound)
+		}
 	}
 }
