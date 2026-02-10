@@ -28,6 +28,7 @@ public enum AppScheme {
 				"\(appName)AppKitSnapshotTests",
 				"\(appName)DesignSystemSnapshotTests",
 				"\(appName)CharacterSnapshotTests",
+				"\(appName)EpisodeSnapshotTests",
 				"\(appName)HomeSnapshotTests",
 				"\(appName)SystemSnapshotTests",
 			]
