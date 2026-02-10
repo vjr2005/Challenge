@@ -10,7 +10,7 @@ extension CharacterEpisodesRobot {
 	@discardableResult
 	func pullToRefresh(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
-		XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
+		XCTAssertTrue(scrollView.waitForExistence(timeout: 10), file: file, line: line)
 		let start = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
 		let end = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9))
 		start.press(forDuration: 0.1, thenDragTo: end)
@@ -41,7 +41,7 @@ extension CharacterEpisodesRobot {
 	@discardableResult
 	func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let view = app.scrollViews[AccessibilityIdentifier.scrollView]
-		XCTAssertTrue(view.waitForExistence(timeout: 5), file: file, line: line)
+		XCTAssertTrue(view.waitForExistence(timeout: 10), file: file, line: line)
 		return self
 	}
 

@@ -1,0 +1,83 @@
+name: Run Single Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-target:
+        description: "Test identifier (e.g., ChallengeUITests/CharacterFlowUITests/testEpisodesShowsErrorAndRetryLoadsThenNavigatesToCharacterDetail)"
+        required: true
+      repeat-count:
+        description: "Number of times to run the test"
+        required: false
+        default: "3"
+
+concurrency:
+  group: single-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  run-test:
+    name: "Run Test (${{ github.event.inputs.repeat-count }}x)"
+    runs-on: macos-15
+    timeout-minutes: 40
+
+    env:
+      TUIST_TEST_DEVICE: iPhone 17 Pro
+      TUIST_TEST_OS: "26.1"
+      TUIST_TEST_DERIVED_DATA_PATH: derived_data
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        uses: ./.github/actions/setup
+        with:
+          device: ${{ env.TUIST_TEST_DEVICE }}
+          derived-data-prefix: single-test
+
+      - name: Run test (${{ github.event.inputs.repeat-count }}x)
+        run: |
+          REPEAT=${{ github.event.inputs.repeat-count }}
+          PASSED=0
+          FAILED=0
+
+          for i in $(seq 1 "$REPEAT"); do
+            echo "::group::Run $i of $REPEAT"
+            RESULT_PATH="test_output/run_${i}.xcresult"
+
+            if mise x -- tuist test \
+              --test-targets "${{ github.event.inputs.test-target }}" \
+              --device "$TUIST_TEST_DEVICE" \
+              --os "$TUIST_TEST_OS" \
+              --result-bundle-path "$RESULT_PATH" \
+              --clean; then
+              echo "Run $i: PASSED"
+              PASSED=$((PASSED + 1))
+            else
+              echo "Run $i: FAILED"
+              FAILED=$((FAILED + 1))
+            fi
+            echo "::endgroup::"
+          done
+
+          echo ""
+          echo "===== SUMMARY ====="
+          echo "Total: $REPEAT | Passed: $PASSED | Failed: $FAILED"
+          echo ""
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::$FAILED of $REPEAT runs failed"
+            exit 1
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_output
+          retention-days: 7
