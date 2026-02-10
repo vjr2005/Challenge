@@ -17,12 +17,62 @@ nonisolated class UITestCase: XCTestCase {
 	}
 
 	override func tearDown() async throws {
-        await serverMock.stop()
+		await attachNetworkLogIfFailed()
+
+		await serverMock.stop()
 		serverMock = nil
 		serverBaseURL = nil
 		app = nil
 		try await super.tearDown()
 	}
+
+	// MARK: - Network Log
+
+	private func attachNetworkLogIfFailed() async {
+		guard (testRun?.failureCount ?? 0) > 0 else { return }
+
+		let requests = await serverMock.requests
+		guard !requests.isEmpty else { return }
+
+		let log = requests.enumerated().map { index, recorded in
+			formatRequest(recorded, index: index + 1)
+		}.joined(separator: "\n")
+
+		let attachment = XCTAttachment(string: log)
+		attachment.name = "Network Log"
+		attachment.lifetime = .keepAlways
+		add(attachment)
+	}
+
+	private func formatRequest(_ recorded: RecordedRequest, index: Int) -> String {
+		let request = recorded.request
+		let timestamp = Self.timestampFormatter.string(from: recorded.timestamp)
+		var lines = ["[\(index)] \(timestamp) \(request.method.rawValue) \(request.path)"]
+
+		if !request.queryParameters.isEmpty {
+			let params = request.queryParameters
+				.sorted { $0.key < $1.key }
+				.map { "  \($0.key)=\($0.value)" }
+				.joined(separator: "\n")
+			lines.append("Query:\n\(params)")
+		}
+
+		if let route = recorded.matchedRoute {
+			lines.append("Route: \(route)")
+		}
+
+		if let body = request.bodyString, !body.isEmpty {
+			lines.append("Body: \(body)")
+		}
+
+		return lines.joined(separator: "\n")
+	}
+
+	private static let timestampFormatter: DateFormatter = {
+		let formatter = DateFormatter()
+		formatter.dateFormat = "HH:mm:ss.SSS"
+		return formatter
+	}()
 
 	/// Launches the app with the mock server configured.
 	/// Configure mock server routes before calling this method.

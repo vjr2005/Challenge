@@ -70,6 +70,7 @@ let appUITestsScheme = Scheme.scheme(
 	testAction: .targets(
 		["\(appName)UITests"],
 		options: .options(
+			preferredScreenCaptureFormat: .screenRecording,
 			coverage: true,
 			codeCoverageTargets: Modules.codeCoverageTargets
 		)
