@@ -3,16 +3,16 @@ import Testing
 
 @testable import ChallengeEpisode
 
-struct EpisodeListNavigatorTests {
+struct CharacterEpisodesNavigatorTests {
     // MARK: - Properties
 
     private let navigatorMock = NavigatorMock()
-    private let sut: EpisodeListNavigator
+    private let sut: CharacterEpisodesNavigator
 
     // MARK: - Init
 
     init() {
-        sut = EpisodeListNavigator(navigator: navigatorMock)
+        sut = CharacterEpisodesNavigator(navigator: navigatorMock)
     }
 
     // MARK: - Init Test

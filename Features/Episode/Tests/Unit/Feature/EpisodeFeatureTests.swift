@@ -7,55 +7,55 @@ import Testing
 @testable import ChallengeEpisode
 
 struct EpisodeFeatureTests {
-    // MARK: - Properties
+	// MARK: - Properties
 
-    private let navigatorMock = NavigatorMock()
-    private let sut: EpisodeFeature
+	private let navigatorMock = NavigatorMock()
+	private let sut: EpisodeFeature
 
-    // MARK: - Init
+	// MARK: - Init
 
-    init() {
-        sut = EpisodeFeature(httpClient: HTTPClientMock(), tracker: TrackerMock())
-    }
+	init() {
+		sut = EpisodeFeature(httpClient: HTTPClientMock(), tracker: TrackerMock())
+	}
 
-    // MARK: - Deep Link Handler
+	// MARK: - Deep Link Handler
 
-    @Test("Deep link handler is not nil")
-    func deepLinkHandlerIsNotNil() {
-        #expect(sut.deepLinkHandler != nil)
-    }
+	@Test("Deep link handler is not nil")
+	func deepLinkHandlerIsNotNil() {
+		#expect(sut.deepLinkHandler != nil)
+	}
 
-    // MARK: - Make Main View
+	// MARK: - Make Main View
 
-    @Test("Make main view returns a view")
-    func makeMainViewReturnsView() {
-        // When
-        let result = sut.makeMainView(navigator: navigatorMock)
+	@Test("Make main view returns a view")
+	func makeMainViewReturnsView() {
+		// When
+		let result = sut.makeMainView(navigator: navigatorMock)
 
-        // Then
-        _ = result
-    }
+		// Then
+		_ = result
+	}
 
-    // MARK: - Resolve
+	// MARK: - Resolve
 
-    @Test("Resolve main navigation returns view")
-    func resolveMainNavigationReturnsView() {
-        // When
-        let result = sut.resolve(EpisodeIncomingNavigation.main, navigator: navigatorMock)
+	@Test("Resolve character episodes navigation returns view")
+	func resolveCharacterEpisodesNavigationReturnsView() {
+		// When
+		let result = sut.resolve(EpisodeIncomingNavigation.characterEpisodes(characterIdentifier: 1), navigator: navigatorMock)
 
-        // Then
-        #expect(result != nil)
-    }
+		// Then
+		#expect(result != nil)
+	}
 
-    @Test("Resolve unknown navigation returns nil")
-    func resolveUnknownNavigationReturnsNil() {
-        // Given
-        struct UnknownNav: NavigationContract {}
+	@Test("Resolve unknown navigation returns nil")
+	func resolveUnknownNavigationReturnsNil() {
+		// Given
+		struct UnknownNav: NavigationContract {}
 
-        // When
-        let result = sut.resolve(UnknownNav(), navigator: navigatorMock)
+		// When
+		let result = sut.resolve(UnknownNav(), navigator: navigatorMock)
 
-        // Then
-        #expect(result == nil)
-    }
+		// Then
+		#expect(result == nil)
+	}
 }

@@ -1,6 +1,6 @@
 import ChallengeCore
 
-struct EpisodeListNavigator: EpisodeListNavigatorContract {
+struct CharacterEpisodesNavigator: CharacterEpisodesNavigatorContract {
     private let navigator: NavigatorContract
 
     init(navigator: NavigatorContract) {

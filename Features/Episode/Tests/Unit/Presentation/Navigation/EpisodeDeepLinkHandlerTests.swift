@@ -5,48 +5,72 @@ import Testing
 @testable import ChallengeEpisode
 
 struct EpisodeDeepLinkHandlerTests {
-    // MARK: - Properties
+	// MARK: - Properties
 
-    private let sut = EpisodeDeepLinkHandler()
+	private let sut = EpisodeDeepLinkHandler()
 
-    // MARK: - Scheme
+	// MARK: - Scheme
 
-    @Test("Scheme is challenge")
-    func schemeIsChallenge() {
-        #expect(sut.scheme == "challenge")
-    }
+	@Test("Scheme is challenge")
+	func schemeIsChallenge() {
+		#expect(sut.scheme == "challenge")
+	}
 
-    // MARK: - Host
+	// MARK: - Host
 
-    @Test("Host is episode")
-    func hostIsEpisode() {
-        #expect(sut.host == "episode")
-    }
+	@Test("Host is episode")
+	func hostIsEpisode() {
+		#expect(sut.host == "episode")
+	}
 
-    // MARK: - Resolve
+	// MARK: - Resolve
 
-    @Test("Resolve list path returns main navigation")
-    func resolveListPathReturnsMainNavigation() throws {
-        // Given
-        let url = try #require(URL(string: "challenge://episode/list"))
+	@Test("Resolve character path with valid id returns character episodes navigation")
+	func resolveCharacterPathWithValidIdReturnsCharacterEpisodesNavigation() throws {
+		// Given
+		let url = try #require(URL(string: "challenge://episode/character/42"))
 
-        // When
-        let result = sut.resolve(url)
+		// When
+		let result = sut.resolve(url)
 
-        // Then
-        let navigation = result as? EpisodeIncomingNavigation
-        #expect(navigation == .main)
-    }
+		// Then
+		let navigation = result as? EpisodeIncomingNavigation
+		#expect(navigation == .characterEpisodes(characterIdentifier: 42))
+	}
 
-    @Test("Resolve unknown path returns nil")
-    func resolveUnknownPathReturnsNil() throws {
-        // Given
-        let url = try #require(URL(string: "challenge://episode/unknown"))
+	@Test("Resolve character path without id returns nil")
+	func resolveCharacterPathWithoutIdReturnsNil() throws {
+		// Given
+		let url = try #require(URL(string: "challenge://episode/character"))
 
-        // When
-        let result = sut.resolve(url)
+		// When
+		let result = sut.resolve(url)
 
-        // Then
-        #expect(result == nil)
-    }
+		// Then
+		#expect(result == nil)
+	}
+
+	@Test("Resolve character path with invalid id returns nil")
+	func resolveCharacterPathWithInvalidIdReturnsNil() throws {
+		// Given
+		let url = try #require(URL(string: "challenge://episode/character/abc"))
+
+		// When
+		let result = sut.resolve(url)
+
+		// Then
+		#expect(result == nil)
+	}
+
+	@Test("Resolve unknown path returns nil")
+	func resolveUnknownPathReturnsNil() throws {
+		// Given
+		let url = try #require(URL(string: "challenge://episode/unknown"))
+
+		// When
+		let result = sut.resolve(url)
+
+		// Then
+		#expect(result == nil)
+	}
 }
