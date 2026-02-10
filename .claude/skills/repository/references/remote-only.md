@@ -1,0 +1,127 @@
+# Remote Only Repository
+
+Implementation and tests for a repository that only uses a RemoteDataSource.
+
+Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{AppName}` (app target prefix).
+
+---
+
+## Implementation
+
+```swift
+import ChallengeCore
+import ChallengeNetworking
+
+struct {Name}Repository: {Name}RepositoryContract {
+    private let remoteDataSource: {Name}RemoteDataSourceContract
+    private let mapper = {Name}Mapper()
+    private let errorMapper = {Name}ErrorMapper()
+
+    init(remoteDataSource: {Name}RemoteDataSourceContract) {
+        self.remoteDataSource = remoteDataSource
+    }
+
+    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+        do {
+            let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
+            return mapper.map(dto)
+        } catch {
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
+        }
+    }
+}
+```
+
+## Mock
+
+```swift
+import ChallengeCore
+import Foundation
+
+@testable import {AppName}{Feature}
+
+final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
+    private(set) var getCallCount = 0
+    private(set) var lastRequestedIdentifier: Int?
+
+    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+        getCallCount += 1
+        lastRequestedIdentifier = identifier
+        return try result.get()
+    }
+}
+```
+
+## Tests
+
+```swift
+import ChallengeCore
+import ChallengeNetworking
+import Foundation
+import Testing
+
+@testable import {AppName}{Feature}
+
+struct {Name}RepositoryTests {
+    @Test("Gets model from remote data source")
+    func getsModelFromRemoteDataSource() async throws {
+        // Given
+        let expected = {Name}.stub()
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
+
+        // When
+        let value = try await sut.get{Name}(identifier: 1)
+
+        // Then
+        #expect(value == expected)
+    }
+
+    @Test("Calls remote data source with correct identifier")
+    func callsRemoteDataSourceWithCorrectIdentifier() async throws {
+        // Given
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(.stub())
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
+
+        // When
+        _ = try await sut.get{Name}(identifier: 42)
+
+        // Then
+        #expect(remoteDataSourceMock.fetchCallCount == 1)
+        #expect(remoteDataSourceMock.lastFetchedIdentifier == 42)
+    }
+
+    @Test("Maps API error to domain error")
+    func mapsAPIErrorToDomainError() async throws {
+        // Given
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(.notFound)
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
+
+        // When / Then
+        await #expect(throws: {Feature}Error.notFound(identifier: 1)) {
+            _ = try await sut.get{Name}(identifier: 1)
+        }
+    }
+
+    @Test("Maps generic error to loadFailed")
+    func mapsGenericErrorToLoadFailed() async throws {
+        // Given
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .failure(GenericTestError.unknown)
+        let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
+
+        // When / Then
+        await #expect(throws: {Feature}Error.loadFailed()) {
+            _ = try await sut.get{Name}(identifier: 1)
+        }
+    }
+}
+
+private enum GenericTestError: Error {
+    case unknown
+}
+```
