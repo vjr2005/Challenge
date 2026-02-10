@@ -81,7 +81,15 @@
       "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff --staged --stat)",
       "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff --stat)",
       "Bash(git -C /Users/vjordan/Projects/ios/Challenge log --oneline -5)",
-      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff App/Tests/Shared/Robots/CharacterDetailRobot.swift App/Tests/Shared/Robots/Robot.swift App/Tests/Shared/Scenarios/UITestCase+Scenarios.swift App/Tests/UI/CharacterFlowUITests.swift .claude/skills/ui-tests/SKILL.md)"
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff App/Tests/Shared/Robots/CharacterDetailRobot.swift App/Tests/Shared/Robots/Robot.swift App/Tests/Shared/Scenarios/UITestCase+Scenarios.swift App/Tests/UI/CharacterFlowUITests.swift .claude/skills/ui-tests/SKILL.md)",
+      "Bash(swift:*)",
+      "Bash(for i in 1 2 3)",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(for i in 1 2 3 4 5)",
+      "Bash(do echo \"=== Run $i ===\")",
+      "Bash(gh api:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

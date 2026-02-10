@@ -60,7 +60,7 @@ let appUITestsTarget = Target.target(
 	],
 	dependencies: [
 		.target(name: appName),
-		.external(name: "SwiftMockServer"),
+		.external(name: "SwiftMockServerBinary"),
 	]
 )
 
