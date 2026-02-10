@@ -2,55 +2,113 @@
 
 Create Navigators for navigation between screens. Navigators decouple ViewModels from navigation implementation.
 
+## Scope & Boundaries
+
+This guide covers screen Navigators, IncomingNavigation, OutgoingNavigation, DeepLinkHandler, and AppNavigationRedirect.
+
+| Need | Delegate to |
+|------|-------------|
+| ViewModel creation | [Create ViewModel](create-viewmodel.md) |
+| Feature entry point | [Create Feature](create-feature.md) |
+
 ## Prerequisites
 
 - Feature module exists (see [Create Feature](create-feature.md))
 - IncomingNavigation defined (created with feature)
 
-## File structure
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          RootContainerView                              │
+│  @State private var coordinator = NavigationCoordinator(                │
+│      redirector: AppNavigationRedirect()                                │
+│  )                                                                      │
+│                                                                         │
+│  NavigationStack(path: $coordinator.path) { ... }                       │
+│  .sheet(item: $coordinator.sheetNavigation) { modal in                  │
+│      ModalContainerView(modal:appContainer:onDismiss:)                  │
+│  }                                                                      │
+│  .fullScreenCover(item: $coordinator.fullScreenCoverNavigation) { ... } │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Push Navigation Flow:
+1. HomeNavigator.navigateToCharacters()
+2. coordinator.navigate(to: HomeOutgoingNavigation.characters)
+3. AppNavigationRedirect.redirect() → CharacterIncomingNavigation.list
+4. NavigationStack shows CharacterListView
+
+Modal Navigation Flow:
+1. Navigator.presentFilter()
+2. coordinator.present(Navigation.filter, style: .sheet(detents: [.medium, .large]))
+3. sheetNavigation is set → .sheet(item:) activates
+4. ModalContainerView creates its own NavigationCoordinator + NavigationStack
+5. Modal can push internally or present nested modals
+```
+
+## Navigation Types
+
+| Type | Description | Implementation |
+|------|-------------|----------------|
+| **Incoming** | Destinations a feature can handle | `{Feature}IncomingNavigation` enum |
+| **Outgoing** | Destinations a feature wants to navigate to | `{Feature}OutgoingNavigation` enum |
+| **Redirect** | Connects Outgoing → Incoming | `AppNavigationRedirect` in App layer |
+
+**Why?** Features remain decoupled. Feature A doesn't import Feature B. The App layer connects them via redirects.
+
+## Navigator Pattern
+
+ViewModels use **Navigators** instead of NavigatorContract directly. This:
+1. Decouples ViewModels from navigation implementation details
+2. Makes testing easier with focused mocks
+3. Provides semantic navigation methods
+
+**Key Difference:**
+- **Internal navigation:** Uses `{Feature}IncomingNavigation` directly
+- **External navigation:** Uses `{Feature}OutgoingNavigation` (redirected by App layer)
+
+## File Structure
 
 ```
 Features/{Feature}/
-├── Sources/
-│   └── Presentation/
-│       └── {ScreenName}/
-│           └── Navigator/
-│               ├── {ScreenName}NavigatorContract.swift
-│               └── {ScreenName}Navigator.swift
-└── Tests/
-    ├── Unit/
-    │   └── Presentation/
-    │       └── Navigation/
-    │           └── {ScreenName}NavigatorTests.swift
-    └── Shared/
-        └── Mocks/
-            └── {ScreenName}NavigatorMock.swift
+├── Sources/Presentation/
+│   ├── Navigation/
+│   │   ├── {Feature}IncomingNavigation.swift
+│   │   ├── {Feature}OutgoingNavigation.swift
+│   │   └── {Feature}DeepLinkHandler.swift
+│   └── {Screen}/
+│       └── Navigator/
+│           ├── {Screen}NavigatorContract.swift
+│           └── {Screen}Navigator.swift
+└── Tests/Unit/Presentation/
+    ├── Navigation/{Feature}DeepLinkHandlerTests.swift
+    └── {Screen}/Navigator/{Screen}NavigatorTests.swift
 ```
 
 ---
 
-## Option A: Internal Navigation (same feature)
+## Step 1 — Internal Navigation (same feature)
 
 For navigation within the same feature (e.g., list → detail).
 
 ### 1. Create Navigator Contract
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}NavigatorContract.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift`:
 
 ```swift
-protocol {ScreenName}NavigatorContract {
+protocol {Screen}NavigatorContract {
     func navigateToDetail(identifier: Int)
 }
 ```
 
 ### 2. Create Navigator
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}Navigator.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 
 ```swift
 import ChallengeCore
 
-struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
+struct {Screen}Navigator: {Screen}NavigatorContract {
     private let navigator: NavigatorContract
 
     init(navigator: NavigatorContract) {
@@ -58,6 +116,7 @@ struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
     }
 
     func navigateToDetail(identifier: Int) {
+        // Uses IncomingNavigation (same feature)
         navigator.navigate(to: {Feature}IncomingNavigation.detail(identifier: identifier))
     }
 }
@@ -67,12 +126,12 @@ struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
 
 ### 3. Create Mock
 
-Create `Tests/Shared/Mocks/{ScreenName}NavigatorMock.swift`:
+Create `Tests/Shared/Mocks/{Screen}NavigatorMock.swift`:
 
 ```swift
 @testable import Challenge{Feature}
 
-final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
+final class {Screen}NavigatorMock: {Screen}NavigatorContract {
     private(set) var navigateToDetailIdentifiers: [Int] = []
 
     func navigateToDetail(identifier: Int) {
@@ -81,9 +140,9 @@ final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
 }
 ```
 
-### 4. Create tests
+### 4. Create Tests
 
-Create `Tests/Unit/Presentation/Navigation/{ScreenName}NavigatorTests.swift`:
+Create `Tests/Unit/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -91,54 +150,47 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {ScreenName}NavigatorTests {
-    private let navigatorMock = NavigatorMock()
-    private let sut: {ScreenName}Navigator
-
-    init() {
-        sut = {ScreenName}Navigator(navigator: navigatorMock)
-    }
-
-    @Test("Navigate to detail uses correct navigation with identifier")
+struct {Screen}NavigatorTests {
+    @Test("Navigate to detail uses correct navigation")
     func navigateToDetailUsesCorrectNavigation() {
         // Given
-        let expected = {Feature}IncomingNavigation.detail(identifier: 42)
+        let navigatorMock = NavigatorMock()
+        let sut = {Screen}Navigator(navigator: navigatorMock)
 
         // When
         sut.navigateToDetail(identifier: 42)
 
         // Then
-        #expect(navigatorMock.navigatedDestinations.count == 1)
         let destination = navigatorMock.navigatedDestinations.first as? {Feature}IncomingNavigation
-        #expect(destination == expected)
+        #expect(destination == .detail(identifier: 42))
     }
 }
 ```
 
 ---
 
-## Option B: Navigation with Go Back
+## Step 2 — Navigation with Go Back
 
 For detail screens that need back navigation.
 
 ### 1. Create Navigator Contract
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}NavigatorContract.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift`:
 
 ```swift
-protocol {ScreenName}NavigatorContract {
+protocol {Screen}NavigatorContract {
     func goBack()
 }
 ```
 
 ### 2. Create Navigator
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}Navigator.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 
 ```swift
 import ChallengeCore
 
-struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
+struct {Screen}Navigator: {Screen}NavigatorContract {
     private let navigator: NavigatorContract
 
     init(navigator: NavigatorContract) {
@@ -153,12 +205,12 @@ struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
 
 ### 3. Create Mock
 
-Create `Tests/Shared/Mocks/{ScreenName}NavigatorMock.swift`:
+Create `Tests/Shared/Mocks/{Screen}NavigatorMock.swift`:
 
 ```swift
 @testable import Challenge{Feature}
 
-final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
+final class {Screen}NavigatorMock: {Screen}NavigatorContract {
     private(set) var goBackCallCount = 0
 
     func goBack() {
@@ -167,9 +219,9 @@ final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
 }
 ```
 
-### 4. Create tests
+### 4. Create Tests
 
-Create `Tests/Unit/Presentation/Navigation/{ScreenName}NavigatorTests.swift`:
+Create `Tests/Unit/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -177,12 +229,12 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {ScreenName}NavigatorTests {
+struct {Screen}NavigatorTests {
     private let navigatorMock = NavigatorMock()
-    private let sut: {ScreenName}Navigator
+    private let sut: {Screen}Navigator
 
     init() {
-        sut = {ScreenName}Navigator(navigator: navigatorMock)
+        sut = {Screen}Navigator(navigator: navigatorMock)
     }
 
     @Test("Go back calls navigator go back")
@@ -198,7 +250,7 @@ struct {ScreenName}NavigatorTests {
 
 ---
 
-## Option C: External Navigation (different feature)
+## Step 3 — External Navigation (different feature)
 
 For navigation to a different feature (e.g., Home → Character).
 
@@ -219,22 +271,22 @@ public enum {Feature}OutgoingNavigation: OutgoingNavigationContract {
 
 ### 2. Create Navigator Contract
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}NavigatorContract.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift`:
 
 ```swift
-protocol {ScreenName}NavigatorContract {
+protocol {Screen}NavigatorContract {
     func navigateToCharacters()
 }
 ```
 
 ### 3. Create Navigator
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}Navigator.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 
 ```swift
 import ChallengeCore
 
-struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
+struct {Screen}Navigator: {Screen}NavigatorContract {
     private let navigator: NavigatorContract
 
     init(navigator: NavigatorContract) {
@@ -242,13 +294,12 @@ struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
     }
 
     func navigateToCharacters() {
-        // Uses OutgoingNavigation - AppNavigationRedirect will convert this
+        // Uses OutgoingNavigation (different feature)
+        // AppNavigationRedirect will convert to CharacterIncomingNavigation.list
         navigator.navigate(to: {Feature}OutgoingNavigation.characters)
     }
 }
 ```
-
-> **Note:** External navigation uses `{Feature}OutgoingNavigation`. The `AppNavigationRedirect` in AppKit converts it to the destination feature's `IncomingNavigation`.
 
 ### 4. Register redirect in AppKit
 
@@ -269,6 +320,8 @@ struct AppNavigationRedirect: NavigationRedirectContract {
         }
     }
 
+    // MARK: - Private
+
     private func redirect(_ navigation: {Feature}OutgoingNavigation) -> any NavigationContract {
         switch navigation {
         case .characters:
@@ -280,14 +333,19 @@ struct AppNavigationRedirect: NavigationRedirectContract {
 }
 ```
 
+**Rules:**
+- Centralized place to connect features
+- Maps Outgoing → Incoming navigation
+- Only place that imports multiple features
+
 ### 5. Create Mock
 
-Create `Tests/Shared/Mocks/{ScreenName}NavigatorMock.swift`:
+Create `Tests/Shared/Mocks/{Screen}NavigatorMock.swift`:
 
 ```swift
 @testable import Challenge{Feature}
 
-final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
+final class {Screen}NavigatorMock: {Screen}NavigatorContract {
     private(set) var navigateToCharactersCallCount = 0
 
     func navigateToCharacters() {
@@ -296,9 +354,9 @@ final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
 }
 ```
 
-### 6. Create tests
+### 6. Create Tests
 
-Create `Tests/Unit/Presentation/Navigation/{ScreenName}NavigatorTests.swift`:
+Create `Tests/Unit/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -306,12 +364,12 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {ScreenName}NavigatorTests {
+struct {Screen}NavigatorTests {
     private let navigatorMock = NavigatorMock()
-    private let sut: {ScreenName}Navigator
+    private let sut: {Screen}Navigator
 
     init() {
-        sut = {ScreenName}Navigator(navigator: navigatorMock)
+        sut = {Screen}Navigator(navigator: navigatorMock)
     }
 
     @Test("Navigate to characters uses outgoing navigation")
@@ -339,10 +397,11 @@ import Testing
 @testable import Challenge
 
 struct AppNavigationRedirectTests {
-    private let sut = AppNavigationRedirect()
-
     @Test("Redirect {Feature} outgoing characters to Character list")
-    func redirect{Feature}OutgoingCharactersToCharacterList() throws {
+    func redirectOutgoingCharactersToCharacterList() throws {
+        // Given
+        let sut = AppNavigationRedirect()
+
         // When
         let result = sut.redirect({Feature}OutgoingNavigation.characters)
 
@@ -353,6 +412,9 @@ struct AppNavigationRedirectTests {
 
     @Test("Redirect unknown navigation returns nil")
     func redirectUnknownNavigationReturnsNil() {
+        // Given
+        let sut = AppNavigationRedirect()
+
         // When
         let result = sut.redirect(CharacterIncomingNavigation.list)
 
@@ -364,16 +426,16 @@ struct AppNavigationRedirectTests {
 
 ---
 
-## Option D: Modal Navigation (present/dismiss)
+## Step 4 — Modal Navigation (present/dismiss)
 
 For presenting screens as modals (sheet or fullScreenCover).
 
 ### 1. Create Navigator Contract
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}NavigatorContract.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}NavigatorContract.swift`:
 
 ```swift
-protocol {ScreenName}NavigatorContract {
+protocol {Screen}NavigatorContract {
     func presentFilter()
     func dismiss()
 }
@@ -381,12 +443,12 @@ protocol {ScreenName}NavigatorContract {
 
 ### 2. Create Navigator
 
-Create `Sources/Presentation/{ScreenName}/Navigator/{ScreenName}Navigator.swift`:
+Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 
 ```swift
 import ChallengeCore
 
-struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
+struct {Screen}Navigator: {Screen}NavigatorContract {
     private let navigator: NavigatorContract
 
     init(navigator: NavigatorContract) {
@@ -414,12 +476,12 @@ struct {ScreenName}Navigator: {ScreenName}NavigatorContract {
 
 ### 3. Create Mock
 
-Create `Tests/Shared/Mocks/{ScreenName}NavigatorMock.swift`:
+Create `Tests/Shared/Mocks/{Screen}NavigatorMock.swift`:
 
 ```swift
 @testable import Challenge{Feature}
 
-final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
+final class {Screen}NavigatorMock: {Screen}NavigatorContract {
     private(set) var presentFilterCallCount = 0
     private(set) var dismissCallCount = 0
 
@@ -433,9 +495,9 @@ final class {ScreenName}NavigatorMock: {ScreenName}NavigatorContract {
 }
 ```
 
-### 4. Create tests
+### 4. Create Tests
 
-Create `Tests/Unit/Presentation/Navigation/{ScreenName}NavigatorTests.swift`:
+Create `Tests/Unit/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -443,12 +505,12 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {ScreenName}NavigatorTests {
+struct {Screen}NavigatorTests {
     private let navigatorMock = NavigatorMock()
-    private let sut: {ScreenName}Navigator
+    private let sut: {Screen}Navigator
 
     init() {
-        sut = {ScreenName}Navigator(navigator: navigatorMock)
+        sut = {Screen}Navigator(navigator: navigatorMock)
     }
 
     @Test("Present filter presents sheet with correct detents")
@@ -477,31 +539,137 @@ struct {ScreenName}NavigatorTests {
 
 ---
 
-## Wire Navigator in Container
+## Step 5 — DeepLinkHandler
 
-Add factory method in the Container to create the Navigator:
+For URL-based navigation to feature screens.
+
+### 1. Create DeepLinkHandler
+
+Create `Sources/Presentation/Navigation/{Feature}DeepLinkHandler.swift`:
 
 ```swift
-// In {Feature}Container.swift
+import ChallengeCore
+import Foundation
 
-func make{ScreenName}ViewModel(navigator: any NavigatorContract) -> {ScreenName}ViewModel {
-    {ScreenName}ViewModel(
-        get{Name}UseCase: makeGet{Name}UseCase(),
-        navigator: {ScreenName}Navigator(navigator: navigator)
-    )
+struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
+    let scheme = "challenge"
+    let host = "{feature}"  // e.g., "character"
+
+    func resolve(_ url: URL) -> (any NavigationContract)? {
+        let pathComponents = url.pathComponents
+        guard pathComponents.count >= 2 else {
+            return nil
+        }
+        switch pathComponents[1] {
+        case "list":
+            return {Feature}IncomingNavigation.list
+
+        case "detail":
+            guard pathComponents.count >= 3,
+                  let identifier = Int(pathComponents[2]) else {
+                return nil
+            }
+            return {Feature}IncomingNavigation.detail(identifier: identifier)
+
+        default:
+            return nil
+        }
+    }
+}
+```
+
+**URL Format:** `challenge://{feature}/{path}/{param}` — parameters are embedded in the path, never as query items.
+
+Examples:
+- `challenge://character/list`
+- `challenge://character/detail/42`
+
+### 2. Create Tests
+
+Create `Tests/Unit/Presentation/Navigation/{Feature}DeepLinkHandlerTests.swift`:
+
+```swift
+import ChallengeCore
+import Foundation
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {Feature}DeepLinkHandlerTests {
+    @Test("Resolve list path returns list navigation")
+    func resolveListPathReturnsListNavigation() throws {
+        // Given
+        let sut = {Feature}DeepLinkHandler()
+        let url = try #require(URL(string: "challenge://{feature}/list"))
+
+        // When
+        let result = sut.resolve(url)
+
+        // Then
+        #expect(result as? {Feature}IncomingNavigation == .list)
+    }
+
+    @Test("Resolve detail path with valid id returns detail navigation")
+    func resolveDetailPathWithValidIdReturnsDetailNavigation() throws {
+        // Given
+        let sut = {Feature}DeepLinkHandler()
+        let url = try #require(URL(string: "challenge://{feature}/detail/42"))
+
+        // When
+        let result = sut.resolve(url)
+
+        // Then
+        #expect(result as? {Feature}IncomingNavigation == .detail(identifier: 42))
+    }
+
+    @Test("Resolve detail path without id returns nil")
+    func resolveDetailPathWithoutIdReturnsNil() throws {
+        // Given
+        let sut = {Feature}DeepLinkHandler()
+        let url = try #require(URL(string: "challenge://{feature}/detail"))
+
+        // When
+        let result = sut.resolve(url)
+
+        // Then
+        #expect(result == nil)
+    }
+
+    @Test("Resolve unknown path returns nil")
+    func resolveUnknownPathReturnsNil() throws {
+        // Given
+        let sut = {Feature}DeepLinkHandler()
+        let url = try #require(URL(string: "challenge://{feature}/unknown"))
+
+        // When
+        let result = sut.resolve(url)
+
+        // Then
+        #expect(result == nil)
+    }
 }
 ```
 
 ---
 
-## Generate and verify
+## Checklist
 
-```bash
-./generate.sh
-```
+### Feature Implementation
+- [ ] `{Feature}IncomingNavigation` in `Presentation/Navigation/`
+- [ ] `{Feature}OutgoingNavigation` for cross-feature navigation (if needed)
+- [ ] `{Feature}DeepLinkHandler` returning `IncomingNavigationContract` (if deep links needed)
+- [ ] Each screen has `NavigatorContract` and `Navigator`
+- [ ] Navigator uses `IncomingNavigationContract` for internal, `OutgoingNavigationContract` for external
+- [ ] Container factories receive `navigator: any NavigatorContract`
+
+### Testing
+- [ ] Navigator tests verify correct Navigation enum is used
+- [ ] AppNavigationRedirect tests verify Outgoing → Incoming mapping
+- [ ] DeepLinkHandler tests verify URL → IncomingNavigationContract resolution
+
+---
 
 ## See also
 
-- [Create ViewModel](create-viewmodel.md) - ViewModel that uses the Navigator
-- [Create Feature](create-feature.md) - IncomingNavigation and Feature definition
-- [Deep Linking](../DeepLinking.md) - URL-based navigation
+- [Create ViewModel](create-viewmodel.md) — ViewModel that uses the Navigator
+- [Create Feature](create-feature.md) — IncomingNavigation and Feature definition

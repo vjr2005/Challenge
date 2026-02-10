@@ -8,141 +8,209 @@ Create UseCases for business logic. UseCases have a single responsibility and on
 - Repository exists (see [Create Repository](create-repository.md))
 - Domain error type defined
 
+## UseCase types
+
+| Type | When | Reference |
+|------|------|-----------|
+| Get / Refresh | CRUD with cache policy | Step 3a |
+| Search | Query-based, always remote | Step 3b |
+| Business Logic | Filtering, validation, transformation | Step 3c |
+| Multiple Repositories | Coordinates data from 2+ repos | Step 3d |
+
 ## File structure
 
 ```
 Features/{Feature}/
-├── Sources/
-│   └── Domain/
-│       └── UseCases/
-│           └── {Action}{Name}UseCase.swift
+├── Sources/Domain/UseCases/
+│   └── Get{Name}UseCase.swift       # Contract + Implementation
 └── Tests/
-    ├── Unit/
-    │   └── Domain/
-    │       └── UseCases/
-    │           └── {Action}{Name}UseCaseTests.swift
-    └── Shared/
-        └── Mocks/
-            └── {Action}{Name}UseCaseMock.swift
+    ├── Unit/Domain/UseCases/
+    │   └── Get{Name}UseCaseTests.swift
+    └── Shared/Mocks/
+        └── Get{Name}UseCaseMock.swift
 ```
 
-## Naming conventions
+## Core Pattern
 
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| Get (singular) | Fetch single item (localFirst) | `GetCharacterUseCase` |
-| Refresh (singular) | Refresh single item (remoteFirst) | `RefreshCharacterUseCase` |
-| Get (plural + Page) | Fetch collection (localFirst) | `GetCharactersPageUseCase` |
-| Refresh (plural + Page) | Refresh collection (remoteFirst) | `RefreshCharactersPageUseCase` |
-| Search (plural + Page) | Search with query | `SearchCharactersPageUseCase` |
-| Create | Create new item | `CreateOrderUseCase` |
-| Update | Update existing item | `UpdateProfileUseCase` |
-| Delete | Delete item | `DeleteCartItemUseCase` |
-| Validate | Validate data | `ValidateEmailUseCase` |
+Each UseCase encapsulates **one business operation** with **exactly one method: `execute`**.
+
+> **CRITICAL:** Never add multiple methods or cache policy parameters. Create separate UseCases instead:
+> - `GetCharacterUseCase` (localFirst) + `RefreshCharacterUseCase` (remoteFirst)
+> - `GetCharactersPageUseCase` (list) + `SearchCharactersPageUseCase` (search)
+
+### Naming Convention
+
+| Operation | UseCase Name | Cache Policy |
+|-----------|--------------|--------------|
+| Get single | `Get{Name}UseCase` | localFirst (implicit) |
+| Refresh single | `Refresh{Name}UseCase` | remoteFirst (implicit) |
+| Get list | `Get{Name}sPageUseCase` | localFirst (implicit) |
+| Refresh list | `Refresh{Name}sPageUseCase` | remoteFirst (implicit) |
+| Search | `Search{Name}sPageUseCase` | none (always remote) |
+| Create / Update / Delete | `{Action}{Name}UseCase` | — |
 
 > **Note:** Use singular names for single-item UseCases and `Page` suffix for list UseCases to distinguish them (`GetCharacterUseCase` vs `GetCharactersPageUseCase`).
 
 ---
 
-## Option A: Separate Get and Refresh UseCases
+## Workflow
 
-Instead of exposing `cachePolicy` parameter, create separate UseCases for different cache behaviors. This follows the Single Responsibility Principle.
+### Step 1 — Identify UseCase Type
 
-### 1. Create Get UseCase (localFirst)
+See the UseCase types table above.
 
-Create `Sources/Domain/UseCases/Get{Name}DetailUseCase.swift`:
+### Step 2 — Ensure Repository Exists
+
+Before creating a UseCase, verify the required Repository exists in `Sources/Domain/Repositories/`.
+
+- **Repository found?** → Go to Step 3
+- **No Repository found?** → Invoke the `/repository` skill first. Return here after completion.
+
+### Step 3 — Implement UseCase
+
+Read the appropriate section below and implement:
+1. Contract + Implementation in `Sources/Domain/UseCases/`
+2. Mock in `Tests/Shared/Mocks/`
+3. Tests in `Tests/Unit/Domain/UseCases/`
+4. Run tests
+
+---
+
+## Step 3a: Get & Refresh UseCases
+
+Separate UseCases for different cache behaviors instead of exposing `cachePolicy` parameter. This follows the Single Responsibility Principle.
+
+### Get UseCase (localFirst)
+
+Create `Sources/Domain/UseCases/Get{Name}UseCase.swift`:
 
 ```swift
-import Foundation
-
-protocol Get{Name}DetailUseCaseContract: Sendable {
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name}
+protocol Get{Name}UseCaseContract: Sendable {
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name}
 }
 
-struct Get{Name}DetailUseCase: Get{Name}DetailUseCaseContract {
-    private let repository: {Name}RepositoryContract
+struct Get{Name}UseCase: Get{Name}UseCaseContract {
+	private let repository: {Name}RepositoryContract
 
-    init(repository: {Name}RepositoryContract) {
-        self.repository = repository
-    }
+	init(repository: {Name}RepositoryContract) {
+		self.repository = repository
+	}
 
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
-        try await repository.get{Name}Detail(identifier: identifier, cachePolicy: .localFirst)
-    }
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+		try await repository.get{Name}(identifier: identifier, cachePolicy: .localFirst)
+	}
 }
 ```
 
-### 2. Create Refresh UseCase (remoteFirst)
+### Refresh UseCase (remoteFirst)
 
-Create `Sources/Domain/UseCases/Refresh{Name}DetailUseCase.swift`:
+Create `Sources/Domain/UseCases/Refresh{Name}UseCase.swift`:
 
 ```swift
-import Foundation
-
-protocol Refresh{Name}DetailUseCaseContract: Sendable {
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name}
+protocol Refresh{Name}UseCaseContract: Sendable {
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name}
 }
 
-struct Refresh{Name}DetailUseCase: Refresh{Name}DetailUseCaseContract {
-    private let repository: {Name}RepositoryContract
+struct Refresh{Name}UseCase: Refresh{Name}UseCaseContract {
+	private let repository: {Name}RepositoryContract
 
-    init(repository: {Name}RepositoryContract) {
-        self.repository = repository
-    }
+	init(repository: {Name}RepositoryContract) {
+		self.repository = repository
+	}
 
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
-        try await repository.get{Name}Detail(identifier: identifier, cachePolicy: .remoteFirst)
-    }
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+		try await repository.get{Name}(identifier: identifier, cachePolicy: .remoteFirst)
+	}
 }
 ```
 
-> **Note:** The cache policy is encapsulated inside the UseCase. ViewModels don't know about cache policies - they just call the appropriate UseCase.
+> **Note:** The cache policy is encapsulated inside the UseCase. ViewModels don't know about cache policies — they just call the appropriate UseCase.
 
-### 3. Create Mocks
+### List Variants
 
-Create `Tests/Shared/Mocks/Get{Name}DetailUseCaseMock.swift`:
+Same pattern with `page: Int` parameter:
 
 ```swift
-import Foundation
+// Get{Name}sPageUseCase
+protocol Get{Name}sPageUseCaseContract: Sendable {
+	func execute(page: Int) async throws({Feature}Error) -> {Name}sPage
+}
 
+struct Get{Name}sPageUseCase: Get{Name}sPageUseCaseContract {
+	private let repository: {Name}sPageRepositoryContract
+
+	init(repository: {Name}sPageRepositoryContract) {
+		self.repository = repository
+	}
+
+	func execute(page: Int) async throws({Feature}Error) -> {Name}sPage {
+		try await repository.get{Name}sPage(page: page, cachePolicy: .localFirst)
+	}
+}
+
+// Refresh{Name}sPageUseCase
+protocol Refresh{Name}sPageUseCaseContract: Sendable {
+	func execute(page: Int) async throws({Feature}Error) -> {Name}sPage
+}
+
+struct Refresh{Name}sPageUseCase: Refresh{Name}sPageUseCaseContract {
+	private let repository: {Name}sPageRepositoryContract
+
+	init(repository: {Name}sPageRepositoryContract) {
+		self.repository = repository
+	}
+
+	func execute(page: Int) async throws({Feature}Error) -> {Name}sPage {
+		try await repository.get{Name}sPage(page: page, cachePolicy: .remoteFirst)
+	}
+}
+```
+
+### Mocks
+
+Create `Tests/Shared/Mocks/Get{Name}UseCaseMock.swift`:
+
+```swift
 @testable import Challenge{Feature}
 
-final class Get{Name}DetailUseCaseMock: Get{Name}DetailUseCaseContract, @unchecked Sendable {
-    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
-    private(set) var executeCallCount = 0
-    private(set) var lastRequestedIdentifier: Int?
+final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable {
+	var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
+	private(set) var executeCallCount = 0
+	private(set) var lastRequestedIdentifier: Int?
 
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
-        executeCallCount += 1
-        lastRequestedIdentifier = identifier
-        return try result.get()
-    }
+	@MainActor init() {}
+
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+		executeCallCount += 1
+		lastRequestedIdentifier = identifier
+		return try result.get()
+	}
 }
 ```
 
-Create `Tests/Shared/Mocks/Refresh{Name}DetailUseCaseMock.swift`:
+Create `Tests/Shared/Mocks/Refresh{Name}UseCaseMock.swift`:
 
 ```swift
-import Foundation
-
 @testable import Challenge{Feature}
 
-final class Refresh{Name}DetailUseCaseMock: Refresh{Name}DetailUseCaseContract, @unchecked Sendable {
-    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed)
-    private(set) var executeCallCount = 0
-    private(set) var lastRequestedIdentifier: Int?
+final class Refresh{Name}UseCaseMock: Refresh{Name}UseCaseContract, @unchecked Sendable {
+	var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
+	private(set) var executeCallCount = 0
+	private(set) var lastRequestedIdentifier: Int?
 
-    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
-        executeCallCount += 1
-        lastRequestedIdentifier = identifier
-        return try result.get()
-    }
+	@MainActor init() {}
+
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+		executeCallCount += 1
+		lastRequestedIdentifier = identifier
+		return try result.get()
+	}
 }
 ```
 
-### 4. Create tests
+### Tests
 
-Create `Tests/Unit/Domain/UseCases/Get{Name}DetailUseCaseTests.swift`:
+Create `Tests/Unit/Domain/UseCases/Get{Name}UseCaseTests.swift`:
 
 ```swift
 import ChallengeCore
@@ -151,170 +219,110 @@ import Testing
 
 @testable import Challenge{Feature}
 
-@Suite(.timeLimit(.minutes(1)))
-struct Get{Name}DetailUseCaseTests {
-    private let repositoryMock = {Name}RepositoryMock()
-    private let sut: Get{Name}DetailUseCase
+struct Get{Name}UseCaseTests {
+	@Test("Execute returns model from repository")
+	func executeReturnsModel() async throws {
+		// Given
+		let expected = {Name}.stub()
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.result = .success(expected)
+		let sut = Get{Name}UseCase(repository: repositoryMock)
 
-    init() {
-        sut = Get{Name}DetailUseCase(repository: repositoryMock)
-    }
+		// When
+		let value = try await sut.execute(identifier: 1)
 
-    @Test("Returns item from repository")
-    func returnsItemFromRepository() async throws {
-        // Given
-        let expected = {Name}.stub()
-        repositoryMock.result = .success(expected)
+		// Then
+		#expect(value == expected)
+	}
 
-        // When
-        let value = try await sut.execute(identifier: 1)
+	@Test("Execute calls repository with correct identifier and localFirst cache policy")
+	func executeCallsRepositoryWithLocalFirst() async throws {
+		// Given
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.result = .success(.stub())
+		let sut = Get{Name}UseCase(repository: repositoryMock)
 
-        // Then
-        #expect(value == expected)
-    }
+		// When
+		_ = try await sut.execute(identifier: 42)
 
-    @Test("Calls repository with localFirst cache policy")
-    func callsRepositoryWithLocalFirst() async throws {
-        // Given
-        repositoryMock.result = .success(.stub())
+		// Then
+		#expect(repositoryMock.getCallCount == 1)
+		#expect(repositoryMock.lastRequestedIdentifier == 42)
+		#expect(repositoryMock.lastCachePolicy == .localFirst)
+	}
 
-        // When
-        _ = try await sut.execute(identifier: 42)
+	@Test("Execute propagates repository error")
+	func executePropagatesError() async throws {
+		// Given
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.result = .failure(.loadFailed())
+		let sut = Get{Name}UseCase(repository: repositoryMock)
 
-        // Then
-        #expect(repositoryMock.get{Name}DetailCallCount == 1)
-        #expect(repositoryMock.lastRequestedIdentifier == 42)
-        #expect(repositoryMock.last{Name}DetailCachePolicy == .localFirst)
-    }
-
-    @Test("Propagates repository error")
-    func propagatesRepositoryError() async throws {
-        // Given
-        repositoryMock.result = .failure(.loadFailed)
-
-        // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.execute(identifier: 1)
-        }
-    }
+		// When / Then
+		await #expect(throws: {Feature}Error.loadFailed()) {
+			_ = try await sut.execute(identifier: 1)
+		}
+	}
 }
 ```
 
-Create `Tests/Unit/Domain/UseCases/Refresh{Name}DetailUseCaseTests.swift`:
-
-```swift
-import ChallengeCore
-import Foundation
-import Testing
-
-@testable import Challenge{Feature}
-
-@Suite(.timeLimit(.minutes(1)))
-struct Refresh{Name}DetailUseCaseTests {
-    private let repositoryMock = {Name}RepositoryMock()
-    private let sut: Refresh{Name}DetailUseCase
-
-    init() {
-        sut = Refresh{Name}DetailUseCase(repository: repositoryMock)
-    }
-
-    @Test("Returns item from repository")
-    func returnsItemFromRepository() async throws {
-        // Given
-        let expected = {Name}.stub()
-        repositoryMock.result = .success(expected)
-
-        // When
-        let value = try await sut.execute(identifier: 1)
-
-        // Then
-        #expect(value == expected)
-    }
-
-    @Test("Calls repository with remoteFirst cache policy")
-    func callsRepositoryWithRemoteFirst() async throws {
-        // Given
-        repositoryMock.result = .success(.stub())
-
-        // When
-        _ = try await sut.execute(identifier: 42)
-
-        // Then
-        #expect(repositoryMock.get{Name}DetailCallCount == 1)
-        #expect(repositoryMock.lastRequestedIdentifier == 42)
-        #expect(repositoryMock.last{Name}DetailCachePolicy == .remoteFirst)
-    }
-
-    @Test("Propagates repository error")
-    func propagatesRepositoryError() async throws {
-        // Given
-        repositoryMock.result = .failure(.loadFailed)
-
-        // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.execute(identifier: 1)
-        }
-    }
-}
-```
+For Refresh, replace `localFirst` with `remoteFirst` in test name and assertion.
 
 ---
 
-## Option B: Search UseCase (no cache)
+## Step 3b: Search UseCase
 
-For UseCases that search with dynamic queries (caching not applicable).
+Search bypasses cache — always remote, no `cachePolicy` parameter. Uses `filter: {Name}Filter` parameter.
 
-### 1. Create UseCase
+### Implementation
 
-Create `Sources/Domain/UseCases/Search{Name}sUseCase.swift`:
+Create `Sources/Domain/UseCases/Search{Name}sPageUseCase.swift`:
 
 ```swift
-import Foundation
-
-protocol Search{Name}sUseCaseContract: Sendable {
-    func execute(page: Int, query: String) async throws({Feature}Error) -> {Name}sPage
+protocol Search{Name}sPageUseCaseContract: Sendable {
+	func execute(page: Int, filter: {Name}Filter) async throws({Feature}Error) -> {Name}sPage
 }
 
-struct Search{Name}sUseCase: Search{Name}sUseCaseContract {
-    private let repository: {Name}RepositoryContract
+struct Search{Name}sPageUseCase: Search{Name}sPageUseCaseContract {
+	private let repository: {Name}sPageRepositoryContract
 
-    init(repository: {Name}RepositoryContract) {
-        self.repository = repository
-    }
+	init(repository: {Name}sPageRepositoryContract) {
+		self.repository = repository
+	}
 
-    func execute(page: Int, query: String) async throws({Feature}Error) -> {Name}sPage {
-        try await repository.search{Name}s(page: page, query: query)
-    }
+	func execute(page: Int, filter: {Name}Filter) async throws({Feature}Error) -> {Name}sPage {
+		try await repository.search{Name}sPage(page: page, filter: filter)
+	}
 }
 ```
 
-### 2. Create Mock
+### Mock
 
-Create `Tests/Shared/Mocks/Search{Name}sUseCaseMock.swift`:
+Create `Tests/Shared/Mocks/Search{Name}sPageUseCaseMock.swift`:
 
 ```swift
-import Foundation
-
 @testable import Challenge{Feature}
 
-final class Search{Name}sUseCaseMock: Search{Name}sUseCaseContract, @unchecked Sendable {
-    var result: Result<{Name}sPage, {Feature}Error> = .failure(.loadFailed)
-    private(set) var executeCallCount = 0
-    private(set) var lastPage: Int?
-    private(set) var lastQuery: String?
+final class Search{Name}sPageUseCaseMock: Search{Name}sPageUseCaseContract, @unchecked Sendable {
+	var result: Result<{Name}sPage, {Feature}Error> = .failure(.loadFailed())
+	private(set) var executeCallCount = 0
+	private(set) var lastRequestedPage: Int?
+	private(set) var lastRequestedFilter: {Name}Filter?
 
-    func execute(page: Int, query: String) async throws({Feature}Error) -> {Name}sPage {
-        executeCallCount += 1
-        lastPage = page
-        lastQuery = query
-        return try result.get()
-    }
+	@MainActor init() {}
+
+	func execute(page: Int, filter: {Name}Filter) async throws({Feature}Error) -> {Name}sPage {
+		executeCallCount += 1
+		lastRequestedPage = page
+		lastRequestedFilter = filter
+		return try result.get()
+	}
 }
 ```
 
-### 3. Create tests
+### Tests
 
-Create `Tests/Unit/Domain/UseCases/Search{Name}sUseCaseTests.swift`:
+Create `Tests/Unit/Domain/UseCases/Search{Name}sPageUseCaseTests.swift`:
 
 ```swift
 import Foundation
@@ -322,126 +330,125 @@ import Testing
 
 @testable import Challenge{Feature}
 
-@Suite(.timeLimit(.minutes(1)))
-struct Search{Name}sUseCaseTests {
-    private let repositoryMock = {Name}RepositoryMock()
-    private let sut: Search{Name}sUseCase
+struct Search{Name}sPageUseCaseTests {
+	@Test("Execute returns page from repository")
+	func executeReturnsPage() async throws {
+		// Given
+		let expected = {Name}sPage.stub()
+		let repositoryMock = {Name}sPageRepositoryMock()
+		repositoryMock.searchResult = .success(expected)
+		let sut = Search{Name}sPageUseCase(repository: repositoryMock)
 
-    init() {
-        sut = Search{Name}sUseCase(repository: repositoryMock)
-    }
+		// When
+		let value = try await sut.execute(page: 1, filter: .stub())
 
-    // MARK: - Tests
+		// Then
+		#expect(value == expected)
+	}
 
-    @Test("Execute returns page from repository search")
-    func executeReturnsPage() async throws {
-        // Given
-        let expected = {Name}sPage.stub()
-        repositoryMock.searchResult = .success(expected)
+	@Test("Execute calls repository with correct parameters")
+	func executeCallsRepositoryWithCorrectParameters() async throws {
+		// Given
+		let filter = {Name}Filter.stub(name: "Rick")
+		let repositoryMock = {Name}sPageRepositoryMock()
+		repositoryMock.searchResult = .success(.stub())
+		let sut = Search{Name}sPageUseCase(repository: repositoryMock)
 
-        // When
-        let value = try await sut.execute(page: 1, query: "test")
+		// When
+		_ = try await sut.execute(page: 2, filter: filter)
 
-        // Then
-        #expect(value == expected)
-    }
+		// Then
+		#expect(repositoryMock.search{Name}sPageCallCount == 1)
+		#expect(repositoryMock.lastRequestedPage == 2)
+		#expect(repositoryMock.lastRequestedFilter == filter)
+	}
 
-    @Test("Execute calls repository with correct page and query")
-    func executeCallsRepositoryWithCorrectPageAndQuery() async throws {
-        // Given
-        repositoryMock.searchResult = .success(.stub())
+	@Test("Execute propagates repository error")
+	func executePropagatesError() async throws {
+		// Given
+		let repositoryMock = {Name}sPageRepositoryMock()
+		repositoryMock.searchResult = .failure(.loadFailed())
+		let sut = Search{Name}sPageUseCase(repository: repositoryMock)
 
-        // When
-        _ = try await sut.execute(page: 3, query: "search term")
-
-        // Then
-        #expect(repositoryMock.search{Name}sCallCount == 1)
-        #expect(repositoryMock.lastSearchedPage == 3)
-        #expect(repositoryMock.lastSearchedQuery == "search term")
-    }
-
-    @Test("Execute propagates repository error")
-    func executePropagatesError() async throws {
-        // Given
-        repositoryMock.searchResult = .failure(.loadFailed)
-
-        // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.execute(page: 1, query: "test")
-        }
-    }
+		// When / Then
+		await #expect(throws: {Feature}Error.loadFailed()) {
+			_ = try await sut.execute(page: 1, filter: .stub())
+		}
+	}
 }
 ```
 
 ---
 
-## Option C: UseCase with Business Logic
+## Step 3c: Business Logic UseCase
 
-For UseCases that contain domain rules beyond simple delegation.
+For operations that include domain rules: filtering, validation, transformation.
 
-### 1. Create UseCase
+### Filtering Example
 
-Create `Sources/Domain/UseCases/Calculate{Name}UseCase.swift`:
+Create `Sources/Domain/UseCases/GetFiltered{Name}sUseCase.swift`:
 
 ```swift
-import Foundation
-
-protocol Calculate{Name}UseCaseContract: Sendable {
-    func execute(items: [CartItem]) async throws({Feature}Error) -> OrderTotal
+protocol GetFiltered{Name}sUseCaseContract: Sendable {
+	func execute(status: {Name}Status?) async throws({Feature}Error) -> [{Name}]
 }
 
-struct Calculate{Name}UseCase: Calculate{Name}UseCaseContract {
-    private let discountRepository: DiscountRepositoryContract
+struct GetFiltered{Name}sUseCase: GetFiltered{Name}sUseCaseContract {
+	private let repository: {Name}RepositoryContract
 
-    init(discountRepository: DiscountRepositoryContract) {
-        self.discountRepository = discountRepository
-    }
+	init(repository: {Name}RepositoryContract) {
+		self.repository = repository
+	}
 
-    func execute(items: [CartItem]) async throws({Feature}Error) -> OrderTotal {
-        // Business logic: calculate subtotal
-        let subtotal = items.reduce(0) { $0 + ($1.price * Decimal($1.quantity)) }
+	func execute(status: {Name}Status?) async throws({Feature}Error) -> [{Name}] {
+		let items = try await repository.getAll{Name}s()
 
-        // Fetch applicable discount from repository
-        let discount = try await discountRepository.getDiscount(for: subtotal)
+		guard let status else {
+			return items
+		}
 
-        // Business logic: apply discount
-        let discountAmount = subtotal * discount.percentage
-        let total = subtotal - discountAmount
-
-        return OrderTotal(
-            subtotal: subtotal,
-            discount: discountAmount,
-            total: total
-        )
-    }
+		return items.filter { $0.status == status }
+	}
 }
 ```
 
-### 2. Create Mock
+### Validation Example
 
-Create `Tests/Shared/Mocks/Calculate{Name}UseCaseMock.swift`:
+Create `Sources/Domain/UseCases/Create{Name}UseCase.swift`:
 
 ```swift
-import Foundation
+protocol Create{Name}UseCaseContract: Sendable {
+	func execute(name: String, status: String) async throws({Feature}Error) -> {Name}
+}
 
-@testable import Challenge{Feature}
+struct Create{Name}UseCase: Create{Name}UseCaseContract {
+	private let repository: {Name}RepositoryContract
 
-final class Calculate{Name}UseCaseMock: Calculate{Name}UseCaseContract, @unchecked Sendable {
-    var result: Result<OrderTotal, {Feature}Error> = .failure(.calculationFailed)
-    private(set) var executeCallCount = 0
-    private(set) var lastItems: [CartItem]?
+	init(repository: {Name}RepositoryContract) {
+		self.repository = repository
+	}
 
-    func execute(items: [CartItem]) async throws({Feature}Error) -> OrderTotal {
-        executeCallCount += 1
-        lastItems = items
-        return try result.get()
-    }
+	func execute(name: String, status: String) async throws({Feature}Error) -> {Name} {
+		guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+			throw {Feature}Error.emptyName
+		}
+
+		guard {Name}Status(rawValue: status) != nil else {
+			throw {Feature}Error.invalidStatus
+		}
+
+		return try await repository.create{Name}(name: name, status: status)
+	}
 }
 ```
 
-### 3. Create tests
+> **Note:** Validation errors should be cases in the feature's Domain Error enum (see `/repository` skill), not a separate error type.
 
-Create `Tests/Unit/Domain/UseCases/Calculate{Name}UseCaseTests.swift`:
+### Filtering Tests
+
+Test all branches: happy path, each filter case, edge cases (empty results).
+
+Create `Tests/Unit/Domain/UseCases/GetFiltered{Name}sUseCaseTests.swift`:
 
 ```swift
 import Foundation
@@ -449,139 +456,64 @@ import Testing
 
 @testable import Challenge{Feature}
 
-@Suite(.timeLimit(.minutes(1)))
-struct Calculate{Name}UseCaseTests {
-    private let discountRepositoryMock = DiscountRepositoryMock()
-    private let sut: Calculate{Name}UseCase
+struct GetFiltered{Name}sUseCaseTests {
+	@Test("Returns all items when no filter is applied")
+	func returnsAllItemsWhenNoFilter() async throws {
+		// Given
+		let items = [{Name}.stub(status: .active), {Name}.stub(status: .inactive)]
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.allResult = .success(items)
+		let sut = GetFiltered{Name}sUseCase(repository: repositoryMock)
 
-    init() {
-        sut = Calculate{Name}UseCase(discountRepository: discountRepositoryMock)
-    }
+		// When
+		let value = try await sut.execute(status: nil)
 
-    // MARK: - Calculation Tests
+		// Then
+		#expect(value.count == 2)
+	}
 
-    @Test("Calculates correct subtotal from items")
-    func calculatesCorrectSubtotal() async throws {
-        // Given
-        let items = [
-            CartItem(id: 1, price: Decimal(10), quantity: 2),  // 20
-            CartItem(id: 2, price: Decimal(5), quantity: 3)    // 15
-        ]
-        discountRepositoryMock.result = .success(Discount(percentage: 0))
+	@Test("Filters items by status")
+	func filtersItemsByStatus() async throws {
+		// Given
+		let items = [
+			{Name}.stub(id: 1, status: .active),
+			{Name}.stub(id: 2, status: .inactive),
+			{Name}.stub(id: 3, status: .active),
+		]
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.allResult = .success(items)
+		let sut = GetFiltered{Name}sUseCase(repository: repositoryMock)
 
-        // When
-        let result = try await sut.execute(items: items)
+		// When
+		let value = try await sut.execute(status: .active)
 
-        // Then
-        #expect(result.subtotal == Decimal(35))
-    }
+		// Then
+		#expect(value.count == 2)
+		#expect(value.allSatisfy { $0.status == .active })
+	}
 
-    @Test("Applies discount correctly")
-    func appliesDiscountCorrectly() async throws {
-        // Given
-        let items = [CartItem(id: 1, price: Decimal(100), quantity: 1)]
-        discountRepositoryMock.result = .success(Discount(percentage: Decimal(0.1)))  // 10%
+	@Test("Returns empty array when no items match filter")
+	func returnsEmptyArrayWhenNoMatches() async throws {
+		// Given
+		let items = [{Name}.stub(status: .active)]
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.allResult = .success(items)
+		let sut = GetFiltered{Name}sUseCase(repository: repositoryMock)
 
-        // When
-        let result = try await sut.execute(items: items)
+		// When
+		let value = try await sut.execute(status: .inactive)
 
-        // Then
-        #expect(result.subtotal == Decimal(100))
-        #expect(result.discount == Decimal(10))
-        #expect(result.total == Decimal(90))
-    }
-
-    @Test("Returns zero total for empty cart")
-    func returnsZeroForEmptyCart() async throws {
-        // Given
-        discountRepositoryMock.result = .success(Discount(percentage: 0))
-
-        // When
-        let result = try await sut.execute(items: [])
-
-        // Then
-        #expect(result.total == Decimal(0))
-    }
-
-    // MARK: - Error Tests
-
-    @Test("Propagates discount repository error")
-    func propagatesDiscountError() async throws {
-        // Given
-        let items = [CartItem(id: 1, price: Decimal(10), quantity: 1)]
-        discountRepositoryMock.result = .failure(.loadFailed)
-
-        // When / Then
-        await #expect(throws: {Feature}Error.loadFailed) {
-            _ = try await sut.execute(items: items)
-        }
-    }
+		// Then
+		#expect(value.isEmpty)
+	}
 }
 ```
 
----
+### Validation Tests
 
-## Option D: UseCase with Validation
+Test validation errors and verify repository is NOT called on validation failure.
 
-For UseCases that validate input before processing.
-
-### 1. Create UseCase
-
-Create `Sources/Domain/UseCases/Validate{Name}UseCase.swift`:
-
-```swift
-import Foundation
-
-protocol Validate{Name}UseCaseContract: Sendable {
-    func execute(email: String) throws({Feature}Error) -> ValidatedEmail
-}
-
-struct Validate{Name}UseCase: Validate{Name}UseCaseContract {
-    func execute(email: String) throws({Feature}Error) -> ValidatedEmail {
-        // Validation: not empty
-        guard !email.isEmpty else {
-            throw {Feature}Error.validation(.emailEmpty)
-        }
-
-        // Validation: valid format
-        let emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/
-            .ignoresCase()
-        guard email.wholeMatch(of: emailRegex) != nil else {
-            throw {Feature}Error.validation(.emailInvalid)
-        }
-
-        return ValidatedEmail(value: email.lowercased())
-    }
-}
-```
-
-> **Note:** Validation UseCases are often synchronous (no `async`) when they don't need external data.
-
-### 2. Create Mock
-
-Create `Tests/Shared/Mocks/Validate{Name}UseCaseMock.swift`:
-
-```swift
-import Foundation
-
-@testable import Challenge{Feature}
-
-final class Validate{Name}UseCaseMock: Validate{Name}UseCaseContract, @unchecked Sendable {
-    var result: Result<ValidatedEmail, {Feature}Error> = .failure(.validation(.emailInvalid))
-    private(set) var executeCallCount = 0
-    private(set) var lastEmail: String?
-
-    func execute(email: String) throws({Feature}Error) -> ValidatedEmail {
-        executeCallCount += 1
-        lastEmail = email
-        return try result.get()
-    }
-}
-```
-
-### 3. Create tests
-
-Create `Tests/Unit/Domain/UseCases/Validate{Name}UseCaseTests.swift`:
+Create `Tests/Unit/Domain/UseCases/Create{Name}UseCaseTests.swift`:
 
 ```swift
 import Foundation
@@ -589,62 +521,192 @@ import Testing
 
 @testable import Challenge{Feature}
 
-@Suite(.timeLimit(.minutes(1)))
-struct Validate{Name}UseCaseTests {
-    private let sut = Validate{Name}UseCase()
+struct Create{Name}UseCaseTests {
+	@Test("Throws error for empty name")
+	func throwsErrorForEmptyName() async throws {
+		// Given
+		let repositoryMock = {Name}RepositoryMock()
+		let sut = Create{Name}UseCase(repository: repositoryMock)
 
-    // MARK: - Valid Email Tests
+		// When / Then
+		await #expect(throws: {Feature}Error.emptyName) {
+			_ = try await sut.execute(name: "   ", status: "Active")
+		}
+	}
 
-    @Test("Valid email returns validated email")
-    func validEmailReturnsValidatedEmail() throws {
-        // When
-        let result = try sut.execute(email: "user@example.com")
+	@Test("Does not call repository on validation error")
+	func doesNotCallRepositoryOnValidationError() async throws {
+		// Given
+		let repositoryMock = {Name}RepositoryMock()
+		let sut = Create{Name}UseCase(repository: repositoryMock)
 
-        // Then
-        #expect(result.value == "user@example.com")
-    }
+		// When
+		_ = try? await sut.execute(name: "", status: "Active")
 
-    @Test("Valid email is lowercased")
-    func validEmailIsLowercased() throws {
-        // When
-        let result = try sut.execute(email: "User@Example.COM")
+		// Then
+		#expect(repositoryMock.createCallCount == 0)
+	}
 
-        // Then
-        #expect(result.value == "user@example.com")
-    }
+	@Test("Creates item with valid input")
+	func createsItemWithValidInput() async throws {
+		// Given
+		let expected = {Name}.stub()
+		let repositoryMock = {Name}RepositoryMock()
+		repositoryMock.createResult = .success(expected)
+		let sut = Create{Name}UseCase(repository: repositoryMock)
 
-    // MARK: - Invalid Email Tests
+		// When
+		let value = try await sut.execute(name: "Rick", status: "Active")
 
-    @Test("Empty email throws validation error")
-    func emptyEmailThrowsError() {
-        // When / Then
-        #expect(throws: {Feature}Error.validation(.emailEmpty)) {
-            _ = try sut.execute(email: "")
-        }
-    }
-
-    @Test("Invalid format throws validation error")
-    func invalidFormatThrowsError() {
-        // When / Then
-        #expect(throws: {Feature}Error.validation(.emailInvalid)) {
-            _ = try sut.execute(email: "not-an-email")
-        }
-    }
-
-    @Test(
-        "Various invalid emails throw error",
-        arguments: ["@example.com", "user@", "user@.com", "user"]
-    )
-    func invalidEmailsThrowError(email: String) {
-        // When / Then
-        #expect(throws: {Feature}Error.validation(.emailInvalid)) {
-            _ = try sut.execute(email: email)
-        }
-    }
+		// Then
+		#expect(value == expected)
+		#expect(repositoryMock.createCallCount == 1)
+	}
 }
 ```
 
 ---
+
+## Step 3d: Multiple Repositories UseCase
+
+For operations that coordinate data from 2+ repositories.
+
+### Implementation
+
+Create `Sources/Domain/UseCases/Get{Name}With{Related}sUseCase.swift`:
+
+```swift
+protocol Get{Name}With{Related}sUseCaseContract: Sendable {
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name}With{Related}s
+}
+
+struct Get{Name}With{Related}sUseCase: Get{Name}With{Related}sUseCaseContract {
+	private let {name}Repository: {Name}RepositoryContract
+	private let {related}Repository: {Related}RepositoryContract
+
+	init(
+		{name}Repository: {Name}RepositoryContract,
+		{related}Repository: {Related}RepositoryContract
+	) {
+		self.{name}Repository = {name}Repository
+		self.{related}Repository = {related}Repository
+	}
+
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name}With{Related}s {
+		let item = try await {name}Repository.get{Name}(identifier: identifier, cachePolicy: .localFirst)
+		let related = try await {related}Repository.get{Related}s(identifiers: item.{related}Identifiers, cachePolicy: .localFirst)
+
+		return {Name}With{Related}s(
+			{name}: item,
+			{related}s: related
+		)
+	}
+}
+```
+
+### Mock
+
+Create `Tests/Shared/Mocks/Get{Name}With{Related}sUseCaseMock.swift`:
+
+```swift
+@testable import Challenge{Feature}
+
+final class Get{Name}With{Related}sUseCaseMock: Get{Name}With{Related}sUseCaseContract, @unchecked Sendable {
+	var result: Result<{Name}With{Related}s, {Feature}Error> = .failure(.loadFailed())
+	private(set) var executeCallCount = 0
+	private(set) var lastRequestedIdentifier: Int?
+
+	@MainActor init() {}
+
+	func execute(identifier: Int) async throws({Feature}Error) -> {Name}With{Related}s {
+		executeCallCount += 1
+		lastRequestedIdentifier = identifier
+		return try result.get()
+	}
+}
+```
+
+### Tests
+
+Test coordination and error propagation from each repository.
+
+Create `Tests/Unit/Domain/UseCases/Get{Name}With{Related}sUseCaseTests.swift`:
+
+```swift
+import Foundation
+import Testing
+
+@testable import Challenge{Feature}
+
+struct Get{Name}With{Related}sUseCaseTests {
+	@Test("Returns combined model from both repositories")
+	func returnsCombinedModel() async throws {
+		// Given
+		let item = {Name}.stub({related}Identifiers: [1, 2])
+		let related = [{Related}.stub(id: 1), {Related}.stub(id: 2)]
+		let {name}RepositoryMock = {Name}RepositoryMock()
+		{name}RepositoryMock.result = .success(item)
+		let {related}RepositoryMock = {Related}RepositoryMock()
+		{related}RepositoryMock.result = .success(related)
+		let sut = Get{Name}With{Related}sUseCase(
+			{name}Repository: {name}RepositoryMock,
+			{related}Repository: {related}RepositoryMock
+		)
+
+		// When
+		let value = try await sut.execute(identifier: 1)
+
+		// Then
+		#expect(value.{name} == item)
+		#expect(value.{related}s == related)
+	}
+
+	@Test("Propagates error from first repository")
+	func propagatesFirstRepositoryError() async throws {
+		// Given
+		let {name}RepositoryMock = {Name}RepositoryMock()
+		{name}RepositoryMock.result = .failure(.loadFailed())
+		let {related}RepositoryMock = {Related}RepositoryMock()
+		let sut = Get{Name}With{Related}sUseCase(
+			{name}Repository: {name}RepositoryMock,
+			{related}Repository: {related}RepositoryMock
+		)
+
+		// When / Then
+		await #expect(throws: {Feature}Error.loadFailed()) {
+			_ = try await sut.execute(identifier: 1)
+		}
+	}
+
+	@Test("Propagates error from second repository")
+	func propagatesSecondRepositoryError() async throws {
+		// Given
+		let {name}RepositoryMock = {Name}RepositoryMock()
+		{name}RepositoryMock.result = .success(.stub())
+		let {related}RepositoryMock = {Related}RepositoryMock()
+		{related}RepositoryMock.result = .failure(.loadFailed())
+		let sut = Get{Name}With{Related}sUseCase(
+			{name}Repository: {name}RepositoryMock,
+			{related}Repository: {related}RepositoryMock
+		)
+
+		// When / Then
+		await #expect(throws: {Feature}Error.loadFailed()) {
+			_ = try await sut.execute(identifier: 1)
+		}
+	}
+}
+```
+
+---
+
+## Visibility Summary
+
+| Component | Visibility | Location |
+|-----------|------------|----------|
+| Contract | internal | `Sources/Domain/UseCases/` |
+| Implementation | internal | `Sources/Domain/UseCases/` |
+| Mock | internal | `Tests/Shared/Mocks/` |
 
 ## Generate and verify
 
@@ -654,9 +716,9 @@ struct Validate{Name}UseCaseTests {
 
 ## Next steps
 
-- [Create ViewModel](create-viewmodel.md) - Create state management that uses the UseCase
+- [Create ViewModel](create-viewmodel.md) — Create state management that uses the UseCase
 
 ## See also
 
-- [Create Repository](create-repository.md) - Repository that UseCase depends on
+- [Create Repository](create-repository.md) — Repository that UseCase depends on
 - [Testing](../Testing.md)
