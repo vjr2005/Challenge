@@ -29,14 +29,21 @@ nonisolated class UITestCase: XCTestCase {
 	// MARK: - Network Log
 
 	private func attachNetworkLogIfFailed() async {
-		guard (testRun?.failureCount ?? 0) > 0 else { return }
+		guard (testRun?.failureCount ?? 0) > 0 else {
+			return
+		}
 
 		let requests = await serverMock.requests
-		guard !requests.isEmpty else { return }
+		guard !requests.isEmpty else {
+			return
+		}
 
-		let log = requests.enumerated().map { index, recorded in
-			formatRequest(recorded, index: index + 1)
-		}.joined(separator: "\n")
+		let log = requests
+			.enumerated()
+			.map { index, recorded in
+				formatRequest(recorded, index: index + 1)
+			}
+			.joined(separator: "\n")
 
 		let attachment = XCTAttachment(string: log)
 		attachment.name = "Network Log"
