@@ -17,6 +17,7 @@ Read the official style guide documentation at `docs/StyleGuide.md` for complete
 | Parameters | `identifier` not `id` |
 | Force unwrap | Never use `!` |
 | Access modifiers | Never explicit `internal` |
+| Pattern matching | `case let .foo(a, b):` not `case .foo(let a, let b):` |
 | Line length | Max 140 characters |
 
 ## Checklist
@@ -27,5 +28,6 @@ Read the official style guide documentation at `docs/StyleGuide.md` for complete
 - [ ] Mocks end with `Mock` (suffix only, never prefix)
 - [ ] Mock variables also use `Mock` suffix
 - [ ] No force unwrap (`!`)
+- [ ] Pattern matching: `case let` before the pattern, not `let` inside each binding
 - [ ] No unused variables/parameters
 - [ ] Code organized: properties → init → public methods → private extension

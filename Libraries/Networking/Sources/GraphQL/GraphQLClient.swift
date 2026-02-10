@@ -84,7 +84,7 @@ private extension GraphQLClient {
 
 	func mapHTTPError(_ error: HTTPError) -> GraphQLError {
 		switch error {
-		case .statusCode(let code, let data):
+		case let .statusCode(code, data):
 			.statusCode(code, data)
 		case .invalidURL, .invalidResponse:
 			.invalidResponse
