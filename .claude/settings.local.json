@@ -70,7 +70,18 @@
       "Bash(git -C /Users/vjordan/Projects/ios/Challenge add Project.swift Libraries/Core/Tests/Unit/Navigation/NavigationCoordinatorTests.swift)",
       "Bash(xcodebuild build:*)",
       "Bash(grep:*)",
-      "Bash(git -C /Users/vjordan/Projects/ios/Challenge add App/Tests/Shared/Robots/AdvancedSearchRobot.swift App/Tests/UI/AdvancedSearchUITests.swift App/Tests/Shared/Robots/CharacterListRobot.swift App/Tests/Shared/Robots/Robot.swift)"
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge add App/Tests/Shared/Robots/AdvancedSearchRobot.swift App/Tests/UI/AdvancedSearchUITests.swift App/Tests/Shared/Robots/CharacterListRobot.swift App/Tests/Shared/Robots/Robot.swift)",
+      "Bash(git stash:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git reset:*)",
+      "Bash(./generate.sh:*)",
+      "Bash(xcrun xccov view:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(xcrun xcresulttool:*)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff --staged --stat)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff --stat)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge log --oneline -5)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff App/Tests/Shared/Robots/CharacterDetailRobot.swift App/Tests/Shared/Robots/Robot.swift App/Tests/Shared/Scenarios/UITestCase+Scenarios.swift App/Tests/UI/CharacterFlowUITests.swift .claude/skills/ui-tests/SKILL.md)"
     ]
   },
   "enableAllProjectMcpServers": true,
