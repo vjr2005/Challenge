@@ -7,16 +7,13 @@ description: Atomic Design System for SwiftUI. Use when creating UI components, 
 
 Guide for using the Atomic Design System to build consistent SwiftUI interfaces.
 
-## When to use this skill
+## References
 
-- Apply consistent colors, typography, or spacing
-- Create UI components using atoms, molecules, or organisms
-- Build views that follow design system patterns
-- Replace hardcoded styling with design tokens
+- **Theme tokens** (colors, spacing, typography, etc.): See [references/tokens.md](references/tokens.md)
+- **Component API** (atoms, molecules, organisms): See [references/components.md](references/components.md)
+- **Full view examples**: See [references/view-examples.md](references/view-examples.md)
 
-## Additional resources
-
-- For complete implementation examples, see [examples.md](examples.md)
+---
 
 ## Module Structure
 
@@ -24,50 +21,25 @@ Guide for using the Atomic Design System to build consistent SwiftUI interfaces.
 Libraries/DesignSystem/
 ├── Sources/
 │   ├── Theme/                # Theming system
-│   │   ├── DSTheme.swift     # Theme struct
-│   │   ├── DSThemeEnvironment.swift  # SwiftUI Environment
+│   │   ├── DSTheme.swift
+│   │   ├── DSThemeEnvironment.swift
 │   │   ├── Contracts/        # Theme protocols
-│   │   │   ├── DSBorderWidthContract.swift
-│   │   │   ├── DSColorPaletteContract.swift
-│   │   │   ├── DSCornerRadiusContract.swift
-│   │   │   ├── DSDimensionsContract.swift
-│   │   │   ├── DSOpacityContract.swift
-│   │   │   ├── DSShadowContract.swift
-│   │   │   ├── DSSpacingContract.swift
-│   │   │   └── DSTypographyContract.swift
 │   │   └── Default/          # Default theme implementation
-│   │       ├── DefaultBorderWidth.swift
-│   │       ├── DefaultColorPalette.swift
-│   │       ├── DefaultCornerRadius.swift
-│   │       ├── DefaultDimensions.swift
-│   │       ├── DefaultOpacity.swift
-│   │       ├── DefaultShadow.swift
-│   │       ├── DefaultSpacing.swift
-│   │       └── DefaultTypography.swift
-│   │
 │   ├── Atoms/                # Basic building blocks
-│   │   ├── Buttons/
-│   │   │   └── DSButton.swift
-│   │   ├── Images/
-│   │   │   └── DSAsyncImage.swift
-│   │   └── Indicators/
-│   │       └── DSStatusIndicator.swift
-│   │
+│   │   ├── Buttons/DSButton.swift
+│   │   ├── Images/DSAsyncImage.swift
+│   │   └── Indicators/DSStatusIndicator.swift
 │   ├── Molecules/            # Combinations of atoms
 │   │   ├── DSInfoRow.swift
 │   │   └── DSCardInfoRow.swift
-│   │
 │   ├── Organisms/            # Complex components
-│   │   ├── Cards/
-│   │   │   └── DSCard.swift
+│   │   ├── Cards/DSCard.swift
 │   │   └── Feedback/
 │   │       ├── DSLoadingView.swift
 │   │       ├── DSErrorView.swift
 │   │       └── DSEmptyState.swift
-│   │
 │   └── Extensions/
 │       └── View+DesignSystem.swift
-│
 └── Tests/
 ```
 
@@ -98,337 +70,6 @@ ContentView()
     .dsTheme(customTheme)
 ```
 
-### DSColorPaletteContract (protocol)
-
-Accessed via `theme.colors`:
-
-```swift
-theme.colors.backgroundPrimary    // Primary background
-theme.colors.backgroundSecondary  // Secondary/grouped background
-theme.colors.surfacePrimary       // Card/elevated surfaces
-theme.colors.textPrimary          // Primary text
-theme.colors.textSecondary        // Secondary text
-theme.colors.textTertiary         // Tertiary text
-theme.colors.statusSuccess        // Success (green)
-theme.colors.statusError          // Error (red)
-theme.colors.statusWarning        // Warning (orange)
-theme.colors.statusNeutral        // Neutral (gray)
-theme.colors.accent               // Accent color
-theme.colors.accentSubtle         // Accent with opacity
-```
-
----
-
-## DSSpacingContract (via theme)
-
-Spacing values accessed via `theme.spacing`:
-
-```swift
-theme.spacing.xxs   // 2pt
-theme.spacing.xs    // 4pt
-theme.spacing.sm    // 8pt
-theme.spacing.md    // 12pt
-theme.spacing.lg    // 16pt
-theme.spacing.xl    // 20pt
-theme.spacing.xxl   // 24pt
-theme.spacing.xxxl  // 32pt
-```
-
----
-
-## DSDimensionsContract (via theme)
-
-Dimension values for icons and other sized elements, accessed via `theme.dimensions`:
-
-```swift
-theme.dimensions.xs    // 8pt
-theme.dimensions.sm    // 12pt
-theme.dimensions.md    // 16pt
-theme.dimensions.lg    // 24pt
-theme.dimensions.xl    // 32pt
-theme.dimensions.xxl   // 48pt
-theme.dimensions.xxxl  // 56pt
-```
-
----
-
-## DSBorderWidthContract (via theme)
-
-Border width values accessed via `theme.borderWidth`:
-
-```swift
-theme.borderWidth.hairline  // 0.5pt
-theme.borderWidth.thin      // 1pt
-theme.borderWidth.medium    // 2pt
-theme.borderWidth.thick     // 4pt
-```
-
----
-
-## DSCornerRadiusContract (via theme)
-
-Corner radius values accessed via `theme.cornerRadius`:
-
-```swift
-theme.cornerRadius.zero  // 0pt
-theme.cornerRadius.xs    // 4pt
-theme.cornerRadius.sm    // 8pt
-theme.cornerRadius.md    // 12pt
-theme.cornerRadius.lg    // 16pt
-theme.cornerRadius.xl    // 20pt
-theme.cornerRadius.full  // 9999pt
-```
-
----
-
-## DSTypographyContract (via theme)
-
-Typography accessed via `theme.typography`:
-
-```swift
-theme.typography.largeTitle   // .rounded, .bold
-theme.typography.title        // .rounded, .bold
-theme.typography.title2       // .rounded, .semibold
-theme.typography.title3       // .rounded, .semibold
-theme.typography.headline     // .rounded, .semibold
-theme.typography.body         // .rounded
-theme.typography.subheadline  // .serif
-theme.typography.footnote     // .rounded
-theme.typography.caption      // .rounded
-theme.typography.caption2     // .monospaced
-```
-
-## DSOpacityContract (via theme)
-
-Opacity values accessed via `theme.opacity`:
-
-```swift
-theme.opacity.subtle        // 0.1
-theme.opacity.light         // 0.15
-theme.opacity.medium        // 0.4
-theme.opacity.heavy         // 0.6
-theme.opacity.almostOpaque  // 0.8
-```
-
----
-
-## DSShadowContract (via theme)
-
-Shadow values accessed via `theme.shadow`. Each level returns a `DSShadowValue` with `color`, `radius`, `x`, and `y`:
-
-```swift
-theme.shadow.zero    // No shadow (clear, radius: 0, x: 0, y: 0)
-theme.shadow.small   // Subtle card shadow (black 5%, radius: 8, x: 0, y: 2)
-theme.shadow.medium  // Elevated elements (black 8%, radius: 12, x: 0, y: 4)
-theme.shadow.large   // Floating elements (black 12%, radius: 20, x: 0, y: 8)
-```
-
-Apply with the `.shadow(_:)` View extension:
-
-```swift
-.shadow(theme.shadow.small)
-```
-
----
-
-## Atoms
-
-### Typography
-
-Use SwiftUI's native `Text` with the theme for consistent typography:
-
-```swift
-@Environment(\.dsTheme) private var theme
-
-// Basic usage
-Text("Hello World")
-    .font(theme.typography.headline)
-    .foregroundStyle(theme.colors.textPrimary)
-
-// With custom color
-Text("Error message")
-    .font(theme.typography.body)
-    .foregroundStyle(theme.colors.statusError)
-
-// With accessibility identifier
-Text("Title")
-    .font(theme.typography.headline)
-    .foregroundStyle(theme.colors.textPrimary)
-    .accessibilityIdentifier("screen.title")
-```
-
-### DSButton
-
-Button with variants:
-
-```swift
-// Primary (filled)
-DSButton("Submit") { /* action */ }
-
-// Secondary (outlined)
-DSButton("Cancel", variant: .secondary) { /* action */ }
-
-// Tertiary (subtle background)
-DSButton("Load More", icon: "arrow.down", variant: .tertiary) { /* action */ }
-
-// Loading state
-DSButton("Processing", isLoading: true) { /* action */ }
-
-// With accessibility identifier
-DSButton("Submit", accessibilityIdentifier: "form.submitButton") { /* action */ }
-```
-
-### DSStatusIndicator
-
-Colored status circle:
-
-```swift
-DSStatusIndicator(status: .alive)           // Green circle
-DSStatusIndicator(status: .dead, size: 8)   // Red circle, smaller
-DSStatusIndicator(status: .unknown)         // Gray circle
-
-// With accessibility identifier
-DSStatusIndicator(status: .alive, accessibilityIdentifier: "character.status")
-```
-
-### DSStatus
-
-`DSStatus` is a non-View enum. Colors are resolved via `color(in:)`:
-
-```swift
-let status = DSStatus.from("alive")
-let color = status.color(in: theme.colors)
-```
-
-### DSAsyncImage
-
-Async image with caching support (replaces `AsyncImage` for snapshot testing). Uses `AsyncImagePhase` for handling loading states.
-
-**Simple usage (with default content):**
-
-```swift
-DSAsyncImage(url: character.imageURL)
-    .frame(width: 70, height: 70)
-    .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
-```
-
-Default behavior: shows `ProgressView` while loading, error placeholder on failure, and `image.resizable().scaledToFill()` on success.
-
-> **Note:** Uses `ImageLoaderContract` from Core via environment. For snapshot tests, inject `ImageLoaderMock` with `.imageLoader(mock)`.
-
----
-
-## Molecules
-
-### DSInfoRow
-
-Icon + label + value layout:
-
-```swift
-DSInfoRow(icon: "person.fill", label: "Name", value: "Rick Sanchez")
-
-// With custom icon color (defaults to theme.colors.accent)
-DSInfoRow(icon: "heart.fill", label: "Status", value: "Alive", iconColor: .green)
-
-// With accessibility identifier (propagates to children with suffixes)
-DSInfoRow(
-    icon: "person.fill",
-    label: "Name",
-    value: "Rick Sanchez",
-    accessibilityIdentifier: "character.nameRow"
-)
-// Results in: .icon, .label, .value suffixes
-```
-
-### DSCardInfoRow
-
-A row card component for displaying items with image, text content, and optional status:
-
-```swift
-DSCardInfoRow(
-    imageURL: character.imageURL,
-    title: character.name,
-    subtitle: character.species,
-    caption: character.location.name,
-    captionIcon: "mappin.circle.fill",
-    status: DSStatus.from(character.status.rawValue),
-    statusLabel: character.status.rawValue,
-    accessibilityIdentifier: "characterList.row.\(character.id)"
-)
-```
-
----
-
-## Organisms
-
-### DSCard
-
-Generic card container:
-
-```swift
-DSCard {
-    VStack {
-        Text("Card Title")
-            .font(theme.typography.headline)
-            .foregroundStyle(theme.colors.textPrimary)
-        Text("Card content")
-            .font(theme.typography.body)
-            .foregroundStyle(theme.colors.textPrimary)
-    }
-}
-
-// Customized
-DSCard(padding: theme.spacing.xl, shadow: theme.shadow.medium) {
-    // content
-}
-```
-
-### DSLoadingView
-
-Loading state with optional message:
-
-```swift
-DSLoadingView()
-DSLoadingView(message: "Loading characters...")
-
-// With accessibility identifier
-DSLoadingView(message: "Loading...", accessibilityIdentifier: "screen.loading")
-// Results in: .indicator, .message suffixes
-```
-
-### DSErrorView
-
-Error state with optional retry:
-
-```swift
-DSErrorView(title: "Something went wrong")
-
-DSErrorView(
-    title: "Connection Error",
-    message: "Please check your internet connection.",
-    retryTitle: "Retry",
-    retryAction: {
-        // retry action
-    },
-    accessibilityIdentifier: "screen.error"
-)
-// Results in: .icon, .title, .message, .button suffixes
-```
-
-### DSEmptyState
-
-Empty state with icon and message:
-
-```swift
-DSEmptyState(
-    icon: "person.slash",
-    title: "No Characters",
-    message: "There are no characters to display.",
-    accessibilityIdentifier: "characterList.emptyState"
-)
-// Results in: .icon, .title, .message, .button suffixes
-```
-
 ---
 
 ## DS Component Design Principles
@@ -447,22 +88,6 @@ DS components are **reusable building blocks** that receive all content (text, i
 
 ---
 
-## Accessibility Identifier Pattern
-
-All DS components accept an optional `accessibilityIdentifier: String?` parameter. Molecules and organisms propagate this identifier to their child components with descriptive suffixes.
-
-### Propagation Suffixes
-
-| Component | Child Suffixes |
-|-----------|---------------|
-| `DSInfoRow` | `.icon`, `.label`, `.value` |
-| `DSCardInfoRow` | `.image`, `.title`, `.subtitle`, `.caption`, `.status`, `.statusLabel` |
-| `DSEmptyState` | `.icon`, `.title`, `.message`, `.button` |
-| `DSErrorView` | `.icon`, `.title`, `.message`, `.button` |
-| `DSLoadingView` | `.indicator`, `.message` |
-
----
-
 ## Migration Guide
 
 ### Before (hardcoded styles):
@@ -475,7 +100,7 @@ Text("Title")
 .padding(16)
 .background(Color(.systemBackground))
 .clipShape(RoundedRectangle(cornerRadius: 16))
-.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)  // hardcoded
+.shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
 ```
 
 ### After (design system):

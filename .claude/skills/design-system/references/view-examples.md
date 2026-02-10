@@ -1,4 +1,8 @@
-# Design System Examples
+# View Examples
+
+Complete view examples using the Design System.
+
+---
 
 ## Complete View Using Design System
 
@@ -215,7 +219,7 @@ var errorView: some View {
 
 ## Token Usage Examples
 
-### Colors (via theme)
+### Colors
 
 ```swift
 @Environment(\.dsTheme) private var theme
@@ -227,7 +231,7 @@ var errorView: some View {
 .foregroundStyle(theme.colors.statusSuccess)
 ```
 
-### Spacing (via theme)
+### Spacing
 
 ```swift
 @Environment(\.dsTheme) private var theme
@@ -240,7 +244,7 @@ VStack(spacing: theme.spacing.md) { }
 HStack(spacing: theme.spacing.sm) { }
 ```
 
-### Typography (via theme)
+### Typography
 
 ```swift
 @Environment(\.dsTheme) private var theme
@@ -262,14 +266,14 @@ Text("Caption")
     .foregroundStyle(theme.colors.textSecondary)
 ```
 
-### Corners (via theme)
+### Corners
 
 ```swift
 .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
 .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.lg))
 ```
 
-### Shadows (via theme)
+### Shadows
 
 ```swift
 @Environment(\.dsTheme) private var theme

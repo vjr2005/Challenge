@@ -7,15 +7,11 @@ description: Creates Snapshot Tests for SwiftUI Views using ChallengeSnapshotTes
 
 Guide for creating Snapshot Tests using `ChallengeSnapshotTestKit`. Tests only use `ChallengeSnapshotTestKit`'s public API. See the [module README](../../../Libraries/SnapshotTestKit/README.md) for internal details.
 
-## When to use this skill
+## References
 
-- Create snapshot tests for a View
-- Test different view states visually
-- Ensure visual regression prevention
+- **Concrete test examples**: See [references/examples.md](references/examples.md)
 
-## Additional resources
-
-- For complete implementation examples, see [examples.md](examples.md)
+---
 
 ## Prerequisites
 
@@ -24,84 +20,20 @@ Guide for creating Snapshot Tests using `ChallengeSnapshotTestKit`. Tests only u
 3. `ImageLoaderMock` in CoreMocks
 4. Test image in `Tests/Shared/Resources/`
 
-## File structure
+## File Structure
 
 ```
 Tests/
-├── Snapshots/                        # Snapshot tests
+├── Snapshots/
 │   └── Presentation/
 │       └── {Name}/
 │           ├── {Name}ViewSnapshotTests.swift
 │           └── __Snapshots__/
-└── Shared/                           # Shared resources
+└── Shared/
     ├── Stubs/
     │   └── {Name}ViewModelStub.swift
     └── Resources/
         └── test-avatar.jpg
-```
-
----
-
-## Key Components
-
-### DSAsyncImage
-
-Views must use `DSAsyncImage` instead of `AsyncImage`. Uses `AsyncImagePhase` for handling states:
-
-```swift
-DSAsyncImage(url: character.imageURL) { phase in
-    switch phase {
-    case .success(let image):
-        image.resizable().scaledToFill()
-    case .empty:
-        ProgressView()
-    case .failure:
-        Image(systemName: "photo")
-    @unknown default:
-        ProgressView()
-    }
-}
-```
-
-### ViewModel Protocol
-
-Create a protocol for stub injection:
-
-```swift
-protocol {Name}ViewModelContract: AnyObject {
-    var state: {Name}ViewState { get }
-    func load() async
-}
-```
-
-### ViewModel Stub
-
-Returns fixed state without logic:
-
-```swift
-@Observable
-final class {Name}ViewModelStub: {Name}ViewModelContract {
-    var state: {Name}ViewState
-
-    init(state: {Name}ViewState) {
-        self.state = state
-    }
-
-    func load() async { }
-}
-```
-
-### SnapshotStubs
-
-```swift
-enum SnapshotStubs {
-    static var testImage: UIImage? {
-        guard let path = Bundle.module.path(forResource: "test-avatar", ofType: "jpg") else {
-            return nil
-        }
-        return UIImage(contentsOfFile: path)
-    }
-}
 ```
 
 ---
@@ -139,28 +71,8 @@ struct {Name}ViewSnapshotTests {
         // Then
         assertSnapshot(of: view, as: .device)
     }
-
-    @Test("Renders loaded state correctly")
-    func loadedState() {
-        // Given
-        let viewModel = {Name}ViewModelStub(state: .loaded({Name}.stub()))
-
-        // When
-        let view = NavigationStack {
-            {Name}View(viewModel: viewModel)
-        }
-        .imageLoader(imageLoader)
-
-        // Then
-        assertSnapshot(of: view, as: .device)
-    }
 }
 ```
-
-**Benefits of instance variables:**
-- `imageLoader` created once in `init()`
-- Each test only sets up test-specific state (viewModel)
-- Cleaner `// Given` section
 
 ---
 
