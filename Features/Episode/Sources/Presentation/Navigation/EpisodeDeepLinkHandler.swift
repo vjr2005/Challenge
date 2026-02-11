@@ -7,11 +7,16 @@ struct EpisodeDeepLinkHandler: DeepLinkHandlerContract {
 
 	func resolve(_ url: URL) -> (any NavigationContract)? {
 		let pathComponents = url.pathComponents
-		guard pathComponents.count == 3,
-		      pathComponents[1] == "character",
-		      let identifier = Int(pathComponents[2]) else {
+
+		switch pathComponents.count {
+		case 3 where pathComponents[1] == "character":
+			guard let identifier = Int(pathComponents[2]) else {
+				return nil
+			}
+			return EpisodeIncomingNavigation.characterEpisodes(characterIdentifier: identifier)
+
+		default:
 			return nil
 		}
-		return EpisodeIncomingNavigation.characterEpisodes(characterIdentifier: identifier)
 	}
 }

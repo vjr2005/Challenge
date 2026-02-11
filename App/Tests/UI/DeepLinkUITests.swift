@@ -25,7 +25,7 @@ final class DeepLinkUITests: UITestCase {
 		try await givenCharacterDetailSucceeds()
 
 		launch()
-		let url = try XCTUnwrap(URL(string: "challenge://character/detail?id=1"))
+		let url = try XCTUnwrap(URL(string: "challenge://character/detail/1"))
 
 		// When
 		app.open(url)
@@ -54,6 +54,59 @@ final class DeepLinkUITests: UITestCase {
 		}
 
 		home { robot in
+			robot.verifyIsVisible()
+		}
+	}
+
+	// MARK: - Launch Deep Link
+
+	@MainActor
+	func testLaunchDeepLinkToCharacterList() async throws {
+		// Given
+		try await givenCharacterListSucceeds()
+
+		launch()
+		let url = try XCTUnwrap(URL(string: "challenge://character/list"))
+
+		// When
+		app.open(url)
+
+		// Then
+		characterList { robot in
+			robot.verifyIsVisible()
+		}
+	}
+
+	@MainActor
+	func testLaunchDeepLinkToCharacterDetail() async throws {
+		// Given
+		try await givenCharacterDetailSucceeds()
+
+		launch()
+		let url = try XCTUnwrap(URL(string: "challenge://character/detail/1"))
+
+		// When
+		app.open(url)
+
+		// Then
+		characterDetail { robot in
+			robot.verifyIsVisible()
+		}
+	}
+
+	@MainActor
+	func testLaunchInvalidDeepLinkShowsNotFound() async throws {
+		// Given
+		await givenAllRequestsReturnNotFound()
+
+		launch()
+		let url = try XCTUnwrap(URL(string: "challenge://invalid/route"))
+
+		// When
+		app.open(url)
+
+		// Then
+		notFound { robot in
 			robot.verifyIsVisible()
 		}
 	}

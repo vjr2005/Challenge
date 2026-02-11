@@ -8,24 +8,18 @@ struct HomeDeepLinkHandlerTests {
 
     private let sut = HomeDeepLinkHandler()
 
-    // MARK: - Scheme and Host
+    // MARK: - Scheme
 
-    @Test("Scheme returns 'challenge'")
-    func schemeReturnsChallenge() {
-        // When
-        let result = sut.scheme
-
-        // Then
-        #expect(result == "challenge")
+    @Test("Scheme is challenge")
+    func schemeIsChallenge() {
+        #expect(sut.scheme == "challenge")
     }
 
-    @Test("Host returns 'home'")
-    func hostReturnsHome() {
-        // When
-        let result = sut.host
+    // MARK: - Host
 
-        // Then
-        #expect(result == "home")
+    @Test("Host is home")
+    func hostIsHome() {
+        #expect(sut.host == "home")
     }
 
     // MARK: - Resolve
@@ -39,7 +33,7 @@ struct HomeDeepLinkHandlerTests {
         let result = sut.resolve(url)
 
         // Then
-        #expect(result is HomeIncomingNavigation)
+        #expect(result as? HomeIncomingNavigation == .main)
     }
 
     @Test("Resolves root path URL to home navigation")
@@ -51,7 +45,7 @@ struct HomeDeepLinkHandlerTests {
         let result = sut.resolve(url)
 
         // Then
-        #expect(result is HomeIncomingNavigation)
+        #expect(result as? HomeIncomingNavigation == .main)
     }
 
     @Test("Returns nil for unknown path")

@@ -116,12 +116,17 @@ nonisolated class UITestCase: XCTestCase {
 
 	/// Launches the app with the mock server configured.
 	/// Configure mock server routes before calling this method.
+	/// - Parameter deepLink: Optional deep link URL to navigate to on launch.
 	/// - Returns: The launched XCUIApplication instance.
 	@MainActor
 	@discardableResult
-	func launch() -> XCUIApplication {
+	func launch(deepLink url: URL? = nil) -> XCUIApplication {
 		let app = XCUIApplication()
-		app.launchEnvironment = ["API_BASE_URL": serverBaseURL]
+		var environment: [String: String] = ["API_BASE_URL": serverBaseURL]
+		if let url {
+			environment["DEEP_LINK_URL"] = url.absoluteString
+		}
+		app.launchEnvironment = environment
 		app.launch()
 
 		// Prevents tests from interacting with the UI before the app is ready,

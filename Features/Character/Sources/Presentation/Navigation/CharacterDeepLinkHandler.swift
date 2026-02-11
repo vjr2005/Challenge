@@ -6,12 +6,14 @@ struct CharacterDeepLinkHandler: DeepLinkHandlerContract {
     let host = "character"
 
     func resolve(_ url: URL) -> (any NavigationContract)? {
-        switch url.path {
-        case "/list":
+        let pathComponents = url.pathComponents
+
+        switch pathComponents.count {
+        case 2 where pathComponents[1] == "list":
             return CharacterIncomingNavigation.list
 
-        case "/detail":
-            guard let id = url.queryParameter("id").flatMap(Int.init) else {
+        case 3 where pathComponents[1] == "detail":
+            guard let id = Int(pathComponents[2]) else {
                 return nil
             }
             return CharacterIncomingNavigation.detail(identifier: id)

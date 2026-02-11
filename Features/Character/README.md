@@ -145,7 +145,7 @@ The `characterFilter` case carries a `CharacterFilterDelegate` reference, enabli
 | URL | Destination |
 |-----|-------------|
 | `challenge://character/list` | Character list |
-| `challenge://character/detail?id=1` | Character detail |
+| `challenge://character/detail/1` | Character detail |
 
 ## Usage
 

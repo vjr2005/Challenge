@@ -144,7 +144,7 @@ let appInfoPlist: [String: Plist.Value] = [
 
 After configuration, the app can receive URLs like:
 - `challenge://character/list`
-- `challenge://character/detail?id=42`
+- `challenge://character/detail/42`
 
 Handle incoming URLs in `RootView` with `.onOpenURL`:
 
