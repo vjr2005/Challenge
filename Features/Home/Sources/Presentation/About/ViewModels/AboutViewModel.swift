@@ -1,17 +1,23 @@
 final class AboutViewModel: AboutViewModelContract {
-    private let navigator: AboutNavigatorContract
-    private let tracker: AboutTrackerContract
+	let info: AboutInfo
+	private let navigator: AboutNavigatorContract
+	private let tracker: AboutTrackerContract
 
-    init(navigator: AboutNavigatorContract, tracker: AboutTrackerContract) {
-        self.navigator = navigator
-        self.tracker = tracker
-    }
+	init(
+		getAboutInfoUseCase: GetAboutInfoUseCaseContract,
+		navigator: AboutNavigatorContract,
+		tracker: AboutTrackerContract
+	) {
+		info = getAboutInfoUseCase.execute()
+		self.navigator = navigator
+		self.tracker = tracker
+	}
 
-    func didAppear() {
-        tracker.trackScreenViewed()
-    }
+	func didAppear() {
+		tracker.trackScreenViewed()
+	}
 
-    func didTapClose() {
-        navigator.dismiss()
-    }
+	func didTapClose() {
+		navigator.dismiss()
+	}
 }

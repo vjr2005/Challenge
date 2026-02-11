@@ -21,6 +21,10 @@ public final class HomeContainer {
     }
 
     func makeAboutViewModel(navigator: any NavigatorContract) -> AboutViewModel {
-        AboutViewModel(navigator: AboutNavigator(navigator: navigator), tracker: AboutTracker(tracker: tracker))
+        AboutViewModel(
+            getAboutInfoUseCase: GetAboutInfoUseCase(),
+            navigator: AboutNavigator(navigator: navigator),
+            tracker: AboutTracker(tracker: tracker)
+        )
     }
 }

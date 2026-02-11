@@ -89,7 +89,11 @@
       "Bash(done)",
       "Bash(for i in 1 2 3 4 5)",
       "Bash(do echo \"=== Run $i ===\")",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(git merge:*)",
+      "Bash(gh run view:*)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge add App/Tests/UI/HomeUITests.swift App/Tests/Shared/Robots/AboutRobot.swift Features/Home/Sources/Presentation/About/Views/AboutView.swift)"
     ]
   },
   "enableAllProjectMcpServers": true,
