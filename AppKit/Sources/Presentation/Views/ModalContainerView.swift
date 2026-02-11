@@ -20,7 +20,7 @@ struct ModalContainerView: View {
 
 	var body: some View {
 		NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
-			appContainer.resolve(modal.navigation.wrapped, navigator: navigationCoordinator)
+			appContainer.resolveView(for: modal.navigation.wrapped, navigator: navigationCoordinator)
 		}
 	}
 }

@@ -5,16 +5,16 @@ import Testing
 @testable import ChallengeAppKit
 
 struct RootContainerViewTests {
-	@Test("Initializes with app container and retains HTTP client")
+	@Test("Initializes with app container and retains image loader")
 	func initializesWithAppContainer() {
 		// Given
-		let httpClientMock = HTTPClientMock()
-		let appContainer = AppContainer(httpClient: httpClientMock, tracker: TrackerMock())
+		let imageLoaderMock = ImageLoaderMock(cachedImage: nil, asyncImage: nil)
+		let appContainer = AppContainer(httpClient: HTTPClientMock(), tracker: TrackerMock(), imageLoader: imageLoaderMock)
 
 		// When
 		let sut = RootContainerView(appContainer: appContainer)
 
 		// Then
-		#expect(sut.appContainer.httpClient as AnyObject === httpClientMock)
+		#expect(sut.appContainer.imageLoader as AnyObject === imageLoaderMock)
 	}
 }

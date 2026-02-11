@@ -12,7 +12,7 @@ struct NavigationContainerView<Content: View>: View {
 		NavigationStack(path: $navigationCoordinator.path) {
 			content
 				.navigationDestination(for: AnyNavigation.self) { navigation in
-					appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+					appContainer.resolveView(for: navigation.wrapped, navigator: navigationCoordinator)
 				}
 		}
 		.sheet(item: $navigationCoordinator.sheetNavigation) { modal in
