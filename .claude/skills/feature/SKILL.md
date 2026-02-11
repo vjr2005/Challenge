@@ -151,7 +151,7 @@ Add `"\(appName){Feature}SnapshotTests"` only if snapshot tests exist.
    - With networking: `{feature}Feature = {Feature}Feature(httpClient: self.httpClient, tracker: self.tracker)`
 4. Add to `features` array
 
-**`AppKit/Tests/Unit/AppContainerTests.swift`** — Increment features count assertion.
+**`AppKit/Tests/Unit/AppContainerTests.swift`** — No changes needed (`features` is private, tested indirectly).
 
 ### Step 5: Verify
 

@@ -231,7 +231,7 @@ struct NavigationContainerView<Content: View>: View {
         NavigationStack(path: $navigationCoordinator.path) {
             content
                 .navigationDestination(for: AnyNavigation.self) { navigation in
-                    appContainer.resolve(navigation.wrapped, navigator: navigationCoordinator)
+                    appContainer.resolveView(for: navigation.wrapped, navigator: navigationCoordinator)
                 }
         }
         .sheet(item: $navigationCoordinator.sheetNavigation) { modal in
@@ -275,7 +275,7 @@ struct ModalContainerView: View {
 
     var body: some View {
         NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
-            appContainer.resolve(modal.navigation.wrapped, navigator: navigationCoordinator)
+            appContainer.resolveView(for: modal.navigation.wrapped, navigator: navigationCoordinator)
         }
     }
 }
@@ -348,6 +348,7 @@ public struct RootContainerView: View {
         NavigationContainerView(navigationCoordinator: navigationCoordinator, appContainer: appContainer) {
             appContainer.makeRootView(navigator: navigationCoordinator)
         }
+        .imageLoader(appContainer.imageLoader)
         .onOpenURL { url in
             appContainer.handle(url: url, navigator: navigationCoordinator)
         }

@@ -146,8 +146,9 @@ Features/{Feature}/
 - [ ] `NavigationContainerView` (NavigationStack + push + modals)
 - [ ] `RootContainerView` uses `NavigationContainerView` + `.onOpenURL`
 - [ ] `ModalContainerView` (creates own coordinator, uses `NavigationContainerView`)
-- [ ] `AppContainer.resolve()` iterates features and falls back to NotFoundView
-- [ ] `AppContainer.handle(url:navigator:)` resolves deep links via feature handlers
+- [ ] `AppContainer.resolveView(for:navigator:)` iterates features and falls back to NotFoundView
+- [ ] `AppContainer.handle(url:navigator:)` resolves deep links via `navigation(from:)`
+- [ ] `AppContainer.makeRootView(navigator:)` returns deep link view as root when `deepLinkURL` is set
 
 ### Feature Implementation
 - [ ] `{Feature}IncomingNavigation` in `Presentation/Navigation/`

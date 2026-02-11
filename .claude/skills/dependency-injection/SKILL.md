@@ -115,6 +115,8 @@ Features/{Feature}/
 | {Feature}Container | **public** | Created by Feature |
 | Feature.makeMainView() | **public** | Creates the feature's default entry point |
 | Feature.resolve() | **public** | Returns view for navigation or nil |
+| AppContainer.init | **public** | Only public member, created by ChallengeApp |
+| AppContainer methods | **internal/private** | `resolveView`, `handle`, `makeRootView` are internal; rest private |
 | Container factory methods | **internal** | Called by Feature |
 | {Feature}IncomingNavigation | **public** | Used by AppNavigationRedirect |
 | {Feature}OutgoingNavigation | **public** | Used by AppNavigationRedirect |
