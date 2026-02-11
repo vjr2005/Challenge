@@ -18,14 +18,11 @@ Guide for creating UI tests using XCTest with the Robot pattern.
 
 ```
 App/Tests/UI/
-├── HomeUITests.swift                    # Home screen flow
-├── AboutUITests.swift                   # About modal flow
+├── HomeUITests.swift                    # Home screen flow (launch from home)
 ├── CharacterListUITests.swift           # Character list (deep link)
 ├── CharacterDetailUITests.swift         # Character detail (deep link)
 ├── CharacterEpisodesUITests.swift       # Character episodes (deep link)
-├── CharacterFilterUITests.swift         # Character filter flow
-├── CharacterFlowUITests.swift           # Multi-screen character flows
-└── DeepLinkUITests.swift                # Deep link navigation
+└── NotFoundUITests.swift                # Invalid deep link → not found screen
 
 App/Tests/Shared/
 ├── Robots/
@@ -142,6 +139,42 @@ final class CharacterDetailUITests: UITestCase {
         }
 
         characterDetail { robot in
+            robot.verifyIsVisible()
+        }
+    }
+}
+```
+
+### Runtime Deep Link Tests — `launch()` + `app.open(url)`
+
+Use `launch()` then `app.open(url)` when testing deep links that the app handles at **runtime** (not at launch). This is required for invalid/unknown routes because `DEEP_LINK_URL` env var only resolves known routes at launch time.
+
+```swift
+final class NotFoundUITests: UITestCase {
+    @MainActor
+    func testNotFoundScreenAndGoBack() async throws {
+        // Given — all requests return 404
+        await givenAllRequestsReturnNotFound()
+
+        launch()
+        let url = try XCTUnwrap(URL(string: "challenge://invalid/route"))
+
+        // Verify home is visible
+        home { robot in
+            robot.verifyIsVisible()
+        }
+
+        // When — open invalid deep link
+        app.open(url)
+
+        // Then — not found screen is visible
+        notFound { robot in
+            robot.verifyIsVisible()
+            robot.tapGoBack()
+        }
+
+        // Verify home is visible after going back
+        home { robot in
             robot.verifyIsVisible()
         }
     }

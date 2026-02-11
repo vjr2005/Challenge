@@ -63,6 +63,31 @@ extension UITestCase {
 		}
 	}
 
+	/// Configures avatars, character list with page 2 support, and empty search results.
+	func givenCharacterListWithPaginationAndEmptySearchSucceeds() async throws {
+		let baseURL = try XCTUnwrap(serverBaseURL)
+		let page1Data = Data.fixture("characters_response", baseURL: baseURL)
+		let page2Data = Data.fixture("characters_response_page_2", baseURL: baseURL)
+		let emptyData = Data.fixture("characters_response_empty")
+		let imageData = Data.stubAvatarImage
+
+		await serverMock.registerCatchAll { request in
+			if request.path.contains("/avatar/") {
+				return .image(imageData)
+			}
+			if request.path.contains("/character") {
+				if request.queryParameters["name"] != nil {
+					return .json(emptyData)
+				}
+				if request.queryParameters["page"] == "2" {
+					return .json(page2Data)
+				}
+				return .json(page1Data)
+			}
+			return .status(.notFound)
+		}
+	}
+
 	/// Configures avatars and character list where search returns empty. Use before `launch()`.
 	func givenCharacterListWithEmptySearchSucceeds() async throws {
 		let baseURL = try XCTUnwrap(serverBaseURL)

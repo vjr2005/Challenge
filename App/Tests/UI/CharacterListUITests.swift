@@ -18,8 +18,8 @@ final class CharacterListUITests: UITestCase {
 			robot.verifyErrorIsVisible()
 		}
 
-		// Recovery — configure pagination responses
-		try await givenCharacterListWithPaginationSucceeds()
+		// Recovery — configure pagination + empty search responses
+		try await givenCharacterListWithPaginationAndEmptySearchSucceeds()
 
 		// Retry — list loads with page 1
 		characterList { robot in
@@ -31,6 +31,34 @@ final class CharacterListUITests: UITestCase {
 			// Load more — page 2 appended
 			robot.tapLoadMore()
 			robot.verifyCharacterExists(identifier: 21)
+
+			// Search for non-existent name — empty state
+			robot.typeSearch(text: "NonExistent")
+			robot.verifyEmptySearchStateIsVisible()
+
+			// Cancel search — list reappears
+			robot.cancelSearch()
+			robot.verifyCharacterExists(identifier: 1)
+
+			// Tap search field — recent searches appear
+			robot.tapSearchField()
+			robot.verifyRecentSearchExists(query: "NonExistent")
+
+			// Tap recent search — empty results
+			robot.tapRecentSearch(query: "NonExistent")
+			robot.verifyEmptySearchStateIsVisible()
+
+			// Clear search — recent searches reappear
+			robot.clearSearch()
+			robot.verifyRecentSearchExists(query: "NonExistent")
+
+			// Delete recent search
+			robot.deleteRecentSearch(query: "NonExistent")
+			robot.verifyRecentSearchDoesNotExist(query: "NonExistent")
+
+			// Cancel search — list reappears
+			robot.cancelSearch()
+			robot.verifyCharacterExists(identifier: 1)
 
 			// Pull to refresh — back to page 1 only
 			robot.pullToRefresh()

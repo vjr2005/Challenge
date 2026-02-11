@@ -44,6 +44,7 @@ Use `registerCatchAll` to configure all routes for the test:
 | `givenCharacterListSucceeds()` | Avatars + character list |
 | `givenCharacterListAndDetailSucceeds()` | Avatars + list + detail |
 | `givenCharacterListWithPaginationSucceeds()` | Avatars + list + page 2 |
+| `givenCharacterListWithPaginationAndEmptySearchSucceeds()` | Avatars + list + page 2 + empty when `name` param present |
 | `givenCharacterListWithEmptySearchSucceeds()` | Avatars + list + empty search |
 | `givenCharacterDetailSucceeds()` | Avatars + detail (no list) |
 | `givenCharacterListDetailAndEpisodesSucceeds()` | Avatars + list + detail + episodes (GraphQL) |
@@ -68,6 +69,7 @@ Two approaches for recovery:
 | Method | Description |
 |--------|-------------|
 | `givenCharacterListWithPaginationSucceeds()` | Replaces catch-all with pagination support |
+| `givenCharacterListWithPaginationAndEmptySearchSucceeds()` | Replaces catch-all with pagination + empty search |
 | `givenCharacterDetailSucceeds()` | Replaces catch-all with detail + avatars |
 | `givenCharacterEpisodesRecovers()` | Replaces catch-all with detail + avatars + episodes (GraphQL) |
 | `givenCharacterEpisodesFails()` | Replaces catch-all with detail + avatars, GraphQL 500 |
