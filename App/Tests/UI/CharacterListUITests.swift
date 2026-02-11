@@ -3,15 +3,15 @@ import XCTest
 /// UI tests for the character list screen: error/retry, pagination, pull-to-refresh, and filters.
 final class CharacterListUITests: UITestCase {
 	@MainActor
-	func testCharacterListErrorRetryPaginationRefreshAndFilters() async throws {
+	// swiftlint:disable:next function_body_length
+	func testCharacterListErrorRetryPaginationRefreshFiltersAndDetailNavigation() async throws {
 		// Given — all requests fail
 		await givenAllRequestsFail()
 
-		launch()
 		let url = try XCTUnwrap(URL(string: "challenge://character/list"))
 
-		// When — navigate to character list via deep link
-		app.open(url)
+		// When — launch with deep link to character list
+		launch(deepLink: url)
 
 		// Then — error screen is visible
 		characterList { robot in
@@ -87,6 +87,11 @@ final class CharacterListUITests: UITestCase {
 		}
 
 		characterDetail { robot in
+			robot.verifyIsVisible()
+			robot.tapBack()
+		}
+
+		characterList { robot in
 			robot.verifyIsVisible()
 		}
 	}

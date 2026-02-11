@@ -26,6 +26,14 @@ extension CharacterEpisodesRobot {
 	}
 
 	@discardableResult
+	func tapBack(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let backButton = app.navigationBars.buttons.element(boundBy: 0)
+		XCTAssertTrue(backButton.waitForExistence(timeout: 5), file: file, line: line)
+		backButton.tap()
+		return self
+	}
+
+	@discardableResult
 	func tapCharacter(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let accessibilityId = AccessibilityIdentifier.characterAvatar(id: identifier)
 		let avatar = app.descendants(matching: .any)[accessibilityId].firstMatch

@@ -3,7 +3,7 @@ import XCTest
 /// UI tests for the Home screen flow.
 final class HomeUITests: UITestCase {
 	@MainActor
-	func testHomeFlowOpenAboutExpandScrollCloseAndNavigateToCharacters() async throws {
+	func testHomeFlowAboutSheetCharacterListAndBack() async throws {
 		// Given
 		try await givenCharacterListSucceeds()
 
@@ -29,6 +29,11 @@ final class HomeUITests: UITestCase {
 		}
 
 		characterList { robot in
+			robot.verifyIsVisible()
+			robot.tapBack()
+		}
+
+		home { robot in
 			robot.verifyIsVisible()
 		}
 	}
