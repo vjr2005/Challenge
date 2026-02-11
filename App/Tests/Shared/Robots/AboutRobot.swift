@@ -14,6 +14,14 @@ extension AboutRobot {
 		button.tap()
 		return self
 	}
+
+	@discardableResult
+	func swipeUp(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
+		XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
+		scrollView.swipeUp()
+		return self
+	}
 }
 
 // MARK: - Verifications
@@ -39,13 +47,22 @@ extension AboutRobot {
 		XCTAssertTrue(element.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
+
+	@discardableResult
+	func verifyCreditsExist(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let element = app.staticTexts[AccessibilityIdentifier.developerLabel]
+		XCTAssertTrue(element.waitForExistence(timeout: 5), file: file, line: line)
+		return self
+	}
 }
 
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
+	static let scrollView = "about.scrollView"
 	static let closeButton = "about.close.button"
 	static let appName = "about.appName"
 	static let featureBrowseValue = "about.feature.browse.value"
+	static let developerLabel = "about.developer.label"
 	static let developerValue = "about.developer.value"
 }

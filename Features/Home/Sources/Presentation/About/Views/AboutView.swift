@@ -17,6 +17,7 @@ struct AboutView<ViewModel: AboutViewModelContract>: View {
 			}
 			.padding(theme.spacing.lg)
 		}
+		.accessibilityIdentifier(AccessibilityIdentifier.scrollView)
 		.background(theme.colors.backgroundSecondary)
 		.navigationTitle(LocalizedStrings.title)
 		.navigationBarTitleDisplayMode(.inline)
@@ -205,6 +206,7 @@ private enum LocalizedStrings {
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
+	static let scrollView = "about.scrollView"
 	static let closeButton = "about.close.button"
 	static let appIcon = "about.appIcon"
 	static let appName = "about.appName"
