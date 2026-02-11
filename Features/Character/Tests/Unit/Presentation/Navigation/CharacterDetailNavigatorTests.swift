@@ -17,15 +17,6 @@ struct CharacterDetailNavigatorTests {
 
     // MARK: - Tests
 
-    @Test("Go back delegates to navigator")
-    func goBackCallsNavigator() {
-        // When
-        sut.goBack()
-
-        // Then
-        #expect(navigatorMock.goBackCallCount == 1)
-    }
-
     @Test("Navigate to episodes uses correct navigation destination")
     func navigateToEpisodesUsesCorrectNavigation() {
         // Given

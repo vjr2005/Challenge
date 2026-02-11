@@ -5,7 +5,6 @@ protocol CharacterDetailViewModelContract: AnyObject {
 	func didAppear() async
 	func didTapOnRetryButton() async
 	func didPullToRefresh() async
-	func didTapOnBack()
 	func didTapOnEpisodes()
 }
 

@@ -222,23 +222,6 @@
         }
       }
     },
-    "characterDetail.back" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Atrás"
-          }
-        }
-      }
-    },
     "characterDetail.loading" : {
       "extractionState" : "manual",
       "localizations" : {

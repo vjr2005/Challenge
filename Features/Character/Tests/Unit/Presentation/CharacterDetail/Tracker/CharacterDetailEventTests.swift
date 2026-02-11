@@ -63,26 +63,6 @@ struct CharacterDetailEventTests {
         #expect(sut.properties == [:])
     }
 
-    // MARK: - backButtonTapped
-
-    @Test("Back button tapped event has correct name")
-    func backButtonTappedEventHasCorrectName() {
-        // Given
-        let sut = CharacterDetailEvent.backButtonTapped
-
-        // Then
-        #expect(sut.name == "character_detail_back_tapped")
-    }
-
-    @Test("Back button tapped event has empty properties")
-    func backButtonTappedEventHasEmptyProperties() {
-        // Given
-        let sut = CharacterDetailEvent.backButtonTapped
-
-        // Then
-        #expect(sut.properties == [:])
-    }
-
     // MARK: - episodesButtonTapped
 
     @Test("Episodes button tapped event has correct name")

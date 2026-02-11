@@ -9,7 +9,7 @@ struct CharacterDetailRobot {
 extension CharacterDetailRobot {
 	@discardableResult
 	func tapBack(file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let backButton = app.buttons[AccessibilityIdentifier.backButton]
+		let backButton = app.navigationBars.buttons.element(boundBy: 0)
 		XCTAssertTrue(backButton.waitForExistence(timeout: 5), file: file, line: line)
 		backButton.tap()
 		return self
@@ -65,7 +65,6 @@ extension CharacterDetailRobot {
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterDetail.scrollView"
 	static let name = "characterDetail.name"
-	static let backButton = "characterDetail.backButton"
 	static let episodesButton = "characterDetail.episodesButton"
 	static let errorTitle = "characterDetail.errorView.title"
 	static let retryButton = "characterDetail.errorView.button"

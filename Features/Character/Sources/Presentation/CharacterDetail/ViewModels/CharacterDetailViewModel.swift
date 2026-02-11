@@ -39,11 +39,6 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
         await refresh()
     }
 
-    func didTapOnBack() {
-        tracker.trackBackButtonTapped()
-        navigator.goBack()
-    }
-
     func didTapOnEpisodes() {
         tracker.trackEpisodesButtonTapped(identifier: identifier)
         navigator.navigateToEpisodes(characterIdentifier: identifier)

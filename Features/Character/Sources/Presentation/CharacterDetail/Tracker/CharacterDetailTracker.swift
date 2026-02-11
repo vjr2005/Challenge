@@ -19,10 +19,6 @@ struct CharacterDetailTracker: CharacterDetailTrackerContract {
         tracker.track(CharacterDetailEvent.pullToRefreshTriggered)
     }
 
-    func trackBackButtonTapped() {
-        tracker.track(CharacterDetailEvent.backButtonTapped)
-    }
-
     func trackEpisodesButtonTapped(identifier: Int) {
         tracker.track(CharacterDetailEvent.episodesButtonTapped(identifier: identifier))
     }

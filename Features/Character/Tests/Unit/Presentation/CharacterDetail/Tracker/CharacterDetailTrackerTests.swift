@@ -47,16 +47,6 @@ struct CharacterDetailTrackerTests {
         #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_pull_to_refresh", properties: [:]))
     }
 
-    @Test("Track back button tapped dispatches correct event")
-    func trackBackButtonTappedDispatchesCorrectEvent() {
-        // When
-        sut.trackBackButtonTapped()
-
-        // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_detail_back_tapped", properties: [:]))
-    }
-
     @Test("Track episodes button tapped dispatches correct event with identifier")
     func trackEpisodesButtonTappedDispatchesCorrectEvent() {
         // When

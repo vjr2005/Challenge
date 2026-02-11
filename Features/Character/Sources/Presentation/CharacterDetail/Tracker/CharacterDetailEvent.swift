@@ -4,7 +4,6 @@ enum CharacterDetailEvent: TrackingEventContract {
     case screenViewed(identifier: Int)
     case retryButtonTapped
     case pullToRefreshTriggered
-    case backButtonTapped
     case loadError(description: String)
     case episodesButtonTapped(identifier: Int)
     case refreshError(description: String)
@@ -17,8 +16,6 @@ enum CharacterDetailEvent: TrackingEventContract {
             "character_detail_retry_tapped"
         case .pullToRefreshTriggered:
             "character_detail_pull_to_refresh"
-        case .backButtonTapped:
-            "character_detail_back_tapped"
         case .episodesButtonTapped:
             "character_detail_episodes_tapped"
         case .loadError:

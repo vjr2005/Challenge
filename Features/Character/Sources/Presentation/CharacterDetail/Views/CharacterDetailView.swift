@@ -18,32 +18,12 @@ struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
 			}
 			.background(theme.colors.backgroundSecondary)
 			.navigationBarTitleDisplayMode(.inline)
-			.navigationBarBackButtonHidden(true)
-			.toolbar {
-				ToolbarItem(placement: .navigationBarLeading) {
-					backButton
-				}
-			}
 	}
 }
 
 // MARK: - Subviews
 
 private extension CharacterDetailView {
-	var backButton: some View {
-		Button {
-			viewModel.didTapOnBack()
-		} label: {
-			HStack(spacing: theme.spacing.xs) {
-				Image(systemName: "chevron.left")
-					.font(theme.typography.body.weight(.semibold))
-				Text(LocalizedStrings.back)
-					.font(theme.typography.body)
-			}
-		}
-		.accessibilityIdentifier(AccessibilityIdentifier.backButton)
-	}
-
     @ViewBuilder
     var content: some View {
         switch viewModel.state {
@@ -200,7 +180,6 @@ private extension CharacterDetailView {
 // MARK: - LocalizedStrings
 
 private enum LocalizedStrings {
-	static var back: String { "characterDetail.back".localized() }
 	static var loading: String { "characterDetail.loading".localized() }
 	static var information: String { "characterDetail.information".localized() }
 	static var locations: String { "characterDetail.locations".localized() }
@@ -222,7 +201,6 @@ private enum LocalizedStrings {
 private enum AccessibilityIdentifier {
 	static let scrollView = "characterDetail.scrollView"
 	static let name = "characterDetail.name"
-	static let backButton = "characterDetail.backButton"
 	static let episodesButton = "characterDetail.episodesButton"
 	static let errorView = "characterDetail.errorView"
 }
@@ -264,7 +242,6 @@ private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewMode
 	func didAppear() async {}
 	func didTapOnRetryButton() async {}
 	func didPullToRefresh() async {}
-	func didTapOnBack() {}
 	func didTapOnEpisodes() {}
 }
 

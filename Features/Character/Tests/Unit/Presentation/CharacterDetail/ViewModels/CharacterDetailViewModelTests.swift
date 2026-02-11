@@ -106,15 +106,6 @@ struct CharacterDetailViewModelTests {
 
     // MARK: - Navigation
 
-    @Test("Tap on back navigates back")
-    func didTapOnBackCallsNavigatorGoBack() {
-        // When
-        sut.didTapOnBack()
-
-        // Then
-        #expect(navigatorMock.goBackCallCount == 1)
-    }
-
     @Test("Tap on episodes navigates to episodes with correct identifier")
     func didTapOnEpisodesNavigatesToEpisodes() {
         // When
@@ -226,15 +217,6 @@ struct CharacterDetailViewModelTests {
 
         // Then
         #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
-    }
-
-    @Test("didTapOnBack tracks back button tapped")
-    func didTapOnBackTracksBackButtonTapped() {
-        // When
-        sut.didTapOnBack()
-
-        // Then
-        #expect(trackerMock.backButtonTappedCallCount == 1)
     }
 
     @Test("didTapOnEpisodes tracks episodes button tapped with identifier")
