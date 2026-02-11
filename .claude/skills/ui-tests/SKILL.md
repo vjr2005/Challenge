@@ -18,15 +18,25 @@ Guide for creating UI tests using XCTest with the Robot pattern.
 
 ```
 App/Tests/UI/
-├── CharacterFlowUITests.swift
-└── DeepLinkUITests.swift
+├── HomeUITests.swift                    # Home screen flow
+├── AboutUITests.swift                   # About modal flow
+├── CharacterListUITests.swift           # Character list (deep link)
+├── CharacterDetailUITests.swift         # Character detail (deep link)
+├── CharacterEpisodesUITests.swift       # Character episodes (deep link)
+├── CharacterFilterUITests.swift         # Character filter flow
+├── CharacterFlowUITests.swift           # Multi-screen character flows
+└── DeepLinkUITests.swift                # Deep link navigation
 
 App/Tests/Shared/
 ├── Robots/
-│   ├── Robot.swift                        # UITestCase base class + RobotContract
+│   ├── Robot.swift                      # UITestCase base class
 │   ├── HomeRobot.swift
+│   ├── AboutRobot.swift
+│   ├── NotFoundRobot.swift
 │   ├── CharacterListRobot.swift
-│   └── CharacterDetailRobot.swift
+│   ├── CharacterDetailRobot.swift
+│   ├── CharacterFilterRobot.swift
+│   └── CharacterEpisodesRobot.swift
 └── Scenarios/
     └── UITestCase+Scenarios.swift
 ```
@@ -40,7 +50,6 @@ App/Tests/Shared/
 | Extend `UITestCase` | Inherits mock server setup, teardown, and robot DSL |
 | `async throws` on test methods | Required for `await serverMock.registerCatchAll` |
 | `@MainActor` on test methods | Required for UI interactions (XCUIApplication) |
-| `RobotContract` protocol | Base protocol with `app: XCUIApplication` |
 | Actions section | Methods that perform UI interactions (tap, swipe, type) |
 | Verifications section | Methods that assert UI state |
 | `@discardableResult` | All robot methods return `Self` for chaining |
@@ -50,11 +59,13 @@ App/Tests/Shared/
 
 ---
 
-## UI Test Structure
+## Test Patterns
+
+### Flow Tests — navigate through the app from home
+
+Use `launch()` and navigate through the app via robots. Best for multi-screen flows starting from home.
 
 ```swift
-import XCTest
-
 final class CharacterFlowUITests: UITestCase {
     @MainActor
     func testNavigationFromListToDetailAndBack() async throws {
@@ -86,6 +97,75 @@ final class CharacterFlowUITests: UITestCase {
 }
 ```
 
+### Screen Tests — deep link directly to a screen
+
+Use `launch(deepLink: url)` to navigate directly to a specific screen. Best for comprehensive single-screen tests covering error/retry, main interactions, and navigation. One test class per screen with a single comprehensive test method.
+
+```swift
+final class CharacterDetailUITests: UITestCase {
+    @MainActor
+    func testCharacterDetailErrorRetryRefreshEpisodesAndBack() async throws {
+        // Given — all requests fail
+        await givenAllRequestsFail()
+
+        let url = try XCTUnwrap(URL(string: "challenge://character/detail/1"))
+
+        // When — launch with deep link
+        launch(deepLink: url)
+
+        // Then — error screen
+        characterDetail { robot in
+            robot.verifyErrorIsVisible()
+        }
+
+        // Recovery — configure responses
+        try await givenCharacterDetailSucceeds()
+
+        // Retry — content loads
+        characterDetail { robot in
+            robot.tapRetry()
+            robot.verifyIsVisible()
+            robot.pullToRefresh()
+            robot.verifyIsVisible()
+        }
+
+        // Navigate forward and back
+        try await givenCharacterEpisodesRecovers()
+
+        characterDetail { robot in
+            robot.tapEpisodes()
+        }
+
+        characterEpisodes { robot in
+            robot.verifyIsVisible()
+            robot.tapBack()
+        }
+
+        characterDetail { robot in
+            robot.verifyIsVisible()
+        }
+    }
+}
+```
+
+### Deep Link URLs
+
+| Screen | URL |
+|--------|-----|
+| Character List | `challenge://character/list` |
+| Character Detail | `challenge://character/detail/{id}` |
+| Character Episodes | `challenge://episode/character/{id}` |
+
+### Screen Test Flow Pattern
+
+Each screen test follows the same structure:
+
+1. **Error** — `givenAllRequestsFail()` + `launch(deepLink: url)` → verify error
+2. **Recovery** — register success scenario mid-test (replaces catch-all)
+3. **Retry** — tap retry → verify content loads
+4. **Interactions** — pull-to-refresh, pagination, filters, etc.
+5. **Navigation** — navigate to related screen → verify → tap back → verify return
+
 ---
 
 ## Accessibility Identifiers in Views
@@ -109,13 +189,17 @@ When using `accessibilityIdentifier: "characterList.row.1"`:
 
 ## Build & Verify
 
-After writing UI tests, run **only** the UI tests to verify compilation and execution:
+Run a specific test class:
+
+```bash
+mise x -- tuist test ChallengeUITests -- -only-testing:ChallengeUITests/CharacterDetailUITests
+```
+
+Run all UI tests:
 
 ```bash
 mise x -- tuist test --skip-unit-tests 2>&1 | tee /tmp/ui-tests.txt | tail -30
 ```
-
-Do **not** run the full test suite (`mise x -- tuist test`) — UI tests are independent and only need the UI test target.
 
 ---
 
@@ -123,12 +207,13 @@ Do **not** run the full test suite (`mise x -- tuist test`) — UI tests are ind
 
 ### Robot Implementation
 
-- [ ] Create Robot struct conforming to `RobotContract`
+- [ ] Create Robot struct with `let app: XCUIApplication`
 - [ ] Add Actions extension with `@discardableResult` methods
 - [ ] Add Verifications extension with `@discardableResult` methods
 - [ ] Add private `AccessibilityIdentifier` enum
 - [ ] Pass `#filePath` and `line` for accurate failure locations
 - [ ] Use `.firstMatch` for dynamic elements
+- [ ] Add robot DSL method in `Robot.swift` (e.g., `func myScreen(actions:)`)
 
 ### UI Test
 
@@ -136,11 +221,12 @@ Do **not** run the full test suite (`mise x -- tuist test`) — UI tests are ind
 - [ ] Mark test methods with `@MainActor` and `async throws`
 - [ ] Use scenario methods from `UITestCase+Scenarios` (or create new ones)
 - [ ] Follow `// Given` / `// When` / `// Then` structure
-- [ ] Call `launch()` after scenario setup (synchronous, no `await`)
+- [ ] Choose test pattern: `launch()` for flow tests, `launch(deepLink: url)` for screen tests
 - [ ] Use Robot DSL methods (`home`, `characterList`, etc.)
 - [ ] Chain robot actions fluently
 - [ ] Verify navigation with `verifyIsVisible()`
-- [ ] For retry flows: use recovery scenarios mid-test after verifying error state
+- [ ] For retry flows: register recovery scenarios mid-test after verifying error state
+- [ ] End screen tests with back navigation to verify return
 
 ### View Accessibility
 

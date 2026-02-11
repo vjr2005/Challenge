@@ -6,11 +6,6 @@
 import SwiftMockServer
 import XCTest
 
-/// Base protocol for all screen robots.
-protocol RobotContract {
-    var app: XCUIApplication { get }
-}
-
 /// Base class for UI tests with mock server support.
 nonisolated class UITestCase: XCTestCase {
     private(set) var serverMock: MockServer!
@@ -27,6 +22,8 @@ nonisolated class UITestCase: XCTestCase {
     }
 
     override func tearDown() async throws {
+        await attachNetworkLogIfFailed()
+
         await serverMock.stop()
         serverMock = nil
         serverBaseURL = nil
@@ -34,11 +31,17 @@ nonisolated class UITestCase: XCTestCase {
         try await super.tearDown()
     }
 
+    /// Launches the app with the mock server configured.
+    /// - Parameter deepLink: Optional deep link URL to navigate to on launch.
     @MainActor
     @discardableResult
-    func launch() -> XCUIApplication {
+    func launch(deepLink url: URL? = nil) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchEnvironment = ["API_BASE_URL": serverBaseURL]
+        var environment: [String: String] = ["API_BASE_URL": serverBaseURL]
+        if let url {
+            environment["DEEP_LINK_URL"] = url.absoluteString
+        }
+        app.launchEnvironment = environment
         app.launch()
 
         let isRunning = app.wait(for: .runningForeground, timeout: 10)
@@ -48,26 +51,28 @@ nonisolated class UITestCase: XCTestCase {
         return app
     }
 
-    @MainActor
-    func home(actions: (HomeRobot) -> Void) {
-        actions(HomeRobot(app: app))
-    }
+    // MARK: - Robot DSL
 
-    @MainActor
-    func characterList(actions: (CharacterListRobot) -> Void) {
-        actions(CharacterListRobot(app: app))
-    }
+    @MainActor func home(actions: (HomeRobot) -> Void) { actions(HomeRobot(app: app)) }
+    @MainActor func about(actions: (AboutRobot) -> Void) { actions(AboutRobot(app: app)) }
+    @MainActor func notFound(actions: (NotFoundRobot) -> Void) { actions(NotFoundRobot(app: app)) }
+    @MainActor func characterList(actions: (CharacterListRobot) -> Void) { actions(CharacterListRobot(app: app)) }
+    @MainActor func characterDetail(actions: (CharacterDetailRobot) -> Void) { actions(CharacterDetailRobot(app: app)) }
+    @MainActor func characterFilter(actions: (CharacterFilterRobot) -> Void) { actions(CharacterFilterRobot(app: app)) }
+    @MainActor func characterEpisodes(actions: (CharacterEpisodesRobot) -> Void) { actions(CharacterEpisodesRobot(app: app)) }
 }
 ```
 
 ---
 
-## CharacterListRobot
+## Robot Structure
+
+All robots follow the same structure: plain struct with `let app`, Actions extension, Verifications extension, and private AccessibilityIdentifier enum.
 
 ```swift
 import XCTest
 
-struct CharacterListRobot: RobotContract {
+struct CharacterListRobot {
     let app: XCUIApplication
 }
 
@@ -75,9 +80,9 @@ struct CharacterListRobot: RobotContract {
 
 extension CharacterListRobot {
     @discardableResult
-    func tapCharacter(id: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-        let identifier = AccessibilityIdentifier.row(id: id)
-        let row = app.descendants(matching: .any)[identifier].firstMatch
+    func tapCharacter(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
+        let row = app.descendants(matching: .any)[accessibilityId].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
         row.tap()
         return self
@@ -88,6 +93,24 @@ extension CharacterListRobot {
         let backButton = app.navigationBars.buttons.element(boundBy: 0)
         XCTAssertTrue(backButton.waitForExistence(timeout: 5), file: file, line: line)
         backButton.tap()
+        return self
+    }
+
+    @discardableResult
+    func tapRetry(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let retryButton = app.buttons[AccessibilityIdentifier.retryButton]
+        XCTAssertTrue(retryButton.waitForExistence(timeout: 5), file: file, line: line)
+        retryButton.tap()
+        return self
+    }
+
+    @discardableResult
+    func pullToRefresh(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
+        XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
+        let start = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let end = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9))
+        start.press(forDuration: 0.1, thenDragTo: end)
         return self
     }
 }
@@ -101,112 +124,41 @@ extension CharacterListRobot {
         XCTAssertTrue(scrollView.waitForExistence(timeout: 5), file: file, line: line)
         return self
     }
+
+    @discardableResult
+    func verifyErrorIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let errorTitle = app.descendants(matching: .any)[AccessibilityIdentifier.errorTitle]
+        XCTAssertTrue(errorTitle.waitForExistence(timeout: 5), file: file, line: line)
+        return self
+    }
+
+    @discardableResult
+    func verifyCharacterExists(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
+        let row = app.descendants(matching: .any)[accessibilityId].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
+        return self
+    }
+
+    @discardableResult
+    func verifyCharacterDoesNotExist(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
+        let row = app.descendants(matching: .any)[accessibilityId].firstMatch
+        XCTAssertFalse(row.waitForExistence(timeout: 2), file: file, line: line)
+        return self
+    }
 }
 
 // MARK: - AccessibilityIdentifiers
 
 private enum AccessibilityIdentifier {
     static let scrollView = "characterList.scrollView"
+    static let errorTitle = "characterList.errorView.title"
+    static let retryButton = "characterList.errorView.button"
 
-    static func row(id: Int) -> String {
-        "characterList.row.\(id)"
+    static func row(identifier: Int) -> String {
+        "characterList.row.\(identifier)"
     }
-}
-```
-
----
-
-## HomeRobot
-
-```swift
-import XCTest
-
-struct HomeRobot: RobotContract {
-    let app: XCUIApplication
-}
-
-// MARK: - Actions
-
-extension HomeRobot {
-    @discardableResult
-    func tapCharacterButton(file: StaticString = #filePath, line: UInt = #line) -> Self {
-        let button = app.buttons[AccessibilityIdentifier.characterButton]
-        XCTAssertTrue(button.waitForExistence(timeout: 5), file: file, line: line)
-        button.tap()
-        return self
-    }
-}
-
-// MARK: - Verifications
-
-extension HomeRobot {
-    @discardableResult
-    func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
-        let view = app.otherElements[AccessibilityIdentifier.view]
-        XCTAssertTrue(view.waitForExistence(timeout: 5), file: file, line: line)
-        return self
-    }
-}
-
-// MARK: - AccessibilityIdentifiers
-
-private enum AccessibilityIdentifier {
-    static let view = "home.view"
-    static let characterButton = "home.characterButton"
-}
-```
-
----
-
-## CharacterDetailRobot
-
-```swift
-import XCTest
-
-struct CharacterDetailRobot: RobotContract {
-    let app: XCUIApplication
-}
-
-// MARK: - Actions
-
-extension CharacterDetailRobot {
-    @discardableResult
-    func tapBack(file: StaticString = #filePath, line: UInt = #line) -> Self {
-        let backButton = app.navigationBars.buttons.element(boundBy: 0)
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5), file: file, line: line)
-        backButton.tap()
-        return self
-    }
-}
-
-// MARK: - Verifications
-
-extension CharacterDetailRobot {
-    @discardableResult
-    func verifyIsVisible(file: StaticString = #filePath, line: UInt = #line) -> Self {
-        let view = app.scrollViews[AccessibilityIdentifier.scrollView]
-        XCTAssertTrue(view.waitForExistence(timeout: 5), file: file, line: line)
-        return self
-    }
-
-    @discardableResult
-    func verifyCharacterName(
-        _ name: String,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) -> Self {
-        let label = app.staticTexts[name]
-        XCTAssertTrue(label.waitForExistence(timeout: 5), file: file, line: line)
-        return self
-    }
-}
-
-// MARK: - AccessibilityIdentifiers
-
-private enum AccessibilityIdentifier {
-    static let scrollView = "characterDetail.scrollView"
-    static let nameLabel = "characterDetail.nameLabel"
-    static let statusLabel = "characterDetail.statusLabel"
 }
 ```
 
@@ -219,25 +171,81 @@ private enum AccessibilityIdentifier {
 let button = app.buttons[identifier]
 button.tap()
 
-// Tap a cell/row
-let cell = app.cells[identifier]
-cell.tap()
+// Tap a descendant element by identifier
+let element = app.descendants(matching: .any)[identifier].firstMatch
+element.tap()
 
-// Type text
+// Type text in a text field
 let textField = app.textFields[identifier]
 textField.tap()
 textField.typeText("Hello")
 
-// Swipe
-app.swipeUp()
-app.swipeDown()
+// Pull to refresh on a scroll view
+let scrollView = app.scrollViews[identifier]
+let start = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+let end = scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9))
+start.press(forDuration: 0.1, thenDragTo: end)
 
-// Pull to refresh
-let firstCell = app.cells.element(boundBy: 0)
-let start = firstCell.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-let end = firstCell.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 5))
-start.press(forDuration: 0, thenDragTo: end)
+// Tap back button in navigation bar
+let backButton = app.navigationBars.buttons.element(boundBy: 0)
+backButton.tap()
 
 // Wait for element
 XCTAssertTrue(element.waitForExistence(timeout: 10))
+
+// Verify element does NOT exist (short timeout)
+XCTAssertFalse(element.waitForExistence(timeout: 2))
+
+// Verify button is disabled
+XCTAssertFalse(button.isEnabled)
 ```
+
+---
+
+## Accessibility Identifiers in Views
+
+### Pattern with DS Components
+
+```swift
+struct CharacterListView: View {
+    @State private var viewModel: CharacterListViewModel
+
+    var body: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(viewModel.characters) { character in
+                    DSCardInfoRow(
+                        imageURL: character.imageURL,
+                        title: character.name,
+                        status: DSStatus.from(character.status.rawValue),
+                        accessibilityIdentifier: AccessibilityIdentifier.row(id: character.id)
+                    )
+                    .onTapGesture {
+                        viewModel.didSelect(character)
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
+    }
+}
+
+// MARK: - AccessibilityIdentifiers
+
+private enum AccessibilityIdentifier {
+    static let scrollView = "characterList.scrollView"
+    static let loadMoreButton = "characterList.loadMoreButton"
+
+    static func row(id: Int) -> String {
+        "characterList.row.\(id)"
+    }
+}
+```
+
+### Propagated Identifiers
+
+When using `accessibilityIdentifier: "characterList.row.1"`:
+- Container: `characterList.row.1`
+- `DSAsyncImage`: `characterList.row.1.image`
+- Title text: `characterList.row.1.title`
+- `DSStatusIndicator`: `characterList.row.1.status`
