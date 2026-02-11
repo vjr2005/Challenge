@@ -60,34 +60,42 @@ App/Tests/Shared/
 
 ### Flow Tests — navigate through the app from home
 
-Use `launch()` and navigate through the app via robots. Best for multi-screen flows starting from home.
+Use `launch()` and navigate through the app via robots. Best for multi-screen flows starting from home. One comprehensive test per flow.
 
 ```swift
-final class CharacterFlowUITests: UITestCase {
+final class HomeUITests: UITestCase {
     @MainActor
-    func testNavigationFromListToDetailAndBack() async throws {
+    func testHomeFlowAboutSheetCharacterListAndBack() async throws {
         // Given
-        try await givenCharacterListAndDetailSucceeds()
+        try await givenCharacterListSucceeds()
 
         // When
         launch()
 
         // Then
         home { robot in
+            robot.verifyIsVisible()
+            robot.tapInfoButton()
+        }
+
+        about { robot in
+            robot.verifyIsVisible()
+            robot.swipeUp()
+            robot.verifyCreditsExist()
+            robot.tapClose()
+        }
+
+        home { robot in
+            robot.verifyIsVisible()
             robot.tapCharacterButton()
         }
 
         characterList { robot in
             robot.verifyIsVisible()
-            robot.tapCharacter(identifier: 1)
-        }
-
-        characterDetail { robot in
-            robot.verifyIsVisible()
             robot.tapBack()
         }
 
-        characterList { robot in
+        home { robot in
             robot.verifyIsVisible()
         }
     }
@@ -96,7 +104,7 @@ final class CharacterFlowUITests: UITestCase {
 
 ### Screen Tests — deep link directly to a screen
 
-Use `launch(deepLink: url)` to navigate directly to a specific screen. Best for comprehensive single-screen tests covering error/retry, main interactions, and navigation. One test class per screen with a single comprehensive test method.
+Use `launch(deepLink: url)` to navigate directly to a specific screen. Best for comprehensive single-screen tests covering error/retry, main interactions, and navigation. One test class per screen with a single comprehensive test method. Use `// swiftlint:disable:next function_body_length` for long test methods.
 
 ```swift
 final class CharacterDetailUITests: UITestCase {

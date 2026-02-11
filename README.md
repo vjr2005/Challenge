@@ -146,6 +146,7 @@ See [Tuist Documentation](docs/Tuist.md) and [Scripts Documentation](docs/Script
 - [Create ViewModel](docs/how-to/create-viewmodel.md)
 - [Create View](docs/how-to/create-view.md)
 - [Create Navigator](docs/how-to/create-navigator.md)
+- [Create UI Test](docs/how-to/create-ui-test.md)
 - [Create Tracker](docs/how-to/create-tracker.md)
 - [Create Tracking Provider](docs/how-to/create-tracking-provider.md)
 

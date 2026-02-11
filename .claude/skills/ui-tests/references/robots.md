@@ -198,6 +198,25 @@ XCTAssertFalse(element.waitForExistence(timeout: 2))
 
 // Verify button is disabled
 XCTAssertFalse(button.isEnabled)
+
+// Search field — tap, type, clear, cancel
+let searchField = app.searchFields.firstMatch
+searchField.tap()
+searchField.typeText("query")
+searchField.buttons["Clear text"].tap()  // clear text (stays active)
+app.buttons["close"].tap()               // cancel search (lowercase "close")
+
+// Swipe to delete (e.g., recent search suggestions)
+let suggestion = app.buttons[identifier].firstMatch
+suggestion.swipeLeft()
+app.buttons["Delete"].firstMatch.tap()
+
+// Scroll to make element visible
+var attempts = 0
+while !row.isHittable && attempts < 10 {
+    scrollView.swipeUp()
+    attempts += 1
+}
 ```
 
 ---
