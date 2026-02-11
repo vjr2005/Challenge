@@ -60,13 +60,6 @@ extension CharacterEpisodesRobot {
 		return self
 	}
 
-	@discardableResult
-	func verifyEpisodeExists(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let accessibilityId = AccessibilityIdentifier.episodeCard(id: identifier)
-		let episode = app.descendants(matching: .any)[accessibilityId].firstMatch
-		XCTAssertTrue(episode.waitForExistence(timeout: 10), file: file, line: line)
-		return self
-	}
 }
 
 // MARK: - AccessibilityIdentifiers
@@ -75,10 +68,6 @@ private enum AccessibilityIdentifier {
 	static let scrollView = "characterEpisodes.scrollView"
 	static let errorTitle = "characterEpisodes.errorView.title"
 	static let retryButton = "characterEpisodes.errorView.button"
-
-	static func episodeCard(id: Int) -> String {
-		"characterEpisodes.episode.\(id)"
-	}
 
 	static func characterAvatar(id: Int) -> String {
 		"characterEpisodes.character.\(id)"
