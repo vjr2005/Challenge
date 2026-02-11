@@ -45,16 +45,19 @@ nonisolated class UITestCase: XCTestCase {
 			}
 			.joined(separator: "\n")
 
-		let attachment = XCTAttachment(string: log)
-		attachment.name = "Network Log"
-		attachment.lifetime = .keepAlways
-		add(attachment)
+		await XCTContext.runActivity(named: "Network Log") { activity in
+			let attachment = XCTAttachment(string: log)
+			attachment.name = "Network Log"
+			attachment.lifetime = .keepAlways
+			activity.add(attachment)
+		}
 	}
 
 	private func formatRequest(_ recorded: RecordedRequest, index: Int) -> String {
 		let request = recorded.request
+		let response = recorded.response
 		let timestamp = Self.timestampFormatter.string(from: recorded.timestamp)
-		var lines = ["[\(index)] \(timestamp) \(request.method.rawValue) \(request.path)"]
+		var lines = ["[\(index)] \(timestamp) \(request.method.rawValue) \(request.path) → \(response.status.code) \(response.status.reason)"]
 
 		if !request.queryParameters.isEmpty {
 			let params = request.queryParameters
@@ -64,15 +67,45 @@ nonisolated class UITestCase: XCTestCase {
 			lines.append("Query:\n\(params)")
 		}
 
+		if !request.headers.isEmpty {
+			let headers = request.headers
+				.sorted { $0.key < $1.key }
+				.map { "  \($0.key): \($0.value)" }
+				.joined(separator: "\n")
+			lines.append("Request Headers:\n\(headers)")
+		}
+
 		if let route = recorded.matchedRoute {
 			lines.append("Route: \(route)")
 		}
 
-		if let body = request.bodyString, !body.isEmpty {
-			lines.append("Body: \(body)")
+		if let body = request.body, !body.isEmpty {
+			lines.append("Request Body:\n\(Self.prettyPrintedJSON(body))")
+		}
+
+		if !response.headers.isEmpty {
+			let headers = response.headers
+				.sorted { $0.key < $1.key }
+				.map { "  \($0.key): \($0.value)" }
+				.joined(separator: "\n")
+			lines.append("Response Headers:\n\(headers)")
+		}
+
+		if let body = response.body, !body.isEmpty {
+			lines.append("Response Body:\n\(Self.prettyPrintedJSON(body))")
 		}
 
 		return lines.joined(separator: "\n")
+	}
+
+	private static func prettyPrintedJSON(_ data: Data) -> String {
+		guard let json = try? JSONSerialization.jsonObject(with: data),
+			  let pretty = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted),
+			  let string = String(data: pretty, encoding: .utf8)
+		else {
+			return String(data: data, encoding: .utf8) ?? "<binary \(data.count) bytes>"
+		}
+		return string
 	}
 
 	private static let timestampFormatter: DateFormatter = {
