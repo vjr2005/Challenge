@@ -78,7 +78,15 @@ final class CharacterListUITests: UITestCase {
 		}
 
 		// Verify character list is visible after applying filter
+		// Register detail route so tapping a character loads correctly
+		try await givenCharacterDetailRecovers()
+
 		characterList { robot in
+			robot.verifyIsVisible()
+			robot.tapCharacter(identifier: 1)
+		}
+
+		characterDetail { robot in
 			robot.verifyIsVisible()
 		}
 	}
