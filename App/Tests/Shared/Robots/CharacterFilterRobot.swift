@@ -75,6 +75,14 @@ extension CharacterFilterRobot {
 		XCTAssertTrue(button.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
+
+	@discardableResult
+	func verifyResetIsDisabled(file: StaticString = #filePath, line: UInt = #line) -> Self {
+		let button = app.buttons[AccessibilityIdentifier.resetButton]
+		XCTAssertTrue(button.waitForExistence(timeout: 5), file: file, line: line)
+		XCTAssertFalse(button.isEnabled, "Reset button should be disabled when no filters are active", file: file, line: line)
+		return self
+	}
 }
 
 // MARK: - AccessibilityIdentifiers
