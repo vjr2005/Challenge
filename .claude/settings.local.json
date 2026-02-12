@@ -97,7 +97,9 @@
       "Bash(git rm:*)",
       "Bash(git mv:*)",
       "WebFetch(domain:claude.com)",
-      "WebFetch(domain:claudelog.com)"
+      "WebFetch(domain:claudelog.com)",
+      "mcp__cupertino__search",
+      "mcp__cupertino__read_document"
     ]
   },
   "enableAllProjectMcpServers": true,
