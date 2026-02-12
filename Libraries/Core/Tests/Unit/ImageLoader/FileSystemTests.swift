@@ -11,28 +11,28 @@ struct FileSystemTests {
 	// MARK: - Write and Read
 
 	@Test("Writes data and reads it back")
-	func writesAndReadsData() async throws {
+	func writesAndReadsData() throws {
 		// Given
 		let directory = makeTemporaryDirectory()
 		let fileURL = directory.appendingPathComponent("test-file")
 
 		// When
-		try await sut.write(testData, to: fileURL)
-		let result = try await sut.contents(at: fileURL)
+		try sut.write(testData, to: fileURL)
+		let result = try sut.contents(at: fileURL)
 
 		// Then
 		#expect(result == testData)
 	}
 
 	@Test("Throws error when reading non-existent file")
-	func throwsErrorWhenReadingNonExistentFile() async {
+	func throwsErrorWhenReadingNonExistentFile() {
 		// Given
 		let fileURL = URL(fileURLWithPath: "/tmp/non-existent-\(UUID().uuidString)")
 
 		// Then
 		do {
 			// When
-			_ = try await sut.contents(at: fileURL)
+			_ = try sut.contents(at: fileURL)
 			Issue.record("Expected error to be thrown")
 		} catch {
 			// Expected
@@ -42,14 +42,14 @@ struct FileSystemTests {
 	// MARK: - Create Directory
 
 	@Test("Creates directory with intermediate directories")
-	func createsDirectoryWithIntermediateDirectories() async throws {
+	func createsDirectoryWithIntermediateDirectories() throws {
 		// Given
 		let directory = FileManager.default.temporaryDirectory
 			.appendingPathComponent(UUID().uuidString)
 			.appendingPathComponent("nested")
 
 		// When
-		try await sut.createDirectory(at: directory)
+		try sut.createDirectory(at: directory)
 
 		// Then
 		var isDirectory: ObjCBool = false
@@ -61,14 +61,14 @@ struct FileSystemTests {
 	// MARK: - Remove Item
 
 	@Test("Removes file from disk")
-	func removesFile() async throws {
+	func removesFile() throws {
 		// Given
 		let directory = makeTemporaryDirectory()
 		let fileURL = directory.appendingPathComponent("to-remove")
-		try await sut.write(testData, to: fileURL)
+		try sut.write(testData, to: fileURL)
 
 		// When
-		try await sut.removeItem(at: fileURL)
+		try sut.removeItem(at: fileURL)
 
 		// Then
 		#expect(!FileManager.default.fileExists(atPath: fileURL.path))
@@ -77,14 +77,14 @@ struct FileSystemTests {
 	// MARK: - Contents of Directory
 
 	@Test("Lists files in directory")
-	func listsFilesInDirectory() async throws {
+	func listsFilesInDirectory() throws {
 		// Given
 		let directory = makeTemporaryDirectory()
-		try await sut.write(testData, to: directory.appendingPathComponent("file1"))
-		try await sut.write(testData, to: directory.appendingPathComponent("file2"))
+		try sut.write(testData, to: directory.appendingPathComponent("file1"))
+		try sut.write(testData, to: directory.appendingPathComponent("file2"))
 
 		// When
-		let files = try await sut.contentsOfDirectory(at: directory)
+		let files = try sut.contentsOfDirectory(at: directory)
 
 		// Then
 		#expect(files.count == 2)
@@ -93,14 +93,14 @@ struct FileSystemTests {
 	// MARK: - File Attributes
 
 	@Test("Returns file attributes with size and dates")
-	func returnsFileAttributes() async throws {
+	func returnsFileAttributes() throws {
 		// Given
 		let directory = makeTemporaryDirectory()
 		let fileURL = directory.appendingPathComponent("attributes-test")
-		try await sut.write(testData, to: fileURL)
+		try sut.write(testData, to: fileURL)
 
 		// When
-		let attributes = try await sut.fileAttributes(at: fileURL)
+		let attributes = try sut.fileAttributes(at: fileURL)
 
 		// Then
 		#expect(attributes.size == testData.count)
@@ -109,14 +109,14 @@ struct FileSystemTests {
 	}
 
 	@Test("Throws error when file attributes are unavailable")
-	func throwsErrorWhenFileAttributesAreUnavailable() async {
+	func throwsErrorWhenFileAttributesAreUnavailable() {
 		// Given
 		let fileURL = URL(fileURLWithPath: "/tmp/non-existent-\(UUID().uuidString)")
 
 		// Then
 		do {
 			// When
-			_ = try await sut.fileAttributes(at: fileURL)
+			_ = try sut.fileAttributes(at: fileURL)
 			Issue.record("Expected error to be thrown")
 		} catch {
 			// Expected
@@ -130,17 +130,17 @@ struct FileSystemTests {
 		// Given
 		let directory = makeTemporaryDirectory()
 		let fileURL = directory.appendingPathComponent("touch-test")
-		try await sut.write(testData, to: fileURL)
-		let originalAttributes = try await sut.fileAttributes(at: fileURL)
+		try sut.write(testData, to: fileURL)
+		let originalAttributes = try sut.fileAttributes(at: fileURL)
 
 		// Small delay to ensure date difference
 		try await Task.sleep(for: .milliseconds(10))
 
 		// When
-		try await sut.updateModificationDate(at: fileURL)
+		try sut.updateModificationDate(at: fileURL)
 
 		// Then
-		let updatedAttributes = try await sut.fileAttributes(at: fileURL)
+		let updatedAttributes = try sut.fileAttributes(at: fileURL)
 		#expect(updatedAttributes.modified >= originalAttributes.modified)
 	}
 }

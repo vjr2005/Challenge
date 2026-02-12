@@ -2,50 +2,36 @@ import Foundation
 
 @testable import ChallengeCore
 
-actor FileSystemMock: FileSystemContract {
+final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 	// MARK: - Storage
 
-	var files: [URL: Data] = [:]
-	var fileCreationDates: [URL: Date] = [:]
-	var fileModificationDates: [URL: Date] = [:]
+	nonisolated(unsafe) var files: [URL: Data] = [:]
+	nonisolated(unsafe) var fileCreationDates: [URL: Date] = [:]
+	nonisolated(unsafe) var fileModificationDates: [URL: Date] = [:]
 
 	// MARK: - Error Injection
 
-	private(set) var writeError: (any Error)?
-	private(set) var contentsOfDirectoryError: (any Error)?
-	private(set) var fileAttributesError: (any Error)?
-
-	func setWriteError(_ error: (any Error)?) {
-		writeError = error
-	}
-
-	func setContentsOfDirectoryError(_ error: (any Error)?) {
-		contentsOfDirectoryError = error
-	}
-
-	func setFileAttributesError(_ error: (any Error)?) {
-		fileAttributesError = error
-	}
-
-	func setFileCreationDate(_ date: Date, for url: URL) {
-		fileCreationDates[url] = date
-	}
+	nonisolated(unsafe) var writeError: (any Error)?
+	nonisolated(unsafe) var contentsOfDirectoryError: (any Error)?
+	nonisolated(unsafe) var fileAttributesError: (any Error)?
 
 	// MARK: - Call Tracking
 
-	private(set) var contentsCallCount = 0
-	private(set) var writeCallCount = 0
-	private(set) var removeItemCallCount = 0
-	private(set) var removeItemLastURL: URL?
-	private(set) var createDirectoryCallCount = 0
-	private(set) var contentsOfDirectoryCallCount = 0
-	private(set) var fileAttributesCallCount = 0
-	private(set) var updateModificationDateCallCount = 0
-	private(set) var updateModificationDateLastURL: URL?
+	nonisolated(unsafe) private(set) var contentsCallCount = 0
+	nonisolated(unsafe) private(set) var writeCallCount = 0
+	nonisolated(unsafe) private(set) var removeItemCallCount = 0
+	nonisolated(unsafe) private(set) var removeItemLastURL: URL?
+	nonisolated(unsafe) private(set) var createDirectoryCallCount = 0
+	nonisolated(unsafe) private(set) var contentsOfDirectoryCallCount = 0
+	nonisolated(unsafe) private(set) var fileAttributesCallCount = 0
+	nonisolated(unsafe) private(set) var updateModificationDateCallCount = 0
+	nonisolated(unsafe) private(set) var updateModificationDateLastURL: URL?
+
+	@MainActor init() {}
 
 	// MARK: - FileSystemContract
 
-	func contents(at url: URL) throws -> Data {
+	nonisolated func contents(at url: URL) throws -> Data {
 		contentsCallCount += 1
 		guard let data = files[url] else {
 			throw CocoaError(.fileReadNoSuchFile)
@@ -53,7 +39,7 @@ actor FileSystemMock: FileSystemContract {
 		return data
 	}
 
-	func write(_ data: Data, to url: URL) throws {
+	nonisolated func write(_ data: Data, to url: URL) throws {
 		writeCallCount += 1
 		if let writeError {
 			throw writeError
@@ -64,7 +50,7 @@ actor FileSystemMock: FileSystemContract {
 		fileModificationDates[url] = now
 	}
 
-	func removeItem(at url: URL) throws {
+	nonisolated func removeItem(at url: URL) throws {
 		removeItemCallCount += 1
 		removeItemLastURL = url
 		files[url] = nil
@@ -72,11 +58,11 @@ actor FileSystemMock: FileSystemContract {
 		fileModificationDates[url] = nil
 	}
 
-	func createDirectory(at url: URL) throws {
+	nonisolated func createDirectory(at url: URL) throws {
 		createDirectoryCallCount += 1
 	}
 
-	func contentsOfDirectory(at url: URL) throws -> [URL] {
+	nonisolated func contentsOfDirectory(at url: URL) throws -> [URL] {
 		contentsOfDirectoryCallCount += 1
 		if let contentsOfDirectoryError {
 			throw contentsOfDirectoryError
@@ -84,7 +70,7 @@ actor FileSystemMock: FileSystemContract {
 		return Array(files.keys)
 	}
 
-	func fileAttributes(at url: URL) throws -> FileAttributes {
+	nonisolated func fileAttributes(at url: URL) throws -> FileAttributes {
 		fileAttributesCallCount += 1
 		if let fileAttributesError {
 			throw fileAttributesError
@@ -99,7 +85,7 @@ actor FileSystemMock: FileSystemContract {
 		)
 	}
 
-	func updateModificationDate(at url: URL) throws {
+	nonisolated func updateModificationDate(at url: URL) throws {
 		updateModificationDateCallCount += 1
 		updateModificationDateLastURL = url
 		fileModificationDates[url] = Date()

@@ -195,10 +195,8 @@ struct CachedImageLoaderTests {
 		_ = await sut.image(for: url)
 
 		// Then
-		let writeCount = await fileSystemMock.writeCallCount
-		let isEmpty = await fileSystemMock.files.isEmpty
-		#expect(writeCount == 1)
-		#expect(!isEmpty)
+		#expect(fileSystemMock.writeCallCount == 1)
+		#expect(!fileSystemMock.files.isEmpty)
 	}
 
 	@Test("Returns image from disk when memory cache is empty")
@@ -260,8 +258,7 @@ struct CachedImageLoaderTests {
 
 		// Then
 		#expect(sut.cachedImage(for: url) == nil)
-		let removeCount = await fileSystemMock.removeItemCallCount
-		#expect(removeCount == 1)
+		#expect(fileSystemMock.removeItemCallCount == 1)
 	}
 
 	// MARK: - Clear Cache
@@ -288,8 +285,7 @@ struct CachedImageLoaderTests {
 
 		// Then
 		#expect(sut.cachedImage(for: url) == nil)
-		let isEmpty = await fileSystemMock.files.isEmpty
-		#expect(isEmpty)
+		#expect(fileSystemMock.files.isEmpty)
 	}
 }
 

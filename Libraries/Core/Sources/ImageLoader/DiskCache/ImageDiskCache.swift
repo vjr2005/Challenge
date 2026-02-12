@@ -6,64 +6,60 @@ import UIKit
 actor ImageDiskCache {
 	private let configuration: DiskCacheConfiguration
 	private let fileSystem: FileSystemContract
-	private var isEvicting = false
 
 	init(configuration: DiskCacheConfiguration, fileSystem: FileSystemContract) {
 		self.configuration = configuration
 		self.fileSystem = fileSystem
 	}
 
-	func image(for url: URL) async -> UIImage? {
+	func image(for url: URL) -> UIImage? {
 		let fileURL = fileURL(for: url)
 
-		guard let data = try? await fileSystem.contents(at: fileURL) else {
+		guard let data = try? fileSystem.contents(at: fileURL) else {
 			return nil
 		}
 
-		// If attributes can't be read (e.g., file evicted by a concurrent task between reading
-		// data and reading attributes), return the image from already-read data rather than
-		// discarding it. The data is valid and already in memory.
-		guard let attributes = try? await fileSystem.fileAttributes(at: fileURL) else {
-			try? await fileSystem.removeItem(at: fileURL)
-			return UIImage(data: data)
+		guard let attributes = try? fileSystem.fileAttributes(at: fileURL) else {
+			try? fileSystem.removeItem(at: fileURL)
+			return nil
 		}
 
 		if attributes.created.addingTimeInterval(configuration.timeToLive) < Date() {
-			try? await fileSystem.removeItem(at: fileURL)
+			try? fileSystem.removeItem(at: fileURL)
 			return nil
 		}
 
-		try? await fileSystem.updateModificationDate(at: fileURL) // Mark as recently used for LRU eviction
+		try? fileSystem.updateModificationDate(at: fileURL) // Mark as recently used for LRU eviction
 		return UIImage(data: data)
 	}
 
-	func store(_ data: Data, for url: URL) async {
+	func store(_ data: Data, for url: URL) {
 		guard !data.isEmpty else {
 			return
 		}
 
-		try? await fileSystem.createDirectory(at: configuration.directory)
+		try? fileSystem.createDirectory(at: configuration.directory)
 
 		let fileURL = fileURL(for: url)
 
-		guard (try? await fileSystem.write(data, to: fileURL)) != nil else {
+		guard (try? fileSystem.write(data, to: fileURL)) != nil else {
 			return
 		}
 
-		await enforceMaxSize()
+		enforceMaxSize()
 	}
 
-	func remove(for url: URL) async {
+	func remove(for url: URL) {
 		let fileURL = fileURL(for: url)
-		try? await fileSystem.removeItem(at: fileURL)
+		try? fileSystem.removeItem(at: fileURL)
 	}
 
-	func removeAll() async {
-		guard let files = try? await fileSystem.contentsOfDirectory(at: configuration.directory) else {
+	func removeAll() {
+		guard let files = try? fileSystem.contentsOfDirectory(at: configuration.directory) else {
 			return
 		}
 		for file in files {
-			try? await fileSystem.removeItem(at: file)
+			try? fileSystem.removeItem(at: file)
 		}
 	}
 }
@@ -78,14 +74,8 @@ private extension ImageDiskCache {
 	}
 
 	/// Removes least recently used files until total size is within `maxSize`.
-	/// Uses `isEvicting` flag to prevent concurrent evictions from interleaving,
-	/// which could cause stale snapshots and redundant deletions.
-	func enforceMaxSize() async {
-		guard !isEvicting else { return }
-		isEvicting = true
-		defer { isEvicting = false }
-
-		guard let files = try? await fileSystem.contentsOfDirectory(at: configuration.directory) else {
+	func enforceMaxSize() {
+		guard let files = try? fileSystem.contentsOfDirectory(at: configuration.directory) else {
 			return
 		}
 
@@ -93,8 +83,8 @@ private extension ImageDiskCache {
 		var fileInfos: [(url: URL, size: Int, modified: Date)] = []
 
 		for file in files {
-			guard let attributes = try? await fileSystem.fileAttributes(at: file) else {
-				try? await fileSystem.removeItem(at: file)
+			guard let attributes = try? fileSystem.fileAttributes(at: file) else {
+				try? fileSystem.removeItem(at: file)
 				continue
 			}
 			totalSize += attributes.size
@@ -111,7 +101,7 @@ private extension ImageDiskCache {
 			guard totalSize > configuration.maxSize else {
 				break
 			}
-			try? await fileSystem.removeItem(at: fileInfo.url)
+			try? fileSystem.removeItem(at: fileInfo.url)
 			totalSize -= fileInfo.size
 		}
 	}
