@@ -13,12 +13,20 @@ Core/
 ├── Sources/
 │   ├── AppEnvironment/
 │   │   └── AppEnvironment.swift
+│   ├── Data/
+│   │   ├── CachePolicy.swift
+│   │   └── MapperContract.swift
 │   ├── Feature/
 │   │   └── Feature.swift
 │   ├── ImageLoader/
 │   │   ├── ImageLoaderContract.swift
 │   │   ├── CachedImageLoader.swift
-│   │   └── ImageLoaderEnvironment.swift
+│   │   ├── ImageLoaderEnvironment.swift
+│   │   └── DiskCache/
+│   │       ├── DiskCacheConfiguration.swift
+│   │       ├── FileSystemContract.swift
+│   │       ├── FileSystem.swift
+│   │       └── ImageDiskCache.swift
 │   ├── Navigation/
 │   │   ├── AnyNavigation.swift
 │   │   ├── DeepLinkHandler.swift
@@ -37,7 +45,8 @@ Core/
 │   │       ├── TrackingProviderContract.swift
 │   │       └── ConsoleTrackingProvider.swift
 │   └── Extensions/
-│       └── URL+QueryParameter.swift
+│       ├── URL+QueryParameter.swift
+│       └── View+OnFirstAppear.swift
 ├── Mocks/
 │   ├── Bundle+JSON.swift
 │   ├── ImageLoaderMock.swift
@@ -130,7 +139,25 @@ public protocol ImageLoaderContract {
 
 #### CachedImageLoader
 
-In-memory caching implementation using `NSCache` with configurable limits.
+Two-tier image loader with in-memory caching (`NSCache`), disk caching, and deduplication of in-flight network requests.
+
+Lookup order: memory cache → disk cache → network. On network success, the image is stored in both caches.
+
+#### DiskCache
+
+Disk-based image cache (`ImageDiskCache`) with TTL expiration and LRU eviction:
+
+- **`ImageDiskCache`** — `actor` that manages cached files in the `Caches/ImageCache` directory. Zero suspension points internally: all `FileSystem` calls are synchronous within the actor's isolation, making every method an atomic critical section with no reentrancy risk.
+- **`FileSystemContract`** — `: Sendable` protocol with `nonisolated` methods. This design eliminates actor-to-actor hops that would introduce suspension points.
+- **`FileSystem`** — `struct` wrapping `FileManager` (thread-safe but not `Sendable`).
+- **`DiskCacheConfiguration`** — Configurable `maxSize` (default 100 MB), `timeToLive` (default 7 days), and cache directory.
+
+### Data
+
+Shared abstractions for the data layer:
+
+- **`MapperContract`** — Generic protocol for mapping between DTOs and domain models.
+- **`CachePolicy`** — Enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`.
 
 ### FeatureContract Protocol
 
@@ -195,6 +222,11 @@ A default extension provides an empty `configure()` implementation for providers
 #### ConsoleTrackingProvider
 
 Development provider that logs events to the console using `os_log`.
+
+### Extensions
+
+- **`View+OnFirstAppear`** — `.onFirstAppear` modifier that executes an async action only the first time the view appears (equivalent to UIKit's `viewDidLoad`).
+- **`URL+QueryParameter`** — URL query parameter helpers.
 
 ### App Environment
 
