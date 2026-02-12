@@ -1,17 +1,24 @@
 import UIKit
 
-/// Image loader with in-memory caching and deduplication of in-flight requests.
+/// Image loader with in-memory caching, disk caching, and deduplication of in-flight requests.
 public final class CachedImageLoader: ImageLoaderContract {
 	private let cache: ImageCache
+	private let diskCache: ImageDiskCache
 	private let requestCoordinator: ImageRequestCoordinator
 	private let session: URLSession
 
-	/// Creates a new cached image loader.
-	/// - Parameter session: The URL session to use for network requests.
-	public init(session: URLSession = .shared) {
+	public init(session: URLSession = .shared, diskCacheConfiguration: DiskCacheConfiguration = .default) {
 		self.session = session
 		self.cache = ImageCache()
 		self.requestCoordinator = ImageRequestCoordinator()
+		self.diskCache = ImageDiskCache(configuration: diskCacheConfiguration, fileSystem: FileManager.default)
+	}
+
+	init(session: URLSession, diskCache: ImageDiskCache) {
+		self.session = session
+		self.cache = ImageCache()
+		self.requestCoordinator = ImageRequestCoordinator()
+		self.diskCache = diskCache
 	}
 
 	/// Returns the cached image for the given URL, or `nil` if not cached.
@@ -25,13 +32,32 @@ public final class CachedImageLoader: ImageLoaderContract {
 			return cached
 		}
 
-		let image = await requestCoordinator.loadImage(for: url, session: session)
-
-		if let image {
-			cache.setImage(image, for: url)
+		if let diskImage = await diskCache.image(for: url) {
+			cache.setImage(diskImage, for: url)
+			return diskImage
 		}
 
+		guard let data = await requestCoordinator.loadData(for: url, session: session),
+			  let image = UIImage(data: data) else {
+			return nil
+		}
+
+		cache.setImage(image, for: url)
+		await diskCache.store(data, for: url)
+
 		return image
+	}
+
+	/// Removes the cached image for the given URL from memory and disk.
+	public func removeImage(for url: URL) async {
+		cache.removeImage(for: url)
+		await diskCache.remove(for: url)
+	}
+
+	/// Clears all cached images from memory and disk.
+	public func clearCache() async {
+		cache.removeAll()
+		await diskCache.removeAll()
 	}
 }
 
@@ -45,28 +71,36 @@ private final class ImageCache {
 	func setImage(_ image: UIImage, for url: URL) {
 		storage.setObject(image, forKey: url as NSURL)
 	}
+
+	func removeImage(for url: URL) {
+		storage.removeObject(forKey: url as NSURL)
+	}
+
+	func removeAll() {
+		storage.removeAllObjects()
+	}
 }
 
 private actor ImageRequestCoordinator {
-	private var inFlightRequests: [URL: Task<UIImage?, Never>] = [:]
+	private var inFlightRequests: [URL: Task<Data?, Never>] = [:]
 
-	func loadImage(for url: URL, session: URLSession) async -> UIImage? {
+	func loadData(for url: URL, session: URLSession) async -> Data? {
 		if let existingTask = inFlightRequests[url] {
 			return await existingTask.value
 		}
 
-		let task = Task<UIImage?, Never> {
-			await Self.downloadImage(from: url, session: session)
+		let task = Task<Data?, Never> {
+			await downloadData(from: url, session: session)
 		}
 
 		inFlightRequests[url] = task
-		let image = await task.value
+		let result = await task.value
 		inFlightRequests[url] = nil
 
-		return image
+		return result
 	}
 
-	private static func downloadImage(from url: URL, session: URLSession) async -> UIImage? {
+	nonisolated private func downloadData(from url: URL, session: URLSession) async -> Data? {
 		guard let (data, response) = try? await session.data(from: url) else {
 			return nil
 		}
@@ -74,6 +108,6 @@ private actor ImageRequestCoordinator {
 			  (200...299).contains(httpResponse.statusCode) else {
 			return nil
 		}
-		return UIImage(data: data)
+		return data
 	}
 }
