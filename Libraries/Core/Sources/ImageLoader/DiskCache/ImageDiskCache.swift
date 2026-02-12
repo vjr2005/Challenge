@@ -6,6 +6,7 @@ import UIKit
 actor ImageDiskCache {
 	private let configuration: DiskCacheConfiguration
 	private let fileSystem: FileSystemContract
+	private var isEvicting = false
 
 	init(configuration: DiskCacheConfiguration, fileSystem: FileSystemContract) {
 		self.configuration = configuration
@@ -19,9 +20,12 @@ actor ImageDiskCache {
 			return nil
 		}
 
+		// If attributes can't be read (e.g., file evicted by a concurrent task between reading
+		// data and reading attributes), return the image from already-read data rather than
+		// discarding it. The data is valid and already in memory.
 		guard let attributes = try? await fileSystem.fileAttributes(at: fileURL) else {
 			try? await fileSystem.removeItem(at: fileURL)
-			return nil
+			return UIImage(data: data)
 		}
 
 		if attributes.created.addingTimeInterval(configuration.timeToLive) < Date() {
@@ -74,7 +78,13 @@ private extension ImageDiskCache {
 	}
 
 	/// Removes least recently used files until total size is within `maxSize`.
+	/// Uses `isEvicting` flag to prevent concurrent evictions from interleaving,
+	/// which could cause stale snapshots and redundant deletions.
 	func enforceMaxSize() async {
+		guard !isEvicting else { return }
+		isEvicting = true
+		defer { isEvicting = false }
+
 		guard let files = try? await fileSystem.contentsOfDirectory(at: configuration.directory) else {
 			return
 		}

@@ -320,8 +320,8 @@ struct ImageDiskCacheTests {
 		#expect(fileData == nil)
 	}
 
-	@Test("Removes file and returns nil when attributes cannot be read")
-	func removesFileWhenAttributesCannotBeRead() async throws {
+	@Test("Returns image from already-read data when attributes cannot be read")
+	func returnsImageWhenAttributesCannotBeRead() async throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -335,8 +335,9 @@ struct ImageDiskCacheTests {
 		// When
 		let result = await sut.image(for: testURL)
 
-		// Then
-		#expect(result == nil)
+		// Then — data was already read into memory, so the image is returned
+		// even though attributes failed (e.g., file evicted by concurrent task)
+		#expect(result != nil)
 		let removeCount = await fileSystemMock.removeItemCallCount
 		#expect(removeCount == 1)
 	}

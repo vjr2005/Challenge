@@ -94,10 +94,9 @@ private actor ImageRequestCoordinator {
 		}
 
 		inFlightRequests[url] = task
-		let result = await task.value
-		inFlightRequests[url] = nil
+		defer { inFlightRequests[url] = nil }
 
-		return result
+		return await task.value
 	}
 
 	nonisolated private func downloadData(from url: URL, session: URLSession) async -> Data? {
