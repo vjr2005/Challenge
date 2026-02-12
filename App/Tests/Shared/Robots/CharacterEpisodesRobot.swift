@@ -59,7 +59,6 @@ extension CharacterEpisodesRobot {
 		XCTAssertTrue(errorTitle.waitForExistence(timeout: 5), file: file, line: line)
 		return self
 	}
-
 }
 
 // MARK: - AccessibilityIdentifiers
