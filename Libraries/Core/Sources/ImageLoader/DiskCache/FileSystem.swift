@@ -1,6 +1,12 @@
 import Foundation
 
-extension FileManager: FileSystemContract {
+actor FileSystem: FileSystemContract {
+	private let fileManager: FileManager
+
+	init(fileManager: FileManager = .default) {
+		self.fileManager = fileManager
+	}
+
 	func contents(at url: URL) throws -> Data {
 		try Data(contentsOf: url)
 	}
@@ -10,15 +16,15 @@ extension FileManager: FileSystemContract {
 	}
 
 	func removeItem(at url: URL) throws {
-		try removeItem(atPath: url.path)
+		try fileManager.removeItem(at: url)
 	}
 
 	func createDirectory(at url: URL) throws {
-		try createDirectory(at: url, withIntermediateDirectories: true)
+		try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 	}
 
 	func contentsOfDirectory(at url: URL) throws -> [URL] {
-		try contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey, .creationDateKey])
+		try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey, .creationDateKey])
 	}
 
 	func fileAttributes(at url: URL) throws -> FileAttributes {
@@ -32,6 +38,6 @@ extension FileManager: FileSystemContract {
 	}
 
 	func updateModificationDate(at url: URL) throws {
-		try setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
+		try fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
 	}
 }

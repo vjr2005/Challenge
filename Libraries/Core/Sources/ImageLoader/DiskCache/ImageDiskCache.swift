@@ -3,7 +3,7 @@ import Foundation
 import UIKit
 
 /// Disk-based image cache with TTL expiration and LRU eviction.
-struct ImageDiskCache {
+actor ImageDiskCache {
 	private let configuration: DiskCacheConfiguration
 	private let fileSystem: FileSystemContract
 
@@ -12,54 +12,54 @@ struct ImageDiskCache {
 		self.fileSystem = fileSystem
 	}
 
-	func image(for url: URL) -> UIImage? {
+	func image(for url: URL) async -> UIImage? {
 		let fileURL = fileURL(for: url)
 
-		guard let data = try? fileSystem.contents(at: fileURL) else {
+		guard let data = try? await fileSystem.contents(at: fileURL) else {
 			return nil
 		}
 
-		guard let attributes = try? fileSystem.fileAttributes(at: fileURL) else {
-			try? fileSystem.removeItem(at: fileURL)
+		guard let attributes = try? await fileSystem.fileAttributes(at: fileURL) else {
+			try? await fileSystem.removeItem(at: fileURL)
 			return nil
 		}
 
 		if attributes.created.addingTimeInterval(configuration.timeToLive) < Date() {
-			try? fileSystem.removeItem(at: fileURL)
+			try? await fileSystem.removeItem(at: fileURL)
 			return nil
 		}
 
-		try? fileSystem.updateModificationDate(at: fileURL) // Mark as recently used for LRU eviction
+		try? await fileSystem.updateModificationDate(at: fileURL) // Mark as recently used for LRU eviction
 		return UIImage(data: data)
 	}
 
-	func store(_ data: Data, for url: URL) {
+	func store(_ data: Data, for url: URL) async {
 		guard !data.isEmpty else {
 			return
 		}
 
-		try? fileSystem.createDirectory(at: configuration.directory)
+		try? await fileSystem.createDirectory(at: configuration.directory)
 
 		let fileURL = fileURL(for: url)
 
-		guard (try? fileSystem.write(data, to: fileURL)) != nil else {
+		guard (try? await fileSystem.write(data, to: fileURL)) != nil else {
 			return
 		}
 
-		enforceMaxSize()
+		await enforceMaxSize()
 	}
 
-	func remove(for url: URL) {
+	func remove(for url: URL) async {
 		let fileURL = fileURL(for: url)
-		try? fileSystem.removeItem(at: fileURL)
+		try? await fileSystem.removeItem(at: fileURL)
 	}
 
-	func removeAll() {
-		guard let files = try? fileSystem.contentsOfDirectory(at: configuration.directory) else {
+	func removeAll() async {
+		guard let files = try? await fileSystem.contentsOfDirectory(at: configuration.directory) else {
 			return
 		}
 		for file in files {
-			try? fileSystem.removeItem(at: file)
+			try? await fileSystem.removeItem(at: file)
 		}
 	}
 }
@@ -74,8 +74,8 @@ private extension ImageDiskCache {
 	}
 
 	/// Removes least recently used files until total size is within `maxSize`.
-	func enforceMaxSize() {
-		guard let files = try? fileSystem.contentsOfDirectory(at: configuration.directory) else {
+	func enforceMaxSize() async {
+		guard let files = try? await fileSystem.contentsOfDirectory(at: configuration.directory) else {
 			return
 		}
 
@@ -83,8 +83,8 @@ private extension ImageDiskCache {
 		var fileInfos: [(url: URL, size: Int, modified: Date)] = []
 
 		for file in files {
-			guard let attributes = try? fileSystem.fileAttributes(at: file) else {
-				try? fileSystem.removeItem(at: file)
+			guard let attributes = try? await fileSystem.fileAttributes(at: file) else {
+				try? await fileSystem.removeItem(at: file)
 				continue
 			}
 			totalSize += attributes.size
@@ -101,7 +101,7 @@ private extension ImageDiskCache {
 			guard totalSize > configuration.maxSize else {
 				break
 			}
-			try? fileSystem.removeItem(at: fileInfo.url)
+			try? await fileSystem.removeItem(at: fileInfo.url)
 			totalSize -= fileInfo.size
 		}
 	}

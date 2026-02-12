@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeCore
 
-final class FileSystemMock: FileSystemContract {
+actor FileSystemMock: FileSystemContract {
 	// MARK: - Storage
 
 	var files: [URL: Data] = [:]
@@ -11,9 +11,25 @@ final class FileSystemMock: FileSystemContract {
 
 	// MARK: - Error Injection
 
-	var writeError: (any Error)?
-	var contentsOfDirectoryError: (any Error)?
-	var fileAttributesError: (any Error)?
+	private(set) var writeError: (any Error)?
+	private(set) var contentsOfDirectoryError: (any Error)?
+	private(set) var fileAttributesError: (any Error)?
+
+	func setWriteError(_ error: (any Error)?) {
+		writeError = error
+	}
+
+	func setContentsOfDirectoryError(_ error: (any Error)?) {
+		contentsOfDirectoryError = error
+	}
+
+	func setFileAttributesError(_ error: (any Error)?) {
+		fileAttributesError = error
+	}
+
+	func setFileCreationDate(_ date: Date, for url: URL) {
+		fileCreationDates[url] = date
+	}
 
 	// MARK: - Call Tracking
 

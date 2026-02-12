@@ -6,7 +6,7 @@ struct FileAttributes {
 	let created: Date
 }
 
-protocol FileSystemContract {
+protocol FileSystemContract: Actor {
 	func contents(at url: URL) throws -> Data
 	func write(_ data: Data, to url: URL) throws
 	func removeItem(at url: URL) throws
