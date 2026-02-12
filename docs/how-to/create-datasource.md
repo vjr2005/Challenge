@@ -12,12 +12,12 @@ Create DataSources for data access: REST APIs, GraphQL APIs, in-memory caching, 
 
 ## DataSource Types
 
-| Type | Transport | Implementation | Error Mapper |
-|------|-----------|----------------|-------------|
-| REST | HTTP | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
-| GraphQL | HTTP/GraphQL | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
-| Memory | In-memory | `actor` with dictionary storage | -- |
-| UserDefaults | Local | `struct` with `nonisolated(unsafe) let` | -- |
+| Type | Transport | Contract | Implementation | Error Mapper |
+|------|-----------|----------|----------------|-------------|
+| REST | HTTP | `: Sendable` | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
+| GraphQL | HTTP/GraphQL | `: Sendable` | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
+| Memory | In-memory | `: Actor` | `actor` with dictionary storage | -- |
+| UserDefaults | Local | `: Actor` | `actor` with `UserDefaults` | -- |
 
 ## File Structure
 
@@ -32,7 +32,7 @@ Features/{Feature}/
 |       |   +-- Local/
 |       |       +-- {Name}LocalDataSourceContract.swift
 |       |       +-- {Name}MemoryDataSource.swift
-|       |       +-- {Name}LocalDataSource.swift    # Optional: UserDefaults
+|       |       +-- {Name}UserDefaultsDataSource.swift    # Optional: UserDefaults
 |       +-- DTOs/
 |           +-- {Name}DTO.swift
 +-- Tests/
@@ -612,27 +612,27 @@ Create `Sources/Data/DataSources/Local/{Name}LocalDataSourceContract.swift`:
 Single item caching:
 
 ```swift
-protocol {Name}LocalDataSourceContract: Sendable {
-	func get{Name}(identifier: Int) async -> {Name}DTO?
-	func save{Name}(_ item: {Name}DTO) async
+protocol {Name}LocalDataSourceContract: Actor {
+	func get{Name}(identifier: Int) -> {Name}DTO?
+	func save{Name}(_ item: {Name}DTO)
 }
 ```
 
 With paginated results:
 
 ```swift
-protocol {Name}LocalDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Actor {
 	// MARK: - Single Item
-	func get{Name}(identifier: Int) async -> {Name}DTO?
-	func save{Name}(_ item: {Name}DTO) async
+	func get{Name}(identifier: Int) -> {Name}DTO?
+	func save{Name}(_ item: {Name}DTO)
 
 	// MARK: - Paginated Results
-	func getPage(_ page: Int) async -> {Name}sResponseDTO?
-	func savePage(_ response: {Name}sResponseDTO, page: Int) async
+	func getPage(_ page: Int) -> {Name}sResponseDTO?
+	func savePage(_ response: {Name}sResponseDTO, page: Int)
 }
 ```
 
-Rules: `async` (no `throws`), return optionals for get, `identifier` parameter name.
+Rules: `: Actor`, return optionals for get, `identifier` parameter name. Methods are actor-isolated (implicitly `async` from caller).
 
 ### 2. Create MemoryDataSource Implementation
 
@@ -676,11 +676,19 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked Sendable {
+actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 	// MARK: - Configurable Returns
 
-	var itemToReturn: {Name}DTO?
-	var pageToReturn: {Name}sResponseDTO?
+	private(set) var itemToReturn: {Name}DTO?
+	private(set) var pageToReturn: {Name}sResponseDTO?
+
+	func setItemToReturn(_ item: {Name}DTO?) {
+		itemToReturn = item
+	}
+
+	func setPageToReturn(_ page: {Name}sResponseDTO?) {
+		pageToReturn = page
+	}
 
 	// MARK: - Call Tracking
 
@@ -717,7 +725,7 @@ final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked
 }
 ```
 
-Mock methods omit `async` -- Swift allows satisfying `async` protocol requirements with non-async functions.
+Actor mock: `private(set)` on configurable returns with setter methods. Tests use `await` for all property reads and setter calls.
 
 ### 4. Create Tests
 
@@ -818,24 +826,24 @@ private extension {Name}MemoryDataSourceTests {
 Create `Sources/Data/DataSources/Local/{Name}LocalDataSourceContract.swift`:
 
 ```swift
-protocol {Name}LocalDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Actor {
 	func getItems() -> [String]
 	func saveItem(_ item: String)
 	func deleteItem(_ item: String)
 }
 ```
 
-Rules: `Sendable`, **synchronous** (no `async`). Adapt return types and parameters to the specific data being stored.
+Rules: `: Actor`. Methods are actor-isolated (implicitly `async` from caller). Adapt return types and parameters to the specific data being stored.
 
-### 2. Create LocalDataSource Implementation
+### 2. Create UserDefaultsDataSource Implementation
 
-Create `Sources/Data/DataSources/Local/{Name}LocalDataSource.swift`:
+Create `Sources/Data/DataSources/Local/{Name}UserDefaultsDataSource.swift`:
 
 ```swift
 import Foundation
 
-struct {Name}LocalDataSource: {Name}LocalDataSourceContract {
-	private nonisolated(unsafe) let userDefaults: UserDefaults
+actor {Name}UserDefaultsDataSource: {Name}LocalDataSourceContract {
+	private let userDefaults: UserDefaults
 	private let key = "{storageKey}"
 
 	init(userDefaults: UserDefaults = .standard) {
@@ -866,7 +874,7 @@ struct {Name}LocalDataSource: {Name}LocalDataSourceContract {
 }
 ```
 
-> **Note:** `nonisolated(unsafe) let` is required because `UserDefaults` is not `Sendable` but is thread-safe. We delegate concurrency to it instead of using an actor. Adapt business rules (deduplication, ordering, limits) to the specific use case.
+> **Note:** `private let userDefaults` -- no `nonisolated(unsafe)` needed inside the actor. Actor isolation is sufficient. `UserDefaults` is thread-safe so it doesn't need additional protection. Adapt business rules (deduplication, ordering, limits) to the specific use case.
 
 ### 3. Create Mock
 
@@ -877,13 +885,24 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked Sendable {
-	var items: [String] = []
+actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
+	// MARK: - Configurable Returns
+
+	private(set) var items: [String] = []
+
+	func setItems(_ items: [String]) {
+		self.items = items
+	}
+
+	// MARK: - Call Tracking
+
 	private(set) var getItemsCallCount = 0
 	private(set) var saveItemCallCount = 0
 	private(set) var lastSavedItem: String?
 	private(set) var deleteItemCallCount = 0
 	private(set) var lastDeletedItem: String?
+
+	// MARK: - {Name}LocalDataSourceContract
 
 	func getItems() -> [String] {
 		getItemsCallCount += 1
@@ -904,7 +923,7 @@ final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked
 
 ### 4. Create Tests
 
-Create `Tests/Unit/Data/{Name}LocalDataSourceTests.swift`:
+Create `Tests/Unit/Data/{Name}UserDefaultsDataSourceTests.swift`:
 
 ```swift
 import Foundation
@@ -912,105 +931,113 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {Name}LocalDataSourceTests {
+struct {Name}UserDefaultsDataSourceTests {
 	// MARK: - Properties
 
-	private let sut: {Name}LocalDataSource
+	private let sut: {Name}UserDefaultsDataSource
+	private nonisolated(unsafe) let userDefaults: UserDefaults
 
 	// MARK: - Init
 
 	init() {
 		let suite = UserDefaults(suiteName: "\(type(of: self))")!
 		suite.removePersistentDomain(forName: "\(type(of: self))")
-		sut = {Name}LocalDataSource(userDefaults: suite)
+		self.userDefaults = suite
+		sut = {Name}UserDefaultsDataSource(userDefaults: suite)
 	}
 
 	// MARK: - Get
 
 	@Test("Returns empty array initially")
-	func returnsEmptyArrayInitially() {
-		#expect(sut.getItems().isEmpty)
+	func returnsEmptyArrayInitially() async {
+		let result = await sut.getItems()
+		#expect(result.isEmpty)
 	}
 
 	// MARK: - Save
 
 	@Test("Saves and retrieves item")
-	func savesAndRetrievesItem() {
+	func savesAndRetrievesItem() async {
 		// When
-		sut.saveItem("test")
+		await sut.saveItem("test")
 
 		// Then
-		#expect(sut.getItems() == ["test"])
+		let result = await sut.getItems()
+		#expect(result == ["test"])
 	}
 
 	@Test("Most recent item is first")
-	func mostRecentItemIsFirst() {
+	func mostRecentItemIsFirst() async {
 		// Given
-		sut.saveItem("first")
+		await sut.saveItem("first")
 
 		// When
-		sut.saveItem("second")
+		await sut.saveItem("second")
 
 		// Then
-		#expect(sut.getItems() == ["second", "first"])
+		let result = await sut.getItems()
+		#expect(result == ["second", "first"])
 	}
 
 	@Test("Deduplicates case-insensitively")
-	func deduplicatesCaseInsensitively() {
+	func deduplicatesCaseInsensitively() async {
 		// Given
-		sut.saveItem("Test")
+		await sut.saveItem("Test")
 
 		// When
-		sut.saveItem("test")
+		await sut.saveItem("test")
 
 		// Then
-		#expect(sut.getItems() == ["test"])
+		let result = await sut.getItems()
+		#expect(result == ["test"])
 	}
 
 	@Test("Enforces maximum limit")
-	func enforcesMaximumLimit() {
+	func enforcesMaximumLimit() async {
 		// Given
 		for i in 1...6 {
-			sut.saveItem("item\(i)")
+			await sut.saveItem("item\(i)")
 		}
 
 		// Then
-		#expect(sut.getItems().count == 5)
-		#expect(sut.getItems().first == "item6")
+		let result = await sut.getItems()
+		#expect(result.count == 5)
+		#expect(result.first == "item6")
 	}
 
 	// MARK: - Delete
 
 	@Test("Deletes item case-insensitively")
-	func deletesItemCaseInsensitively() {
+	func deletesItemCaseInsensitively() async {
 		// Given
-		sut.saveItem("Test")
+		await sut.saveItem("Test")
 
 		// When
-		sut.deleteItem("test")
+		await sut.deleteItem("test")
 
 		// Then
-		#expect(sut.getItems().isEmpty)
+		let result = await sut.getItems()
+		#expect(result.isEmpty)
 	}
 
 	// MARK: - Persistence
 
 	@Test("Persists across instances")
-	func persistsAcrossInstances() {
+	func persistsAcrossInstances() async {
 		// Given
-		let suite = UserDefaults(suiteName: "persistence_test")!
-		suite.removePersistentDomain(forName: "persistence_test")
-		let first = {Name}LocalDataSource(userDefaults: suite)
-		first.saveItem("persisted")
+		await sut.saveItem("persisted")
 
 		// When
-		let second = {Name}LocalDataSource(userDefaults: suite)
+		let otherInstance = {Name}UserDefaultsDataSource(userDefaults: userDefaults)
+		let result = await otherInstance.getItems()
 
 		// Then
-		#expect(second.getItems() == ["persisted"])
+		#expect(result == ["persisted"])
 	}
 }
 ```
+
+**Key:** `nonisolated(unsafe)` on the test's `userDefaults` property -- needed because `UserDefaults` is not `Sendable` and crosses isolation boundaries when passed to the actor init. The `nonisolated(unsafe)` belongs at the **call site** (sender), not inside the actor.
 
 Each test uses a dedicated `UserDefaults` suite to avoid cross-test contamination. The `init` clears the suite before each test.
 
@@ -1018,7 +1045,7 @@ Each test uses a dedicated `UserDefaults` suite to avoid cross-test contaminatio
 
 ## Key Principles
 
-- **Contracts** are transport-agnostic, `Sendable`, in separate files
+- **Contracts** are transport-agnostic, in separate files. Remote: `: Sendable`. Local (Memory, UserDefaults): `: Actor`
 - **DTOs** are anemic: `Decodable`, `Equatable`, no behavior, no `toDomain()`
 - **Error mapping**: DataSources catch transport errors and map to `APIError`. REST uses `HTTPErrorMapper`, GraphQL uses `GraphQLErrorMapper`
 - **Repositories and upper layers only see `APIError`**, never transport-specific errors
@@ -1042,16 +1069,16 @@ Each test uses a dedicated `UserDefaults` suite to avoid cross-test contaminatio
 - [ ] Create tests
 
 ### MemoryDataSource
-- [ ] Create Contract in `Local/` with `async` methods
+- [ ] Create Contract in `Local/` with `: Actor`
 - [ ] Create `actor` Implementation in `Local/`
-- [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
-- [ ] Create tests
+- [ ] Create `actor` Mock with setter methods and call tracking
+- [ ] Create tests (use `await` for all mock reads/writes)
 
 ### LocalDataSource (UserDefaults)
-- [ ] Create Contract in `Local/` with synchronous methods and `Sendable`
-- [ ] Create `struct` Implementation in `Local/` with `nonisolated(unsafe) let userDefaults`
-- [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
-- [ ] Create tests using custom `UserDefaults` suite
+- [ ] Create Contract in `Local/` with `: Actor`
+- [ ] Create `actor` Implementation in `Local/` with `private let userDefaults`
+- [ ] Create `actor` Mock with setter methods and call tracking
+- [ ] Create `async` tests using custom `UserDefaults` suite (`nonisolated(unsafe)` on test property)
 
 ## Next steps
 
