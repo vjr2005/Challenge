@@ -4,19 +4,19 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
-struct RecentSearchesLocalDataSourceTests {
+struct RecentSearchesUserDefaultsDataSourceTests {
 	// MARK: - Properties
 
-	private let sut: RecentSearchesLocalDataSource
+	private let sut: RecentSearchesUserDefaultsDataSource
 	private let userDefaults: UserDefaults
 
 	// MARK: - Initialization
 
 	init() {
-		let suiteName = "RecentSearchesLocalDataSourceTests.\(UUID().uuidString)"
+		let suiteName = "RecentSearchesUserDefaultsDataSourceTests.\(UUID().uuidString)"
 		let userDefaults = UserDefaults(suiteName: suiteName)
 		self.userDefaults = userDefaults ?? .standard
-		sut = RecentSearchesLocalDataSource(userDefaults: self.userDefaults)
+		sut = RecentSearchesUserDefaultsDataSource(userDefaults: self.userDefaults)
 	}
 
 	// MARK: - getRecentSearches
@@ -101,7 +101,7 @@ struct RecentSearchesLocalDataSourceTests {
 		sut.saveSearch("Rick")
 
 		// When
-		let otherInstance = RecentSearchesLocalDataSource(userDefaults: userDefaults)
+		let otherInstance = RecentSearchesUserDefaultsDataSource(userDefaults: userDefaults)
 		let result = otherInstance.getRecentSearches()
 
 		// Then

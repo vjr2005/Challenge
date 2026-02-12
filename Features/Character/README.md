@@ -54,7 +54,7 @@ Character/
 │   │   │       ├── CharacterLocalDataSourceContract.swift
 │   │   │       ├── CharacterMemoryDataSource.swift
 │   │   │       ├── RecentSearchesLocalDataSourceContract.swift
-│   │   │       └── RecentSearchesLocalDataSource.swift
+│   │   │       └── RecentSearchesUserDefaultsDataSource.swift
 │   │   └── DTOs/
 │   │       ├── CharacterDTO.swift
 │   │       ├── CharactersResponseDTO.swift

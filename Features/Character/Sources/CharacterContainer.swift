@@ -26,7 +26,7 @@ public final class CharacterContainer {
         self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
         let memoryDataSource = CharacterMemoryDataSource()
-        let recentSearchesDataSource = RecentSearchesLocalDataSource()
+        let recentSearchesDataSource = RecentSearchesUserDefaultsDataSource()
         self.characterRepository = CharacterRepository(
             remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource

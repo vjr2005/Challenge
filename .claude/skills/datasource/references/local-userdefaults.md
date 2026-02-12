@@ -16,12 +16,12 @@ protocol {Name}LocalDataSourceContract: Sendable {
 
 Rules: `Sendable`, **synchronous** (no `async`). Adapt return types and parameters to the specific data being stored.
 
-### {Name}LocalDataSource.swift — `Sources/Data/DataSources/Local/`
+### {Name}UserDefaultsDataSource.swift — `Sources/Data/DataSources/Local/`
 
 ```swift
 import Foundation
 
-struct {Name}LocalDataSource: {Name}LocalDataSourceContract {
+struct {Name}UserDefaultsDataSource: {Name}LocalDataSourceContract {
 	private nonisolated(unsafe) let userDefaults: UserDefaults
 	private let key = "{storageKey}"
 
@@ -87,7 +87,7 @@ final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked
 }
 ```
 
-### {Name}LocalDataSourceTests.swift — `Tests/Unit/Data/`
+### {Name}UserDefaultsDataSourceTests.swift — `Tests/Unit/Data/`
 
 ```swift
 import Foundation
@@ -95,17 +95,17 @@ import Testing
 
 @testable import Challenge{Feature}
 
-struct {Name}LocalDataSourceTests {
+struct {Name}UserDefaultsDataSourceTests {
 	// MARK: - Properties
 
-	private let sut: {Name}LocalDataSource
+	private let sut: {Name}UserDefaultsDataSource
 
 	// MARK: - Init
 
 	init() {
 		let suite = UserDefaults(suiteName: "\(type(of: self))")!
 		suite.removePersistentDomain(forName: "\(type(of: self))")
-		sut = {Name}LocalDataSource(userDefaults: suite)
+		sut = {Name}UserDefaultsDataSource(userDefaults: suite)
 	}
 
 	// MARK: - Get
@@ -183,11 +183,11 @@ struct {Name}LocalDataSourceTests {
 		// Given
 		let suite = UserDefaults(suiteName: "persistence_test")!
 		suite.removePersistentDomain(forName: "persistence_test")
-		let first = {Name}LocalDataSource(userDefaults: suite)
+		let first = {Name}UserDefaultsDataSource(userDefaults: suite)
 		first.saveItem("persisted")
 
 		// When
-		let second = {Name}LocalDataSource(userDefaults: suite)
+		let second = {Name}UserDefaultsDataSource(userDefaults: suite)
 
 		// Then
 		#expect(second.getItems() == ["persisted"])

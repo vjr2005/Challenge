@@ -1,6 +1,6 @@
 import Foundation
 
-struct RecentSearchesLocalDataSource: RecentSearchesLocalDataSourceContract {
+struct RecentSearchesUserDefaultsDataSource: RecentSearchesLocalDataSourceContract {
 	private nonisolated(unsafe) let userDefaults: UserDefaults
 	private let key = "recentSearches"
 	private let maxCount = 5

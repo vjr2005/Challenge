@@ -130,7 +130,7 @@ public final class CharacterContainer {
         self.tracker = tracker
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
         let memoryDataSource = CharacterMemoryDataSource()
-        let recentSearchesDataSource = RecentSearchesLocalDataSource()
+        let recentSearchesDataSource = RecentSearchesUserDefaultsDataSource()
         self.characterRepository = CharacterRepository(
             remoteDataSource: remoteDataSource,
             memoryDataSource: memoryDataSource
@@ -186,7 +186,7 @@ AppContainer
                     │
                     ├── CharacterRESTDataSource ← HTTPClient
                     ├── CharacterMemoryDataSource
-                    ├── RecentSearchesLocalDataSource
+                    ├── RecentSearchesUserDefaultsDataSource
                     │
                     ├── CharacterRepository ← Remote + Memory DataSources
                     ├── CharactersPageRepository ← Remote + Memory DataSources

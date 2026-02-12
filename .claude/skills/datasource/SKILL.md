@@ -49,7 +49,7 @@ Features/{Feature}/
 │       │   └── Local/
 │       │       ├── {Name}LocalDataSourceContract.swift
 │       │       ├── {Name}MemoryDataSource.swift
-│       │       └── {Name}LocalDataSource.swift    # Optional: UserDefaults
+│       │       └── {Name}UserDefaultsDataSource.swift    # Optional: UserDefaults
 │       └── DTOs/
 │           └── {Name}DTO.swift
 └── Tests/
