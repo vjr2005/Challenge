@@ -30,6 +30,8 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **Documentation coherence is mandatory.** After any logic or structural change, review all project documentation to detect inconsistencies and update it if needed. Documentation includes all `.md` files in the project (feature READMEs, module READMEs), this `CLAUDE.md` file, and all skills (`.claude/skills/`). If any inconsistency is found, ask the user whether to proceed with the documentation update before making changes.
 >
+> **All generated code must be as resilient as possible.** Anticipate and handle edge cases, invalid states, and unexpected inputs gracefully. Prefer safe defaults, defensive coding, and fail-safe behavior. Avoid assumptions about external data integrity — validate at system boundaries and degrade gracefully when conditions are not met.
+>
 > **All code must follow SOLID principles:**
 > - **S**ingle Responsibility: Each class/struct should have only one reason to change
 > - **O**pen/Closed: Open for extension, closed for modification
