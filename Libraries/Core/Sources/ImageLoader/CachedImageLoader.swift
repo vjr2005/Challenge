@@ -32,7 +32,7 @@ public final class CachedImageLoader: ImageLoaderContract {
 			return cached
 		}
 
-		if let diskImage = await diskCache.image(for: url) {
+		if let diskImage = diskCache.image(for: url) {
 			cache.setImage(diskImage, for: url)
 			return diskImage
 		}
@@ -43,7 +43,7 @@ public final class CachedImageLoader: ImageLoaderContract {
 		}
 
 		cache.setImage(image, for: url)
-		await diskCache.store(data, for: url)
+		diskCache.store(data, for: url)
 
 		return image
 	}
@@ -51,13 +51,13 @@ public final class CachedImageLoader: ImageLoaderContract {
 	/// Removes the cached image for the given URL from memory and disk.
 	public func removeCachedImage(for url: URL) async {
 		cache.removeCachedImage(for: url)
-		await diskCache.remove(for: url)
+		diskCache.remove(for: url)
 	}
 
 	/// Clears all cached images from memory and disk.
 	public func clearCache() async {
 		cache.removeAll()
-		await diskCache.removeAll()
+		diskCache.removeAll()
 	}
 }
 

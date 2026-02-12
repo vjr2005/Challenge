@@ -2,36 +2,34 @@ import Foundation
 
 @testable import ChallengeCore
 
-final class FileSystemMock: FileSystemContract, @unchecked Sendable {
+final class FileSystemMock: FileSystemContract {
 	// MARK: - Storage
 
-	nonisolated(unsafe) var files: [URL: Data] = [:]
-	nonisolated(unsafe) var fileCreationDates: [URL: Date] = [:]
-	nonisolated(unsafe) var fileModificationDates: [URL: Date] = [:]
+	var files: [URL: Data] = [:]
+	var fileCreationDates: [URL: Date] = [:]
+	var fileModificationDates: [URL: Date] = [:]
 
 	// MARK: - Error Injection
 
-	nonisolated(unsafe) var writeError: (any Error)?
-	nonisolated(unsafe) var contentsOfDirectoryError: (any Error)?
-	nonisolated(unsafe) var fileAttributesError: (any Error)?
+	var writeError: (any Error)?
+	var contentsOfDirectoryError: (any Error)?
+	var fileAttributesError: (any Error)?
 
 	// MARK: - Call Tracking
 
-	nonisolated(unsafe) private(set) var contentsCallCount = 0
-	nonisolated(unsafe) private(set) var writeCallCount = 0
-	nonisolated(unsafe) private(set) var removeItemCallCount = 0
-	nonisolated(unsafe) private(set) var removeItemLastURL: URL?
-	nonisolated(unsafe) private(set) var createDirectoryCallCount = 0
-	nonisolated(unsafe) private(set) var contentsOfDirectoryCallCount = 0
-	nonisolated(unsafe) private(set) var fileAttributesCallCount = 0
-	nonisolated(unsafe) private(set) var updateModificationDateCallCount = 0
-	nonisolated(unsafe) private(set) var updateModificationDateLastURL: URL?
-
-	@MainActor init() {}
+	private(set) var contentsCallCount = 0
+	private(set) var writeCallCount = 0
+	private(set) var removeItemCallCount = 0
+	private(set) var removeItemLastURL: URL?
+	private(set) var createDirectoryCallCount = 0
+	private(set) var contentsOfDirectoryCallCount = 0
+	private(set) var fileAttributesCallCount = 0
+	private(set) var updateModificationDateCallCount = 0
+	private(set) var updateModificationDateLastURL: URL?
 
 	// MARK: - FileSystemContract
 
-	nonisolated func contents(at url: URL) throws -> Data {
+	func contents(at url: URL) throws -> Data {
 		contentsCallCount += 1
 		guard let data = files[url] else {
 			throw CocoaError(.fileReadNoSuchFile)
@@ -39,7 +37,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 		return data
 	}
 
-	nonisolated func write(_ data: Data, to url: URL) throws {
+	func write(_ data: Data, to url: URL) throws {
 		writeCallCount += 1
 		if let writeError {
 			throw writeError
@@ -50,7 +48,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 		fileModificationDates[url] = now
 	}
 
-	nonisolated func removeItem(at url: URL) throws {
+	func removeItem(at url: URL) throws {
 		removeItemCallCount += 1
 		removeItemLastURL = url
 		files[url] = nil
@@ -58,11 +56,11 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 		fileModificationDates[url] = nil
 	}
 
-	nonisolated func createDirectory(at url: URL) throws {
+	func createDirectory(at url: URL) throws {
 		createDirectoryCallCount += 1
 	}
 
-	nonisolated func contentsOfDirectory(at url: URL) throws -> [URL] {
+	func contentsOfDirectory(at url: URL) throws -> [URL] {
 		contentsOfDirectoryCallCount += 1
 		if let contentsOfDirectoryError {
 			throw contentsOfDirectoryError
@@ -70,7 +68,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 		return Array(files.keys)
 	}
 
-	nonisolated func fileAttributes(at url: URL) throws -> FileAttributes {
+	func fileAttributes(at url: URL) throws -> FileAttributes {
 		fileAttributesCallCount += 1
 		if let fileAttributesError {
 			throw fileAttributesError
@@ -85,7 +83,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 		)
 	}
 
-	nonisolated func updateModificationDate(at url: URL) throws {
+	func updateModificationDate(at url: URL) throws {
 		updateModificationDateCallCount += 1
 		updateModificationDateLastURL = url
 		fileModificationDates[url] = Date()

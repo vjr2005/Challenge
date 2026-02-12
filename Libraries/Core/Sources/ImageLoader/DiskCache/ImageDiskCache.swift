@@ -3,10 +3,9 @@ import Foundation
 import UIKit
 
 /// Disk-based image cache with TTL expiration and LRU eviction.
-actor ImageDiskCache {
+struct ImageDiskCache {
 	private let configuration: DiskCacheConfiguration
 	private let fileSystem: FileSystemContract
-	private var directoryCreated = false
 
 	init(configuration: DiskCacheConfiguration, fileSystem: FileSystemContract) {
 		self.configuration = configuration
@@ -39,7 +38,7 @@ actor ImageDiskCache {
 			return
 		}
 
-		createDirectoryIfNeeded()
+		try? fileSystem.createDirectory(at: configuration.directory)
 
 		let fileURL = fileURL(for: url)
 
@@ -72,14 +71,6 @@ private extension ImageDiskCache {
 		let hash = SHA256.hash(data: Data(url.absoluteString.utf8))
 		let fileName = hash.compactMap { String(format: "%02x", $0) }.joined()
 		return configuration.directory.appendingPathComponent(fileName)
-	}
-
-	func createDirectoryIfNeeded() {
-		guard !directoryCreated else {
-			return
-		}
-		try? fileSystem.createDirectory(at: configuration.directory)
-		directoryCreated = true
 	}
 
 	/// Removes least recently used files until total size is within `maxSize`.

@@ -15,7 +15,7 @@ struct ImageDiskCacheTests {
 	// MARK: - Retrieval
 
 	@Test("Returns nil when URL is not in cache")
-	func imageReturnsNilWhenNotCached() async {
+	func imageReturnsNilWhenNotCached() {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -24,14 +24,14 @@ struct ImageDiskCacheTests {
 		)
 
 		// When
-		let result = await sut.image(for: testURL)
+		let result = sut.image(for: testURL)
 
 		// Then
 		#expect(result == nil)
 	}
 
 	@Test("Returns image after storing data")
-	func imageReturnsImageAfterStore() async throws {
+	func imageReturnsImageAfterStore() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -41,8 +41,8 @@ struct ImageDiskCacheTests {
 		let imageData = try #require(testImageData)
 
 		// When
-		await sut.store(imageData, for: testURL)
-		let result = await sut.image(for: testURL)
+		sut.store(imageData, for: testURL)
+		let result = sut.image(for: testURL)
 
 		// Then
 		#expect(result != nil)
@@ -50,8 +50,8 @@ struct ImageDiskCacheTests {
 
 	// MARK: - Directory Creation
 
-	@Test("Creates directory on first store only")
-	func createsDirectoryOnFirstStoreOnly() async throws {
+	@Test("Creates directory when storing data")
+	func createsDirectoryWhenStoring() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -59,11 +59,9 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		let secondURL = URL(string: "https://example.com/image2.png")!  // swiftlint:disable:this force_unwrapping
 
 		// When
-		await sut.store(imageData, for: testURL)
-		await sut.store(imageData, for: secondURL)
+		sut.store(imageData, for: testURL)
 
 		// Then
 		#expect(fileSystemMock.createDirectoryCallCount == 1)
@@ -72,7 +70,7 @@ struct ImageDiskCacheTests {
 	// MARK: - SHA256 Hashing
 
 	@Test("Uses SHA256 hash for file name")
-	func usesSHA256ForFileName() async throws {
+	func usesSHA256ForFileName() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -82,7 +80,7 @@ struct ImageDiskCacheTests {
 		let imageData = try #require(testImageData)
 
 		// When
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 
 		// Then
 		let storedURLs = Array(fileSystemMock.files.keys)
@@ -95,7 +93,7 @@ struct ImageDiskCacheTests {
 	// MARK: - Modification Date Update
 
 	@Test("Updates modification date on read for LRU eviction")
-	func updatesModificationDateOnRead() async throws {
+	func updatesModificationDateOnRead() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -103,10 +101,10 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 
 		// When
-		_ = await sut.image(for: testURL)
+		_ = sut.image(for: testURL)
 
 		// Then
 		#expect(fileSystemMock.updateModificationDateCallCount == 1)
@@ -115,7 +113,7 @@ struct ImageDiskCacheTests {
 	// MARK: - Eviction
 
 	@Test("Evicts oldest files when exceeding max size")
-	func evictsOldestFilesWhenExceedingMaxSize() async throws {
+	func evictsOldestFilesWhenExceedingMaxSize() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let imageData = try #require(testImageData)
@@ -129,9 +127,9 @@ struct ImageDiskCacheTests {
 		let url3 = URL(string: "https://example.com/3.png")!  // swiftlint:disable:this force_unwrapping
 
 		// When
-		await sut.store(imageData, for: url1)
-		await sut.store(imageData, for: url2)
-		await sut.store(imageData, for: url3)
+		sut.store(imageData, for: url1)
+		sut.store(imageData, for: url2)
+		sut.store(imageData, for: url3)
 
 		// Then
 		#expect(fileSystemMock.files.count <= 2)
@@ -139,7 +137,7 @@ struct ImageDiskCacheTests {
 	}
 
 	@Test("Skips eviction when directory listing fails")
-	func skipsEvictionWhenDirectoryListingFails() async throws {
+	func skipsEvictionWhenDirectoryListingFails() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let imageData = try #require(testImageData)
@@ -147,12 +145,12 @@ struct ImageDiskCacheTests {
 			configuration: makeConfiguration(maxSize: imageData.count),
 			fileSystem: fileSystemMock
 		)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 		fileSystemMock.contentsOfDirectoryError = CocoaError(.fileReadNoSuchFile)
 
 		// When
 		let secondURL = try #require(URL(string: "https://example.com/2.png"))
-		await sut.store(imageData, for: secondURL)
+		sut.store(imageData, for: secondURL)
 
 		// Then — file was written but eviction was skipped
 		#expect(fileSystemMock.writeCallCount == 2)
@@ -160,7 +158,7 @@ struct ImageDiskCacheTests {
 	}
 
 	@Test("Does not evict when under max size")
-	func doesNotEvictWhenUnderMaxSize() async throws {
+	func doesNotEvictWhenUnderMaxSize() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let imageData = try #require(testImageData)
@@ -170,7 +168,7 @@ struct ImageDiskCacheTests {
 		)
 
 		// When
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 
 		// Then
 		#expect(fileSystemMock.removeItemCallCount == 0)
@@ -179,7 +177,7 @@ struct ImageDiskCacheTests {
 	// MARK: - Remove
 
 	@Test("Removes specific file from disk")
-	func removesSpecificFile() async throws {
+	func removesSpecificFile() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -188,22 +186,22 @@ struct ImageDiskCacheTests {
 		)
 		let imageData = try #require(testImageData)
 		let otherURL = try #require(URL(string: "https://example.com/other.png"))
-		await sut.store(imageData, for: testURL)
-		await sut.store(imageData, for: otherURL)
+		sut.store(imageData, for: testURL)
+		sut.store(imageData, for: otherURL)
 
 		// When
-		await sut.remove(for: testURL)
+		sut.remove(for: testURL)
 
 		// Then
 		#expect(fileSystemMock.files.count == 1)
-		#expect(await sut.image(for: testURL) == nil)
-		#expect(await sut.image(for: otherURL) != nil)
+		#expect(sut.image(for: testURL) == nil)
+		#expect(sut.image(for: otherURL) != nil)
 	}
 
 	// MARK: - Remove All
 
 	@Test("removeAll does nothing when directory listing fails")
-	func removeAllDoesNothingWhenDirectoryListingFails() async throws {
+	func removeAllDoesNothingWhenDirectoryListingFails() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -211,18 +209,18 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 		fileSystemMock.contentsOfDirectoryError = CocoaError(.fileReadNoSuchFile)
 
 		// When
-		await sut.removeAll()
+		sut.removeAll()
 
 		// Then
 		#expect(fileSystemMock.removeItemCallCount == 0)
 	}
 
 	@Test("removeAll clears all files")
-	func removeAllClearsAllFiles() async throws {
+	func removeAllClearsAllFiles() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -232,11 +230,11 @@ struct ImageDiskCacheTests {
 		let imageData = try #require(testImageData)
 		let url1 = URL(string: "https://example.com/1.png")!  // swiftlint:disable:this force_unwrapping
 		let url2 = URL(string: "https://example.com/2.png")!  // swiftlint:disable:this force_unwrapping
-		await sut.store(imageData, for: url1)
-		await sut.store(imageData, for: url2)
+		sut.store(imageData, for: url1)
+		sut.store(imageData, for: url2)
 
 		// When
-		await sut.removeAll()
+		sut.removeAll()
 
 		// Then
 		#expect(fileSystemMock.files.isEmpty)
@@ -245,7 +243,7 @@ struct ImageDiskCacheTests {
 	// MARK: - Empty Data
 
 	@Test("Does not store empty data")
-	func doesNotStoreEmptyData() async {
+	func doesNotStoreEmptyData() {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -254,7 +252,7 @@ struct ImageDiskCacheTests {
 		)
 
 		// When
-		await sut.store(Data(), for: testURL)
+		sut.store(Data(), for: testURL)
 
 		// Then
 		#expect(fileSystemMock.writeCallCount == 0)
@@ -264,7 +262,7 @@ struct ImageDiskCacheTests {
 	// MARK: - Write Error
 
 	@Test("Handles write error without crash")
-	func handlesWriteErrorWithoutCrash() async throws {
+	func handlesWriteErrorWithoutCrash() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		fileSystemMock.writeError = CocoaError(.fileWriteOutOfSpace)
@@ -275,7 +273,7 @@ struct ImageDiskCacheTests {
 		let imageData = try #require(testImageData)
 
 		// When
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 
 		// Then
 		#expect(fileSystemMock.files.isEmpty)
@@ -284,7 +282,7 @@ struct ImageDiskCacheTests {
 	// MARK: - TTL
 
 	@Test("Returns nil and removes file when TTL has expired")
-	func returnsNilWhenTTLExpired() async throws {
+	func returnsNilWhenTTLExpired() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -292,14 +290,14 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 
 		// Simulate creation date in the past (beyond TTL)
 		let storedURL = try #require(fileSystemMock.files.keys.first)
 		fileSystemMock.fileCreationDates[storedURL] = Date().addingTimeInterval(-120)
 
 		// When
-		let result = await sut.image(for: testURL)
+		let result = sut.image(for: testURL)
 
 		// Then
 		#expect(result == nil)
@@ -307,7 +305,7 @@ struct ImageDiskCacheTests {
 	}
 
 	@Test("Removes file and returns nil when attributes cannot be read")
-	func removesFileWhenAttributesCannotBeRead() async throws {
+	func removesFileWhenAttributesCannotBeRead() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -315,11 +313,11 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 		fileSystemMock.fileAttributesError = CocoaError(.fileReadUnknown)
 
 		// When
-		let result = await sut.image(for: testURL)
+		let result = sut.image(for: testURL)
 
 		// Then
 		#expect(result == nil)
@@ -327,7 +325,7 @@ struct ImageDiskCacheTests {
 	}
 
 	@Test("Removes files with unreadable attributes during eviction")
-	func removesFilesWithUnreadableAttributesDuringEviction() async throws {
+	func removesFilesWithUnreadableAttributesDuringEviction() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let imageData = try #require(testImageData)
@@ -335,19 +333,19 @@ struct ImageDiskCacheTests {
 			configuration: makeConfiguration(maxSize: imageData.count * 10),
 			fileSystem: fileSystemMock
 		)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 		fileSystemMock.fileAttributesError = CocoaError(.fileReadUnknown)
 		let secondURL = try #require(URL(string: "https://example.com/2.png"))
 
 		// When
-		await sut.store(imageData, for: secondURL)
+		sut.store(imageData, for: secondURL)
 
 		// Then — both files have unreadable attributes, both are removed
 		#expect(fileSystemMock.removeItemCallCount == 2)
 	}
 
 	@Test("Returns image when TTL has not expired")
-	func returnsImageWhenTTLNotExpired() async throws {
+	func returnsImageWhenTTLNotExpired() throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
@@ -355,10 +353,10 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		await sut.store(imageData, for: testURL)
+		sut.store(imageData, for: testURL)
 
 		// When
-		let result = await sut.image(for: testURL)
+		let result = sut.image(for: testURL)
 
 		// Then
 		#expect(result != nil)
