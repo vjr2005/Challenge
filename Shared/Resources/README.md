@@ -19,14 +19,12 @@ The app uses `.xcstrings` format (Apple's modern localization format for iOS 16+
 
 ```
 Resources/
-├── Sources/
-│   ├── Extensions/
-│   │   ├── Bundle+Module.swift
-│   │   └── String+Localized.swift
-│   └── Resources/
-│       └── Localizable.xcstrings
-└── Tests/
-    └── ...
+└── Sources/
+    ├── Extensions/
+    │   ├── Bundle+Module.swift
+    │   └── String+Localized.swift
+    └── Resources/
+        └── Localizable.xcstrings
 ```
 
 ## Targets

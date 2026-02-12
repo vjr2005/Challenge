@@ -9,6 +9,7 @@ The app supports URL-based deep links with the `challenge://` scheme.
 | `challenge://home` | Home screen |
 | `challenge://characters` | Character list |
 | `challenge://characters/{id}` | Character detail |
+| `challenge://episode/character/{id}` | Character episodes |
 
 ## Testing from Terminal
 
@@ -25,6 +26,9 @@ xcrun simctl openurl booted "challenge://characters"
 
 # Open character detail (e.g., Rick Sanchez with id 1)
 xcrun simctl openurl booted "challenge://characters/1"
+
+# Open character episodes (e.g., Rick Sanchez episodes with character id 1)
+xcrun simctl openurl booted "challenge://episode/character/1"
 ```
 
 > **Note:** The `booted` parameter targets the currently running simulator. You can also specify a device UDID.

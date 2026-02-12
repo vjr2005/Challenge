@@ -117,7 +117,7 @@ struct {Name}UserDefaultsDataSourceTests {
 	// MARK: - Init
 
 	init() {
-		let suite = UserDefaults(suiteName: "\(type(of: self))")!
+		let suite = try #require(UserDefaults(suiteName: "\(type(of: self))"))
 		suite.removePersistentDomain(forName: "\(type(of: self))")
 		self.userDefaults = suite
 		sut = {Name}UserDefaultsDataSource(userDefaults: suite)

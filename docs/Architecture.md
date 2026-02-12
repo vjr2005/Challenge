@@ -31,7 +31,7 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
                     │                       Data Layer                            │
                     │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
                     │  │     Repository      │  │       Data Source           │   │
-                    │  │  (Implementation)   │  │   (Remote/Memory)           │   │
+                    │  │  (Implementation)   │  │   (REST/GraphQL/Memory)     │   │
                     │  └─────────────────────┘  └─────────────────────────────┘   │
                     └─────────────────────────────────────────────────────────────┘
 ```
@@ -42,7 +42,7 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
 |-------|----------------|
 | **Presentation** | UI components, ViewModels with state management, navigation, tracking |
 | **Domain** | Business logic (UseCases), domain models, repository contracts |
-| **Data** | Repository implementations, data sources (remote/memory), DTOs |
+| **Data** | Repository implementations, data sources (REST, GraphQL, memory, UserDefaults), DTOs |
 
 ## SOLID Principles
 
@@ -99,7 +99,7 @@ The Repository pattern acts as a **boundary between Domain and Data layers**, pr
 │                                                                             │
 │   CharacterRepository (Implementation)                                      │
 │           │                                                                 │
-│           ├── RemoteDataSource ──► HTTP/API (DTOs)                          │
+│           ├── RemoteDataSource ──► REST or GraphQL API (DTOs)               │
 │           ├── MemoryDataSource ──► In-memory cache (DTOs)                   │
 │           ├── Mapper → DTO to Domain mapping                                │
 │           └── Error Mapper → APIError to Domain error mapping               │
@@ -312,6 +312,16 @@ The feature declares what it wants to navigate TO, without knowing the destinati
 public enum HomeOutgoingNavigation: OutgoingNavigationContract {
     case characters  // "I want to navigate to characters"
 }
+
+// CharacterFeature - declares outgoing intent
+public enum CharacterOutgoingNavigation: OutgoingNavigationContract {
+    case episodes(characterIdentifier: Int)  // "I want to see episodes for this character"
+}
+
+// EpisodeFeature - declares outgoing intent
+public enum EpisodeOutgoingNavigation: OutgoingNavigationContract {
+    case characterDetail(identifier: Int)  // "I want to see this character's detail"
+}
 ```
 
 **2. Incoming Navigation (Target Feature)**
@@ -323,6 +333,11 @@ The feature declares what it can receive, without knowing who sends it:
 public enum CharacterIncomingNavigation: IncomingNavigationContract {
     case list
     case detail(identifier: Int)
+}
+
+// EpisodeFeature - declares what it can handle
+public enum EpisodeIncomingNavigation: IncomingNavigationContract {
+    case characterEpisodes(characterIdentifier: Int)
 }
 ```
 
@@ -346,11 +361,15 @@ struct HomeNavigator: HomeNavigatorContract {
 The Composition Root connects outgoing to incoming:
 
 ```swift
-// AppKit - the ONLY place that knows both features
+// AppKit - the ONLY place that knows all features
 public struct AppNavigationRedirect: NavigationRedirectContract {
     public func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
         switch navigation {
         case let outgoing as HomeOutgoingNavigation:
+            redirect(outgoing)
+        case let outgoing as CharacterOutgoingNavigation:
+            redirect(outgoing)
+        case let outgoing as EpisodeOutgoingNavigation:
             redirect(outgoing)
         default:
             nil
@@ -360,7 +379,21 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
     private func redirect(_ navigation: HomeOutgoingNavigation) -> any NavigationContract {
         switch navigation {
         case .characters:
-            CharacterIncomingNavigation.list  // Maps outgoing → incoming
+            CharacterIncomingNavigation.list
+        }
+    }
+
+    private func redirect(_ navigation: CharacterOutgoingNavigation) -> any NavigationContract {
+        switch navigation {
+        case let .episodes(characterIdentifier):
+            EpisodeIncomingNavigation.characterEpisodes(characterIdentifier: characterIdentifier)
+        }
+    }
+
+    private func redirect(_ navigation: EpisodeOutgoingNavigation) -> any NavigationContract {
+        switch navigation {
+        case let .characterDetail(identifier):
+            CharacterIncomingNavigation.detail(identifier: identifier)
         }
     }
 }
@@ -382,7 +415,7 @@ public struct AppNavigationRedirect: NavigationRedirectContract {
    HomeOutgoingNavigation.characters → CharacterIncomingNavigation.list
                     │
                     ▼
-5. AppContainer.resolve(CharacterIncomingNavigation.list)
+5. AppContainer.resolveView(for: CharacterIncomingNavigation.list, navigator:)
                     │
                     ▼
 6. CharacterFeature returns CharacterListView

@@ -80,7 +80,8 @@ All tests must use `// Given`, `// When`, `// Then` comments:
 func fetchesUserSuccessfully() async throws {
     // Given
     let expectedUser = User(id: 1, name: "John")
-    let mockClient = HTTPClientMock(result: .success(expectedUser.encoded()))
+    let mockClient = HTTPClientMock()
+    mockClient.result = .success(expectedUser.encoded())
     let sut = GetUserUseCase(client: mockClient)
 
     // When

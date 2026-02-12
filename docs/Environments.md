@@ -89,7 +89,10 @@ extension AppEnvironment {
         case .production:
             "https://api.example.com/api"
         }
-        return API(baseURL: URL(string: urlString)!)
+        guard let url = URL(string: urlString) else {
+            preconditionFailure("Invalid API base URL: \(urlString)")
+        }
+        return API(baseURL: url)
     }
 }
 ```

@@ -16,10 +16,12 @@ import SwiftUI
 struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
     let viewModel: ViewModel
 
+    @Environment(\.dsTheme) private var theme
+
     var body: some View {
-        VStack(spacing: SpacingToken.lg) {
+        VStack(spacing: theme.spacing.lg) {
             Text(LocalizedStrings.title)
-                .font(Typography.headlineLarge)
+                .font(theme.typography.headline)
 
             Button(LocalizedStrings.actionButton) {
                 viewModel.didTapOn{Action}()
@@ -47,8 +49,8 @@ For stateless views with more complex layouts, extract subviews the same way:
 private extension {Name}View {
     var headerView: some View {
         Text(LocalizedStrings.title)
-            .font(Typography.headlineLarge)
-            .foregroundStyle(SemanticColor.textPrimary)
+            .font(theme.typography.headline)
+            .foregroundStyle(theme.colors.textPrimary)
     }
 }
 ```
@@ -141,7 +143,7 @@ struct {Name}ViewSnapshotTests {
 
     init() {
         UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
     }
 
     // MARK: - Tests

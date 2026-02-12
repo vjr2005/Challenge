@@ -40,6 +40,7 @@ Character/
 │   │   │   ├── LocationMapper.swift
 │   │   │   ├── CharacterMapper.swift
 │   │   │   ├── CharacterErrorMapper.swift
+│   │   │   ├── CharacterFilterMapper.swift
 │   │   │   ├── CharactersPageMapper.swift
 │   │   │   └── CharactersPageErrorMapper.swift
 │   │   ├── Repositories/
@@ -57,11 +58,13 @@ Character/
 │   │   │       └── RecentSearchesUserDefaultsDataSource.swift
 │   │   └── DTOs/
 │   │       ├── CharacterDTO.swift
+│   │       ├── CharacterFilterDTO.swift
 │   │       ├── CharactersResponseDTO.swift
 │   │       └── LocationDTO.swift
 │   └── Presentation/
 │       ├── Navigation/
 │       │   ├── CharacterIncomingNavigation.swift
+│       │   ├── CharacterOutgoingNavigation.swift
 │       │   ├── CharacterFilterDelegate.swift
 │       │   └── CharacterDeepLinkHandler.swift
 │       ├── CharacterList/
@@ -152,7 +155,7 @@ The `characterFilter` case carries a `CharacterFilterDelegate` reference, enabli
 ### Initialization
 
 ```swift
-let feature = CharacterFeature(httpClient: httpClient, tracker: tracker)
+let feature = CharacterFeature(httpClient: httpClient, tracker: tracker, imageLoader: imageLoader)
 ```
 
 ### Navigation

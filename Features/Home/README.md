@@ -18,19 +18,32 @@ Home/
 │       │   ├── HomeIncomingNavigation.swift
 │       │   ├── HomeOutgoingNavigation.swift
 │       │   └── HomeDeepLinkHandler.swift
-│       └── Home/
+│       ├── Home/
+│       │   ├── Views/
+│       │   │   └── HomeView.swift
+│       │   ├── ViewModels/
+│       │   │   ├── HomeViewModel.swift
+│       │   │   └── HomeViewModelContract.swift
+│       │   ├── Navigator/
+│       │   │   ├── HomeNavigator.swift
+│       │   │   └── HomeNavigatorContract.swift
+│       │   └── Tracker/
+│       │       ├── HomeTracker.swift
+│       │       ├── HomeTrackerContract.swift
+│       │       └── HomeEvent.swift
+│       └── About/
 │           ├── Views/
-│           │   └── HomeView.swift
+│           │   └── AboutView.swift
 │           ├── ViewModels/
-│           │   ├── HomeViewModel.swift
-│           │   └── HomeViewModelContract.swift
+│           │   ├── AboutViewModel.swift
+│           │   └── AboutViewModelContract.swift
 │           ├── Navigator/
-│           │   ├── HomeNavigator.swift
-│           │   └── HomeNavigatorContract.swift
+│           │   ├── AboutNavigator.swift
+│           │   └── AboutNavigatorContract.swift
 │           └── Tracker/
-│               ├── HomeTracker.swift
-│               ├── HomeTrackerContract.swift
-│               └── HomeEvent.swift
+│               ├── AboutTracker.swift
+│               ├── AboutTrackerContract.swift
+│               └── AboutEvent.swift
 └── Tests/
     └── ...
 ```
@@ -58,6 +71,7 @@ Home/
 ```swift
 public enum HomeIncomingNavigation: IncomingNavigationContract {
     case main
+    case about
 }
 ```
 

@@ -711,7 +711,7 @@ struct Get{Name}With{Related}sUseCaseTests {
 ## Generate and verify
 
 ```bash
-./generate.sh
+mise x -- tuist test --skip-ui-tests
 ```
 
 ## Next steps

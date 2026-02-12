@@ -21,7 +21,9 @@ Tuist/
 │       ├── DesignSystemModule.swift
 │       ├── CharacterModule.swift
 │       ├── HomeModule.swift
+│       ├── EpisodeModule.swift
 │       ├── SystemModule.swift
+│       ├── SnapshotTestKitModule.swift
 │       └── AppKitModule.swift
 └── Package.swift                 # SPM dependencies
 ```
@@ -71,6 +73,7 @@ Challenge (App)
     └── ChallengeAppKit (Composition Layer)
             │
             ├── ChallengeCharacter
+            ├── ChallengeEpisode
             ├── ChallengeHome
             ├── ChallengeSystem
             ├── ChallengeCore
@@ -133,7 +136,7 @@ Libraries are **horizontal modules** that provide shared infrastructure. They ar
 | Library | Purpose |
 |---------|---------|
 | `ChallengeCore` | Navigation, routing, deep linking, image loading, environment |
-| `ChallengeNetworking` | HTTP client, request/response handling |
+| `ChallengeNetworking` | HTTP client (REST) and GraphQL client, request/response handling |
 | `ChallengeDesignSystem` | UI components, design tokens, atomic design |
 | `ChallengeResources` | Localization, shared assets |
 
@@ -147,7 +150,8 @@ Features are **vertical slices** that contain all layers for a specific domain:
 
 | Feature | Domain |
 |---------|--------|
-| `ChallengeCharacter` | Character list and detail (Rick & Morty API) |
+| `ChallengeCharacter` | Character list and detail (Rick & Morty REST API) |
+| `ChallengeEpisode` | Character episodes (Rick & Morty GraphQL API) |
 | `ChallengeHome` | Home screen with logo animation |
 | `ChallengeSystem` | System settings and configuration |
 

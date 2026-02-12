@@ -27,6 +27,9 @@ Challenge/
 │   ├── Home/
 │   │   ├── Sources/
 │   │   └── Tests/
+│   ├── Episode/
+│   │   ├── Sources/
+│   │   └── Tests/
 │   └── System/
 │       ├── Sources/
 │       └── Tests/
@@ -39,9 +42,11 @@ Challenge/
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
-│   └── DesignSystem/                # UI components (Atomic Design)
-│       ├── Sources/
-│       └── Tests/
+│   ├── DesignSystem/                # UI components (Atomic Design)
+│   │   ├── Sources/
+│   │   └── Tests/
+│   └── SnapshotTestKit/             # Snapshot testing framework
+│       └── Sources/
 ├── Shared/
 │   └── Resources/                   # Localization, shared resources
 │       └── Sources/
@@ -65,7 +70,7 @@ Main application entry point.
 | Target | Purpose |
 |--------|---------|
 | `Challenge` | Main app |
-| `ChallengeTests` | UI tests |
+| `ChallengeUITests` | UI tests |
 
 ### AppKit
 
@@ -81,7 +86,7 @@ Composition layer that wires all features together.
 | Module | Purpose |
 |--------|---------|
 | **ChallengeCore** | Navigation, routing, deep linking, image loading, app environment |
-| **ChallengeNetworking** | HTTP client abstraction over URLSession |
+| **ChallengeNetworking** | HTTP client (REST) and GraphQL client abstraction over URLSession |
 | **ChallengeDesignSystem** | Atomic Design UI components and design tokens |
 | **ChallengeResources** | Localization and shared resources |
 | **ChallengeSnapshotTestKit** | Snapshot testing framework (test-only) |
@@ -90,7 +95,8 @@ Composition layer that wires all features together.
 
 | Module | Purpose |
 |--------|---------|
-| **ChallengeCharacter** | Character list and detail screens |
+| **ChallengeCharacter** | Character list and detail screens (Rick & Morty REST API) |
+| **ChallengeEpisode** | Character episodes list (Rick & Morty GraphQL API) |
 | **ChallengeHome** | Home screen with logo animation |
 | **ChallengeSystem** | System settings and configuration |
 
@@ -102,6 +108,11 @@ Challenge (App)
     ├── ChallengeCore
     ├── ChallengeNetworking
     ├── ChallengeCharacter
+    │   ├── ChallengeCore
+    │   ├── ChallengeNetworking
+    │   ├── ChallengeResources
+    │   └── ChallengeDesignSystem
+    ├── ChallengeEpisode
     │   ├── ChallengeCore
     │   ├── ChallengeNetworking
     │   ├── ChallengeResources

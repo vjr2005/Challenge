@@ -63,6 +63,9 @@ Use these skills for detailed implementation patterns:
 | `/navigator` | Navigation with Navigator pattern and Deep Links |
 | `/dependency-injection` | Containers, feature entry points, dependency wiring |
 | `/clean-code` | Dead code detection and removal using Periphery |
+| `/design-system` | Atomic Design System: tokens, components, theming |
+| `/feature` | Feature module scaffolding with Container and entry point |
+| `/skill-creator` | Guide for creating new Claude Code skills |
 
 ---
 

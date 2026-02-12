@@ -33,15 +33,22 @@ DesignSystem/
 │   │       ├── DefaultSpacing.swift
 │   │       └── DefaultTypography.swift
 │   ├── Atoms/                # Basic components
+│   │   ├── Badges/
+│   │   │   └── DSBadge.swift
 │   │   ├── Buttons/
 │   │   │   └── DSButton.swift
+│   │   ├── Chips/
+│   │   │   └── DSChip.swift
 │   │   ├── Images/
 │   │   │   └── DSAsyncImage.swift
-│   │   └── Indicators/
-│   │       └── DSStatusIndicator.swift
+│   │   ├── Indicators/
+│   │   │   └── DSStatusIndicator.swift
+│   │   └── TextFields/
+│   │       └── DSTextField.swift
 │   ├── Molecules/            # Combined components
 │   │   ├── DSInfoRow.swift
-│   │   └── DSCardInfoRow.swift
+│   │   ├── DSCardInfoRow.swift
+│   │   └── DSChipGroup.swift
 │   ├── Organisms/            # Complex components
 │   │   ├── Cards/
 │   │   │   └── DSCard.swift
@@ -267,9 +274,12 @@ Each shadow level returns a `DSShadowValue` with `color`, `radius`, `x`, and `y`
 
 | Component | Description |
 |-----------|-------------|
+| `DSBadge` | Count badge overlay on any content |
 | `DSButton` | Button with variants (primary, secondary, tertiary) |
+| `DSChip` | Selectable chip with capsule shape |
 | `DSAsyncImage` | Async image loading with caching |
 | `DSStatusIndicator` | Status dot indicator |
+| `DSTextField` | Styled text field with rounded shape |
 
 ### Molecules
 
@@ -277,6 +287,7 @@ Each shadow level returns a `DSShadowValue` with `color`, `radius`, `x`, and `y`
 |-----------|-------------|
 | `DSInfoRow` | Icon + label + value row |
 | `DSCardInfoRow` | Card with image, text, and status |
+| `DSChipGroup` | Labeled horizontal group of selectable chips |
 
 ### Organisms
 

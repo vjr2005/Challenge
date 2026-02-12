@@ -184,7 +184,7 @@ struct FilterNavigator: FilterNavigatorContract {
 ### AppNavigationRedirect
 
 ```swift
-// App/Sources/Navigation/AppNavigationRedirect.swift
+// AppKit/Sources/Presentation/Navigation/AppNavigationRedirect.swift
 import ChallengeCharacter
 import ChallengeCore
 import ChallengeHome
@@ -292,8 +292,8 @@ import SwiftUI
 public struct {Feature}Feature: FeatureContract {
     private let container: {Feature}Container
 
-    public init(httpClient: any HTTPClientContract) {
-        self.container = {Feature}Container(httpClient: httpClient)
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
+        self.container = {Feature}Container(httpClient: httpClient, tracker: tracker, imageLoader: imageLoader)
     }
 
     public var deepLinkHandler: (any DeepLinkHandlerContract)? {

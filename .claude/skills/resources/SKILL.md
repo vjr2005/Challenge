@@ -64,25 +64,14 @@ The `localized()` extension converts string keys to localized values:
 // Shared/Resources/Sources/Extensions/String+Localized.swift
 public extension String {
     func localized() -> String {
-        String(localized: LocalizationValue(self), bundle: .module)
+        Bundle.module.localizedString(forKey: self, value: nil, table: nil)
     }
 
     func localized(_ arguments: CVarArg...) -> String {
-        let localizedFormat = String(localized: LocalizationValue(self), bundle: .module)
-        return String(format: localizedFormat, arguments: arguments)
+        String(format: localized(), arguments: arguments)
     }
 }
 ```
-
-### Expected Xcode Warnings
-
-When building, Xcode may show these warnings:
-
-```
-Skipping extraction of localizable string with non-literal key
-```
-
-**These warnings are expected and safe to ignore.** They occur because Xcode's automatic string extraction cannot analyze dynamic keys like `LocalizationValue(self)`. The localization system works correctly—these warnings only indicate that Xcode won't auto-extract keys from `localized()` calls.
 
 **Why this pattern?** It allows type-safe, reusable localization without repeating bundle references. Translations are managed manually in `.xcstrings` files.
 

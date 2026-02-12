@@ -244,12 +244,15 @@ struct {Feature}DeepLinkHandler: DeepLinkHandlerContract {
     let host = "{feature}"
 
     func resolve(_ url: URL) -> (any NavigationContract)? {
-        switch url.path {
-        case "/list":
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+
+        switch pathComponents.first {
+        case "list", .none:
             return {Feature}IncomingNavigation.list
 
-        case "/detail":
-            guard let id = url.queryParameter("id").flatMap(Int.init) else {
+        case "detail":
+            guard let idString = pathComponents.dropFirst().first,
+                  let id = Int(idString) else {
                 return nil
             }
             return {Feature}IncomingNavigation.detail(identifier: id)

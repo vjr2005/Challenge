@@ -130,7 +130,7 @@ private extension {Name}RESTDataSource {
 For endpoints with query parameters:
 
 ```swift
-func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO {
+func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 	var queryItems = [URLQueryItem(name: "page", value: String(page))]
 	if let name = filter.name, !name.isEmpty {
 		queryItems.append(URLQueryItem(name: "name", value: name))
@@ -200,7 +200,8 @@ struct {Name}RESTDataSourceTests {
 	func fetchUsesCorrectEndpoint() async throws {
 		// Given
 		let jsonData = try loadJSONData("{name}")
-		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let httpClientMock = HTTPClientMock()
+		httpClientMock.result = .success(jsonData)
 		let sut = {Name}RESTDataSource(httpClient: httpClientMock)
 
 		// When
@@ -216,7 +217,8 @@ struct {Name}RESTDataSourceTests {
 	func fetchDecodesResponse() async throws {
 		// Given
 		let jsonData = try loadJSONData("{name}")
-		let httpClientMock = HTTPClientMock(result: .success(jsonData))
+		let httpClientMock = HTTPClientMock()
+		httpClientMock.result = .success(jsonData)
 		let sut = {Name}RESTDataSource(httpClient: httpClientMock)
 
 		// When
@@ -229,7 +231,8 @@ struct {Name}RESTDataSourceTests {
 	@Test("Fetch {name} maps HTTP error to API error")
 	func fetchMapsHTTPError() async {
 		// Given
-		let httpClientMock = HTTPClientMock(result: .failure(HTTPError.statusCode(404, Data())))
+		let httpClientMock = HTTPClientMock()
+		httpClientMock.result = .failure(HTTPError.statusCode(404, Data()))
 		let sut = {Name}RESTDataSource(httpClient: httpClientMock)
 
 		// When / Then
@@ -295,7 +298,7 @@ Same transport-agnostic contract as REST:
 ```swift
 protocol {Name}RemoteDataSourceContract: Sendable {
 	func fetch{Name}(identifier: Int) async throws -> {Name}DTO
-	func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO
+	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO
 }
 ```
 
@@ -315,7 +318,7 @@ struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 		self.graphQLClient = graphQLClient
 	}
 
-	func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO {
+	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 		var variables: [String: GraphQLVariable] = ["page": .int(page)]
 
 		if let name = filter.name, !name.isEmpty {
@@ -464,7 +467,7 @@ final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @uncheck
 	private(set) var lastFetchedFilter: {Name}Filter?
 	private(set) var lastFetchedIdentifier: Int?
 
-	func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO {
+	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 		fetch{Name}sCallCount += 1
 		lastFetchedPage = page
 		lastFetchedFilter = filter

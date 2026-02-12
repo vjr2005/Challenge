@@ -74,7 +74,7 @@ private extension {Name}RESTDataSource {
 For endpoints with query parameters:
 
 ```swift
-func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO {
+func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 	var queryItems = [URLQueryItem(name: "page", value: String(page))]
 	if let name = filter.name, !name.isEmpty {
 		queryItems.append(URLQueryItem(name: "name", value: name))
@@ -129,15 +129,22 @@ import Testing
 
 @testable import Challenge{Feature}
 
+@Suite(.timeLimit(.minutes(1)))
 struct {Name}RESTDataSourceTests {
+	private let httpClientMock = HTTPClientMock()
+	private let sut: {Name}RESTDataSource
+
+	init() {
+		sut = {Name}RESTDataSource(httpClient: httpClientMock)
+	}
+
 	// MARK: - Fetch {Name}
 
 	@Test("Fetch {name} uses correct endpoint")
 	func fetchUsesCorrectEndpoint() async throws {
 		// Given
 		let jsonData = try loadJSONData("{name}")
-		let httpClientMock = HTTPClientMock(result: .success(jsonData))
-		let sut = {Name}RESTDataSource(httpClient: httpClientMock)
+		httpClientMock.result = .success(jsonData)
 
 		// When
 		_ = try await sut.fetch{Name}(identifier: 1)
@@ -152,8 +159,7 @@ struct {Name}RESTDataSourceTests {
 	func fetchDecodesResponse() async throws {
 		// Given
 		let jsonData = try loadJSONData("{name}")
-		let httpClientMock = HTTPClientMock(result: .success(jsonData))
-		let sut = {Name}RESTDataSource(httpClient: httpClientMock)
+		httpClientMock.result = .success(jsonData)
 
 		// When
 		let result = try await sut.fetch{Name}(identifier: 1)
@@ -165,12 +171,11 @@ struct {Name}RESTDataSourceTests {
 	@Test("Fetch {name} maps HTTP error to API error")
 	func fetchMapsHTTPError() async {
 		// Given
-		let httpClientMock = HTTPClientMock(result: .failure(HTTPError.statusCode(404, Data())))
-		let sut = {Name}RESTDataSource(httpClient: httpClientMock)
+		httpClientMock.result = .failure(HTTPError.statusCode(404, Data()))
 
 		// When / Then
 		await #expect(throws: APIError.notFound) {
-			_ = try await sut.fetch{Name}(identifier: 999)
+			try await sut.fetch{Name}(identifier: 999)
 		}
 	}
 }

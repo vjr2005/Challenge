@@ -2,6 +2,15 @@
 
 Snapshot testing framework for the project. Provides a **black-box API** that abstracts the underlying snapshot library, so that consumers (test targets) never depend on it directly.
 
+## Structure
+
+```
+SnapshotTestKit/
+└── Sources/
+    ├── SnapshotTestKit.swift
+    └── Snapshotting+PresentationLayer.swift
+```
+
 ## Why this module exists
 
 - **Single point of change.** If the underlying snapshot library is replaced, only this module needs to be updated. No test file, documentation, or skill outside this module should reference the internal library.

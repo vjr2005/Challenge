@@ -818,7 +818,7 @@ protocol {Screen}ViewModelContract: AnyObject {
     func didPullToRefresh() async
     func didSelect(_ item: {Name})
     func didSelectRecentSearch(_ query: String) async
-    func didDeleteRecentSearch(_ query: String)
+    func didDeleteRecentSearch(_ query: String) async
 }
 ```
 
@@ -886,15 +886,15 @@ final class {Screen}ViewModel: {Screen}ViewModelContract {
     func didSelectRecentSearch(_ query: String) async {
         searchQuery = query
         searchTask?.cancel()
-        saveRecentSearchUseCase.execute(query: query)
-        loadRecentSearches()
+        await saveRecentSearchUseCase.execute(query: query)
+        await loadRecentSearches()
         tracker.trackSearchPerformed(query: query)
         await fetchResults()
     }
 
-    func didDeleteRecentSearch(_ query: String) {
-        deleteRecentSearchUseCase.execute(query: query)
-        loadRecentSearches()
+    func didDeleteRecentSearch(_ query: String) async {
+        await deleteRecentSearchUseCase.execute(query: query)
+        await loadRecentSearches()
     }
 }
 
@@ -913,8 +913,8 @@ private extension {Screen}ViewModel {
             if !Task.isCancelled {
                 if let query = normalizedQuery {
                     tracker.trackSearchPerformed(query: query)
-                    saveRecentSearchUseCase.execute(query: query)
-                    loadRecentSearches()
+                    await saveRecentSearchUseCase.execute(query: query)
+                    await loadRecentSearches()
                 }
                 await fetchResults()
             }
@@ -937,8 +937,8 @@ private extension {Screen}ViewModel {
         }
     }
 
-    func loadRecentSearches() {
-        recentSearches = getRecentSearchesUseCase.execute()
+    func loadRecentSearches() async {
+        recentSearches = await getRecentSearchesUseCase.execute()
     }
 }
 ```
@@ -1038,9 +1038,9 @@ struct {Screen}ViewModelTests {
     }
 
     @Test("didDeleteRecentSearch removes and reloads")
-    func didDeleteRecentSearchRemovesAndReloads() {
+    func didDeleteRecentSearchRemovesAndReloads() async {
         // When
-        sut.didDeleteRecentSearch("Rick")
+        await sut.didDeleteRecentSearch("Rick")
 
         // Then
         #expect(deleteRecentSearchMock.executeCallCount == 1)

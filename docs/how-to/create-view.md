@@ -367,7 +367,7 @@ struct {Screen}ViewSnapshotTests {
 
     init() {
         UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
     }
 
     // MARK: - Tests
@@ -561,7 +561,7 @@ struct {Screen}ViewSnapshotTests {
 
     init() {
         UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
     }
 
     // MARK: - Tests

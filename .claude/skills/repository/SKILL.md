@@ -67,7 +67,7 @@ Checklist:
 - [ ] Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Implementation in `Data/Repositories/` (injects RemoteDataSource, uses Mapper + Error Mapper)
-- [ ] Mock in `Tests/Mocks/`
+- [ ] Mock in `Tests/Shared/Mocks/`
 - [ ] Mapper tests, Error Mapper tests, Repository tests
 - [ ] Localized strings for error messages
 
@@ -82,7 +82,7 @@ Checklist:
 - [ ] Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Implementation in `Data/Repositories/` (injects LocalDataSource, uses Mapper)
 - [ ] Domain-to-DTO mapping (for saving)
-- [ ] Mock in `Tests/Mocks/`
+- [ ] Mock in `Tests/Shared/Mocks/`
 - [ ] Tests
 
 ### Step 3c — Cached Repository (Remote + Local)
@@ -115,7 +115,7 @@ Checklist (for All configurable — adapt for single-policy variants):
 - [ ] Implementation in `Data/Repositories/` (injects both DataSources, uses Mapper + Error Mapper)
 - [ ] Extract `fetchFromRemote` helper (avoids duplication)
 - [ ] Implement cache strategies
-- [ ] Mock in `Tests/Mocks/` (tracks `cachePolicy`)
+- [ ] Mock in `Tests/Shared/Mocks/` (tracks `cachePolicy`)
 - [ ] Mapper tests, Error Mapper tests
 - [ ] Tests for each cache strategy
 - [ ] Tests for error handling
@@ -144,15 +144,17 @@ Features/{Feature}/
 │       └── Repositories/
 │           └── {Name}Repository.swift            # Implementation
 └── Tests/
-    ├── Data/
-    │   ├── {Name}RepositoryTests.swift
-    │   └── Mappers/
-    │       └── {Name}ErrorMapperTests.swift
-    ├── Domain/
-    │   └── Errors/
-    │       └── {Feature}ErrorTests.swift
-    └── Mocks/
-        └── {Name}RepositoryMock.swift
+    ├── Unit/
+    │   ├── Data/
+    │   │   ├── {Name}RepositoryTests.swift
+    │   │   └── Mappers/
+    │   │       └── {Name}ErrorMapperTests.swift
+    │   └── Domain/
+    │       └── Errors/
+    │           └── {Feature}ErrorTests.swift
+    └── Shared/
+        └── Mocks/
+            └── {Name}RepositoryMock.swift
 ```
 
 ---
@@ -298,4 +300,4 @@ public enum CachePolicy {
 | Implementation | internal | `Sources/Data/Repositories/` |
 | Mapper | internal | `Sources/Data/Mappers/` |
 | Error Mapper | internal | `Sources/Data/Mappers/` |
-| Mock | internal | `Tests/Mocks/` |
+| Mock | internal | `Tests/Shared/Mocks/` |

@@ -11,19 +11,33 @@ The Challenge app is the minimal entry point that creates the `AppContainer` and
 ```
 App/
 ├── Sources/
-│   └── ChallengeApp.swift
-├── Tests/
-│   ├── Shared/
-│   │   ├── Robots/
-│   │   ├── Scenarios/
-│   │   ├── Stubs/
-│   │   └── Fixtures/
-│   └── UI/
-│       ├── CharacterFlowUITests.swift
-│       └── DeepLinkUITests.swift
-└── Resources/
-    ├── LaunchScreen.storyboard
-    └── Assets.xcassets/
+│   ├── ChallengeApp.swift
+│   └── Resources/
+│       ├── LaunchScreen.storyboard
+│       └── Assets.xcassets/
+└── Tests/
+    ├── Shared/
+    │   ├── Robots/
+    │   │   ├── Robot.swift
+    │   │   ├── AboutRobot.swift
+    │   │   ├── CharacterDetailRobot.swift
+    │   │   ├── CharacterEpisodesRobot.swift
+    │   │   ├── CharacterFilterRobot.swift
+    │   │   ├── CharacterListRobot.swift
+    │   │   ├── HomeRobot.swift
+    │   │   └── NotFoundRobot.swift
+    │   ├── Scenarios/
+    │   │   └── UITestCase+Scenarios.swift
+    │   ├── Stubs/
+    │   ├── Extensions/
+    │   ├── Fixtures/
+    │   └── Resources/
+    └── UI/
+        ├── CharacterDetailUITests.swift
+        ├── CharacterEpisodesUITests.swift
+        ├── CharacterListUITests.swift
+        ├── HomeUITests.swift
+        └── NotFoundUITests.swift
 ```
 
 ## Dependencies
@@ -57,16 +71,23 @@ UI tests use [SwiftMockServer](https://github.com/vjr2005/SwiftMockServer) for H
 
 | Robot | Purpose |
 |-------|---------|
-| `HomeRobot` | Home screen interactions |
-| `CharacterListRobot` | Character list interactions |
+| `Robot` | Base robot protocol |
+| `AboutRobot` | About screen interactions |
 | `CharacterDetailRobot` | Character detail interactions |
+| `CharacterEpisodesRobot` | Character episodes interactions |
+| `CharacterFilterRobot` | Character filter interactions |
+| `CharacterListRobot` | Character list interactions |
+| `HomeRobot` | Home screen interactions |
 | `NotFoundRobot` | Not found screen interactions |
 
 Mock server configurations are extracted into reusable scenarios in `UITestCase+Scenarios.swift`.
 
 **Test Files:**
-- `CharacterFlowUITests.swift` - Character navigation flows
-- `DeepLinkUITests.swift` - Deep link handling tests
+- `CharacterDetailUITests.swift` - Character detail screen tests
+- `CharacterEpisodesUITests.swift` - Character episodes screen tests
+- `CharacterListUITests.swift` - Character list screen tests
+- `HomeUITests.swift` - Home screen tests
+- `NotFoundUITests.swift` - Not found screen tests
 
 ## Running
 

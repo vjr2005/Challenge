@@ -842,7 +842,7 @@ Add to `Shared/Resources/Sources/Resources/Localizable.xcstrings`:
 ## Generate and verify
 
 ```bash
-./generate.sh
+mise x -- tuist test --skip-ui-tests
 ```
 
 ## Next steps

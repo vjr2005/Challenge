@@ -30,8 +30,6 @@ Libraries/Core/
 Create `Libraries/Core/Sources/Tracking/Providers/{Name}TrackingProvider.swift`:
 
 ```swift
-import ChallengeCore
-
 struct {Name}TrackingProvider: TrackingProviderContract {
     func configure() {
         // Initialize the analytics SDK
@@ -59,16 +57,18 @@ Add the provider to `AppKit/Sources/AppContainer.swift`:
 
 ```swift
 private extension AppContainer {
-    static func makeTrackingProviders() -> [any TrackingProviderContract] {
-        [
+    static func makeTracker() -> Tracker {
+        let providers: [any TrackingProviderContract] = [
             ConsoleTrackingProvider(),
             {Name}TrackingProvider()
         ]
+        providers.forEach { $0.configure() }
+        return Tracker(providers: providers)
     }
 }
 ```
 
-The order in the array determines the dispatch order. `Tracker` calls `track(_:)` on each provider sequentially.
+The order in the array determines the dispatch order. `Tracker` calls `track(_:)` on each provider sequentially. `configure()` is called on each provider before any events are tracked.
 
 ---
 
@@ -161,11 +161,13 @@ Registration in `AppContainer`:
 
 ```swift
 private extension AppContainer {
-    static func makeTrackingProviders() -> [any TrackingProviderContract] {
-        [
+    static func makeTracker() -> Tracker {
+        let providers: [any TrackingProviderContract] = [
             ConsoleTrackingProvider(),
             AmplitudeTrackingProvider(apiKey: AppEnvironment.current.amplitude.apiKey)
         ]
+        providers.forEach { $0.configure() }
+        return Tracker(providers: providers)
     }
 }
 ```

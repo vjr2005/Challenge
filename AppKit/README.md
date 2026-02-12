@@ -13,7 +13,8 @@ AppKit/
 ├── Sources/
 │   ├── AppContainer.swift
 │   ├── Data/
-│   │   └── AppEnvironment+API.swift
+│   │   ├── AppEnvironment+API.swift
+│   │   └── LaunchEnvironment.swift
 │   └── Presentation/
 │       ├── Navigation/
 │       │   └── AppNavigationRedirect.swift
@@ -23,13 +24,19 @@ AppKit/
 │           └── RootContainerView.swift
 └── Tests/
     ├── Unit/
+    │   ├── AppContainerTests.swift
+    │   ├── Data/
+    │   │   ├── AppEnvironment+APITests.swift
+    │   │   └── LaunchEnvironmentTests.swift
     │   └── Presentation/
     │       ├── Navigation/
-    │       │   └── AppContainerNavigationTests.swift
+    │       │   └── AppNavigationRedirectTests.swift
     │       └── Views/
+    │           ├── ModalContainerViewTests.swift
     │           └── RootContainerViewTests.swift
     └── Snapshots/
         └── Presentation/
+            ├── ModalContainerViewSnapshotTests.swift
             └── RootViewSnapshotTests.swift
 ```
 
@@ -48,6 +55,7 @@ AppKit/
 | `ChallengeCore` | Navigation protocols |
 | `ChallengeNetworking` | HTTP client |
 | `ChallengeCharacter` | Character feature |
+| `ChallengeEpisode` | Episode feature |
 | `ChallengeHome` | Home feature |
 | `ChallengeSystem` | System feature (fallback) |
 
@@ -59,14 +67,19 @@ Composition root that creates and wires all dependencies:
 
 ```swift
 public struct AppContainer {
-    public let httpClient: any HTTPClientContract
-    public let tracker: any TrackerContract
-    public let imageLoader: any ImageLoaderContract
-    public var features: [any FeatureContract]
+    private let launchEnvironment: LaunchEnvironment
+    private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
+    let imageLoader: any ImageLoaderContract
 
-    public func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView
-    public func handle(url: URL, navigator: any NavigatorContract)
-    public func makeRootView(navigator: any NavigatorContract) -> AnyView
+    private let homeFeature: HomeFeature
+    private let characterFeature: CharacterFeature
+    private let episodeFeature: EpisodeFeature
+    private let systemFeature: SystemFeature
+
+    func resolveView(for navigation: any NavigationContract, navigator: any NavigatorContract) -> AnyView
+    func handle(url: URL, navigator: any NavigatorContract)
+    func makeRootView(navigator: any NavigatorContract) -> AnyView
 }
 ```
 
@@ -74,8 +87,12 @@ Tracking providers are registered via a static factory method:
 
 ```swift
 private extension AppContainer {
-    static func makeTrackingProviders() -> [any TrackingProviderContract] {
-        [ConsoleTrackingProvider()]
+    static func makeTracker() -> Tracker {
+        let providers: [any TrackingProviderContract] = [
+            ConsoleTrackingProvider()
+        ]
+        providers.forEach { $0.configure() }
+        return Tracker(providers: providers)
     }
 }
 ```

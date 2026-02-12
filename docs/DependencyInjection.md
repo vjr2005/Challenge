@@ -12,10 +12,10 @@ The Composition Root is the **single location** where the entire object graph is
 │                                                                             │
 │   Creates shared dependencies and feature containers                        │
 │                                                                             │
-│   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
-│   │ CharacterFeature│  │   HomeFeature   │  │  SystemFeature  │             │
-│   │    Container    │  │    Container    │  │    Container    │             │
-│   └────────┬────────┘  └────────┬────────┘  └────────┬────────┘             │
+│   ┌──────────────────┐ ┌────────────────┐ ┌──────────────┐ ┌──────────────┐ │
+│   │CharacterFeature  │ │ EpisodeFeature │ │  HomeFeature │ │SystemFeature │ │
+│   │   Container      │ │   Container    │ │   Container  │ │  Container   │ │
+│   └────────┬─────────┘ └───────┬────────┘ └──────┬───────┘ └──────┬───────┘ │
 │            │                    │                    │                      │
 │            ▼                    ▼                    ▼                      │
 │   ┌─────────────────────────────────────────────────────────────────┐       │
@@ -80,36 +80,39 @@ The root container that creates shared dependencies and feature containers:
 ```swift
 public struct AppContainer {
     // Shared dependencies
-    public let httpClient: any HTTPClientContract
-    public let tracker: any TrackerContract
-    public let imageLoader: any ImageLoaderContract
+    private let httpClient: any HTTPClientContract
+    private let tracker: any TrackerContract
+    let imageLoader: any ImageLoaderContract
 
     // Feature containers
     private let homeFeature: HomeFeature
     private let characterFeature: CharacterFeature
+    private let episodeFeature: EpisodeFeature
     private let systemFeature: SystemFeature
 
     public init(
+        launchEnvironment: LaunchEnvironment = LaunchEnvironment(),
         httpClient: (any HTTPClientContract)? = nil,
         tracker: (any TrackerContract)? = nil,
         imageLoader: (any ImageLoaderContract)? = nil
     ) {
         self.imageLoader = imageLoader ?? CachedImageLoader()
         self.httpClient = httpClient ?? HTTPClient(
-            baseURL: AppEnvironment.current.rickAndMorty.baseURL
+            baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL
         )
-        let providers = Self.makeTrackingProviders()
-        providers.forEach { $0.configure() }
-        self.tracker = tracker ?? Tracker(providers: providers)
+        self.tracker = tracker ?? Self.makeTracker()
 
         // Wire features with shared dependencies
         homeFeature = HomeFeature(tracker: self.tracker)
-        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker, imageLoader: self.imageLoader)
+        episodeFeature = EpisodeFeature(httpClient: self.httpClient, tracker: self.tracker)
         systemFeature = SystemFeature(tracker: self.tracker)
     }
 
-    private static func makeTrackingProviders() -> [any TrackingProviderContract] {
-        [ConsoleTrackingProvider()]
+    private static func makeTracker() -> Tracker {
+        let providers: [any TrackingProviderContract] = [ConsoleTrackingProvider()]
+        providers.forEach { $0.configure() }
+        return Tracker(providers: providers)
     }
 }
 ```
@@ -180,25 +183,29 @@ AppContainer
     ├── Tracker (shared) ← [Providers]
     ├── ImageLoader (shared) → injected via SwiftUI Environment
     │
-    └── CharacterFeature
-            │
-            └── CharacterContainer
-                    │
-                    ├── CharacterRESTDataSource ← HTTPClient
-                    ├── CharacterMemoryDataSource
-                    ├── RecentSearchesUserDefaultsDataSource
-                    │
-                    ├── CharacterRepository ← Remote + Memory DataSources
-                    ├── CharactersPageRepository ← Remote + Memory DataSources
-                    └── RecentSearchesRepository ← Local DataSource
-                            │
-                            ├── GetCharactersPageUseCase ← Repository
-                            ├── GetRecentSearchesUseCase ← Repository
-                            │
-                            ├── CharacterListViewModel ← UseCases, Navigator, Tracker
-                            │       (conforms to CharacterFilterDelegate)
-                            │
-                            └── CharacterFilterViewModel ← Delegate, Navigator, Tracker
+    ├── CharacterFeature
+    │       └── CharacterContainer
+    │               ├── CharacterRESTDataSource ← HTTPClient
+    │               ├── CharacterMemoryDataSource
+    │               ├── RecentSearchesUserDefaultsDataSource
+    │               ├── CharacterRepository ← Remote + Memory DataSources
+    │               ├── CharactersPageRepository ← Remote + Memory DataSources
+    │               └── RecentSearchesRepository ← Local DataSource
+    │                       ├── GetCharactersPageUseCase ← Repository
+    │                       ├── GetRecentSearchesUseCase ← Repository
+    │                       ├── CharacterListViewModel ← UseCases, Navigator, Tracker
+    │                       │       (conforms to CharacterFilterDelegate)
+    │                       └── CharacterFilterViewModel ← Delegate, Navigator, Tracker
+    │
+    ├── EpisodeFeature
+    │       └── EpisodeContainer
+    │               ├── EpisodeGraphQLDataSource ← HTTPClient (via GraphQLClient)
+    │               ├── EpisodeMemoryDataSource
+    │               ├── EpisodeRepository ← Remote + Memory DataSources
+    │               └── CharacterEpisodesViewModel ← UseCases, Navigator, Tracker
+    │
+    └── SystemFeature
+            └── SystemContainer
 ```
 
 ## Testing

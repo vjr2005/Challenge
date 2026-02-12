@@ -149,7 +149,7 @@ final class CharacterListViewModel: ObservableObject {
 ```
 
 **Rules:**
-- All ViewModels use `@Observable` macro
+- Stateful ViewModels use `@Observable` macro (stateless ViewModels with no observable state are plain `final class`)
 - No `ObservableObject` protocol conformance
 - No `@Published` property wrappers
 - Views use `@State` to hold `@Observable` instances

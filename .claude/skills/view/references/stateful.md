@@ -55,35 +55,35 @@ struct {Screen}View<ViewModel: {Screen}ViewModelContract>: View {
 
 private extension {Screen}View {
     var loadingView: some View {
-        ProgressView()
+        DSLoadingView(message: LocalizedStrings.loading)
     }
 
     func loadedView(_ data: {LoadedType}) -> some View {
         ScrollView {
             // Use DS components: DSCardInfoRow, DSAsyncImage, etc.
-            // Use design tokens: SpacingToken, Typography, SemanticColor
+            // Use theme-based tokens: theme.spacing.lg, theme.typography.headline, theme.colors.textPrimary
         }
         .accessibilityIdentifier(AccessibilityIdentifier.scrollView)
     }
 
     var emptyView: some View {
-        ContentUnavailableView(
-            LocalizedStrings.Empty.title,
-            systemImage: "tray"
+        DSEmptyState(
+            title: LocalizedStrings.Empty.title,
+            description: LocalizedStrings.Empty.description,
+            accessibilityIdentifier: AccessibilityIdentifier.emptyState
         )
-        .accessibilityIdentifier(AccessibilityIdentifier.emptyState)
     }
 
     var errorView: some View {
-        ContentUnavailableView(
-            LocalizedStrings.Error.title,
-            systemImage: "exclamationmark.triangle"
-        ) {
-            Button(LocalizedStrings.Error.retry) {
+        DSErrorView(
+            title: LocalizedStrings.Error.title,
+            message: LocalizedStrings.Error.description,
+            retryTitle: LocalizedStrings.Error.retry,
+            retryAction: {
                 Task { await viewModel.didTapOnRetryButton() }
-            }
-        }
-        .accessibilityIdentifier(AccessibilityIdentifier.errorState)
+            },
+            accessibilityIdentifier: AccessibilityIdentifier.errorState
+        )
     }
 }
 ```
@@ -119,6 +119,7 @@ import {AppName}Resources
 
 private enum LocalizedStrings {
     static var title: String { "{screenName}.title".localized() }
+    static var loading: String { "{screenName}.loading".localized() }
 
     enum Empty {
         static var title: String { "{screenName}.empty.title".localized() }
@@ -127,6 +128,7 @@ private enum LocalizedStrings {
 
     enum Error {
         static var title: String { "{screenName}.error.title".localized() }
+        static var description: String { "{screenName}.error.description".localized() }
         static var retry: String { "common.tryAgain".localized() }
     }
 }
@@ -269,7 +271,7 @@ struct {Screen}ViewSnapshotTests {
 
     init() {
         UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
     }
 
     // MARK: - Tests

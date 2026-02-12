@@ -26,12 +26,16 @@ Libraries/DesignSystem/
 │   │   ├── Contracts/        # Theme protocols
 │   │   └── Default/          # Default theme implementation
 │   ├── Atoms/                # Basic building blocks
+│   │   ├── Badges/DSBadge.swift
 │   │   ├── Buttons/DSButton.swift
+│   │   ├── Chips/DSChip.swift
 │   │   ├── Images/DSAsyncImage.swift
-│   │   └── Indicators/DSStatusIndicator.swift
+│   │   ├── Indicators/DSStatusIndicator.swift
+│   │   └── TextFields/DSTextField.swift
 │   ├── Molecules/            # Combinations of atoms
 │   │   ├── DSInfoRow.swift
-│   │   └── DSCardInfoRow.swift
+│   │   ├── DSCardInfoRow.swift
+│   │   └── DSChipGroup.swift
 │   ├── Organisms/            # Complex components
 │   │   ├── Cards/DSCard.swift
 │   │   └── Feedback/

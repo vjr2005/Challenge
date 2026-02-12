@@ -42,11 +42,11 @@ import Foundation
 
 final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
     var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
-    private(set) var getCallCount = 0
+    private(set) var get{Name}CallCount = 0
     private(set) var lastRequestedIdentifier: Int?
 
     func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        getCallCount += 1
+        get{Name}CallCount += 1
         lastRequestedIdentifier = identifier
         return try result.get()
     }
@@ -69,7 +69,7 @@ struct {Name}RepositoryTests {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(.stub())
+        remoteDataSourceMock.result = .success(try loadJSON("{name}"))
         let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When
@@ -83,7 +83,7 @@ struct {Name}RepositoryTests {
     func callsRemoteDataSourceWithCorrectIdentifier() async throws {
         // Given
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(.stub())
+        remoteDataSourceMock.result = .success(try loadJSON("{name}"))
         let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When

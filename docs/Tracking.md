@@ -283,15 +283,38 @@ Properties use snake_case keys with string values.
 
 | Screen | Event | Properties |
 |--------|-------|------------|
+| Home | `home_viewed` | — |
+| | `home_character_button_tapped` | — |
+| | `home_info_button_tapped` | — |
+| About | `about_viewed` | — |
 | CharacterList | `character_list_viewed` | — |
 | | `character_selected` | `id` |
 | | `search_performed` | `query` |
 | | `character_list_retry_tapped` | — |
 | | `character_list_pull_to_refresh` | — |
 | | `character_list_load_more_tapped` | — |
+| | `character_list_character_filter_tapped` | — |
+| | `character_list_fetch_error` | `description` |
+| | `character_list_refresh_error` | `description` |
+| | `character_list_load_more_error` | `description` |
 | CharacterDetail | `character_detail_viewed` | `id` |
-| Home | `home_viewed` | — |
+| | `character_detail_retry_tapped` | — |
+| | `character_detail_pull_to_refresh` | — |
+| | `character_detail_episodes_tapped` | `id` |
+| | `character_detail_load_error` | `description` |
+| | `character_detail_refresh_error` | `description` |
+| CharacterFilter | `character_filter_viewed` | — |
+| | `character_filter_filters_applied` | `filter_count` |
+| | `character_filter_filters_reset` | — |
+| | `character_filter_close_tapped` | — |
+| CharacterEpisodes | `character_episodes_viewed` | `character_id` |
+| | `character_episodes_retry_tapped` | — |
+| | `character_episodes_pull_to_refresh` | — |
+| | `character_episodes_character_avatar_tapped` | `character_id` |
+| | `character_episodes_load_error` | `description` |
+| | `character_episodes_refresh_error` | `description` |
 | NotFound | `not_found_viewed` | — |
+| | `not_found_go_back_tapped` | — |
 
 ## Testing
 

@@ -146,15 +146,15 @@ After configuration, the app can receive URLs like:
 - `challenge://character/list`
 - `challenge://character/detail/42`
 
-Handle incoming URLs in `RootView` with `.onOpenURL`:
+Handle incoming URLs in `RootContainerView` with `.onOpenURL`:
 
 ```swift
 .onOpenURL { url in
-    router.navigate(to: url)
+    appContainer.handle(url: url, navigator: navigationCoordinator)
 }
 ```
 
-See `/router` skill for deep link implementation details.
+See `/navigator` skill for deep link implementation details.
 
 ---
 

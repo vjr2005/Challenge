@@ -22,7 +22,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 
     var body: some View {
         content
-            .onFirstAppear { await viewModel.load() }
+            .onFirstAppear { await viewModel.didAppear() }
             .navigationTitle(LocalizedStrings.title)
     }
 
@@ -75,7 +75,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
                         icon: "arrow.down.circle.fill",
                         variant: .tertiary
                     ) {
-                        Task { await viewModel.loadMore() }
+                        Task { await viewModel.didTapOnLoadMoreButton() }
                     }
                     .accessibilityIdentifier(AccessibilityIdentifier.loadMoreButton)
                 }
@@ -209,7 +209,7 @@ var errorView: some View {
         retryTitle: LocalizedStrings.Common.tryAgain
     ) {
         Task {
-            await viewModel.load()
+            await viewModel.didAppear()
         }
     }
 }

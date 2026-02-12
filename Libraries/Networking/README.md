@@ -4,9 +4,11 @@ Native networking layer using **URLSession with async/await**. No external depen
 
 ## Overview
 
-This library provides a type-safe HTTP client for making network requests. It uses Swift's modern concurrency features and is fully `Sendable` compliant.
+This library provides a type-safe HTTP client (REST) and GraphQL client for making network requests. It uses Swift's modern concurrency features and is fully `Sendable` compliant.
 
 ## Components
+
+### HTTP (REST)
 
 | File | Visibility | Description |
 |------|------------|-------------|
@@ -15,6 +17,25 @@ This library provides a type-safe HTTP client for making network requests. It us
 | `Endpoint.swift` | **public** | Request configuration |
 | `HTTPMethod.swift` | **public** | Supported HTTP methods |
 | `HTTPError.swift` | **public** | HTTP error types |
+| `HTTPErrorMapper.swift` | **public** | Maps `HTTPError` to `APIError` |
+
+### GraphQL
+
+| File | Visibility | Description |
+|------|------------|-------------|
+| `GraphQLClientContract.swift` | **public** | Protocol defining the GraphQL client interface |
+| `GraphQLClient.swift` | **public** | Implementation using HTTPClient |
+| `GraphQLOperation.swift` | **public** | Query/mutation with variables |
+| `GraphQLVariable.swift` | **public** | Type-safe GraphQL variable values |
+| `GraphQLError.swift` | **public** | GraphQL-specific error types |
+| `GraphQLErrorMapper.swift` | **public** | Maps `GraphQLError` to `APIError` |
+| `GraphQLResponse.swift` | **public** | Generic response wrapper |
+| `GraphQLResponseError.swift` | **public** | Individual error from GraphQL response |
+
+### API
+
+| File | Visibility | Description |
+|------|------------|-------------|
 | `APIError.swift` | **public** | API-agnostic error types (used by DataSources and error mappers) |
 
 ## Usage
@@ -25,7 +46,7 @@ This library provides a type-safe HTTP client for making network requests. It us
 import ChallengeNetworking
 
 guard let baseURL = URL(string: "https://api.example.com") else {
-    fatalError("Invalid API base URL")
+    preconditionFailure("Invalid API base URL")
 }
 
 let client = HTTPClient(baseURL: baseURL)
@@ -115,10 +136,14 @@ public final class HTTPClientMock: HTTPClientContract {
     // Tracks all requested endpoints for verification
     public private(set) var requestedEndpoints: [Endpoint] = []
 
-    // Configure with success or failure result
-    public init(result: Result<Data, Error> = .success(Data()))
+    // Configure result after init
+    public var result: Result<Data, Error> = .success(Data())
+
+    public init() {}
 }
 ```
+
+Also available: `GraphQLClientMock` for testing GraphQL data sources.
 
 ### Basic Test
 
@@ -130,7 +155,8 @@ import Testing
 func fetchesUsers() async throws {
     // Given
     let mockData = try JSONEncoder().encode([User(id: 1, name: "Test")])
-    let sut = HTTPClientMock(result: .success(mockData))
+    let sut = HTTPClientMock()
+    sut.result = .success(mockData)
 
     // When
     let users: [User] = try await sut.request(Endpoint(path: "/users"))
@@ -147,7 +173,8 @@ func fetchesUsers() async throws {
 @Test
 func handlesError() async {
     // Given
-    let sut = HTTPClientMock(result: .failure(HTTPError.invalidURL))
+    let sut = HTTPClientMock()
+    sut.result = .failure(HTTPError.invalidURL)
 
     // When / Then
     await #expect(throws: HTTPError.invalidURL) {
@@ -162,7 +189,7 @@ func handlesError() async {
 @Test
 func sendsCorrectEndpoint() async throws {
     // Given
-    let sut = HTTPClientMock(result: .success(Data()))
+    let sut = HTTPClientMock()
 
     // When
     let _: Data = try await sut.request(Endpoint(

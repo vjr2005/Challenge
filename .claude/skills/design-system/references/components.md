@@ -26,6 +26,22 @@ Text("Title")
     .accessibilityIdentifier("screen.title")
 ```
 
+### DSBadge
+
+A generic wrapper view that overlays a count badge on any content. The badge is hidden when count is 0 or less.
+
+```swift
+// Badge on an icon (hidden when count is 0)
+DSBadge(count: 0) {
+    Image(systemName: "bell")
+}
+
+// Badge with count
+DSBadge(count: 5) {
+    Image(systemName: "bell")
+}
+```
+
 ### DSButton
 
 Button with variants:
@@ -45,6 +61,37 @@ DSButton("Processing", isLoading: true) { /* action */ }
 
 // With accessibility identifier
 DSButton("Submit", accessibilityIdentifier: "form.submitButton") { /* action */ }
+```
+
+### DSChip
+
+A selectable chip component with capsule shape. Displays selected state with accent background and inverted text, or unselected state with border outline.
+
+```swift
+// Selected chip
+DSChip("Alive", isSelected: true) { /* action */ }
+
+// Unselected chip
+DSChip("Dead", isSelected: false) { /* action */ }
+
+// With accessibility identifier
+DSChip("Unknown", isSelected: false, accessibilityIdentifier: "filter.unknown") { /* action */ }
+```
+
+### DSTextField
+
+A styled text field with rounded rectangle shape, separator border, and secondary surface background.
+
+```swift
+// Empty text field
+DSTextField(placeholder: "Search...", text: $searchText)
+
+// With accessibility identifier
+DSTextField(
+    placeholder: "Search...",
+    text: $searchText,
+    accessibilityIdentifier: "search.textField"
+)
 ```
 
 ### DSStatusIndicator
@@ -124,6 +171,26 @@ DSCardInfoRow(
     statusLabel: character.status.rawValue,
     accessibilityIdentifier: "characterList.row.\(character.id)"
 )
+```
+
+### DSChipGroup
+
+A labeled horizontal group of selectable chips with single-select toggle behavior. Generic over the option ID type. Tapping the already-selected chip deselects it (calls `onSelect(nil)`).
+
+```swift
+// With a selected option
+DSChipGroup(
+    "Status",
+    options: [
+        (id: "alive", label: "Alive"),
+        (id: "dead", label: "Dead"),
+        (id: "unknown", label: "Unknown")
+    ],
+    selectedID: "alive",
+    accessibilityIdentifier: "filter.status"
+) { selectedID in
+    // selectedID is the newly selected ID, or nil when deselected
+}
 ```
 
 ---
@@ -206,6 +273,7 @@ DSEmptyState(
 |-----------|---------------|
 | `DSInfoRow` | `.icon`, `.label`, `.value` |
 | `DSCardInfoRow` | `.image`, `.title`, `.subtitle`, `.caption`, `.status`, `.statusLabel` |
+| `DSChipGroup` | `.{label}` (each chip gets the group identifier + `.` + chip label) |
 | `DSEmptyState` | `.icon`, `.title`, `.message`, `.button` |
 | `DSErrorView` | `.icon`, `.title`, `.message`, `.button` |
 | `DSLoadingView` | `.indicator`, `.message` |

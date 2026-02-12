@@ -310,7 +310,7 @@ import Challenge{Feature}
 import ChallengeCharacter
 import ChallengeCore
 
-struct AppNavigationRedirect: NavigationRedirectContract {
+public struct AppNavigationRedirect: NavigationRedirectContract {
     func redirect(_ navigation: any NavigationContract) -> (any NavigationContract)? {
         switch navigation {
         case let outgoing as {Feature}OutgoingNavigation:
@@ -387,7 +387,7 @@ struct {Screen}NavigatorTests {
 
 ### 7. Test AppNavigationRedirect
 
-Create `App/Tests/Navigation/AppNavigationRedirectTests.swift`:
+Create `AppKit/Tests/Unit/Presentation/Navigation/AppNavigationRedirectTests.swift`:
 
 ```swift
 import Challenge{Feature}

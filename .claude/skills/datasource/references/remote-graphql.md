@@ -48,11 +48,11 @@ GraphQL pagination returns page numbers (not URLs like REST).
 ```swift
 protocol {Name}RemoteDataSourceContract: Sendable {
 	func fetch{Name}(identifier: Int) async throws -> {Name}DTO
-	func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO
+	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO
 }
 ```
 
-The contract is transport-agnostic — same contract for REST or GraphQL. Filter types are domain models (created elsewhere, not by this skill).
+The contract is transport-agnostic — same contract for REST or GraphQL. Filter types are DTOs — DataSources only work with DTOs, never domain objects.
 
 ### {Name}GraphQLDataSource.swift — `Sources/Data/DataSources/Remote/`
 
@@ -68,7 +68,7 @@ struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 		self.graphQLClient = graphQLClient
 	}
 
-	func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO {
+	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 		var variables: [String: GraphQLVariable] = ["page": .int(page)]
 
 		if let name = filter.name, !name.isEmpty {
@@ -162,7 +162,7 @@ import ChallengeNetworking
 
 public final class {Feature}Container {
 	private let tracker: any TrackerContract
-	private let {name}Repository: any {Name}RepositoryContract
+	private let {name}Repository: {Name}RepositoryContract
 
 	public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
 		self.tracker = tracker
@@ -196,10 +196,10 @@ final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @uncheck
 	private(set) var fetch{Name}sCallCount = 0
 	private(set) var fetch{Name}CallCount = 0
 	private(set) var lastFetchedPage: Int?
-	private(set) var lastFetchedFilter: {Name}Filter?
+	private(set) var lastFetchedFilter: {Name}FilterDTO?
 	private(set) var lastFetchedIdentifier: Int?
 
-	func fetch{Name}s(page: Int, filter: {Name}Filter) async throws -> {Name}sResponseDTO {
+	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 		fetch{Name}sCallCount += 1
 		lastFetchedPage = page
 		lastFetchedFilter = filter

@@ -19,7 +19,7 @@ struct CharacterDetailViewSnapshotTests {
 
     init() {
         UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
     }
 
     @Test("Renders loading state correctly")
@@ -120,7 +120,7 @@ struct CharacterListViewSnapshotTests {
 
     init() {
         UIView.setAnimationsEnabled(false)
-        imageLoader = ImageLoaderMock(image: SnapshotStubs.testImage)
+        imageLoader = ImageLoaderMock(cachedImage: .stub, asyncImage: .stub)
     }
 
     @Test("Renders loading state correctly")
@@ -210,7 +210,8 @@ import Foundation
 
 protocol {Name}ViewModelContract: AnyObject {
     var state: {Name}ViewState { get }
-    func load() async
+    func didAppear() async
+    func didTapOnRetryButton() async
 }
 ```
 
@@ -219,7 +220,7 @@ protocol {Name}ViewModelContract: AnyObject {
 ## ViewModel Stub
 
 ```swift
-// Tests/Presentation/Helpers/{Name}ViewModelStub.swift
+// Tests/Shared/Stubs/{Name}ViewModelStub.swift
 import Foundation
 
 @testable import {AppName}{Feature}
@@ -232,27 +233,31 @@ final class {Name}ViewModelStub: {Name}ViewModelContract {
         self.state = state
     }
 
-    func load() async { }
+    func didAppear() async {}
+    func didTapOnRetryButton() async {}
 }
 ```
 
 ---
 
-## SnapshotStubs
+## UIImage+Stub
+
+Each module provides its own `UIImage` stub using a `BundleFinder` class. Located at `Tests/Shared/Stubs/UIImage+Stub.swift`:
 
 ```swift
-// Tests/Presentation/Helpers/SnapshotStubs.swift
-import Foundation
 import UIKit
 
-enum SnapshotStubs {
-    static var testImage: UIImage? {
-        guard let path = Bundle.module.path(forResource: "test-avatar", ofType: "jpg") else {
+extension UIImage {
+    static var stub: UIImage? {
+        let bundle = Bundle(for: {Feature}BundleFinder.self)
+        guard let path = bundle.path(forResource: "test-avatar", ofType: "jpg") else {
             return nil
         }
         return UIImage(contentsOfFile: path)
     }
 }
+
+private final class {Feature}BundleFinder {}
 ```
 
 ---
@@ -263,6 +268,7 @@ enum SnapshotStubs {
 // Sources/Presentation/{Name}/Views/{Name}View.swift
 struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
     @State private var viewModel: ViewModel
+    @Environment(\.dsTheme) private var theme
 
     init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -270,16 +276,21 @@ struct {Name}View<ViewModel: {Name}ViewModelContract>: View {
 
     var body: some View {
         content
-            .onFirstAppear { await viewModel.load() }
+            .onFirstAppear { await viewModel.didAppear() }
     }
 
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
         case .idle: Color.clear
-        case .loading: ProgressView()
+        case .loading: DSLoadingView(message: LocalizedStrings.loading)
         case .loaded(let data): Text(data.name)
-        case .error: ContentUnavailableView("Error", systemImage: "exclamationmark.triangle")
+        case .error: DSErrorView(
+            title: LocalizedStrings.Error.title,
+            message: LocalizedStrings.Error.description,
+            retryTitle: LocalizedStrings.Common.tryAgain,
+            retryAction: { Task { await viewModel.didTapOnRetryButton() } }
+        )
         }
     }
 }
