@@ -40,29 +40,75 @@ final class DataSourceMock: DataSourceContract {
 }
 ```
 
-### Mock Pattern for Actor Types
+### Mock Pattern for Actor Contracts (`: Actor`)
 
-When mocking `actor` types (e.g., MemoryDataSource), use a plain `final class` with `@unchecked Sendable`:
+When mocking `: Actor` protocols (e.g., MemoryDataSource, UserDefaultsDataSource), the mock must also be an `actor` with setter methods:
 
 ```swift
-// Original in main module
-actor CharacterMemoryDataSource: CharacterLocalDataSourceContract { }
+// Contract
+protocol CharacterLocalDataSourceContract: Actor {
+    func getCharacter(identifier: Int) -> CharacterDTO?
+    func saveCharacter(_ character: CharacterDTO)
+}
 
-// Mock in test module - plain class, no actor isolation
-final class CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract, @unchecked Sendable {
-    var characterToReturn: CharacterDTO?
+// Mock — actor with setter methods for configuration
+actor CharacterLocalDataSourceMock: CharacterLocalDataSourceContract {
+    private(set) var characterToReturn: CharacterDTO?
     private(set) var saveCallCount = 0
-    private(set) var saveLastValue: CharacterDTO?
+
+    func setCharacterToReturn(_ character: CharacterDTO?) {
+        characterToReturn = character
+    }
 
     func getCharacter(identifier: Int) -> CharacterDTO? { characterToReturn }
     func saveCharacter(_ character: CharacterDTO) {
         saveCallCount += 1
-        saveLastValue = character
     }
 }
 ```
 
-**Why:** Using a plain class avoids actor isolation in tests, allowing direct property access without `await` for configuring and verifying mocks.
+Tests use `await` for all mock property reads and setter calls.
+
+### Mock Pattern for Sendable Contracts with `nonisolated` Methods
+
+When mocking `: Sendable` protocols with `nonisolated` methods (e.g., FileSystem wrapping a thread-safe API), use `final class` + `@unchecked Sendable` + `nonisolated(unsafe)` properties + `nonisolated` methods:
+
+```swift
+// Contract — Sendable with nonisolated methods (NOT Actor)
+protocol FileSystemContract: Sendable {
+    nonisolated func contents(at url: URL) throws -> Data
+    nonisolated func write(_ data: Data, to url: URL) throws
+}
+
+// Mock — final class with nonisolated(unsafe) properties
+final class FileSystemMock: FileSystemContract, @unchecked Sendable {
+    nonisolated(unsafe) var files: [URL: Data] = [:]
+    nonisolated(unsafe) var writeError: (any Error)?
+    nonisolated(unsafe) private(set) var writeCallCount = 0
+
+    @MainActor init() {}
+
+    nonisolated func contents(at url: URL) throws -> Data {
+        guard let data = files[url] else { throw CocoaError(.fileReadNoSuchFile) }
+        return data
+    }
+
+    nonisolated func write(_ data: Data, to url: URL) throws {
+        writeCallCount += 1
+        if let writeError { throw writeError }
+        files[url] = data
+    }
+}
+```
+
+**Why this is safe:** The actor that owns the mock serializes all calls. Tests configure the mock on MainActor (setup) and verify on MainActor (assertions) — no concurrent access. No `await` needed for mock property reads/writes.
+
+**When to use which pattern:**
+
+| Protocol type | Mock type | Properties | Methods | `await` in tests |
+|--------------|-----------|------------|---------|-----------------|
+| `: Actor` | `actor` | `private(set)` + setter methods | Actor-isolated | Yes, for all access |
+| `: Sendable` + `nonisolated` | `final class @unchecked Sendable` | `nonisolated(unsafe)` | `nonisolated` | No |
 
 ---
 

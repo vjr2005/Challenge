@@ -215,6 +215,130 @@ actor DataStore {
 
 ---
 
+## Actor Reentrancy
+
+> **Reference:** [SE-0306 — Actors](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0306-actors.md#actor-reentrancy)
+
+Swift actors are **reentrant by design**. When an actor-isolated function suspends at an `await`, other tasks can execute on the same actor before the original function resumes. This is called **interleaving**.
+
+### The problem
+
+Every `await` inside an actor is a **suspension point** where actor state can change:
+
+```swift
+// DANGEROUS — reentrancy can break invariants
+actor ImageDiskCache {
+    private let fileSystem: FileSystemContract // `: Actor`
+
+    func image(for url: URL) async -> UIImage? {
+        guard let data = try? await fileSystem.contents(at: fileURL) else {
+            return nil
+        }
+        // ⚠️ SUSPENSION POINT — another task can run here (e.g., eviction deletes the file)
+        guard let attributes = try? await fileSystem.fileAttributes(at: fileURL) else {
+            // File was deleted between the two awaits!
+            return nil
+        }
+        // ...
+    }
+}
+```
+
+Between two `await` calls on the same actor, another task (e.g., eviction) can interleave and modify the actor's state or the underlying filesystem. This leads to:
+- **Stale reads**: data read before suspension may not match state after resumption
+- **Broken invariants**: multi-step operations are no longer atomic
+- **Redundant or conflicting operations**: concurrent evictions interleaving
+
+### The solution: eliminate suspension points
+
+If an actor's dependency is `Sendable` with `nonisolated` methods instead of an `Actor`, its calls execute **synchronously** within the caller actor's isolation — no `await`, no suspension, no interleaving:
+
+```swift
+// SAFE — zero suspension points, every method is an atomic critical section
+protocol FileSystemContract: Sendable {
+    nonisolated func contents(at url: URL) throws -> Data
+    nonisolated func write(_ data: Data, to url: URL) throws
+    // ...
+}
+
+struct FileSystem: FileSystemContract {
+    // FileManager is not Sendable but is documented as thread-safe.
+    // Safe to use from any isolation domain without synchronization.
+    nonisolated(unsafe) private let fileManager: FileManager
+
+    nonisolated func contents(at url: URL) throws -> Data {
+        try Data(contentsOf: url)
+    }
+    // ...
+}
+
+actor ImageDiskCache {
+    private let fileSystem: FileSystemContract
+
+    func image(for url: URL) -> UIImage? { // No `async` — fully synchronous
+        guard let data = try? fileSystem.contents(at: fileURL) else { return nil }
+        // No suspension point — no other task can interleave here
+        guard let attributes = try? fileSystem.fileAttributes(at: fileURL) else { ... }
+        // ...
+    }
+}
+```
+
+### When to use each pattern
+
+| Pattern | Use when | Example |
+|---------|----------|---------|
+| `: Actor` protocol | Dependency has its **own mutable state** to protect | `MemoryDataSource`, `UserDefaultsDataSource` |
+| `: Sendable` + `nonisolated` | Dependency is a **stateless wrapper** around a thread-safe API | `FileSystem` (wraps `FileManager`) |
+
+### `nonisolated` is mandatory on protocol methods
+
+With `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, protocol methods **without** `nonisolated` are MainActor-isolated by default. Calling them from a non-MainActor actor requires `await` for the MainActor hop — reintroducing suspension points.
+
+`nonisolated(unsafe)` on the **property** does NOT bypass method isolation — it only affects property access:
+
+```swift
+actor ImageDiskCache {
+    nonisolated(unsafe) private let fileSystem: FileSystemContract
+    // ❌ fileSystem.contents(at:) is still MainActor-isolated per protocol
+    // ❌ Compiler error: "Call to main actor-isolated instance method in a synchronous actor-isolated context"
+}
+```
+
+### Thread-safe non-Sendable types
+
+`FileManager` and `UserDefaults` are thread-safe but not `Sendable`. Use `nonisolated(unsafe)` to store them:
+
+```swift
+struct FileSystem: FileSystemContract {
+    // FileManager is not Sendable but is documented as thread-safe.
+    // Safe to use from any isolation domain without synchronization.
+    nonisolated(unsafe) private let fileManager: FileManager
+}
+```
+
+### Mock pattern for Sendable protocols with nonisolated methods
+
+```swift
+final class FileSystemMock: FileSystemContract, @unchecked Sendable {
+    nonisolated(unsafe) var files: [URL: Data] = [:]
+    nonisolated(unsafe) var writeError: (any Error)?
+    nonisolated(unsafe) private(set) var writeCallCount = 0
+
+    @MainActor init() {}
+
+    nonisolated func write(_ data: Data, to url: URL) throws {
+        writeCallCount += 1
+        if let writeError { throw writeError }
+        files[url] = data
+    }
+}
+```
+
+This is safe in practice because the actor serializes all calls to the mock. Tests configure the mock on MainActor (setup) and verify on MainActor (assertions) — no concurrent access.
+
+---
+
 ## Checklist
 
 - [ ] Async functions use `async throws` (not completion handlers)
@@ -222,3 +346,5 @@ actor DataStore {
 - [ ] No `DispatchQueue` usage
 - [ ] No explicit `Sendable` conformance (it's inferred)
 - [ ] No explicit `@MainActor` on ViewModels/Views (it's default)
+- [ ] Actor methods with multiple `await` calls reviewed for reentrancy risks
+- [ ] Stateless wrappers around thread-safe APIs use `: Sendable` + `nonisolated` (not `: Actor`)
