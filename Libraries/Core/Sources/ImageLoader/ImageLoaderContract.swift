@@ -14,7 +14,7 @@ public protocol ImageLoaderContract: Sendable {
 
 	/// Removes the cached image for the given URL from memory and disk.
 	/// - Parameter url: The URL of the image to remove.
-	func removeImage(for url: URL) async
+	func removeCachedImage(for url: URL) async
 
 	/// Clears all cached images from memory and disk.
 	func clearCache() async

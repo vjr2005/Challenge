@@ -6,8 +6,8 @@ public final class ImageLoaderMock: ImageLoaderContract, @unchecked Sendable {
 	private let cachedImageResult: UIImage?
 	private let asyncImageResult: UIImage?
 	private let onImageLoaded: (@Sendable () -> Void)?
-	public private(set) var removeImageCallCount = 0
-	public private(set) var removeImageLastURL: URL?
+	public private(set) var removeCachedImageCallCount = 0
+	public private(set) var removeCachedImageLastURL: URL?
 	public private(set) var clearCacheCallCount = 0
 
 	/// Creates a mock image loader with different results for cached and async loading.
@@ -31,9 +31,9 @@ public final class ImageLoaderMock: ImageLoaderContract, @unchecked Sendable {
 		return result
 	}
 
-	public func removeImage(for url: URL) async {
-		removeImageCallCount += 1
-		removeImageLastURL = url
+	public func removeCachedImage(for url: URL) async {
+		removeCachedImageCallCount += 1
+		removeCachedImageLastURL = url
 	}
 
 	public func clearCache() async {

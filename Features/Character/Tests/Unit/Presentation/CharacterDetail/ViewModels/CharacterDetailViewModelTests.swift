@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import Foundation
 import Testing
 
@@ -10,6 +11,7 @@ struct CharacterDetailViewModelTests {
     private let identifier = 1
     private let getCharacterUseCaseMock = GetCharacterUseCaseMock()
     private let refreshCharacterUseCaseMock = RefreshCharacterUseCaseMock()
+    private let imageLoaderMock = ImageLoaderMock(cachedImage: nil, asyncImage: nil)
     private let navigatorMock = CharacterDetailNavigatorMock()
     private let trackerMock = CharacterDetailTrackerMock()
     private let sut: CharacterDetailViewModel
@@ -21,6 +23,7 @@ struct CharacterDetailViewModelTests {
             identifier: identifier,
             getCharacterUseCase: getCharacterUseCaseMock,
             refreshCharacterUseCase: refreshCharacterUseCaseMock,
+            imageLoader: imageLoaderMock,
             navigator: navigatorMock,
             tracker: trackerMock
         )
@@ -179,6 +182,46 @@ struct CharacterDetailViewModelTests {
         // Then
         #expect(statesDuringRefresh.count == 1)
         #expect(statesDuringRefresh.first == .loaded(loadedCharacter))
+    }
+
+    // MARK: - Image Cache Invalidation
+
+    @Test("didPullToRefresh invalidates image from cache on success")
+    func didPullToRefreshInvalidatesImageOnSuccess() async {
+        // Given
+        let imageURL = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")!
+        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: imageURL))
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(imageLoaderMock.removeCachedImageCallCount == 1)
+        #expect(imageLoaderMock.removeCachedImageLastURL == imageURL)
+    }
+
+    @Test("didPullToRefresh does not invalidate image on failure")
+    func didPullToRefreshDoesNotInvalidateImageOnFailure() async {
+        // Given
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(imageLoaderMock.removeCachedImageCallCount == 0)
+    }
+
+    @Test("didPullToRefresh does not invalidate when character has no image URL")
+    func didPullToRefreshDoesNotInvalidateWhenNoImageURL() async {
+        // Given
+        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: nil))
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(imageLoaderMock.removeCachedImageCallCount == 0)
     }
 
     // MARK: - Tracking

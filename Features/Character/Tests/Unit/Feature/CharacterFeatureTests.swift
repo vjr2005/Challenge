@@ -14,7 +14,11 @@ struct CharacterFeatureTests {
     // MARK: - Initialization
 
     init() {
-        sut = CharacterFeature(httpClient: HTTPClientMock(), tracker: TrackerMock())
+        sut = CharacterFeature(
+            httpClient: HTTPClientMock(),
+            tracker: TrackerMock(),
+            imageLoader: ImageLoaderMock(cachedImage: nil, asyncImage: nil)
+        )
     }
 
     // MARK: - Deep Link Handler

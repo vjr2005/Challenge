@@ -1,3 +1,4 @@
+import ChallengeCore
 import Foundation
 
 @Observable
@@ -7,6 +8,7 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     private let identifier: Int
     private let getCharacterUseCase: GetCharacterUseCaseContract
     private let refreshCharacterUseCase: RefreshCharacterUseCaseContract
+    private let imageLoader: any ImageLoaderContract
     private let navigator: CharacterDetailNavigatorContract
     private let tracker: CharacterDetailTrackerContract
 
@@ -14,12 +16,14 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
         identifier: Int,
         getCharacterUseCase: GetCharacterUseCaseContract,
         refreshCharacterUseCase: RefreshCharacterUseCaseContract,
+        imageLoader: any ImageLoaderContract,
         navigator: CharacterDetailNavigatorContract,
         tracker: CharacterDetailTrackerContract
     ) {
         self.identifier = identifier
         self.getCharacterUseCase = getCharacterUseCase
         self.refreshCharacterUseCase = refreshCharacterUseCase
+        self.imageLoader = imageLoader
         self.navigator = navigator
         self.tracker = tracker
     }
@@ -62,6 +66,9 @@ private extension CharacterDetailViewModel {
     func refresh() async {
         do {
             let character = try await refreshCharacterUseCase.execute(identifier: identifier)
+            if let imageURL = character.imageURL {
+                await imageLoader.removeCachedImage(for: imageURL)
+            }
             state = .loaded(character)
         } catch {
             tracker.trackRefreshError(description: error.debugDescription)

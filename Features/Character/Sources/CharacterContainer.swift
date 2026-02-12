@@ -6,6 +6,7 @@ public final class CharacterContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
+    private let imageLoader: any ImageLoaderContract
 
     // MARK: - Repositories
 
@@ -19,8 +20,10 @@ public final class CharacterContainer {
     /// - Parameters:
     ///   - httpClient: The HTTP client used for network requests.
     ///   - tracker: The tracker used to register analytics events.
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+    ///   - imageLoader: The image loader used to manage cached images.
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
         self.tracker = tracker
+        self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
         let memoryDataSource = CharacterMemoryDataSource()
         let recentSearchesDataSource = RecentSearchesLocalDataSource()
@@ -60,6 +63,7 @@ public final class CharacterContainer {
             identifier: identifier,
             getCharacterUseCase: GetCharacterUseCase(repository: characterRepository),
             refreshCharacterUseCase: RefreshCharacterUseCase(repository: characterRepository),
+            imageLoader: imageLoader,
             navigator: CharacterDetailNavigator(navigator: navigator),
             tracker: CharacterDetailTracker(tracker: tracker)
         )

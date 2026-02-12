@@ -236,8 +236,8 @@ struct CachedImageLoaderTests {
 
 	// MARK: - Remove Image
 
-	@Test("removeImage removes image from memory and disk")
-	func removeImageRemovesFromMemoryAndDisk() async throws {
+	@Test("removeCachedImage removes image from memory and disk")
+	func removeCachedImageRemovesFromMemoryAndDisk() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-remove-image.example.com/image.png"))
 		let fileSystemMock = FileSystemMock()
@@ -254,7 +254,7 @@ struct CachedImageLoaderTests {
 		_ = await sut.image(for: url)
 
 		// When
-		await sut.removeImage(for: url)
+		await sut.removeCachedImage(for: url)
 
 		// Then
 		#expect(sut.cachedImage(for: url) == nil)

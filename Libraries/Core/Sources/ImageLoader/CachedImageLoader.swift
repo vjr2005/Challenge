@@ -49,8 +49,8 @@ public final class CachedImageLoader: ImageLoaderContract {
 	}
 
 	/// Removes the cached image for the given URL from memory and disk.
-	public func removeImage(for url: URL) async {
-		cache.removeImage(for: url)
+	public func removeCachedImage(for url: URL) async {
+		cache.removeCachedImage(for: url)
 		await diskCache.remove(for: url)
 	}
 
@@ -72,7 +72,7 @@ private final class ImageCache {
 		storage.setObject(image, forKey: url as NSURL)
 	}
 
-	func removeImage(for url: URL) {
+	func removeCachedImage(for url: URL) {
 		storage.removeObject(forKey: url as NSURL)
 	}
 

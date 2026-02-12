@@ -14,8 +14,9 @@ public struct CharacterFeature: FeatureContract {
     /// - Parameters:
     ///   - httpClient: The HTTP client used as transport for network requests.
     ///   - tracker: The tracker used to register analytics events.
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
-        self.container = CharacterContainer(httpClient: httpClient, tracker: tracker)
+    ///   - imageLoader: The image loader used to manage cached images.
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
+        self.container = CharacterContainer(httpClient: httpClient, tracker: tracker, imageLoader: imageLoader)
     }
 
     // MARK: - Feature Protocol

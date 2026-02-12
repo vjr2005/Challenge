@@ -46,7 +46,7 @@ public struct AppContainer {
 		self.tracker = tracker ?? Self.makeTracker()
 
 		homeFeature = HomeFeature(tracker: self.tracker)
-		characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+		characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker, imageLoader: self.imageLoader)
 		episodeFeature = EpisodeFeature(httpClient: self.httpClient, tracker: self.tracker)
 		systemFeature = SystemFeature(tracker: self.tracker)
 	}
