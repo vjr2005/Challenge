@@ -30,7 +30,7 @@ struct CharacterRepositoryTests {
         // Given
         let characterDTO: CharacterDTO = try loadJSON("character")
         let expected = Character.stub()
-        memoryDataSourceMock.characterToReturn = characterDTO
+        await memoryDataSourceMock.setCharacterToReturn(characterDTO)
 
         // When
         let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
@@ -43,7 +43,7 @@ struct CharacterRepositoryTests {
     func localFirstDoesNotCallRemoteWhenCacheHit() async throws {
         // Given
         let characterDTO: CharacterDTO = try loadJSON("character")
-        memoryDataSourceMock.characterToReturn = characterDTO
+        await memoryDataSourceMock.setCharacterToReturn(characterDTO)
 
         // When
         _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
@@ -77,8 +77,8 @@ struct CharacterRepositoryTests {
         _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterLastValue == characterDTO)
+        #expect(await memoryDataSourceMock.saveCharacterCallCount == 1)
+        #expect(await memoryDataSourceMock.saveCharacterLastValue == characterDTO)
     }
 
     // MARK: - RemoteFirst Policy
@@ -89,7 +89,7 @@ struct CharacterRepositoryTests {
         let cachedDTO: CharacterDTO = try loadJSON("character")
         let freshDTO: CharacterDTO = try loadJSON("character_dead")
         remoteDataSourceMock.result = .success(freshDTO)
-        memoryDataSourceMock.characterToReturn = cachedDTO
+        await memoryDataSourceMock.setCharacterToReturn(cachedDTO)
 
         // When
         let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
@@ -109,8 +109,8 @@ struct CharacterRepositoryTests {
         _ = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 1)
-        #expect(memoryDataSourceMock.saveCharacterLastValue == freshDTO)
+        #expect(await memoryDataSourceMock.saveCharacterCallCount == 1)
+        #expect(await memoryDataSourceMock.saveCharacterLastValue == freshDTO)
     }
 
     @Test("RemoteFirst falls back to cache on remote error")
@@ -118,7 +118,7 @@ struct CharacterRepositoryTests {
         // Given
         let cachedDTO: CharacterDTO = try loadJSON("character")
         remoteDataSourceMock.result = .failure(APIError.invalidResponse)
-        memoryDataSourceMock.characterToReturn = cachedDTO
+        await memoryDataSourceMock.setCharacterToReturn(cachedDTO)
 
         // When
         let value = try await sut.getCharacter(identifier: 1, cachePolicy: .remoteFirst)
@@ -164,7 +164,7 @@ struct CharacterRepositoryTests {
         _ = try await sut.getCharacter(identifier: 1, cachePolicy: .noCache)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
+        #expect(await memoryDataSourceMock.saveCharacterCallCount == 0)
     }
 
     @Test("NoCache policy does not check cache")
@@ -172,7 +172,7 @@ struct CharacterRepositoryTests {
         // Given
         let cachedDTO: CharacterDTO = try loadJSON("character")
         let remoteDTO: CharacterDTO = try loadJSON("character_dead")
-        memoryDataSourceMock.characterToReturn = cachedDTO
+        await memoryDataSourceMock.setCharacterToReturn(cachedDTO)
         remoteDataSourceMock.result = .success(remoteDTO)
 
         // When
@@ -180,7 +180,7 @@ struct CharacterRepositoryTests {
 
         // Then
         #expect(value.status == .dead)
-        #expect(memoryDataSourceMock.getCharacterCallCount == 0)
+        #expect(await memoryDataSourceMock.getCharacterCallCount == 0)
     }
 
     // MARK: - Error Handling Tests
@@ -194,7 +194,7 @@ struct CharacterRepositoryTests {
         _ = try? await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.saveCharacterCallCount == 0)
+        #expect(await memoryDataSourceMock.saveCharacterCallCount == 0)
     }
 }
 

@@ -19,30 +19,30 @@ struct GetRecentSearchesUseCaseTests {
 	// MARK: - Execute
 
 	@Test("Execute returns searches from repository")
-	func executeReturnsSearches() {
+	func executeReturnsSearches() async {
 		// Given
 		repositoryMock.searches = ["Rick", "Morty"]
 
 		// When
-		let result = sut.execute()
+		let result = await sut.execute()
 
 		// Then
 		#expect(result == ["Rick", "Morty"])
 	}
 
 	@Test("Execute returns empty array when no searches exist")
-	func executeReturnsEmptyWhenNoneExist() {
+	func executeReturnsEmptyWhenNoneExist() async {
 		// When
-		let result = sut.execute()
+		let result = await sut.execute()
 
 		// Then
 		#expect(result == [])
 	}
 
 	@Test("Execute calls repository exactly once")
-	func executeCallsRepositoryOnce() {
+	func executeCallsRepositoryOnce() async {
 		// When
-		_ = sut.execute()
+		_ = await sut.execute()
 
 		// Then
 		#expect(repositoryMock.getRecentSearchesCallCount == 1)

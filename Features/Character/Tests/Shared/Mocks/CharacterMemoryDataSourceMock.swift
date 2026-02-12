@@ -2,11 +2,19 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-final class CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract, @unchecked Sendable {
+actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     // MARK: - Configurable Returns
 
-    var characterToReturn: CharacterDTO?
-    var pageToReturn: CharactersResponseDTO?
+    private(set) var characterToReturn: CharacterDTO?
+    private(set) var pageToReturn: CharactersResponseDTO?
+
+    func setCharacterToReturn(_ character: CharacterDTO?) {
+        characterToReturn = character
+    }
+
+    func setPageToReturn(_ page: CharactersResponseDTO?) {
+        pageToReturn = page
+    }
 
     // MARK: - Call Tracking
 

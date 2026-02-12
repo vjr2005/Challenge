@@ -19,18 +19,18 @@ struct DeleteRecentSearchUseCaseTests {
 	// MARK: - Execute
 
 	@Test("Execute calls repository with correct query")
-	func executeCallsRepositoryWithCorrectQuery() {
+	func executeCallsRepositoryWithCorrectQuery() async {
 		// When
-		sut.execute(query: "Rick")
+		await sut.execute(query: "Rick")
 
 		// Then
 		#expect(repositoryMock.lastDeletedQuery == "Rick")
 	}
 
 	@Test("Execute calls repository exactly once")
-	func executeCallsRepositoryOnce() {
+	func executeCallsRepositoryOnce() async {
 		// When
-		sut.execute(query: "Morty")
+		await sut.execute(query: "Morty")
 
 		// Then
 		#expect(repositoryMock.deleteSearchCallCount == 1)

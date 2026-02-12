@@ -758,21 +758,21 @@ struct CharacterListViewModelTests {
     }
 
     @Test("didDeleteRecentSearch calls delete use case with correct query")
-    func didDeleteRecentSearchCallsDeleteUseCase() {
+    func didDeleteRecentSearchCallsDeleteUseCase() async {
         // When
-        sut.didDeleteRecentSearch("Rick")
+        await sut.didDeleteRecentSearch("Rick")
 
         // Then
         #expect(deleteRecentSearchUseCaseMock.deletedQueries == ["Rick"])
     }
 
     @Test("didDeleteRecentSearch refreshes recent searches list")
-    func didDeleteRecentSearchRefreshesList() {
+    func didDeleteRecentSearchRefreshesList() async {
         // Given
         getRecentSearchesUseCaseMock.searches = ["Morty"]
 
         // When
-        sut.didDeleteRecentSearch("Rick")
+        await sut.didDeleteRecentSearch("Rick")
 
         // Then
         #expect(sut.recentSearches == ["Morty"])

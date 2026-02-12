@@ -1,7 +1,7 @@
 import Foundation
 
 protocol SaveRecentSearchUseCaseContract: Sendable {
-	func execute(query: String)
+	func execute(query: String) async
 }
 
 struct SaveRecentSearchUseCase: SaveRecentSearchUseCaseContract {
@@ -11,7 +11,7 @@ struct SaveRecentSearchUseCase: SaveRecentSearchUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(query: String) {
-		repository.saveSearch(query)
+	func execute(query: String) async {
+		await repository.saveSearch(query)
 	}
 }

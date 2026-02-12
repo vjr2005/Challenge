@@ -1,7 +1,7 @@
 import Foundation
 
 protocol DeleteRecentSearchUseCaseContract: Sendable {
-	func execute(query: String)
+	func execute(query: String) async
 }
 
 struct DeleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract {
@@ -11,7 +11,7 @@ struct DeleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute(query: String) {
-		repository.deleteSearch(query)
+	func execute(query: String) async {
+		await repository.deleteSearch(query)
 	}
 }

@@ -11,6 +11,6 @@ protocol CharacterListViewModelContract: AnyObject {
 	func didTapOnLoadMoreButton() async
 	func didSelect(_ character: Character)
 	func didSelectRecentSearch(_ query: String) async
-	func didDeleteRecentSearch(_ query: String)
+	func didDeleteRecentSearch(_ query: String) async
 	func didTapCharacterFilterButton()
 }

@@ -8,7 +8,7 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 	// MARK: - Properties
 
 	private let sut: RecentSearchesUserDefaultsDataSource
-	private let userDefaults: UserDefaults
+	private nonisolated(unsafe) let userDefaults: UserDefaults
 
 	// MARK: - Initialization
 
@@ -22,9 +22,9 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 	// MARK: - getRecentSearches
 
 	@Test("Empty state returns empty array")
-	func emptyStateReturnsEmptyArray() {
+	func emptyStateReturnsEmptyArray() async {
 		// When
-		let result = sut.getRecentSearches()
+		let result = await sut.getRecentSearches()
 
 		// Then
 		#expect(result == [])
@@ -33,48 +33,50 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 	// MARK: - saveSearch
 
 	@Test("Single save and retrieve returns the saved query")
-	func singleSaveAndRetrieve() {
+	func singleSaveAndRetrieve() async {
 		// When
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// Then
-		#expect(sut.getRecentSearches() == ["Rick"])
+		let result = await sut.getRecentSearches()
+		#expect(result == ["Rick"])
 	}
 
 	@Test("Most recent search appears first")
-	func mostRecentFirstOrdering() {
+	func mostRecentFirstOrdering() async {
 		// Given
-		sut.saveSearch("Rick")
-		sut.saveSearch("Morty")
+		await sut.saveSearch("Rick")
+		await sut.saveSearch("Morty")
 
 		// When
-		let result = sut.getRecentSearches()
+		let result = await sut.getRecentSearches()
 
 		// Then
 		#expect(result == ["Morty", "Rick"])
 	}
 
 	@Test("Case-insensitive deduplication keeps latest casing")
-	func caseInsensitiveDeduplication() {
+	func caseInsensitiveDeduplication() async {
 		// Given
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// When
-		sut.saveSearch("rick")
+		await sut.saveSearch("rick")
 
 		// Then
-		#expect(sut.getRecentSearches() == ["rick"])
+		let result = await sut.getRecentSearches()
+		#expect(result == ["rick"])
 	}
 
 	@Test("Maximum five searches stored")
-	func maxFiveLimit() {
+	func maxFiveLimit() async {
 		// Given
 		for index in 1...6 {
-			sut.saveSearch("query\(index)")
+			await sut.saveSearch("query\(index)")
 		}
 
 		// When
-		let result = sut.getRecentSearches()
+		let result = await sut.getRecentSearches()
 
 		// Then
 		#expect(result.count == 5)
@@ -82,27 +84,28 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 	}
 
 	@Test("Re-searching existing entry moves it to front")
-	func reSearchMovesToFront() {
+	func reSearchMovesToFront() async {
 		// Given
-		sut.saveSearch("Rick")
-		sut.saveSearch("Morty")
-		sut.saveSearch("Summer")
+		await sut.saveSearch("Rick")
+		await sut.saveSearch("Morty")
+		await sut.saveSearch("Summer")
 
 		// When
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// Then
-		#expect(sut.getRecentSearches() == ["Rick", "Summer", "Morty"])
+		let result = await sut.getRecentSearches()
+		#expect(result == ["Rick", "Summer", "Morty"])
 	}
 
 	@Test("Persists across DataSource instances with same UserDefaults suite")
-	func persistsAcrossInstances() {
+	func persistsAcrossInstances() async {
 		// Given
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// When
 		let otherInstance = RecentSearchesUserDefaultsDataSource(userDefaults: userDefaults)
-		let result = otherInstance.getRecentSearches()
+		let result = await otherInstance.getRecentSearches()
 
 		// Then
 		#expect(result == ["Rick"])
@@ -111,39 +114,42 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 	// MARK: - deleteSearch
 
 	@Test("Delete removes existing search")
-	func deleteRemovesExistingSearch() {
+	func deleteRemovesExistingSearch() async {
 		// Given
-		sut.saveSearch("Rick")
-		sut.saveSearch("Morty")
+		await sut.saveSearch("Rick")
+		await sut.saveSearch("Morty")
 
 		// When
-		sut.deleteSearch("Rick")
+		await sut.deleteSearch("Rick")
 
 		// Then
-		#expect(sut.getRecentSearches() == ["Morty"])
+		let result = await sut.getRecentSearches()
+		#expect(result == ["Morty"])
 	}
 
 	@Test("Delete is case-insensitive")
-	func deleteIsCaseInsensitive() {
+	func deleteIsCaseInsensitive() async {
 		// Given
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// When
-		sut.deleteSearch("rick")
+		await sut.deleteSearch("rick")
 
 		// Then
-		#expect(sut.getRecentSearches() == [])
+		let result = await sut.getRecentSearches()
+		#expect(result == [])
 	}
 
 	@Test("Delete non-existing search does not modify list")
-	func deleteNonExistingSearchDoesNotModifyList() {
+	func deleteNonExistingSearchDoesNotModifyList() async {
 		// Given
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// When
-		sut.deleteSearch("Morty")
+		await sut.deleteSearch("Morty")
 
 		// Then
-		#expect(sut.getRecentSearches() == ["Rick"])
+		let result = await sut.getRecentSearches()
+		#expect(result == ["Rick"])
 	}
 }

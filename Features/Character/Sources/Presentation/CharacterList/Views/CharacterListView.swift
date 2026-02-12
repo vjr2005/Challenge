@@ -32,7 +32,9 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 								.accessibilityIdentifier(AccessibilityIdentifier.recentSearch(query: query))
 								.swipeActions(edge: .trailing) {
 									Button(role: .destructive) {
-										viewModel.didDeleteRecentSearch(query)
+										Task {
+										await viewModel.didDeleteRecentSearch(query)
+									}
 									} label: {
 										Label(
 											LocalizedStrings.deleteAction,
@@ -304,7 +306,7 @@ private final class CharacterListViewModelPreviewStub: CharacterListViewModelCon
 	func didTapOnLoadMoreButton() async {}
 	func didSelect(_ character: Character) {}
 	func didSelectRecentSearch(_ query: String) async {}
-	func didDeleteRecentSearch(_ query: String) {}
+	func didDeleteRecentSearch(_ query: String) async {}
 	func didTapCharacterFilterButton() {}
 }
 

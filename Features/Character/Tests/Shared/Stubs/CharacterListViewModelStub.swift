@@ -39,7 +39,7 @@ final class CharacterListViewModelStub: CharacterListViewModelContract {
 		// No-op: recent searches not tested in snapshots
 	}
 
-	func didDeleteRecentSearch(_ query: String) {
+	func didDeleteRecentSearch(_ query: String) async {
 		// No-op: recent searches not tested in snapshots
 	}
 

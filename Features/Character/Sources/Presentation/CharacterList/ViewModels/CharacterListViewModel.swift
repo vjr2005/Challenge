@@ -59,7 +59,7 @@ final class CharacterListViewModel: CharacterListViewModelContract {
 
     func didAppear() async {
         tracker.trackScreenViewed()
-        loadRecentSearches()
+        await loadRecentSearches()
         await load()
     }
 
@@ -94,15 +94,15 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     func didSelectRecentSearch(_ query: String) async {
         searchQuery = query
         searchTask?.cancel()
-        saveRecentSearchUseCase.execute(query: query)
-        loadRecentSearches()
+        await saveRecentSearchUseCase.execute(query: query)
+        await loadRecentSearches()
         tracker.trackSearchPerformed(query: query)
         await fetchCharacters()
     }
 
-    func didDeleteRecentSearch(_ query: String) {
-        deleteRecentSearchUseCase.execute(query: query)
-        loadRecentSearches()
+    func didDeleteRecentSearch(_ query: String) async {
+        await deleteRecentSearchUseCase.execute(query: query)
+        await loadRecentSearches()
     }
 
     func didTapCharacterFilterButton() {
@@ -142,8 +142,8 @@ private extension CharacterListViewModel {
             if !Task.isCancelled {
                 if let name = normalizedQuery {
                     tracker.trackSearchPerformed(query: name)
-                    saveRecentSearchUseCase.execute(query: name)
-                    loadRecentSearches()
+                    await saveRecentSearchUseCase.execute(query: name)
+                    await loadRecentSearches()
                 }
                 await fetchCharacters()
             }
@@ -220,7 +220,7 @@ private extension CharacterListViewModel {
         }
     }
 
-    func loadRecentSearches() {
-        recentSearches = getRecentSearchesUseCase.execute()
+    func loadRecentSearches() async {
+        recentSearches = await getRecentSearchesUseCase.execute()
     }
 }

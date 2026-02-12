@@ -1,4 +1,4 @@
-protocol CharacterLocalDataSourceContract: Sendable {
+protocol CharacterLocalDataSourceContract: Actor {
 	// MARK: - Character Detail
 
 	func getCharacter(identifier: Int) async -> CharacterDTO?

@@ -1,6 +1,6 @@
 import Foundation
 
-protocol EpisodeLocalDataSourceContract: Sendable {
+protocol EpisodeLocalDataSourceContract: Actor {
 	func getEpisodes(characterIdentifier: Int) async -> EpisodeCharacterWithEpisodesDTO?
 	func saveEpisodes(_ episodes: EpisodeCharacterWithEpisodesDTO, characterIdentifier: Int) async
 }

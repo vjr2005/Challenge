@@ -30,7 +30,7 @@ struct EpisodeRepositoryTests {
 		// Given
 		let cachedDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
 		let expected = EpisodeCharacterWithEpisodes.stub()
-		memoryDataSourceMock.episodesToReturn = cachedDTO
+		await memoryDataSourceMock.setEpisodesToReturn(cachedDTO)
 
 		// When
 		let value = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
@@ -43,7 +43,7 @@ struct EpisodeRepositoryTests {
 	func localFirstDoesNotCallRemoteWhenCacheHit() async throws {
 		// Given
 		let cachedDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
-		memoryDataSourceMock.episodesToReturn = cachedDTO
+		await memoryDataSourceMock.setEpisodesToReturn(cachedDTO)
 
 		// When
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
@@ -77,9 +77,9 @@ struct EpisodeRepositoryTests {
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
 
 		// Then
-		#expect(memoryDataSourceMock.saveEpisodesCallCount == 1)
-		#expect(memoryDataSourceMock.lastSavedEpisodes == remoteDTO)
-		#expect(memoryDataSourceMock.lastSavedCharacterIdentifier == 1)
+		#expect(await memoryDataSourceMock.saveEpisodesCallCount == 1)
+		#expect(await memoryDataSourceMock.lastSavedEpisodes == remoteDTO)
+		#expect(await memoryDataSourceMock.lastSavedCharacterIdentifier == 1)
 	}
 
 	// MARK: - RemoteFirst Policy
@@ -89,7 +89,7 @@ struct EpisodeRepositoryTests {
 		// Given
 		let remoteDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
 		remoteDataSourceMock.episodesResult = .success(remoteDTO)
-		memoryDataSourceMock.episodesToReturn = remoteDTO
+		await memoryDataSourceMock.setEpisodesToReturn(remoteDTO)
 
 		// When
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .remoteFirst)
@@ -108,8 +108,8 @@ struct EpisodeRepositoryTests {
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .remoteFirst)
 
 		// Then
-		#expect(memoryDataSourceMock.saveEpisodesCallCount == 1)
-		#expect(memoryDataSourceMock.lastSavedEpisodes == remoteDTO)
+		#expect(await memoryDataSourceMock.saveEpisodesCallCount == 1)
+		#expect(await memoryDataSourceMock.lastSavedEpisodes == remoteDTO)
 	}
 
 	@Test("RemoteFirst falls back to cache on remote error")
@@ -117,7 +117,7 @@ struct EpisodeRepositoryTests {
 		// Given
 		let cachedDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
 		remoteDataSourceMock.episodesResult = .failure(APIError.invalidResponse)
-		memoryDataSourceMock.episodesToReturn = cachedDTO
+		await memoryDataSourceMock.setEpisodesToReturn(cachedDTO)
 
 		// When
 		let value = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .remoteFirst)
@@ -163,7 +163,7 @@ struct EpisodeRepositoryTests {
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .noCache)
 
 		// Then
-		#expect(memoryDataSourceMock.saveEpisodesCallCount == 0)
+		#expect(await memoryDataSourceMock.saveEpisodesCallCount == 0)
 	}
 
 	@Test("NoCache policy does not check cache")
@@ -171,13 +171,13 @@ struct EpisodeRepositoryTests {
 		// Given
 		let remoteDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
 		remoteDataSourceMock.episodesResult = .success(remoteDTO)
-		memoryDataSourceMock.episodesToReturn = remoteDTO
+		await memoryDataSourceMock.setEpisodesToReturn(remoteDTO)
 
 		// When
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .noCache)
 
 		// Then
-		#expect(memoryDataSourceMock.getEpisodesCallCount == 0)
+		#expect(await memoryDataSourceMock.getEpisodesCallCount == 0)
 	}
 
 	// MARK: - Error Handling
@@ -191,7 +191,7 @@ struct EpisodeRepositoryTests {
 		_ = try? await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
 
 		// Then
-		#expect(memoryDataSourceMock.saveEpisodesCallCount == 0)
+		#expect(await memoryDataSourceMock.saveEpisodesCallCount == 0)
 	}
 
 	@Test("Maps generic error to loadFailed")

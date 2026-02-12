@@ -2,10 +2,14 @@ import Foundation
 
 @testable import ChallengeEpisode
 
-final class EpisodeMemoryDataSourceMock: EpisodeLocalDataSourceContract, @unchecked Sendable {
+actor EpisodeMemoryDataSourceMock: EpisodeLocalDataSourceContract {
 	// MARK: - Configurable Returns
 
-	var episodesToReturn: EpisodeCharacterWithEpisodesDTO?
+	private(set) var episodesToReturn: EpisodeCharacterWithEpisodesDTO?
+
+	func setEpisodesToReturn(_ episodes: EpisodeCharacterWithEpisodesDTO?) {
+		episodesToReturn = episodes
+	}
 
 	// MARK: - Call Tracking
 

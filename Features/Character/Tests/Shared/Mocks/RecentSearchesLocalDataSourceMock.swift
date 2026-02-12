@@ -2,11 +2,24 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-final class RecentSearchesLocalDataSourceMock: RecentSearchesLocalDataSourceContract, @unchecked Sendable {
-	var searches: [String] = []
+actor RecentSearchesLocalDataSourceMock: RecentSearchesLocalDataSourceContract {
+	// MARK: - Configurable Returns
+
+	private(set) var searches: [String] = []
+
+	func setSearches(_ searches: [String]) {
+		self.searches = searches
+	}
+
+	// MARK: - Call Tracking
+
 	private(set) var getRecentSearchesCallCount = 0
 	private(set) var saveSearchCallCount = 0
 	private(set) var lastSavedQuery: String?
+	private(set) var deleteSearchCallCount = 0
+	private(set) var lastDeletedQuery: String?
+
+	// MARK: - RecentSearchesLocalDataSourceContract
 
 	func getRecentSearches() -> [String] {
 		getRecentSearchesCallCount += 1
@@ -17,9 +30,6 @@ final class RecentSearchesLocalDataSourceMock: RecentSearchesLocalDataSourceCont
 		saveSearchCallCount += 1
 		lastSavedQuery = query
 	}
-
-	private(set) var deleteSearchCallCount = 0
-	private(set) var lastDeletedQuery: String?
 
 	func deleteSearch(_ query: String) {
 		deleteSearchCallCount += 1

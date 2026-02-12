@@ -6,7 +6,7 @@ final class GetRecentSearchesUseCaseMock: GetRecentSearchesUseCaseContract, @unc
 	var searches: [String] = []
 	private(set) var executeCallCount = 0
 
-	func execute() -> [String] {
+	func execute() async -> [String] {
 		executeCallCount += 1
 		return searches
 	}

@@ -6,7 +6,7 @@ final class SaveRecentSearchUseCaseMock: SaveRecentSearchUseCaseContract, @unche
 	private(set) var executeCallCount = 0
 	private(set) var savedQueries: [String] = []
 
-	func execute(query: String) {
+	func execute(query: String) async {
 		executeCallCount += 1
 		savedQueries.append(query)
 	}

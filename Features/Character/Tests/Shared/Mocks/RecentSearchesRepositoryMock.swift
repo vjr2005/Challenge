@@ -10,17 +10,17 @@ final class RecentSearchesRepositoryMock: RecentSearchesRepositoryContract, @unc
 	private(set) var deleteSearchCallCount = 0
 	private(set) var lastDeletedQuery: String?
 
-	func getRecentSearches() -> [String] {
+	func getRecentSearches() async -> [String] {
 		getRecentSearchesCallCount += 1
 		return searches
 	}
 
-	func saveSearch(_ query: String) {
+	func saveSearch(_ query: String) async {
 		saveSearchCallCount += 1
 		lastSavedQuery = query
 	}
 
-	func deleteSearch(_ query: String) {
+	func deleteSearch(_ query: String) async {
 		deleteSearchCallCount += 1
 		lastDeletedQuery = query
 	}

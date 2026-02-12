@@ -7,15 +7,15 @@ struct RecentSearchesRepository: RecentSearchesRepositoryContract {
 		self.localDataSource = localDataSource
 	}
 
-	func getRecentSearches() -> [String] {
-		localDataSource.getRecentSearches()
+	func getRecentSearches() async -> [String] {
+		await localDataSource.getRecentSearches()
 	}
 
-	func saveSearch(_ query: String) {
-		localDataSource.saveSearch(query)
+	func saveSearch(_ query: String) async {
+		await localDataSource.saveSearch(query)
 	}
 
-	func deleteSearch(_ query: String) {
-		localDataSource.deleteSearch(query)
+	func deleteSearch(_ query: String) async {
+		await localDataSource.deleteSearch(query)
 	}
 }

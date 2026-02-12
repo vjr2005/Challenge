@@ -1,7 +1,7 @@
 import Foundation
 
 protocol GetRecentSearchesUseCaseContract: Sendable {
-	func execute() -> [String]
+	func execute() async -> [String]
 }
 
 struct GetRecentSearchesUseCase: GetRecentSearchesUseCaseContract {
@@ -11,7 +11,7 @@ struct GetRecentSearchesUseCase: GetRecentSearchesUseCaseContract {
 		self.repository = repository
 	}
 
-	func execute() -> [String] {
-		repository.getRecentSearches()
+	func execute() async -> [String] {
+		await repository.getRecentSearches()
 	}
 }

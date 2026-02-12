@@ -19,39 +19,44 @@ struct RecentSearchesRepositoryTests {
 	// MARK: - Get Recent Searches
 
 	@Test("Get recent searches delegates to data source")
-	func getRecentSearchesDelegatesToDataSource() {
+	func getRecentSearchesDelegatesToDataSource() async {
 		// Given
-		dataSourceMock.searches = ["Rick", "Morty"]
+		await dataSourceMock.setSearches(["Rick", "Morty"])
 
 		// When
-		let result = sut.getRecentSearches()
+		let result = await sut.getRecentSearches()
 
 		// Then
 		#expect(result == ["Rick", "Morty"])
-		#expect(dataSourceMock.getRecentSearchesCallCount == 1)
+		let callCount = await dataSourceMock.getRecentSearchesCallCount
+		#expect(callCount == 1)
 	}
 
 	// MARK: - Save Search
 
 	@Test("Save search delegates to data source with correct query")
-	func saveSearchDelegatesToDataSource() {
+	func saveSearchDelegatesToDataSource() async {
 		// When
-		sut.saveSearch("Rick")
+		await sut.saveSearch("Rick")
 
 		// Then
-		#expect(dataSourceMock.saveSearchCallCount == 1)
-		#expect(dataSourceMock.lastSavedQuery == "Rick")
+		let callCount = await dataSourceMock.saveSearchCallCount
+		#expect(callCount == 1)
+		let lastSavedQuery = await dataSourceMock.lastSavedQuery
+		#expect(lastSavedQuery == "Rick")
 	}
 
 	// MARK: - Delete Search
 
 	@Test("Delete search delegates to data source with correct query")
-	func deleteSearchDelegatesToDataSource() {
+	func deleteSearchDelegatesToDataSource() async {
 		// When
-		sut.deleteSearch("Morty")
+		await sut.deleteSearch("Morty")
 
 		// Then
-		#expect(dataSourceMock.deleteSearchCallCount == 1)
-		#expect(dataSourceMock.lastDeletedQuery == "Morty")
+		let callCount = await dataSourceMock.deleteSearchCallCount
+		#expect(callCount == 1)
+		let lastDeletedQuery = await dataSourceMock.lastDeletedQuery
+		#expect(lastDeletedQuery == "Morty")
 	}
 }

@@ -30,7 +30,7 @@ struct CharactersPageRepositoryTests {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         let expected = CharactersPage.stub()
-        memoryDataSourceMock.pageToReturn = responseDTO
+        await memoryDataSourceMock.setPageToReturn(responseDTO)
 
         // When
         let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
@@ -43,7 +43,7 @@ struct CharactersPageRepositoryTests {
     func getCharactersPageLocalFirstDoesNotCallRemoteWhenCacheHit() async throws {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
-        memoryDataSourceMock.pageToReturn = responseDTO
+        await memoryDataSourceMock.setPageToReturn(responseDTO)
 
         // When
         _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
@@ -77,9 +77,9 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.savePageCallCount == 1)
-        #expect(memoryDataSourceMock.savePageLastResponse == responseDTO)
-        #expect(memoryDataSourceMock.savePageLastPage == 1)
+        #expect(await memoryDataSourceMock.savePageCallCount == 1)
+        #expect(await memoryDataSourceMock.savePageLastResponse == responseDTO)
+        #expect(await memoryDataSourceMock.savePageLastPage == 1)
     }
 
     // MARK: - Get Characters - RemoteFirst Policy
@@ -89,7 +89,7 @@ struct CharactersPageRepositoryTests {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
         let freshResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")
-        memoryDataSourceMock.pageToReturn = cachedResponse
+        await memoryDataSourceMock.setPageToReturn(cachedResponse)
         remoteDataSourceMock.charactersResult = .success(freshResponse)
 
         // When
@@ -110,14 +110,14 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.getCharactersPage(page: 1, cachePolicy: .remoteFirst)
 
         // Then
-        #expect(memoryDataSourceMock.savePageCallCount == 1)
+        #expect(await memoryDataSourceMock.savePageCallCount == 1)
     }
 
     @Test("RemoteFirst falls back to cache on remote error")
     func getCharactersPageRemoteFirstFallsBackToCacheOnRemoteError() async throws {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
-        memoryDataSourceMock.pageToReturn = cachedResponse
+        await memoryDataSourceMock.setPageToReturn(cachedResponse)
         remoteDataSourceMock.charactersResult = .failure(APIError.invalidResponse)
 
         // When
@@ -164,7 +164,7 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.getCharactersPage(page: 1, cachePolicy: .noCache)
 
         // Then
-        #expect(memoryDataSourceMock.savePageCallCount == 0)
+        #expect(await memoryDataSourceMock.savePageCallCount == 0)
     }
 
     @Test("NoCache policy does not check cache")
@@ -172,7 +172,7 @@ struct CharactersPageRepositoryTests {
         // Given
         let cachedResponse: CharactersResponseDTO = try loadJSON("characters_response")
         let remoteResponse: CharactersResponseDTO = try loadJSON("characters_response_two_results")
-        memoryDataSourceMock.pageToReturn = cachedResponse
+        await memoryDataSourceMock.setPageToReturn(cachedResponse)
         remoteDataSourceMock.charactersResult = .success(remoteResponse)
 
         // When
@@ -180,7 +180,7 @@ struct CharactersPageRepositoryTests {
 
         // Then
         #expect(value.characters.count == 2)
-        #expect(memoryDataSourceMock.getPageCallCount == 0)
+        #expect(await memoryDataSourceMock.getPageCallCount == 0)
     }
 
     // MARK: - Get Characters - Pagination
@@ -210,7 +210,7 @@ struct CharactersPageRepositoryTests {
         _ = try? await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(memoryDataSourceMock.savePageCallCount == 0)
+        #expect(await memoryDataSourceMock.savePageCallCount == 0)
     }
 
     // MARK: - Search Characters
@@ -220,7 +220,7 @@ struct CharactersPageRepositoryTests {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
-        memoryDataSourceMock.pageToReturn = responseDTO
+        await memoryDataSourceMock.setPageToReturn(responseDTO)
 
         // When
         _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
@@ -239,7 +239,7 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
-        #expect(memoryDataSourceMock.savePageCallCount == 0)
+        #expect(await memoryDataSourceMock.savePageCallCount == 0)
     }
 
     @Test("Search characters passes query to remote data source")
