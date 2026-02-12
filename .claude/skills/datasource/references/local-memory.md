@@ -9,7 +9,7 @@ Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{n
 Single item caching:
 
 ```swift
-protocol {Name}LocalDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Actor {
 	func get{Name}(identifier: Int) async -> {Name}DTO?
 	func save{Name}(_ item: {Name}DTO) async
 }
@@ -18,7 +18,7 @@ protocol {Name}LocalDataSourceContract: Sendable {
 With paginated results:
 
 ```swift
-protocol {Name}LocalDataSourceContract: Sendable {
+protocol {Name}LocalDataSourceContract: Actor {
 	// MARK: - Single Item
 	func get{Name}(identifier: Int) async -> {Name}DTO?
 	func save{Name}(_ item: {Name}DTO) async
@@ -29,7 +29,7 @@ protocol {Name}LocalDataSourceContract: Sendable {
 }
 ```
 
-Rules: `async` (no `throws`), return optionals for get, `identifier` parameter name.
+Rules: `: Actor`, return optionals for get, `identifier` parameter name. Methods are actor-isolated (implicitly `async` from caller).
 
 ### {Name}MemoryDataSource.swift — `Sources/Data/DataSources/Local/`
 
@@ -69,11 +69,19 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked Sendable {
+actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 	// MARK: - Configurable Returns
 
-	var itemToReturn: {Name}DTO?
-	var pageToReturn: {Name}sResponseDTO?
+	private(set) var itemToReturn: {Name}DTO?
+	private(set) var pageToReturn: {Name}sResponseDTO?
+
+	func setItemToReturn(_ item: {Name}DTO?) {
+		itemToReturn = item
+	}
+
+	func setPageToReturn(_ page: {Name}sResponseDTO?) {
+		pageToReturn = page
+	}
 
 	// MARK: - Call Tracking
 
@@ -110,92 +118,8 @@ final class {Name}LocalDataSourceMock: {Name}LocalDataSourceContract, @unchecked
 }
 ```
 
-Mock methods omit `async` — Swift allows satisfying `async` protocol requirements with non-async functions.
+Actor mock: `private(set)` on configurable returns with setter methods. Tests use `await` for all property reads and setter calls.
 
 ### {Name}MemoryDataSourceTests.swift — `Tests/Unit/Data/`
 
-```swift
-import ChallengeCoreMocks
-import Foundation
-import Testing
-
-@testable import Challenge{Feature}
-
-struct {Name}MemoryDataSourceTests {
-	@Test("Saves and retrieves item")
-	func savesAndRetrievesItem() async throws {
-		// Given
-		let expected: {Name}DTO = try loadJSON("{name}")
-		let sut = {Name}MemoryDataSource()
-
-		// When
-		await sut.save{Name}(expected)
-		let result = await sut.get{Name}(identifier: expected.id)
-
-		// Then
-		#expect(result == expected)
-	}
-
-	@Test("Returns nil for non-existent item")
-	func returnsNilForNonExistentItem() async {
-		// Given
-		let sut = {Name}MemoryDataSource()
-
-		// When
-		let result = await sut.get{Name}(identifier: 999)
-
-		// Then
-		#expect(result == nil)
-	}
-
-	@Test("Updates existing item")
-	func updatesExistingItem() async throws {
-		// Given
-		let original: {Name}DTO = try loadJSON("{name}")
-		let updated: {Name}DTO = try loadJSON("{name}_updated")
-		let sut = {Name}MemoryDataSource()
-		await sut.save{Name}(original)
-
-		// When
-		await sut.save{Name}(updated)
-		let result = await sut.get{Name}(identifier: original.id)
-
-		// Then
-		#expect(result == updated)
-	}
-
-	@Test("Saves and retrieves page")
-	func savesAndRetrievesPage() async throws {
-		// Given
-		let expected: {Name}sResponseDTO = try loadJSON("{name}s_response")
-		let sut = {Name}MemoryDataSource()
-
-		// When
-		await sut.savePage(expected, page: 1)
-		let result = await sut.getPage(1)
-
-		// Then
-		#expect(result == expected)
-	}
-
-	@Test("Returns nil for non-existent page")
-	func returnsNilForNonExistentPage() async {
-		// Given
-		let sut = {Name}MemoryDataSource()
-
-		// When
-		let result = await sut.getPage(999)
-
-		// Then
-		#expect(result == nil)
-	}
-}
-
-// MARK: - Private
-
-private extension {Name}MemoryDataSourceTests {
-	func loadJSON<T: Decodable>(_ filename: String) throws -> T {
-		try Bundle.module.loadJSON(filename)
-	}
-}
-```
+No changes — tests already use `await` for actor method calls. The MemoryDataSource is tested directly (not via mock).

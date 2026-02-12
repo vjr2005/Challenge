@@ -20,12 +20,12 @@ Only proceed to implementation after the user confirms these details.
 
 ## DataSource Types
 
-| Type | Transport | Implementation | Error Mapper |
-|------|-----------|----------------|-------------|
-| REST | HTTP | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
-| GraphQL | HTTP/GraphQL | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
-| Memory | In-memory | `actor` with dictionary storage | — |
-| UserDefaults | Local | `struct` with `nonisolated(unsafe) let` | — |
+| Type | Transport | Contract | Implementation | Error Mapper |
+|------|-----------|----------|----------------|-------------|
+| REST | HTTP | `: Sendable` | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
+| GraphQL | HTTP/GraphQL | `: Sendable` | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
+| Memory | In-memory | `: Actor` | `actor` with dictionary storage | — |
+| UserDefaults | Local | `: Actor` | `actor` with `UserDefaults` | — |
 
 ## Templates
 
@@ -66,10 +66,11 @@ Features/{Feature}/
 
 ### Contracts
 
-- Internal visibility, `Sendable`, separate file from implementation
+- Internal visibility, separate file from implementation
+- Remote contracts: `: Sendable`. Local contracts (Memory, UserDefaults): `: Actor`
 - Transport-agnostic: same contract for REST or GraphQL
 - **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects
-- Remote: `async throws`. Memory: `async` (no throws). UserDefaults: synchronous
+- Remote: `async throws`. Local (Memory, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
 
 ### DTOs (Data Transfer Objects)
 
@@ -130,14 +131,14 @@ Repositories and upper layers only see `APIError`, never transport-specific erro
 
 ### MemoryDataSource
 
-- [ ] Create Contract in `Local/` with `async` methods
+- [ ] Create Contract in `Local/` with `: Actor`
 - [ ] Create `actor` Implementation in `Local/`
-- [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
-- [ ] Create tests
+- [ ] Create `actor` Mock with setter methods and call tracking
+- [ ] Create tests (use `await` for all mock reads/writes)
 
 ### LocalDataSource (UserDefaults)
 
-- [ ] Create Contract in `Local/` with synchronous methods and `Sendable`
-- [ ] Create `struct` Implementation in `Local/` with `nonisolated(unsafe) let userDefaults`
-- [ ] Create `final class` Mock with `@unchecked Sendable` and call tracking
-- [ ] Create tests using custom `UserDefaults` suite
+- [ ] Create Contract in `Local/` with `: Actor`
+- [ ] Create `actor` Implementation in `Local/` with `private let userDefaults`
+- [ ] Create `actor` Mock with setter methods and call tracking
+- [ ] Create `async` tests using custom `UserDefaults` suite (`nonisolated(unsafe)` on test property)
