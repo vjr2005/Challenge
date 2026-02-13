@@ -2,21 +2,24 @@ import UIKit
 
 /// Image loader with in-memory caching, disk caching, and deduplication of in-flight requests.
 public final class CachedImageLoader: ImageLoaderContract {
-	private let cache: ImageCache
-	private let diskCache: ImageDiskCache
+	private let cache: ImageMemoryCacheContract
+	private let diskCache: ImageDiskCacheContract
 	private let requestCoordinator: ImageRequestCoordinator
 	private let session: URLSession
 
-	public init(session: URLSession = .shared, diskCacheConfiguration: DiskCacheConfiguration = .default) {
-		self.session = session
-		self.cache = ImageCache()
-		self.requestCoordinator = ImageRequestCoordinator()
-		self.diskCache = ImageDiskCache(configuration: diskCacheConfiguration, fileSystem: FileSystem())
+	public convenience init() {
+		self.init(session: .shared,
+				  memoryCache: ImageMemoryCache(),
+				  diskCache: ImageDiskCache(configuration: .default, fileSystem: FileSystem()))
 	}
 
-	init(session: URLSession, diskCache: ImageDiskCache) {
+	init(
+		session: URLSession = .shared,
+		memoryCache: ImageMemoryCacheContract = ImageMemoryCache(),
+		diskCache: ImageDiskCacheContract = ImageDiskCache(configuration: .default, fileSystem: FileSystem())
+	) {
 		self.session = session
-		self.cache = ImageCache()
+		self.cache = memoryCache
 		self.requestCoordinator = ImageRequestCoordinator()
 		self.diskCache = diskCache
 	}
@@ -58,26 +61,6 @@ public final class CachedImageLoader: ImageLoaderContract {
 	public func clearCache() async {
 		cache.removeAll()
 		await diskCache.removeAll()
-	}
-}
-
-private final class ImageCache {
-	private let storage = NSCache<NSURL, UIImage>()
-
-	func image(for url: URL) -> UIImage? {
-		storage.object(forKey: url as NSURL)
-	}
-
-	func setImage(_ image: UIImage, for url: URL) {
-		storage.setObject(image, forKey: url as NSURL)
-	}
-
-	func removeCachedImage(for url: URL) {
-		storage.removeObject(forKey: url as NSURL)
-	}
-
-	func removeAll() {
-		storage.removeAllObjects()
 	}
 }
 

@@ -12,7 +12,16 @@ struct CachedImageLoaderTests {
 		iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==
 		""")
 
-	private let fileSystemMock = FileSystemMock()
+	// MARK: - Init
+
+	@Test("Convenience init creates a valid instance")
+	func convenienceInitCreatesValidInstance() {
+		// When
+		let sut = CachedImageLoader()
+
+		// Then
+		#expect(sut is ImageLoaderContract)
+	}
 
 	// MARK: - Cached Image
 
@@ -179,59 +188,41 @@ struct CachedImageLoaderTests {
 	func storesImageToDiskAfterNetworkFetch() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-disk-store.example.com/image.png"))
-		let fileSystemMock = FileSystemMock()
-		let diskCache = ImageDiskCache(
-			configuration: DiskCacheConfiguration(
-				maxSize: 100 * 1_024 * 1_024,
-				timeToLive: 604_800,
-				directory: URL(fileURLWithPath: "/tmp/test-cache")
-			),
-			fileSystem: fileSystemMock
-		)
+		let diskCacheMock = ImageDiskCacheMock()
 		givenSuccessResponse(for: url, data: testImageData)
-		let sut = CachedImageLoader(session: .mockSession(), diskCache: diskCache)
+		let sut = CachedImageLoader(session: .mockSession(), memoryCache: ImageMemoryCacheMock(), diskCache: diskCacheMock)
 
 		// When
 		_ = await sut.image(for: url)
 
 		// Then
-		#expect(fileSystemMock.writeCallCount == 1)
-		#expect(!fileSystemMock.files.isEmpty)
+		let storeCallCount = await diskCacheMock.storeCallCount
+		let storeLastURL = await diskCacheMock.storeLastURL
+		#expect(storeCallCount == 1)
+		#expect(storeLastURL == url)
 	}
 
 	@Test("Returns image from disk when memory cache is empty")
 	func returnsImageFromDiskWhenMemoryCacheIsEmpty() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-disk-read.example.com/image.png"))
-		let fileSystemMock = FileSystemMock()
-		let diskCache = ImageDiskCache(
-			configuration: DiskCacheConfiguration(
-				maxSize: 100 * 1_024 * 1_024,
-				timeToLive: 604_800,
-				directory: URL(fileURLWithPath: "/tmp/test-cache")
-			),
-			fileSystem: fileSystemMock
-		)
+		let diskCacheMock = ImageDiskCacheMock()
+		let imageData = try #require(testImageData)
+		let testImage = try #require(UIImage(data: imageData))
+		await diskCacheMock.setImageToReturn(testImage)
 		let requestCount = RequestCounter()
 		givenSuccessResponse(for: url, data: testImageData) {
 			Task { await requestCount.increment() }
 		}
-
-		// Store data via first loader (populates disk)
-		let firstLoader = CachedImageLoader(session: .mockSession(), diskCache: diskCache)
-		_ = await firstLoader.image(for: url)
-
-		// Create second loader sharing same disk cache (empty memory)
-		let sut = CachedImageLoader(session: .mockSession(), diskCache: diskCache)
+		let sut = CachedImageLoader(session: .mockSession(), memoryCache: ImageMemoryCacheMock(), diskCache: diskCacheMock)
 
 		// When
 		let result = await sut.image(for: url)
 
 		// Then
 		#expect(result != nil)
-		try await Task.sleep(for: .milliseconds(50))
 		let count = await requestCount.value
-		#expect(count == 1)
+		#expect(count == 0)
 	}
 
 	// MARK: - Remove Image
@@ -240,17 +231,9 @@ struct CachedImageLoaderTests {
 	func removeCachedImageRemovesFromMemoryAndDisk() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-remove-image.example.com/image.png"))
-		let fileSystemMock = FileSystemMock()
-		let diskCache = ImageDiskCache(
-			configuration: DiskCacheConfiguration(
-				maxSize: 100 * 1_024 * 1_024,
-				timeToLive: 604_800,
-				directory: URL(fileURLWithPath: "/tmp/test-cache")
-			),
-			fileSystem: fileSystemMock
-		)
+		let diskCacheMock = ImageDiskCacheMock()
 		givenSuccessResponse(for: url, data: testImageData)
-		let sut = CachedImageLoader(session: .mockSession(), diskCache: diskCache)
+		let sut = CachedImageLoader(session: .mockSession(), memoryCache: ImageMemoryCacheMock(), diskCache: diskCacheMock)
 		_ = await sut.image(for: url)
 
 		// When
@@ -258,7 +241,10 @@ struct CachedImageLoaderTests {
 
 		// Then
 		#expect(sut.cachedImage(for: url) == nil)
-		#expect(fileSystemMock.removeItemCallCount == 1)
+		let removeCallCount = await diskCacheMock.removeCallCount
+		let removeLastURL = await diskCacheMock.removeLastURL
+		#expect(removeCallCount == 1)
+		#expect(removeLastURL == url)
 	}
 
 	// MARK: - Clear Cache
@@ -267,17 +253,9 @@ struct CachedImageLoaderTests {
 	func clearCacheClearsBothMemoryAndDisk() async throws {
 		// Given
 		let url = try #require(URL(string: "https://test-clear-cache.example.com/image.png"))
-		let fileSystemMock = FileSystemMock()
-		let diskCache = ImageDiskCache(
-			configuration: DiskCacheConfiguration(
-				maxSize: 100 * 1_024 * 1_024,
-				timeToLive: 604_800,
-				directory: URL(fileURLWithPath: "/tmp/test-cache")
-			),
-			fileSystem: fileSystemMock
-		)
+		let diskCacheMock = ImageDiskCacheMock()
 		givenSuccessResponse(for: url, data: testImageData)
-		let sut = CachedImageLoader(session: .mockSession(), diskCache: diskCache)
+		let sut = CachedImageLoader(session: .mockSession(), memoryCache: ImageMemoryCacheMock(), diskCache: diskCacheMock)
 		_ = await sut.image(for: url)
 
 		// When
@@ -285,7 +263,8 @@ struct CachedImageLoaderTests {
 
 		// Then
 		#expect(sut.cachedImage(for: url) == nil)
-		#expect(fileSystemMock.files.isEmpty)
+		let removeAllCallCount = await diskCacheMock.removeAllCallCount
+		#expect(removeAllCallCount == 1)
 	}
 }
 
@@ -293,15 +272,7 @@ struct CachedImageLoaderTests {
 
 private extension CachedImageLoaderTests {
 	func makeSUT(session: URLSession = .mockSession()) -> CachedImageLoader {
-		let diskCache = ImageDiskCache(
-			configuration: DiskCacheConfiguration(
-				maxSize: 100 * 1_024 * 1_024,
-				timeToLive: 604_800,
-				directory: URL(fileURLWithPath: "/tmp/test-cache")
-			),
-			fileSystem: fileSystemMock
-		)
-		return CachedImageLoader(session: session, diskCache: diskCache)
+		CachedImageLoader(session: session, memoryCache: ImageMemoryCacheMock(), diskCache: ImageDiskCacheMock())
 	}
 
 	func givenSuccessResponse(for url: URL, data: Data?, onRequest: @escaping @Sendable () -> Void = {}) {

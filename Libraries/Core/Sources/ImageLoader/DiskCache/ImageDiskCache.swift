@@ -3,7 +3,7 @@ import Foundation
 import UIKit
 
 /// Disk-based image cache with TTL expiration and LRU eviction.
-actor ImageDiskCache {
+actor ImageDiskCache: ImageDiskCacheContract {
 	private let configuration: DiskCacheConfiguration
 	private let fileSystem: FileSystemContract
 
