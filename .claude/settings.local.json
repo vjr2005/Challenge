@@ -38,7 +38,6 @@
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:www.pointfree.co)",
       "Bash(git add:*)",
-      "Bash(git commit:*)",
       "Bash(mise x:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
@@ -99,7 +98,12 @@
       "WebFetch(domain:claude.com)",
       "WebFetch(domain:claudelog.com)",
       "mcp__cupertino__search",
-      "mcp__cupertino__read_document"
+      "mcp__cupertino__read_document",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge status -u)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff --staged)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge add Libraries/Core/Sources/ImageLoader/DiskCache/ImageDiskCacheContract.swift Libraries/Core/Sources/ImageLoader/DiskCache/ImageDiskCache.swift Libraries/Core/Sources/ImageLoader/DiskCache/DiskCacheConfiguration.swift Libraries/Core/Sources/ImageLoader/MemoryCache/ImageMemoryCacheContract.swift Libraries/Core/Sources/ImageLoader/MemoryCache/ImageMemoryCache.swift Libraries/Core/Sources/ImageLoader/CachedImageLoader.swift Libraries/Core/Tests/Shared/Mocks/ImageDiskCacheMock.swift Libraries/Core/Tests/Shared/Mocks/ImageMemoryCacheMock.swift Libraries/Core/Tests/Unit/ImageLoader/CachedImageLoaderTests.swift)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge diff Libraries/Core/Sources/ImageLoader/CachedImageLoader.swift)",
+      "Bash(git -C /Users/vjordan/Projects/ios/Challenge add Libraries/Core/README.md .claude/skills/concurrency/SKILL.md .claude/skills/datasource/SKILL.md .claude/skills/project-structure/SKILL.md Libraries/Core/Sources/ImageLoader/CachedImageLoader.swift)"
     ]
   },
   "enableAllProjectMcpServers": true,
