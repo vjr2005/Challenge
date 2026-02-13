@@ -23,11 +23,15 @@ Core/
 │   │   ├── ImageLoaderContract.swift
 │   │   ├── CachedImageLoader.swift
 │   │   ├── ImageLoaderEnvironment.swift
-│   │   └── DiskCache/
-│   │       ├── DiskCacheConfiguration.swift
-│   │       ├── FileSystemContract.swift
-│   │       ├── FileSystem.swift
-│   │       └── ImageDiskCache.swift
+│   │   ├── DiskCache/
+│   │   │   ├── ImageDiskCacheContract.swift
+│   │   │   ├── ImageDiskCache.swift
+│   │   │   ├── DiskCacheConfiguration.swift
+│   │   │   ├── FileSystemContract.swift
+│   │   │   └── FileSystem.swift
+│   │   └── MemoryCache/
+│   │       ├── ImageMemoryCacheContract.swift
+│   │       └── ImageMemoryCache.swift
 │   ├── Navigation/
 │   │   ├── AnyNavigation.swift
 │   │   ├── DeepLinkHandler.swift
@@ -133,21 +137,32 @@ nonisolated public protocol OutgoingNavigationContract: NavigationContract {}
 Protocol for async image loading:
 
 ```swift
-public protocol ImageLoaderContract {
-    func loadImage(from url: URL) async throws -> Image
+public protocol ImageLoaderContract: Sendable {
+    func cachedImage(for url: URL) -> UIImage?
+    func image(for url: URL) async -> UIImage?
+    func removeCachedImage(for url: URL) async
+    func clearCache() async
 }
 ```
 
 #### CachedImageLoader
 
-Two-tier image loader with in-memory caching (`NSCache`), disk caching, and deduplication of in-flight network requests.
+Two-tier image loader with in-memory caching, disk caching, and deduplication of in-flight network requests. Depends on `ImageMemoryCacheContract` and `ImageDiskCacheContract` abstractions (Dependency Inversion), both injectable via the internal init for testing.
 
 Lookup order: memory cache → disk cache → network. On network success, the image is stored in both caches.
 
+#### MemoryCache
+
+In-memory image cache backed by `NSCache`:
+
+- **`ImageMemoryCacheContract`** — Protocol for in-memory image cache operations (get, set, remove, clear).
+- **`ImageMemoryCache`** — `final class` implementation wrapping `NSCache`. Not an actor because `NSCache` is already thread-safe and `cachedImage(for:)` must remain synchronous.
+
 #### DiskCache
 
-Disk-based image cache (`ImageDiskCache`) with TTL expiration and LRU eviction:
+Disk-based image cache with TTL expiration and LRU eviction:
 
+- **`ImageDiskCacheContract`** — `: Actor` protocol defining disk cache operations (get, store, remove, clear).
 - **`ImageDiskCache`** — `actor` that manages cached files in the `Caches/ImageCache` directory. Zero suspension points internally: all `FileSystem` calls are synchronous within the actor's isolation, making every method an atomic critical section with no reentrancy risk.
 - **`FileSystemContract`** — `: Sendable` protocol with `nonisolated` methods. This design eliminates actor-to-actor hops that would introduce suspension points.
 - **`FileSystem`** — `struct` wrapping `FileManager` (thread-safe but not `Sendable`).
@@ -258,7 +273,7 @@ navigator.goBack()
 ```swift
 @Environment(\.imageLoader) private var imageLoader
 
-let image = try await imageLoader.loadImage(from: url)
+let image = await imageLoader.image(for: url)
 ```
 
 ## Mocks

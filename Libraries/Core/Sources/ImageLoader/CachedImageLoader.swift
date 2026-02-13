@@ -8,9 +8,11 @@ public final class CachedImageLoader: ImageLoaderContract {
 	private let session: URLSession
 
 	public convenience init() {
-		self.init(session: .shared,
-				  memoryCache: ImageMemoryCache(),
-				  diskCache: ImageDiskCache(configuration: .default, fileSystem: FileSystem()))
+		self.init(
+			session: .shared,
+			memoryCache: ImageMemoryCache(),
+			diskCache: ImageDiskCache(configuration: .default, fileSystem: FileSystem())
+		)
 	}
 
 	init(

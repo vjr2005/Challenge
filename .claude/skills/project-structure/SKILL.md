@@ -353,7 +353,16 @@ Libraries/Core/
 │   ├── ImageLoader/
 │   │   ├── ImageLoaderContract.swift
 │   │   ├── CachedImageLoader.swift
-│   │   └── ImageLoaderEnvironment.swift
+│   │   ├── ImageLoaderEnvironment.swift
+│   │   ├── DiskCache/
+│   │   │   ├── ImageDiskCacheContract.swift
+│   │   │   ├── ImageDiskCache.swift
+│   │   │   ├── DiskCacheConfiguration.swift
+│   │   │   ├── FileSystemContract.swift
+│   │   │   └── FileSystem.swift
+│   │   └── MemoryCache/
+│   │       ├── ImageMemoryCacheContract.swift
+│   │       └── ImageMemoryCache.swift
 │   ├── Tracking/
 │   │   ├── TrackerContract.swift
 │   │   ├── Tracker.swift

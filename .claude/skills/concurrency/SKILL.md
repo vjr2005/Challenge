@@ -227,7 +227,7 @@ Every `await` inside an actor is a **suspension point** where actor state can ch
 
 ```swift
 // DANGEROUS — reentrancy can break invariants
-actor ImageDiskCache {
+actor ImageDiskCache: ImageDiskCacheContract {
     private let fileSystem: FileSystemContract // `: Actor`
 
     func image(for url: URL) async -> UIImage? {
@@ -272,7 +272,7 @@ struct FileSystem: FileSystemContract {
     // ...
 }
 
-actor ImageDiskCache {
+actor ImageDiskCache: ImageDiskCacheContract {
     private let fileSystem: FileSystemContract
 
     func image(for url: URL) -> UIImage? { // No `async` — fully synchronous

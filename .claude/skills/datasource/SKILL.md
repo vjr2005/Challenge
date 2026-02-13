@@ -72,7 +72,7 @@ Features/{Feature}/
 - **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects
 - Remote: `async throws`. Local (Memory, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
 
-> **Sendable vs Actor contracts:** Use `: Actor` when the DataSource has its own mutable state to protect (Memory, UserDefaults). Use `: Sendable` with `nonisolated` methods only for stateless wrappers around thread-safe APIs (e.g., `FileSystem` wrapping `FileManager`). See `/concurrency` skill "Actor Reentrancy" section for when and why to choose `: Sendable`.
+> **Sendable vs Actor contracts:** Use `: Actor` when the DataSource has its own mutable state to protect (Memory, UserDefaults, `ImageDiskCacheContract`). Use `: Sendable` with `nonisolated` methods only for stateless wrappers around thread-safe APIs (e.g., `FileSystem` wrapping `FileManager`). See `/concurrency` skill "Actor Reentrancy" section for when and why to choose `: Sendable`.
 
 ### DTOs (Data Transfer Objects)
 
