@@ -40,6 +40,8 @@ struct {Name}Repository: {Name}RepositoryContract {
 }
 ```
 
+> **Note:** When `noCache` is the only strategy, `CachePolicyExecutor` is not needed — the repository calls remote directly. No local DataSource is injected.
+
 ## Tests
 
 ```swift

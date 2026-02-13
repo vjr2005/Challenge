@@ -15,6 +15,7 @@ Core/
 │   │   └── AppEnvironment.swift
 │   ├── Data/
 │   │   ├── CachePolicy.swift
+│   │   ├── CachePolicyExecutor.swift
 │   │   └── MapperContract.swift
 │   ├── Feature/
 │   │   └── Feature.swift
@@ -158,6 +159,7 @@ Shared abstractions for the data layer:
 
 - **`MapperContract`** — Generic protocol for mapping between DTOs and domain models.
 - **`CachePolicy`** — Enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`.
+- **`CachePolicyExecutor`** — Stateless struct that executes data fetch operations using a `CachePolicy`. Repositories delegate cache strategy logic to this executor, eliminating duplicated cache implementations. Accepts generic closures for remote fetch, cache read/write, DTO-to-domain mapping, and error mapping (transport errors to domain errors).
 
 ### FeatureContract Protocol
 

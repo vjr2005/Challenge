@@ -128,6 +128,11 @@ function_body_length:
   warning: 50
   error: 100
 
+# Function parameter count
+function_parameter_count:
+  warning: 6
+  error: 8
+
 # Cyclomatic complexity
 cyclomatic_complexity:
   warning: 10

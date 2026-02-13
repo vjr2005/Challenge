@@ -113,8 +113,7 @@ Checklist (for All configurable — adapt for single-policy variants):
 - [ ] Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Implementation in `Data/Repositories/` (injects both DataSources, uses Mapper + Error Mapper)
-- [ ] Extract `fetchFromRemote` helper (avoids duplication)
-- [ ] Implement cache strategies
+- [ ] Delegate to `CachePolicyExecutor` for cache strategy execution (with `errorMapper` closure)
 - [ ] Mock in `Tests/Shared/Mocks/` (tracks `cachePolicy`)
 - [ ] Mapper tests, Error Mapper tests
 - [ ] Tests for each cache strategy
@@ -276,7 +275,7 @@ extension {Feature}Error: CustomDebugStringConvertible {
 
 ---
 
-## CachePolicy
+## CachePolicy & CachePolicyExecutor
 
 Defined in `ChallengeCore`, shared across features:
 
@@ -287,6 +286,25 @@ public enum CachePolicy {
     case noCache      // Remote only, no cache interaction
 }
 ```
+
+`CachePolicyExecutor` is a stateless struct (same pattern as Mappers) that centralizes cache strategy execution. Repositories delegate to it via generic closures, including an `errorMapper` that maps transport errors to domain errors:
+
+```swift
+private let cacheExecutor = CachePolicyExecutor()
+
+try await cacheExecutor.execute(
+    policy: cachePolicy,
+    fetchFromRemote: { try await remoteDataSource.fetch{Name}(...) },
+    getFromCache: { await memoryDataSource.get{Name}(...) },
+    saveToCache: { await memoryDataSource.save{Name}($0) },
+    mapper: { mapper.map($0) },
+    errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, ...)) }
+)
+```
+
+The `errorMapper` closure receives `any Error` (raw transport error) and returns the typed domain error. This eliminates the need for a separate `fetchFromRemote` wrapper method in each repository — error mapping is handled entirely by the executor.
+
+Cache strategy logic is tested once in `CachePolicyExecutorTests` (15 tests). Repository tests only verify wiring, cache wiring, and error mapping.
 
 ---
 

@@ -6,6 +6,7 @@ struct EpisodeRepository: EpisodeRepositoryContract {
 	private let memoryDataSource: EpisodeLocalDataSourceContract
 	private let mapper = EpisodeCharacterWithEpisodesMapper()
 	private let errorMapper = EpisodeErrorMapper()
+	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
 		remoteDataSource: EpisodeRemoteDataSourceContract,
@@ -16,56 +17,13 @@ struct EpisodeRepository: EpisodeRepositoryContract {
 	}
 
 	func getEpisodes(characterIdentifier: Int, cachePolicy: CachePolicy) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
-		switch cachePolicy {
-		case .localFirst:
-			try await getEpisodesLocalFirst(characterIdentifier: characterIdentifier)
-		case .remoteFirst:
-			try await getEpisodesRemoteFirst(characterIdentifier: characterIdentifier)
-		case .noCache:
-			try await getEpisodesNoCache(characterIdentifier: characterIdentifier)
-		}
-	}
-}
-
-// MARK: - Remote Fetch
-
-private extension EpisodeRepository {
-	func fetchFromRemote(characterIdentifier: Int) async throws(EpisodeError) -> EpisodeCharacterWithEpisodesDTO {
-		do {
-			return try await remoteDataSource.fetchEpisodes(characterIdentifier: characterIdentifier)
-		} catch {
-			throw errorMapper.map(EpisodeErrorMapperInput(error: error, characterIdentifier: characterIdentifier))
-		}
-	}
-}
-
-// MARK: - Cache Strategies
-
-private extension EpisodeRepository {
-	func getEpisodesLocalFirst(characterIdentifier: Int) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
-		if let cached = await memoryDataSource.getEpisodes(characterIdentifier: characterIdentifier) {
-			return mapper.map(cached)
-		}
-		let dto = try await fetchFromRemote(characterIdentifier: characterIdentifier)
-		await memoryDataSource.saveEpisodes(dto, characterIdentifier: characterIdentifier)
-		return mapper.map(dto)
-	}
-
-	func getEpisodesRemoteFirst(characterIdentifier: Int) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
-		do {
-			let dto = try await fetchFromRemote(characterIdentifier: characterIdentifier)
-			await memoryDataSource.saveEpisodes(dto, characterIdentifier: characterIdentifier)
-			return mapper.map(dto)
-		} catch {
-			if let cached = await memoryDataSource.getEpisodes(characterIdentifier: characterIdentifier) {
-				return mapper.map(cached)
-			}
-			throw error
-		}
-	}
-
-	func getEpisodesNoCache(characterIdentifier: Int) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
-		let dto = try await fetchFromRemote(characterIdentifier: characterIdentifier)
-		return mapper.map(dto)
+		try await cacheExecutor.execute(
+			policy: cachePolicy,
+			fetchFromRemote: { try await remoteDataSource.fetchEpisodes(characterIdentifier: characterIdentifier) },
+			getFromCache: { await memoryDataSource.getEpisodes(characterIdentifier: characterIdentifier) },
+			saveToCache: { await memoryDataSource.saveEpisodes($0, characterIdentifier: characterIdentifier) },
+			mapper: { mapper.map($0) },
+			errorMapper: { errorMapper.map(EpisodeErrorMapperInput(error: $0, characterIdentifier: characterIdentifier)) }
+		)
 	}
 }

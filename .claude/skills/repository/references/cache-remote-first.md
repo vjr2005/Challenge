@@ -27,6 +27,7 @@ struct {Name}Repository: {Name}RepositoryContract {
     private let memoryDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
+    private let cacheExecutor = CachePolicyExecutor()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
@@ -37,33 +38,21 @@ struct {Name}Repository: {Name}RepositoryContract {
     }
 
     func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        do {
-            let dto = try await fetchFromRemote(identifier: identifier)
-            await memoryDataSource.save{Name}(dto)
-            return mapper.map(dto)
-        } catch {
-            if let cached = await memoryDataSource.get{Name}(identifier: identifier) {
-                return mapper.map(cached)
-            }
-            throw error
-        }
-    }
-}
-
-// MARK: - Remote Fetch Helper
-
-private extension {Name}Repository {
-    func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
-        do {
-            return try await remoteDataSource.fetch{Name}(identifier: identifier)
-        } catch {
-            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
-        }
+        try await cacheExecutor.execute(
+            policy: .remoteFirst,
+            fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
+            getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
+            saveToCache: { await memoryDataSource.save{Name}($0) },
+            mapper: { mapper.map($0) },
+            errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
+        )
     }
 }
 ```
 
 ## Tests
+
+Cache strategy logic is tested centrally in `CachePolicyExecutorTests`. Repository tests focus on **wiring** and **error mapping**.
 
 ```swift
 import ChallengeCore
@@ -74,8 +63,8 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}RepositoryTests {
-    @Test("Fetches from remote and saves to cache")
-    func fetchesFromRemoteAndSavesToCache() async throws {
+    @Test("Fetches from remote and maps to domain model")
+    func fetchesFromRemoteAndMapsToDomainModel() async throws {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
@@ -92,46 +81,6 @@ struct {Name}RepositoryTests {
         // Then
         #expect(value == expected)
         #expect(remoteDataSourceMock.fetchCallCount == 1)
-        #expect(await memoryDataSourceMock.saveCallCount == 1)
-    }
-
-    @Test("Always calls remote even when cache has data")
-    func alwaysCallsRemoteEvenWhenCacheHasData() async throws {
-        // Given
-        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(try loadJSON("{name}"))
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        await memoryDataSourceMock.setItemToReturn(try loadJSON("{name}"))
-        let sut = {Name}Repository(
-            remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
-        )
-
-        // When
-        _ = try await sut.get{Name}(identifier: 1)
-
-        // Then
-        #expect(remoteDataSourceMock.fetchCallCount == 1)
-    }
-
-    @Test("Falls back to cache on remote error")
-    func fallsBackToCacheOnRemoteError() async throws {
-        // Given
-        let expected = {Name}.stub()
-        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .failure(.invalidResponse)
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        await memoryDataSourceMock.setItemToReturn(try loadJSON("{name}"))
-        let sut = {Name}Repository(
-            remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
-        )
-
-        // When
-        let value = try await sut.get{Name}(identifier: 1)
-
-        // Then
-        #expect(value == expected)
     }
 
     @Test("Throws error when remote fails and cache is empty")

@@ -7,6 +7,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let mapper = CharactersPageMapper()
 	private let filterMapper = CharacterFilterMapper()
 	private let errorMapper = CharactersPageErrorMapper()
+	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
@@ -17,14 +18,14 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 	}
 
 	func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
-		switch cachePolicy {
-		case .localFirst:
-			try await getCharactersPageLocalFirst(page: page)
-		case .remoteFirst:
-			try await getCharactersPageRemoteFirst(page: page)
-		case .noCache:
-			try await getCharactersPageNoCache(page: page)
-		}
+		try await cacheExecutor.execute(
+			policy: cachePolicy,
+			fetchFromRemote: { try await remoteDataSource.fetchCharacters(page: page, filter: .empty) },
+			getFromCache: { await memoryDataSource.getPage(page) },
+			saveToCache: { await memoryDataSource.savePage($0, page: page) },
+			mapper: { mapper.map(CharactersPageMapperInput(response: $0, currentPage: page)) },
+			errorMapper: { errorMapper.map(CharactersPageErrorMapperInput(error: $0, page: page)) }
+		)
 	}
 
 	func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
@@ -46,48 +47,5 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 			}
 			throw mappedError
 		}
-	}
-}
-
-// MARK: - Remote Fetch
-
-private extension CharactersPageRepository {
-	func fetchFromRemote(page: Int) async throws(CharactersPageError) -> CharactersResponseDTO {
-		do {
-			return try await remoteDataSource.fetchCharacters(page: page, filter: .empty)
-		} catch {
-			throw errorMapper.map(CharactersPageErrorMapperInput(error: error, page: page))
-		}
-	}
-}
-
-// MARK: - Cache Strategies
-
-private extension CharactersPageRepository {
-	func getCharactersPageLocalFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
-		if let cached = await memoryDataSource.getPage(page) {
-			return mapper.map(CharactersPageMapperInput(response: cached, currentPage: page))
-		}
-		let response = try await fetchFromRemote(page: page)
-		await memoryDataSource.savePage(response, page: page)
-		return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
-	}
-
-	func getCharactersPageRemoteFirst(page: Int) async throws(CharactersPageError) -> CharactersPage {
-		do {
-			let response = try await fetchFromRemote(page: page)
-			await memoryDataSource.savePage(response, page: page)
-			return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
-		} catch {
-			if let cached = await memoryDataSource.getPage(page) {
-				return mapper.map(CharactersPageMapperInput(response: cached, currentPage: page))
-			}
-			throw error
-		}
-	}
-
-	func getCharactersPageNoCache(page: Int) async throws(CharactersPageError) -> CharactersPage {
-		let response = try await fetchFromRemote(page: page)
-		return mapper.map(CharactersPageMapperInput(response: response, currentPage: page))
 	}
 }

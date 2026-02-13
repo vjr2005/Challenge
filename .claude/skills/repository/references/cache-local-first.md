@@ -26,6 +26,7 @@ struct {Name}Repository: {Name}RepositoryContract {
     private let memoryDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
+    private let cacheExecutor = CachePolicyExecutor()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
@@ -36,29 +37,21 @@ struct {Name}Repository: {Name}RepositoryContract {
     }
 
     func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        if let cached = await memoryDataSource.get{Name}(identifier: identifier) {
-            return mapper.map(cached)
-        }
-        let dto = try await fetchFromRemote(identifier: identifier)
-        await memoryDataSource.save{Name}(dto)
-        return mapper.map(dto)
-    }
-}
-
-// MARK: - Remote Fetch Helper
-
-private extension {Name}Repository {
-    func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
-        do {
-            return try await remoteDataSource.fetch{Name}(identifier: identifier)
-        } catch {
-            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
-        }
+        try await cacheExecutor.execute(
+            policy: .localFirst,
+            fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
+            getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
+            saveToCache: { await memoryDataSource.save{Name}($0) },
+            mapper: { mapper.map($0) },
+            errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
+        )
     }
 }
 ```
 
 ## Tests
+
+Cache strategy logic is tested centrally in `CachePolicyExecutorTests`. Repository tests focus on **wiring** and **error mapping**.
 
 ```swift
 import ChallengeCore
@@ -69,28 +62,8 @@ import Testing
 @testable import {AppName}{Feature}
 
 struct {Name}RepositoryTests {
-    @Test("Returns cached data when available")
-    func returnsCachedDataWhenAvailable() async throws {
-        // Given
-        let expected = {Name}.stub()
-        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        await memoryDataSourceMock.setItemToReturn(try loadJSON("{name}"))
-        let sut = {Name}Repository(
-            remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
-        )
-
-        // When
-        let value = try await sut.get{Name}(identifier: 1)
-
-        // Then
-        #expect(value == expected)
-        #expect(remoteDataSourceMock.fetchCallCount == 0)
-    }
-
-    @Test("Fetches from remote on cache miss and saves to cache")
-    func fetchesFromRemoteOnCacheMissAndSaves() async throws {
+    @Test("Fetches from remote and maps to domain model")
+    func fetchesFromRemoteAndMapsToDomainModel() async throws {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
@@ -107,7 +80,6 @@ struct {Name}RepositoryTests {
         // Then
         #expect(value == expected)
         #expect(remoteDataSourceMock.fetchCallCount == 1)
-        #expect(await memoryDataSourceMock.saveCallCount == 1)
     }
 
     @Test("Maps generic error to loadFailed")
