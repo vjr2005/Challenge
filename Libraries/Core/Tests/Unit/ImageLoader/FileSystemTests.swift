@@ -108,18 +108,14 @@ struct FileSystemTests {
 		#expect(attributes.modified <= Date())
 	}
 
-	@Test("Throws error when file attributes are unavailable")
-	func throwsErrorWhenFileAttributesAreUnavailable() {
+	@Test("Throws error when file does not exist")
+	func throwsErrorWhenFileDoesNotExist() {
 		// Given
 		let fileURL = URL(fileURLWithPath: "/tmp/non-existent-\(UUID().uuidString)")
 
-		// Then
-		do {
-			// When
+		// When / Then
+		#expect(throws: (any Error).self) {
 			_ = try sut.fileAttributes(at: fileURL)
-			Issue.record("Expected error to be thrown")
-		} catch {
-			// Expected
 		}
 	}
 

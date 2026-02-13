@@ -1,9 +1,24 @@
 import Foundation
 
-struct FileAttributes {
+struct FileAttributes: Equatable {
 	let size: Int
 	let modified: Date
 	let created: Date
+
+	nonisolated init(size: Int, modified: Date, created: Date) {
+		self.size = size
+		self.modified = modified
+		self.created = created
+	}
+
+	nonisolated init(fileSize: Int?, modificationDate: Date?, creationDate: Date?) throws {
+		guard let size = fileSize,
+			  let modified = modificationDate,
+			  let created = creationDate else {
+			throw CocoaError(.fileReadUnknown)
+		}
+		self.init(size: size, modified: modified, created: created)
+	}
 }
 
 protocol FileSystemContract: Sendable {

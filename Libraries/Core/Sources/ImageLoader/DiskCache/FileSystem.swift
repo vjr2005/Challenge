@@ -4,6 +4,7 @@ struct FileSystem: FileSystemContract {
 	// FileManager is not Sendable but is documented as thread-safe.
 	// Safe to use from any isolation domain without synchronization.
 	nonisolated(unsafe) private let fileManager: FileManager
+	private let resourceKeys: [URLResourceKey] = [.fileSizeKey, .contentModificationDateKey, .creationDateKey]
 
 	init(fileManager: FileManager = .default) {
 		self.fileManager = fileManager
@@ -26,17 +27,16 @@ struct FileSystem: FileSystemContract {
 	}
 
 	nonisolated func contentsOfDirectory(at url: URL) throws -> [URL] {
-		try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey, .creationDateKey])
+		try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: resourceKeys)
 	}
 
 	nonisolated func fileAttributes(at url: URL) throws -> FileAttributes {
-		let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey, .creationDateKey])
-		guard let size = resourceValues.fileSize,
-			  let modified = resourceValues.contentModificationDate,
-			  let created = resourceValues.creationDate else {
-			throw CocoaError(.fileReadUnknown)
-		}
-		return FileAttributes(size: size, modified: modified, created: created)
+		let resourceValues = try url.resourceValues(forKeys: Set(resourceKeys))
+		return try FileAttributes(
+			fileSize: resourceValues.fileSize,
+			modificationDate: resourceValues.contentModificationDate,
+			creationDate: resourceValues.creationDate
+		)
 	}
 
 	nonisolated func updateModificationDate(at url: URL) throws {
