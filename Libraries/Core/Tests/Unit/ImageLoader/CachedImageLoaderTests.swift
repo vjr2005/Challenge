@@ -17,10 +17,10 @@ struct CachedImageLoaderTests {
 	@Test("Convenience init creates a valid instance")
 	func convenienceInitCreatesValidInstance() {
 		// When
-		let sut = CachedImageLoader()
+		let sut: any ImageLoaderContract = CachedImageLoader()
 
 		// Then
-		#expect(sut is ImageLoaderContract)
+		#expect(sut is CachedImageLoader)
 	}
 
 	// MARK: - Cached Image
