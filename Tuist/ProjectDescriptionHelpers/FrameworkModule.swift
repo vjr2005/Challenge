@@ -84,7 +84,7 @@ public struct FrameworkModule: @unchecked Sendable {
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
 	///   - snapshotTestDependencies: Additional snapshot test-only dependencies (SnapshotTesting is added automatically)
-	///   - settings: Optional per-target build settings override (applied to the framework target only)
+	///   - settings: Optional per-target build settings override (applied to framework, mocks, and test targets)
 	/// - Note: Mocks and test targets are automatically created if the corresponding folders exist.
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
 	public static func create(
@@ -129,7 +129,8 @@ public struct FrameworkModule: @unchecked Sendable {
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)Mocks",
 				deploymentTargets: developmentTarget,
 				sources: ["\(baseFolder)/\(sourcesPath)/Mocks/**"],
-				dependencies: [.target(name: targetName)]
+				dependencies: [.target(name: targetName)],
+				settings: settings
 			)
 			targets.append(mocks)
 			testsDependencies.append(.target(name: "\(targetName)Mocks"))
@@ -160,7 +161,8 @@ public struct FrameworkModule: @unchecked Sendable {
 				deploymentTargets: developmentTarget,
 				sources: unitSources,
 				resources: unitResources,
-				dependencies: testsDependencies + testDependencies
+				dependencies: testsDependencies + testDependencies,
+				settings: settings
 			)
 			targets.append(tests)
 			testableTargets.append(
@@ -191,7 +193,8 @@ public struct FrameworkModule: @unchecked Sendable {
 				deploymentTargets: developmentTarget,
 				sources: snapshotSources,
 				resources: snapshotResources,
-				dependencies: testsDependencies + [.target(name: "\(appName)SnapshotTestKit")] + snapshotTestDependencies
+				dependencies: testsDependencies + [.target(name: "\(appName)SnapshotTestKit")] + snapshotTestDependencies,
+				settings: settings
 			)
 			targets.append(snapshotTests)
 			testableTargets.append(
