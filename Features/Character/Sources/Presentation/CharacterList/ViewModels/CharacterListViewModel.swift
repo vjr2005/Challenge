@@ -137,16 +137,15 @@ private extension CharacterListViewModel {
 
     func searchQueryDidChange() {
         searchTask?.cancel()
-        searchTask = Task { @MainActor in
+        searchTask = Task { [weak self, debounceInterval] in
             try? await Task.sleep(for: debounceInterval)
-            if !Task.isCancelled {
-                if let name = normalizedQuery {
-                    tracker.trackSearchPerformed(query: name)
-                    await saveRecentSearchUseCase.execute(query: name)
-                    await loadRecentSearches()
-                }
-                await fetchCharacters()
+            guard let self, !Task.isCancelled else { return }
+            if let name = normalizedQuery {
+                tracker.trackSearchPerformed(query: name)
+                await saveRecentSearchUseCase.execute(query: name)
+                await loadRecentSearches()
             }
+            await fetchCharacters()
         }
     }
 
