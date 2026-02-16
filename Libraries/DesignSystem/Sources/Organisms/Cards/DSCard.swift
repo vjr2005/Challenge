@@ -36,6 +36,7 @@ public struct DSCard<Content: View>: View {
 			.padding(padding ?? theme.spacing.lg)
 			.background(theme.colors.surfacePrimary)
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius ?? theme.cornerRadius.lg))
+			.compositingGroup()
 			.shadow(shadow ?? theme.shadow.small)
 	}
 }

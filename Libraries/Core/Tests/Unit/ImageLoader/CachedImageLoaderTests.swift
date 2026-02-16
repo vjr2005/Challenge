@@ -225,6 +225,25 @@ struct CachedImageLoaderTests {
 		#expect(count == 0)
 	}
 
+	@Test("Image loaded from disk is stored in memory cache")
+	func imageLoadedFromDiskIsStoredInMemoryCache() async throws {
+		// Given
+		let url = try #require(URL(string: "https://test-disk-to-memory.example.com/image.png"))
+		let memoryCacheMock = ImageMemoryCacheMock()
+		let diskCacheMock = ImageDiskCacheMock()
+		let imageData = try #require(testImageData)
+		let testImage = try #require(UIImage(data: imageData))
+		await diskCacheMock.setImageToReturn(testImage)
+		let sut = CachedImageLoader(session: .mockSession(), memoryCache: memoryCacheMock, diskCache: diskCacheMock)
+
+		// When
+		_ = await sut.image(for: url)
+
+		// Then - Image should be in memory cache for subsequent calls
+		#expect(memoryCacheMock.setImageCallCount == 1)
+		#expect(sut.cachedImage(for: url) != nil)
+	}
+
 	// MARK: - Remove Image
 
 	@Test("removeCachedImage removes image from memory and disk")
