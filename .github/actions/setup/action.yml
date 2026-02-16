@@ -68,8 +68,7 @@ runs:
           echo "Booting simulator: $DEVICE_UDID"
           xcrun simctl boot "$DEVICE_UDID"
           echo "Waiting for simulator to be ready..."
-          xcrun simctl bootstatus "$DEVICE_UDID" -b
-          sleep 3
+          sleep 5
         else
           echo "Warning: Target simulator not found, will rely on Tuist to create it"
         fi

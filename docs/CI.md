@@ -197,7 +197,7 @@ After pushing the workflow file, configure the repository:
 - **Manual trigger**: `workflow_dispatch` allows running the full pipeline without creating a PR. PR-specific steps (comments) are skipped automatically.
 - **Test timeout**: Both test jobs have a 35-minute step timeout (40-minute job timeout) to prevent frozen tests from blocking the pipeline. This accounts for ~20 min compilation + ~5 min test execution (up to ~10 min with retries).
 - **UI test retry**: UI tests use `-retry-tests-on-failure` with `-test-repetition-relaunch-enabled YES` to automatically retry flaky tests that fail due to transient simulator issues (e.g., "Timed out while acquiring background assertion"). When a test crashes, xcodebuild relaunches the app and retries the failed test once.
-- **Simulator preparation**: The target simulator is shut down and re-booted before tests using `xcrun simctl bootstatus` to block until the simulator is fully ready (instead of a fixed delay). For local development, if the simulator becomes corrupted, use `./reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
+- **Simulator preparation**: The target simulator is shut down and re-booted before tests to prevent "Application failed preflight checks" errors caused by stale simulator state. For local development, if the simulator becomes corrupted, use `./reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
 
 ## Production Tooling
 
