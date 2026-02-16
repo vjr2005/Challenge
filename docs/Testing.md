@@ -153,6 +153,10 @@ Run the reset script and restart Xcode:
 
 See [Scripts](Scripts.md#reset-simulators-script) for details.
 
+### CI Flaky Failures (Background Assertion Timeout)
+
+If UI tests fail on CI with `Timed out while acquiring background assertion` or `Test crashed with signal trap`, this is a transient simulator issue caused by resource pressure on CI runners. The CI workflow handles this automatically with `-retry-tests-on-failure` and `-test-repetition-relaunch-enabled YES`, which relaunches the app and retries the failed test once. No local action is needed — re-run the CI workflow if the retry also fails.
+
 ## Coverage
 
 The project achieves **100% code coverage** across all modules.

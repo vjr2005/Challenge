@@ -39,7 +39,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 |------|-------------|
 | Checkout | Clone the repository |
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
-| Run unit and snapshot tests | `mise x -- tuist test "Challenge (Dev)"` (15 min timeout) |
+| Run unit and snapshot tests | `mise x -- tuist test "Challenge (Dev)"` (35 min timeout) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
 | Test report | On failure: composite action that uploads artifact, generates summary, and comments on PR |
 | Detect dead code | `mise x -- periphery scan --skip-build` reusing the test build index (informational, never blocks CI) |
@@ -52,9 +52,10 @@ Both test jobs share common steps extracted into reusable composite actions:
 |------|-------------|
 | Checkout | Clone the repository |
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
-| Run UI tests | `mise x -- tuist test "ChallengeUITests"` (25 min timeout) |
+| Run UI tests | `mise x -- tuist test "ChallengeUITests"` with retry-on-failure (35 min timeout, 1 retry) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
-| Test report | On failure: composite action that uploads artifact, generates summary, and comments on PR |
+| Upload test results | On failure: uploads `.xcresult` bundle as artifact for failure inspection (7-day retention) |
+| UI Tests summary | Always: parses `.xcresult` for failures and retried tests, writes combined summary to Actions Summary and PR comment |
 
 ### Quality Gate
 
@@ -73,7 +74,7 @@ This is the required status check for branch protection.
 
 ## Feedback Output
 
-Test failures, Periphery results, and code coverage are always written to **`GITHUB_STEP_SUMMARY`**, which is visible in the **Actions** > run > **Summary** tab regardless of the trigger. When the workflow is triggered by a pull request, the same content is also posted as a PR comment.
+Test failures, Periphery results, retry summaries, and code coverage are always written to **`GITHUB_STEP_SUMMARY`**, which is visible in the **Actions** > run > **Summary** tab regardless of the trigger. When the workflow is triggered by a pull request, the same content is also posted as a PR comment.
 
 | Output | Trigger | Where |
 |--------|---------|-------|
@@ -194,8 +195,9 @@ After pushing the workflow file, configure the repository:
 - **Concurrency group**: Concurrent runs on the same branch are cancelled automatically, saving CI minutes.
 - **Step summaries**: Test failures and Periphery results write to `GITHUB_STEP_SUMMARY` so feedback is visible on every run. PR comment steps reuse the summary output instead of duplicating markdown generation logic.
 - **Manual trigger**: `workflow_dispatch` allows running the full pipeline without creating a PR. PR-specific steps (comments) are skipped automatically.
-- **Test timeout**: Unit+snapshot tests have a 15-minute timeout; UI tests have a 25-minute timeout to prevent frozen tests from blocking the pipeline.
-- **Simulator preparation**: The target simulator is shut down and re-booted before tests to prevent "Application failed preflight checks" errors caused by stale simulator state. For local development, if the simulator becomes corrupted, use `./reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
+- **Test timeout**: Both test jobs have a 35-minute step timeout (40-minute job timeout) to prevent frozen tests from blocking the pipeline. This accounts for ~20 min compilation + ~5 min test execution (up to ~10 min with retries).
+- **UI test retry**: UI tests use `-retry-tests-on-failure` with `-test-repetition-relaunch-enabled YES` to automatically retry flaky tests that fail due to transient simulator issues (e.g., "Timed out while acquiring background assertion"). When a test crashes, xcodebuild relaunches the app and retries the failed test once.
+- **Simulator preparation**: The target simulator is shut down and re-booted before tests using `xcrun simctl bootstatus` to block until the simulator is fully ready (instead of a fixed delay). For local development, if the simulator becomes corrupted, use `./reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
 
 ## Production Tooling
 
