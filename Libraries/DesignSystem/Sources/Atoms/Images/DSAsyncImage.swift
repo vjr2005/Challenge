@@ -37,48 +37,22 @@ public struct DSAsyncImage<Content: View>: View {
 
 // MARK: - Default Content
 
-public extension DSAsyncImage where Content == AnyView {
+public extension DSAsyncImage where Content == DSAsyncImageDefaultContentView {
 	/// Creates a cached async image view with default content.
 	/// - Parameters:
 	///   - url: The URL of the image to load.
-	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
+	///   - failureImage: The system image name displayed when loading fails. Defaults to `"photo"`.
+	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing.
 	///
 	/// Default behavior:
-	/// - Success: displays the image with `resizable()` and `scaledToFill()`
-	/// - Empty: displays a `ProgressView`
-	/// - Failure: displays an error placeholder
-	init(url: URL?, accessibilityIdentifier: String? = nil) {
+	/// - **Success**: displays the image with `resizable()` and `scaledToFill()`
+	/// - **Empty**: displays a `ProgressView`
+	/// - **Failure**: displays a themed placeholder with the specified system image
+	init(url: URL?, failureImage: String = "photo", accessibilityIdentifier: String? = nil) {
 		self.url = url
 		self.accessibilityIdentifier = accessibilityIdentifier
 		self.content = { phase in
-			AnyView(DefaultPhaseContent(phase: phase))
-		}
-	}
-}
-
-// MARK: - DefaultPhaseContent
-
-private struct DefaultPhaseContent: View {
-	let phase: AsyncImagePhase
-
-	@Environment(\.dsTheme) private var theme
-
-	var body: some View {
-		switch phase {
-		case .success(let image):
-			image
-				.resizable()
-				.scaledToFill()
-		case .empty:
-			ProgressView()
-		case .failure:
-			ZStack {
-				theme.colors.surfaceSecondary
-				Image(systemName: "photo")
-					.foregroundStyle(theme.colors.textTertiary)
-			}
-		@unknown default:
-			ProgressView()
+			DSAsyncImageDefaultContentView(phase: phase, failureImage: failureImage)
 		}
 	}
 }
