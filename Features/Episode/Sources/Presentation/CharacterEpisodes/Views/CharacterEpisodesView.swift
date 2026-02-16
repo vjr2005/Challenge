@@ -123,7 +123,7 @@ private extension CharacterEpisodesView {
 							.foregroundStyle(theme.colors.textSecondary)
 
 						ScrollView(.horizontal, showsIndicators: false) {
-							HStack(spacing: theme.spacing.md) {
+							LazyHStack(spacing: theme.spacing.md) {
 								ForEach(episode.characters, id: \.id) { character in
 									characterAvatar(character)
 								}
