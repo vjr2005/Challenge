@@ -42,7 +42,8 @@ jobs:
             --device "$TUIST_TEST_DEVICE" \
             --os "$TUIST_TEST_OS" \
             --result-bundle-path "$RESULT_BUNDLE_PATH" \
-            -- -derivedDataPath "$DERIVED_DATA_PATH"
+            -- -derivedDataPath "$DERIVED_DATA_PATH" \
+            -retry-tests-on-failure
 
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
