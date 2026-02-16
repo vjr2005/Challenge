@@ -6,6 +6,15 @@ Core infrastructure module providing foundational services for the application.
 
 ChallengeCore contains the essential building blocks used across all features: navigation, deep linking, image loading, and app environment configuration. This module has no external dependencies and serves as the foundation layer.
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` (project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **MainActor-isolated by default** — no explicit `@MainActor` needed. Types that must run off the main thread opt out with `nonisolated`.
+
 ## Structure
 
 ```

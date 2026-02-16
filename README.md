@@ -41,6 +41,17 @@ Generate the Xcode project and install dependencies:
 
 The project follows **MVVM + Clean Architecture** with feature-based modularization. See [Architecture Documentation](docs/Architecture.md) for details.
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` (project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **MainActor-isolated by default**. Types that must run off the main thread opt out with `nonisolated`.
+
+**Exception:** `ChallengeNetworking` overrides the default to `nonisolated` at the target level — all networking types are nonisolated by default. See [ChallengeNetworking README](Libraries/Networking/README.md) for details.
+
 ## Project Structure
 
 See [Project Structure Documentation](docs/ProjectStructure.md) for directory layout and dependency graph.

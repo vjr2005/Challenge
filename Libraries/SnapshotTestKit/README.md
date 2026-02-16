@@ -11,6 +11,15 @@ SnapshotTestKit/
     └── Snapshotting+PresentationLayer.swift
 ```
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` (project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **MainActor-isolated by default** — no explicit `@MainActor` needed. Types that must run off the main thread opt out with `nonisolated`.
+
 ## Why this module exists
 
 - **Single point of change.** If the underlying snapshot library is replaced, only this module needs to be updated. No test file, documentation, or skill outside this module should reference the internal library.

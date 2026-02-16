@@ -6,6 +6,15 @@ Atomic Design System providing reusable UI components and design tokens with the
 
 ChallengeDesignSystem implements the Atomic Design methodology, organizing components into atoms, molecules, and organisms. It provides consistent design tokens for colors, typography, spacing, dimensions, border widths, corner radii, opacity, shadows, and other visual properties. All tokens are themeable via the SwiftUI Environment (`@Environment(\.dsTheme)`).
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` (project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **MainActor-isolated by default** — no explicit `@MainActor` needed. Types that must run off the main thread opt out with `nonisolated`.
+
 ## Structure
 
 ```

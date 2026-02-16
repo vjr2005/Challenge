@@ -140,7 +140,7 @@ func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sRes
 }
 ```
 
-> **Note:** `HTTPErrorMapper` maps `HTTPError` to `APIError` internally. Repositories and upper layers only see `APIError`, never `HTTPError`.
+> **Note:** `HTTPErrorMapper` maps `HTTPError` to `APIError` internally. Repositories and upper layers only see `APIError`, never `HTTPError`. `ChallengeNetworking` uses `nonisolated` default isolation — `Endpoint`, `HTTPMethod`, and other networking types don't need `nonisolated` annotations.
 
 ### 4. Create JSON Fixture
 
@@ -1048,6 +1048,7 @@ Each test uses a dedicated `UserDefaults` suite to avoid cross-test contaminatio
 
 ## Key Principles
 
+- Transport clients (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` for off-MainActor execution — DataSource contracts do NOT need `@concurrent`
 - **Contracts** are transport-agnostic, in separate files. Remote: `: Sendable`. Local (Memory, UserDefaults): `: Actor`
 - **DTOs** are anemic: `Decodable`, `Equatable`, no behavior, no `toDomain()`
 - **Error mapping**: DataSources catch transport errors and map to `APIError`. REST uses `HTTPErrorMapper`, GraphQL uses `GraphQLErrorMapper`

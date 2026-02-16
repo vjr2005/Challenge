@@ -84,6 +84,7 @@ public struct FrameworkModule: @unchecked Sendable {
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
 	///   - snapshotTestDependencies: Additional snapshot test-only dependencies (SnapshotTesting is added automatically)
+	///   - settings: Optional per-target build settings override (applied to the framework target only)
 	/// - Note: Mocks and test targets are automatically created if the corresponding folders exist.
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
 	public static func create(
@@ -93,7 +94,8 @@ public struct FrameworkModule: @unchecked Sendable {
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
-		snapshotTestDependencies: [TargetDependency] = []
+		snapshotTestDependencies: [TargetDependency] = [],
+		settings: Settings? = nil
 	) -> FrameworkModule {
 		let targetName = "\(appName)\(name)"
 		let testsTargetName = "\(targetName)Tests"
@@ -112,7 +114,8 @@ public struct FrameworkModule: @unchecked Sendable {
 			sources: ["\(baseFolder)/\(sourcesPath)/Sources/**"],
 			resources: resources,
 			scripts: [SwiftLint.script(path: "\(baseFolder)/\(sourcesPath)/Sources")],
-			dependencies: dependencies
+			dependencies: dependencies,
+			settings: settings
 		)
 
 		var targets = [framework]

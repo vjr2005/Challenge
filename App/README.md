@@ -6,6 +6,15 @@ Main application target that serves as the entry point for the iOS application.
 
 The Challenge app is the minimal entry point that creates the `AppContainer` and displays `RootContainerView` from `ChallengeAppKit`.
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` (project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **MainActor-isolated by default** — no explicit `@MainActor` needed. Types that must run off the main thread opt out with `nonisolated`.
+
 ## Structure
 
 ```

@@ -69,6 +69,8 @@ Features/{Feature}/
 - Internal visibility, separate file from implementation
 - Remote contracts: `: Sendable`. Local contracts (Memory, UserDefaults): `: Actor`
 - Transport-agnostic: same contract for REST or GraphQL
+- Transport clients (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` for off-MainActor execution — DataSource contracts do NOT need `@concurrent`
+- `ChallengeNetworking` uses `nonisolated` default isolation — networking types don't need `nonisolated` annotations
 - **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects
 - Remote: `async throws`. Local (Memory, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
 

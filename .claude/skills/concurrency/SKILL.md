@@ -25,6 +25,8 @@ This project uses Swift 6 with special build settings:
 | `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` | Automatic Sendable inference |
 | `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` | All types MainActor-isolated by default |
 
+> **Exception:** `ChallengeNetworking` overrides `SWIFT_DEFAULT_ACTOR_ISOLATION` to `nonisolated` at the target level. All networking types are nonisolated by default — no `nonisolated` annotations needed. See the [Networking README](../../../Libraries/Networking/README.md).
+
 ---
 
 ## Default MainActor Isolation
@@ -129,6 +131,52 @@ nonisolated final class CharacterFlowUITests: XCTestCase {
 }
 ```
 
+### `nonisolated` types (pure data types)
+
+Types that are pure data with no UI concern should be `nonisolated`:
+
+```swift
+// Internal networking envelope — nonisolated via module default (ChallengeNetworking)
+struct GraphQLResponse<T: Decodable>: Decodable {
+    let data: T?
+    let errors: [GraphQLResponseError]?
+}
+```
+
+All members (properties, synthesized conformances) become nonisolated automatically.
+
+> **Note:** In `ChallengeNetworking`, types are nonisolated by default (module-level override). In other modules, use the `nonisolated` keyword explicitly.
+
+### `@concurrent` for off-MainActor execution
+
+> **Reference:** [SE-0461 — Async function isolation](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md) | [Improving app responsiveness](https://developer.apple.com/documentation/xcode/improving-app-responsiveness)
+
+`@concurrent` guarantees an async function runs on the generic executor (thread pool), not on any actor. Use it for CPU-intensive work like JSON decoding + network I/O.
+
+```swift
+public protocol HTTPClientContract: Sendable {
+    @concurrent func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
+    @concurrent func request(_ endpoint: Endpoint) async throws -> Data
+}
+
+public protocol GraphQLClientContract: Sendable {
+    @concurrent func execute<T: Decodable>(_ operation: GraphQLOperation) async throws -> T
+}
+```
+
+**When to use:**
+- Transport clients (`HTTPClient`, `GraphQLClient`) — JSON decode + network I/O happen here
+
+**When NOT to use:**
+- Actors — `@concurrent` cannot be used with actor isolation (SE-0461)
+- Trivial work — endpoint building, error mapping in DataSources (marginal benefit)
+- Repositories/UseCases/CachePolicyExecutor — trivial coordination work
+
+**Implementation notes:**
+- In modules with MainActor default: private helpers called from `@concurrent` methods must be `nonisolated`
+- `ChallengeNetworking` uses `nonisolated` default — helpers, types, and inits are nonisolated automatically
+- Types constructed inside `@concurrent` methods need `nonisolated` init (e.g., `Endpoint` — already nonisolated via module default)
+
 ---
 
 ## State Management
@@ -209,6 +257,9 @@ actor DataStore {
 | UseCase | Yes (default) | No annotation needed |
 | Repository | Yes (default) | No annotation needed |
 | RemoteDataSource | Yes (default) | Struct, no annotation needed |
+| HTTPClient / GraphQLClient | nonisolated (module default) | `@concurrent` on public methods |
+| Endpoint / HTTPMethod | nonisolated (module default) | Pure data types, keep explicit `Sendable` for cross-module use |
+| GraphQLResponse | nonisolated (module default) | Pure data envelope |
 | MemoryDataSource | No (actor) | Use `actor` keyword |
 | URLProtocol subclass | nonisolated | Framework requirement |
 | XCTestCase subclass | nonisolated | Framework requirement |
@@ -344,7 +395,9 @@ This is safe in practice because the actor serializes all calls to the mock. Tes
 - [ ] Async functions use `async throws` (not completion handlers)
 - [ ] Actors are used for shared mutable state
 - [ ] No `DispatchQueue` usage
-- [ ] No explicit `Sendable` conformance (it's inferred)
+- [ ] No explicit `Sendable` conformance (it's inferred) — exception: public types crossing module boundaries (e.g., `Endpoint`, `HTTPMethod`, `GraphQLResponseError`) keep explicit `Sendable` because inference doesn't cross modules
 - [ ] No explicit `@MainActor` on ViewModels/Views (it's default)
 - [ ] Actor methods with multiple `await` calls reviewed for reentrancy risks
 - [ ] Stateless wrappers around thread-safe APIs use `: Sendable` + `nonisolated` (not `: Actor`)
+- [ ] Transport client methods use `@concurrent` for off-MainActor execution
+- [ ] Pure data types used in `@concurrent` contexts are `nonisolated struct` (or nonisolated by module default in ChallengeNetworking)

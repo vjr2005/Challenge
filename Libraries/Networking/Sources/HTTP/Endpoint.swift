@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents an API endpoint configuration.
-public struct Endpoint {
+public struct Endpoint: Sendable {
 	/// The URL path component of the endpoint.
 	public let path: String
 	/// The HTTP method for the request.

@@ -6,6 +6,17 @@ Native networking layer using **URLSession with async/await**. No external depen
 
 This library provides a type-safe HTTP client (REST) and GraphQL client for making network requests. It uses Swift's modern concurrency features and is fully `Sendable` compliant.
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | **`nonisolated`** (overrides project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **nonisolated by default** — no `nonisolated` keyword needed on types or methods. This is the correct default for a transport library where every type is a pure data structure or stateless service with no UI concerns.
+
+Transport client methods (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` ([SE-0461](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md)) to guarantee execution on the generic executor (thread pool), keeping network I/O and JSON decoding off MainActor.
+
 ## Components
 
 ### HTTP (REST)
@@ -206,6 +217,14 @@ func sendsCorrectEndpoint() async throws {
 }
 ```
 
+## Concurrency
+
+Both `HTTPClientContract` and `GraphQLClientContract` use [`@concurrent`](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md) (SE-0461) on their async methods. This guarantees network I/O and JSON decoding run on the generic executor (thread pool), not on MainActor.
+
+> **Reference:** [Improving app responsiveness](https://developer.apple.com/documentation/xcode/improving-app-responsiveness) — *"Make sure your app uses the main thread only to interact with the user interface."*
+
+Since the module default is `nonisolated`, types like `GraphQLResponse` don't need explicit `nonisolated` annotations — they are nonisolated by default.
+
 ## Architecture
 
 ```
@@ -234,8 +253,8 @@ func sendsCorrectEndpoint() async throws {
 
 ```swift
 public protocol HTTPClientContract: Sendable {
-    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
-    func request(_ endpoint: Endpoint) async throws -> Data
+    @concurrent func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
+    @concurrent func request(_ endpoint: Endpoint) async throws -> Data
 }
 ```
 

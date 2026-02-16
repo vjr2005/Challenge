@@ -13,14 +13,14 @@ public final class HTTPClientMock: HTTPClientContract, @unchecked Sendable {
     public init() {}
 
     /// Records the endpoint and returns the mock result decoded as the specified type.
-    public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+    @concurrent public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         requestedEndpoints.append(endpoint)
         let data = try result.get()
         return try JSONDecoder().decode(T.self, from: data)
     }
 
     /// Records the endpoint and returns the mock result as raw data.
-    public func request(_ endpoint: Endpoint) async throws -> Data {
+    @concurrent public func request(_ endpoint: Endpoint) async throws -> Data {
         requestedEndpoints.append(endpoint)
         return try result.get()
     }

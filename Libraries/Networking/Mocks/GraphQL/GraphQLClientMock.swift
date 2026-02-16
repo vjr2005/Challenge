@@ -13,7 +13,7 @@ public final class GraphQLClientMock: GraphQLClientContract, @unchecked Sendable
 	public init() {}
 
 	/// Records the operation and returns the mock result decoded as the specified type.
-	public func execute<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
+	@concurrent public func execute<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
 		executedOperations.append(operation)
 		let data = try result.get()
 		return try JSONDecoder().decode(T.self, from: data)

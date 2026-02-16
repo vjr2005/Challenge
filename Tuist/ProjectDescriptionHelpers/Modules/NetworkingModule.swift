@@ -5,7 +5,10 @@ public enum NetworkingModule {
 		name: "Networking",
 		testDependencies: [
 			.target(name: "\(appName)CoreMocks"),
-		]
+		],
+		settings: .settings(base: [
+			"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("nonisolated"),
+		])
 	)
 
 	public static let targetReferences: [TargetReference] = [

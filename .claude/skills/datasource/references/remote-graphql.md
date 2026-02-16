@@ -152,6 +152,8 @@ Key patterns:
 - **Query strings**: `static let` on the DataSource. Exposed (not private) so tests can verify the correct query is sent.
 - **Error mapping**: The `GraphQLClient` throws `GraphQLError`. The DataSource catches it and maps to `APIError` via `GraphQLErrorMapper` (same pattern as REST DataSource with `HTTPErrorMapper`).
 
+> **Note:** `@concurrent` is on `GraphQLClientContract.execute()`, NOT on DataSource methods. The transport client handles off-MainActor execution (JSON decode + network I/O). DataSources only do trivial work (endpoint building, error mapping). `ChallengeNetworking` uses `nonisolated` default isolation — `GraphQLOperation`, `GraphQLVariable`, and other networking types don't need `nonisolated` annotations.
+
 ### Container Wiring
 
 The container receives `HTTPClientContract` and creates the `GraphQLClient` internally:

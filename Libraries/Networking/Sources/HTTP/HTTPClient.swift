@@ -22,13 +22,13 @@ public struct HTTPClient: HTTPClientContract {
 	}
 
 	/// Performs a request and decodes the response into the specified type.
-	public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+	@concurrent public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		let data = try await request(endpoint)
 		return try decoder.decode(T.self, from: data)
 	}
 
 	/// Performs a request and returns the raw response data.
-	public func request(_ endpoint: Endpoint) async throws -> Data {
+	@concurrent public func request(_ endpoint: Endpoint) async throws -> Data {
 		let request = try buildRequest(for: endpoint)
 		let (data, response) = try await session.data(for: request)
 

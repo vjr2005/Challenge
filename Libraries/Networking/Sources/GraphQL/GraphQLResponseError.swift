@@ -17,10 +17,6 @@ public struct GraphQLResponseError: Decodable, Equatable, Sendable {
 		self.path = path
 	}
 
-	nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.message == rhs.message && lhs.locations == rhs.locations && lhs.path == rhs.path
-	}
-
 	/// A location in a GraphQL query.
 	public struct Location: Decodable, Equatable, Sendable {
 		/// The line number.
@@ -32,10 +28,6 @@ public struct GraphQLResponseError: Decodable, Equatable, Sendable {
 		public init(line: Int, column: Int) {
 			self.line = line
 			self.column = column
-		}
-
-		nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
-			lhs.line == rhs.line && lhs.column == rhs.column
 		}
 	}
 }

@@ -6,6 +6,15 @@ Shared resources module providing localization utilities.
 
 ChallengeResources centralizes localization across the application, providing the `localized()` extension for type-safe string access.
 
+## Default Actor Isolation
+
+| Setting | Value |
+|---------|-------|
+| `SWIFT_DEFAULT_ACTOR_ISOLATION` | `MainActor` (project default) |
+| `SWIFT_APPROACHABLE_CONCURRENCY` | `YES` |
+
+All types are **MainActor-isolated by default** — no explicit `@MainActor` needed. Types that must run off the main thread opt out with `nonisolated`.
+
 ## Supported Languages
 
 | Language | Code | Status |

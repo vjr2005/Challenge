@@ -204,6 +204,30 @@ public enum CharacterModule {
 }
 ```
 
+## Per-Target Overrides
+
+`FrameworkModule.create()` accepts an optional `settings` parameter to override build settings for individual targets. This applies to the **framework target only** (not mocks or test targets).
+
+### ChallengeNetworking
+
+The Networking module overrides the project-wide `MainActor` default to `nonisolated`:
+
+```swift
+public static let module = FrameworkModule.create(
+    name: "Networking",
+    testDependencies: [
+        .target(name: "\(appName)CoreMocks"),
+    ],
+    settings: .settings(base: [
+        "SWIFT_DEFAULT_ACTOR_ISOLATION": .string("nonisolated"),
+    ])
+)
+```
+
+This is appropriate because all Networking types are pure data structures or stateless services with no UI concerns. The override eliminates the need for `nonisolated` annotations on every type and method in the module.
+
+> **Note:** The Mocks target (`ChallengeNetworkingMocks`) inherits the project-wide `MainActor` default, not the framework's override. This is correct because mock types use `@unchecked Sendable` and `@concurrent` to handle isolation explicitly.
+
 ## Commands
 
 ```bash

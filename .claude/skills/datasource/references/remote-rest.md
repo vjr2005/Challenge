@@ -71,6 +71,8 @@ private extension {Name}RESTDataSource {
 }
 ```
 
+> **Note:** `@concurrent` is on `HTTPClientContract.request()`, NOT on DataSource methods. The transport client handles off-MainActor execution (JSON decode + network I/O). DataSources only do trivial work (endpoint building, error mapping). `ChallengeNetworking` uses `nonisolated` default isolation — `Endpoint`, `HTTPMethod`, and other networking types don't need `nonisolated` annotations.
+
 For endpoints with query parameters:
 
 ```swift

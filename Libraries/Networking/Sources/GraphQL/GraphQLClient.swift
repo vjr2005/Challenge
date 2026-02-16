@@ -26,7 +26,7 @@ public struct GraphQLClient: GraphQLClientContract {
 	}
 
 	/// Executes a GraphQL operation and decodes the data payload.
-	public func execute<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
+	@concurrent public func execute<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
 		let body = try encodeBody(operation)
 		let endpoint = Endpoint(
 			path: path,
