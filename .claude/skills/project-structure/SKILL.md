@@ -342,7 +342,7 @@ Libraries/Core/
 │   ├── AppEnvironment/
 │   │   └── AppEnvironment.swift      # Base environment enum
 │   ├── Feature/
-│   │   └── Feature.swift             # Feature protocol
+│   │   └── FeatureContract.swift      # Feature protocol
 │   ├── Navigation/
 │   │   ├── NavigationCoordinator.swift   # @Observable path manager
 │   │   ├── NavigatorContract.swift       # Navigation protocol

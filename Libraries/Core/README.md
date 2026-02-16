@@ -27,7 +27,7 @@ Core/
 │   │   ├── CachePolicyExecutor.swift
 │   │   └── MapperContract.swift
 │   ├── Feature/
-│   │   └── Feature.swift
+│   │   └── FeatureContract.swift
 │   ├── ImageLoader/
 │   │   ├── ImageLoaderContract.swift
 │   │   ├── CachedImageLoader.swift

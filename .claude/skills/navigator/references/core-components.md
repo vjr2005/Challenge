@@ -161,7 +161,7 @@ public protocol NavigationRedirectContract: Sendable {
 ## FeatureContract
 
 ```swift
-// Libraries/Core/Sources/Feature/Feature.swift
+// Libraries/Core/Sources/Feature/FeatureContract.swift
 import SwiftUI
 
 public protocol FeatureContract {

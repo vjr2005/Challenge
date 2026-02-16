@@ -131,7 +131,7 @@ private extension AppContainer {
 ## FeatureContract Protocol (Core Module)
 
 ```swift
-// Libraries/Core/Sources/Feature/Feature.swift
+// Libraries/Core/Sources/Feature/FeatureContract.swift
 import SwiftUI
 
 public protocol FeatureContract {
