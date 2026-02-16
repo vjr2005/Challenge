@@ -69,7 +69,7 @@ private extension DSCardInfoRow {
 			url: imageURL,
 			accessibilityIdentifier: accessibilityIdentifier.map { "\($0).image" }
 		)
-		.frame(width: 70, height: 70)
+		.frame(width: theme.dimensions.xxxl, height: theme.dimensions.xxxl)
 		.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
 	}
 
