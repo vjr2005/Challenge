@@ -1,5 +1,5 @@
 name: Test Report
-description: Upload xcresult artifact, generate test failure summary, and comment on PR
+description: Upload xcresult artifact, generate test summary with failures and retries, and comment on PR
 
 inputs:
   title:
@@ -22,6 +22,7 @@ runs:
 
     - name: Upload xcresult
       id: upload-xcresult
+      if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
@@ -39,38 +40,86 @@ runs:
         xcresult_url = os.environ.get('XCRESULT_URL', '')
         title = os.environ['REPORT_TITLE']
 
+        if not os.path.isdir(result_bundle):
+            exit(0)
+
+        result = subprocess.run(
+            ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
+             '--path', result_bundle],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            exit(0)
+
+        data = json.loads(result.stdout)
         failures = []
-        if os.path.isdir(result_bundle):
-            result = subprocess.run(
-                ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
-                 '--path', result_bundle],
-                capture_output=True, text=True
-            )
-            if result.returncode == 0:
-                data = json.loads(result.stdout)
+        retried = []
 
-                def walk(node, parts):
-                    name = node.get('name', '')
-                    node_type = node.get('nodeType', '')
-                    if node_type == 'Test Plan':
-                        for child in node.get('children', []):
-                            walk(child, [])
-                        return
-                    current = parts + [name] if name else parts
-                    if node.get('result') == 'Failed' and node_type == 'Test Case':
-                        failures.append('/'.join(current))
-                    for child in node.get('children', []):
-                        walk(child, current)
+        def walk(node, parts):
+            name = node.get('name', '')
+            node_type = node.get('nodeType', '')
 
-                for node in data.get('testNodes', []):
-                    walk(node, [])
+            if node_type in ('Test Plan', 'Unit test bundle', 'UI test bundle'):
+                for child in node.get('children', []):
+                    walk(child, [])
+                return
 
-        lines = [f'## {title}', '', ':x: **Tests failed.**']
+            if node_type == 'Test Suite':
+                for child in node.get('children', []):
+                    walk(child, parts + [name] if name else parts)
+                return
+
+            current = parts + [name] if name else parts
+
+            if node_type == 'Test Case':
+                children = node.get('children', [])
+                runs = [c for c in children if c.get('result') in ('Passed', 'Failed')]
+                if runs:
+                    failed_runs = [r for r in runs if r.get('result') == 'Failed']
+                    if failed_runs:
+                        retried.append({
+                            'test': '/'.join(current),
+                            'attempts': len(runs),
+                            'failed_attempts': len(failed_runs),
+                            'final_result': node.get('result', 'Unknown')
+                        })
+                if node.get('result') == 'Failed':
+                    failures.append('/'.join(current))
+                return
+
+            for child in node.get('children', []):
+                walk(child, current)
+
+        for node in data.get('testNodes', []):
+            walk(node, [])
+
+        if not failures and not retried:
+            exit(0)
+
+        lines = [f'## {title}', '']
+
         if failures:
-            lines += ['', '| | Test |', '|---|------|']
+            lines += [':x: **Tests failed.**', '', '| | Test |', '|---|------|']
             lines += [f'| :x: | `{f}` |' for f in failures]
+            lines.append('')
+
+        if retried:
+            if failures:
+                lines.append('### Retried Tests')
+                lines.append('')
+            lines += [
+                f':warning: **{len(retried)} test(s) required retry:**',
+                '',
+                '| | Test | Attempts | Result |',
+                '|---|------|----------|--------|'
+            ]
+            for r in retried:
+                icon = ':white_check_mark:' if r['final_result'] == 'Passed' else ':x:'
+                lines.append(f"| {icon} | `{r['test']}` | {r['attempts']} | {r['final_result']} |")
+            lines += ['', '_These tests failed initially and were retried via `-retry-tests-on-failure`._']
+
         if xcresult_url:
-            lines += ['', f'[:arrow_down: Download xcresult]({xcresult_url})', '',
+            lines += ['', f':package: [Download xcresult]({xcresult_url})', '',
                       '_Open the `.xcresult` file in Xcode to inspect failures._']
 
         body = '\n'.join(lines)
@@ -82,14 +131,15 @@ runs:
             output.write('body<<TEST_BODY_EOF\n')
             output.write(body + '\n')
             output.write('TEST_BODY_EOF\n')
+            output.write('has_info=true\n')
         PYEOF
       env:
         RESULT_BUNDLE_PATH: ${{ inputs.result-bundle-path }}
         XCRESULT_URL: ${{ steps.upload-xcresult.outputs.artifact-url }}
         REPORT_TITLE: ${{ inputs.title }}
 
-    - name: Comment PR with test failures
-      if: github.event_name == 'pull_request'
+    - name: Comment PR with test summary
+      if: github.event_name == 'pull_request' && steps.test-summary.outputs.has_info == 'true'
       uses: actions/github-script@v7
       with:
         script: |

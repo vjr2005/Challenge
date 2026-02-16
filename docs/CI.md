@@ -31,7 +31,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 | Action | Path | Description |
 |--------|------|-------------|
 | **Setup** | `.github/actions/setup/` | Select Xcode, install mise tools, cache and install SPM dependencies, generate Xcode project, boot simulator |
-| **Test Report** | `.github/actions/test-report/` | Upload `.xcresult` artifact, parse failures into markdown summary, comment on PR |
+| **Test Report** | `.github/actions/test-report/` | Upload `.xcresult` artifact, parse failures and retried tests into combined markdown summary, comment on PR |
 
 ### Unit & Snapshot Tests Steps
 
@@ -41,7 +41,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
 | Run unit and snapshot tests | `mise x -- tuist test "Challenge (Dev)"` with retry-on-failure (35 min timeout, 1 retry) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
-| Test report | On failure: composite action that uploads artifact, generates summary, and comments on PR |
+| Test report | Always: composite action that uploads `.xcresult` artifact (on failure), parses failures and retried tests, writes combined summary to Actions Summary and PR comment |
 | Detect dead code | `mise x -- periphery scan --skip-build` reusing the test build index (informational, never blocks CI) |
 | Periphery summary | Parses Periphery output and writes markdown to Actions Summary |
 | Comment PR (Periphery) | PR only: posts the Periphery summary as a PR comment |
@@ -54,8 +54,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
 | Run UI tests | `mise x -- tuist test "ChallengeUITests"` with retry-on-failure (35 min timeout, 1 retry) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
-| Upload test results | On failure: uploads `.xcresult` bundle as artifact for failure inspection (7-day retention) |
-| UI Tests summary | Always: parses `.xcresult` for failures and retried tests, writes combined summary to Actions Summary and PR comment |
+| Test report | Always: composite action that uploads `.xcresult` artifact (on failure), parses failures and retried tests, writes combined summary to Actions Summary and PR comment |
 
 ### Quality Gate
 
@@ -187,7 +186,7 @@ After pushing the workflow file, configure the repository:
 
 ## Design Decisions
 
-- **Composite actions**: Shared setup steps (Xcode selection, mise, caching, SPM dependencies, project generation, simulator boot) and test reporting steps (artifact upload, failure summary, PR comment) are extracted into reusable composite actions (`.github/actions/setup/` and `.github/actions/test-report/`). This eliminates duplication between the unit+snapshot and UI test jobs. The `if: failure()` condition is applied to the step that invokes the test-report action in the workflow, since composite action steps inherit the job's failure state.
+- **Composite actions**: Shared steps are extracted into reusable composite actions (`.github/actions/setup/` and `.github/actions/test-report/`). Both test jobs invoke the test-report action with `if: always()` so it runs regardless of test outcome. The action handles artifact upload (on failure only), failure/retry detection, Actions Summary, and PR comments. This eliminates duplication between the unit+snapshot and UI test jobs.
 - **Parallel jobs**: Unit+snapshot tests and UI tests run in separate macOS jobs to reduce total CI time. Total time = `max(unit+snapshot, UI)` instead of `sum()`.
 - **Quality Gate**: A `macos-15` job aggregates results from both test jobs, merges coverage data, and enforces the coverage threshold. It uses macOS because `xcresulttool merge` and `xccov` require Xcode tools. This is the single required status check for branch protection.
 - **Coverage merging**: Both test jobs upload their `.xcresult` bundles as artifacts (1-day retention). The Quality Gate downloads and merges them with `xcresulttool merge` to produce accurate line-level coverage union, then extracts the report with `xccov`.

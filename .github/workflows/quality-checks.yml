@@ -53,7 +53,7 @@ jobs:
           retention-days: 1
 
       - name: Test report
-        if: failure()
+        if: always()
         uses: ./.github/actions/test-report
         with:
           title: Unit & Snapshot Test Results
@@ -177,132 +177,13 @@ jobs:
           path: test_output
           retention-days: 1
 
-      - name: Upload test results
-        id: upload-results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-test-results
-          path: test_output
-          retention-days: 7
-
-      - name: UI Tests summary
-        id: ui-summary
+      - name: Test report
         if: always()
-        shell: bash
-        run: |
-          python3 << 'PYEOF'
-          import json, subprocess, os
-
-          result_bundle = os.environ['RESULT_BUNDLE_PATH']
-          xcresult_url = os.environ.get('XCRESULT_URL', '')
-          if not os.path.isdir(result_bundle):
-              exit(0)
-
-          result = subprocess.run(
-              ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests',
-               '--path', result_bundle],
-              capture_output=True, text=True
-          )
-          if result.returncode != 0:
-              exit(0)
-
-          data = json.loads(result.stdout)
-          failures = []
-          retried = []
-
-          def walk(node, parts):
-              name = node.get('name', '')
-              node_type = node.get('nodeType', '')
-
-              if node_type in ('Test Plan', 'UI test bundle'):
-                  for child in node.get('children', []):
-                      walk(child, [])
-                  return
-
-              if node_type == 'Test Suite':
-                  for child in node.get('children', []):
-                      walk(child, parts + [name] if name else parts)
-                  return
-
-              current = parts + [name] if name else parts
-
-              if node_type == 'Test Case':
-                  children = node.get('children', [])
-                  runs = [c for c in children if c.get('result') in ('Passed', 'Failed')]
-                  if runs:
-                      failed_runs = [r for r in runs if r.get('result') == 'Failed']
-                      if failed_runs:
-                          retried.append({
-                              'test': '/'.join(current),
-                              'attempts': len(runs),
-                              'failed_attempts': len(failed_runs),
-                              'final_result': node.get('result', 'Unknown')
-                          })
-                  if node.get('result') == 'Failed':
-                      failures.append('/'.join(current))
-                  return
-
-              for child in node.get('children', []):
-                  walk(child, current)
-
-          for node in data.get('testNodes', []):
-              walk(node, [])
-
-          if not failures and not retried:
-              exit(0)
-
-          lines = ['## UI Test Results', '']
-
-          if failures:
-              lines += [':x: **Tests failed.**', '', '| | Test |', '|---|------|']
-              lines += [f'| :x: | `{f}` |' for f in failures]
-              lines.append('')
-
-          if retried:
-              if failures:
-                  lines.append('### Retried Tests')
-                  lines.append('')
-              lines += [
-                  f':warning: **{len(retried)} test(s) required retry:**',
-                  '',
-                  '| | Test | Attempts | Result |',
-                  '|---|------|----------|--------|'
-              ]
-              for r in retried:
-                  icon = ':white_check_mark:' if r['final_result'] == 'Passed' else ':x:'
-                  lines.append(f"| {icon} | `{r['test']}` | {r['attempts']} | {r['final_result']} |")
-              lines += ['', '_These tests failed initially and were retried via `-retry-tests-on-failure`._']
-
-          if xcresult_url:
-              lines += ['', f':package: [Download xcresult]({xcresult_url})', '',
-                        '_Open the `.xcresult` file in Xcode to inspect failures._']
-
-          body = '\n'.join(lines)
-
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              summary.write(body + '\n')
-
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write('body<<UI_SUMMARY_EOF\n')
-              output.write(body + '\n')
-              output.write('UI_SUMMARY_EOF\n')
-              output.write('has_info=true\n')
-          PYEOF
-        env:
-          XCRESULT_URL: ${{ steps.upload-results.outputs.artifact-url }}
-
-      - name: Comment PR with UI test summary
-        if: github.event_name == 'pull_request' && steps.ui-summary.outputs.has_info == 'true'
-        uses: actions/github-script@v7
+        uses: ./.github/actions/test-report
         with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `${{ steps.ui-summary.outputs.body }}`
-            });
+          title: UI Test Results
+          artifact-name: ui-test-results
+          result-bundle-path: ${{ env.RESULT_BUNDLE_PATH }}
 
   quality-gate:
     name: Quality Gate
