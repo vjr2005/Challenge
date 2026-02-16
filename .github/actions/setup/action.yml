@@ -51,6 +51,34 @@ runs:
       shell: bash
       run: mise x -- tuist generate
 
+    # Simulator Readiness Strategy
+    #
+    # A simulator is only ready to launch apps when SpringBoard is running.
+    # Just reaching the "Booted" device state is not enough — system services
+    # may still be initializing, which causes "Timed out while acquiring
+    # background assertion" crashes in UI tests.
+    #
+    # We use a two-layer approach:
+    #
+    #   Layer 1 (here): Poll for SpringBoard via launchctl. This confirms
+    #   the simulator can actually launch apps. Polls every 2s with a 60s
+    #   timeout. If SpringBoard is not detected in time, the step continues
+    #   anyway — Layer 2 handles the failure.
+    #
+    #   Layer 2 (workflow): UI tests use -retry-tests-on-failure with
+    #   -test-repetition-relaunch-enabled YES. If a test crashes due to a
+    #   simulator that wasn't fully ready, xcodebuild relaunches the app
+    #   and retries the failed test once.
+    #
+    # Why not xcrun simctl bootstatus?
+    #   It blocks until the simulator reports "fully booted", but on CI
+    #   runners it can hang indefinitely — likely because some system
+    #   services never start in the headless CI environment.
+    #
+    # Why not sleep N?
+    #   A fixed delay is a guess. On fast runners 5s is enough; on slow
+    #   runners it's not. Polling for SpringBoard adapts to actual boot
+    #   time and exits as soon as the simulator is ready.
     - name: Prepare simulator
       shell: bash
       run: |
@@ -67,8 +95,19 @@ runs:
         if [ -n "$DEVICE_UDID" ]; then
           echo "Booting simulator: $DEVICE_UDID"
           xcrun simctl boot "$DEVICE_UDID"
-          echo "Waiting for simulator to be ready..."
-          sleep 5
+          echo "Waiting for SpringBoard (max 60s)..."
+          ELAPSED=0
+          while [ $ELAPSED -lt 60 ]; do
+            if xcrun simctl spawn "$DEVICE_UDID" launchctl print system 2>/dev/null | grep -q "com.apple.SpringBoard"; then
+              echo "Simulator ready after ${ELAPSED}s"
+              break
+            fi
+            sleep 2
+            ELAPSED=$((ELAPSED + 2))
+          done
+          if [ $ELAPSED -ge 60 ]; then
+            echo "Warning: SpringBoard not detected after 60s, continuing anyway"
+          fi
         else
           echo "Warning: Target simulator not found, will rely on Tuist to create it"
         fi
