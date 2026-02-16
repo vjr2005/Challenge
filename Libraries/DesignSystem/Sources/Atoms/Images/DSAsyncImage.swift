@@ -4,7 +4,6 @@ import SwiftUI
 /// A view that asynchronously loads and displays an image with caching support.
 public struct DSAsyncImage<Content: View>: View {
 	private let url: URL?
-	private let accessibilityIdentifier: String?
 	private let content: (AsyncImagePhase) -> Content
 
 	@Environment(\.imageLoader) private var imageLoader
@@ -13,21 +12,17 @@ public struct DSAsyncImage<Content: View>: View {
 	/// Creates a cached async image view with phase-based content.
 	/// - Parameters:
 	///   - url: The URL of the image to load.
-	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing
 	///   - content: A closure that takes the current async image phase and returns a view.
 	public init(
 		url: URL?,
-		accessibilityIdentifier: String? = nil,
 		@ViewBuilder content: @escaping (AsyncImagePhase) -> Content
 	) {
 		self.url = url
-		self.accessibilityIdentifier = accessibilityIdentifier
 		self.content = content
 	}
 
 	public var body: some View {
 		content(displayPhase)
-			.accessibilityIdentifier(accessibilityIdentifier ?? "")
 			.accessibilityHidden(true)
 			.task(id: url) {
 				await loadImage()
@@ -42,15 +37,13 @@ public extension DSAsyncImage where Content == DSAsyncImageDefaultContentView {
 	/// - Parameters:
 	///   - url: The URL of the image to load.
 	///   - failureImage: The system image name displayed when loading fails. Defaults to `"photo"`.
-	///   - accessibilityIdentifier: Optional accessibility identifier for UI testing.
 	///
 	/// Default behavior:
 	/// - **Success**: displays the image with `resizable()` and `scaledToFill()`
 	/// - **Empty**: displays a `ProgressView`
 	/// - **Failure**: displays a themed placeholder with the specified system image
-	init(url: URL?, failureImage: String = "photo", accessibilityIdentifier: String? = nil) {
+	init(url: URL?, failureImage: String = "photo") {
 		self.url = url
-		self.accessibilityIdentifier = accessibilityIdentifier
 		self.content = { phase in
 			DSAsyncImageDefaultContentView(phase: phase, failureImage: failureImage)
 		}

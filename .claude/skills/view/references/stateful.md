@@ -94,7 +94,7 @@ When passing `accessibilityIdentifier:` to DS components (e.g., `DSCardInfoRow`)
 
 | DS Component | Suffix |
 |---|---|
-| `DSAsyncImage` | `.image` |
+| Image (via `DSAsyncImage`) | `.image` |
 | Title text | `.title` |
 | `DSStatusIndicator` | `.status` |
 

@@ -220,9 +220,9 @@ Each screen test follows the same structure:
 
 ### Propagated Identifiers
 
-When using `accessibilityIdentifier: "characterList.row.1"`:
+When using `accessibilityIdentifier: "characterList.row.1"` on `DSCardInfoRow`:
 - Container: `characterList.row.1`
-- `DSAsyncImage`: `characterList.row.1.image`
+- Image (via `DSAsyncImage` + SwiftUI modifier): `characterList.row.1.image`
 - Title text: `characterList.row.1.title`
 - `DSStatusIndicator`: `characterList.row.1.status`
 

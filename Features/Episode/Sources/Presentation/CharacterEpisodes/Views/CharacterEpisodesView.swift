@@ -80,10 +80,11 @@ private extension CharacterEpisodesView {
 	func headerSection(_ data: EpisodeCharacterWithEpisodes) -> some View {
 		DSCard(padding: theme.spacing.xl) {
 			VStack(spacing: theme.spacing.lg) {
-				DSAsyncImage(url: data.imageURL, accessibilityIdentifier: AccessibilityIdentifier.headerImage)
+				DSAsyncImage(url: data.imageURL)
 					.frame(width: theme.dimensions.xxxxl, height: theme.dimensions.xxxxl)
 					.clipShape(Circle())
 					.shadow(theme.shadow.medium)
+					.accessibilityIdentifier(AccessibilityIdentifier.headerImage)
 
 				Text(data.name)
 					.font(theme.typography.title)
@@ -142,9 +143,10 @@ private extension CharacterEpisodesView {
 			viewModel.didTapOnCharacter(identifier: character.id)
 		} label: {
 			VStack(spacing: theme.spacing.xs) {
-				DSAsyncImage(url: character.imageURL, accessibilityIdentifier: AccessibilityIdentifier.characterAvatar(id: character.id))
+				DSAsyncImage(url: character.imageURL)
 					.frame(width: theme.dimensions.xxl, height: theme.dimensions.xxl)
 					.clipShape(Circle())
+					.accessibilityIdentifier(AccessibilityIdentifier.characterAvatar(id: character.id))
 
 				Text(character.name)
 					.font(theme.typography.caption2)

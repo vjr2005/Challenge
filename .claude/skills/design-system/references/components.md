@@ -126,6 +126,7 @@ Async image with caching support (replaces `AsyncImage` for snapshot testing). U
 DSAsyncImage(url: character.imageURL)
     .frame(width: 70, height: 70)
     .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
+    .accessibilityIdentifier("screen.image")
 ```
 
 Default behavior: shows `ProgressView` while loading, error placeholder on failure, and `image.resizable().scaledToFill()` on success.

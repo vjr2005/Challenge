@@ -65,12 +65,10 @@ public struct DSCardInfoRow: View {
 
 private extension DSCardInfoRow {
 	var imageView: some View {
-		DSAsyncImage(
-			url: imageURL,
-			accessibilityIdentifier: accessibilityIdentifier.map { "\($0).image" }
-		)
-		.frame(width: theme.dimensions.xxxl, height: theme.dimensions.xxxl)
-		.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
+		DSAsyncImage(url: imageURL)
+			.frame(width: theme.dimensions.xxxl, height: theme.dimensions.xxxl)
+			.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.md))
+			.accessibilityIdentifier(accessibilityIdentifier.map { "\($0).image" } ?? "")
 	}
 
 	var textContent: some View {
