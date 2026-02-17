@@ -40,7 +40,7 @@ enum {Name}ModelContainer {
 
 	static func create(inMemoryOnly: Bool = false) -> ModelContainer {
 		do {
-			let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemoryOnly)
+			let configuration = ModelConfiguration("{Name}Store", schema: schema, isStoredInMemoryOnly: inMemoryOnly)
 			return try ModelContainer(for: schema, configurations: [configuration])
 		} catch {
 			fatalError("Failed to create {Name}ModelContainer: \(error)")
@@ -49,7 +49,7 @@ enum {Name}ModelContainer {
 }
 ```
 
-Rules: Factory enum, single schema definition. `inMemoryOnly: true` for volatile (L1), `false` for persistence (L2). `fatalError` in catch (untestable but acceptable at container level).
+Rules: Factory enum, single schema definition. **Named `ModelConfiguration` is mandatory** — each module must use a unique store name (e.g., `"{Name}Store"`) to avoid schema collisions when multiple modules use SwiftData. `inMemoryOnly: true` for volatile (L1), `false` for persistence (L2). `fatalError` in catch (untestable but acceptable at container level).
 
 ### {Name}LocalDataSourceContract.swift — `Sources/Data/DataSources/Local/`
 
@@ -82,6 +82,13 @@ actor {Name}EntityDataSource: {Name}LocalDataSourceContract {
 	}
 
 	func save{Name}(_ item: {Name}DTO) {
+		let identifier = item.id
+		let descriptor = FetchDescriptor<{Name}Entity>(
+			predicate: #Predicate { $0.identifier == identifier }
+		)
+		if let existing = try? modelContext.fetch(descriptor).first {
+			modelContext.delete(existing)
+		}
 		let entity = entityMapper.map(item)
 		modelContext.insert(entity)
 		try? modelContext.save()

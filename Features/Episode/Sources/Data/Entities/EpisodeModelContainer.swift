@@ -10,7 +10,7 @@ enum EpisodeModelContainer {
 
 	static func create(inMemoryOnly: Bool = false) -> ModelContainer {
 		do {
-			let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemoryOnly)
+			let configuration = ModelConfiguration("EpisodeStore", schema: schema, isStoredInMemoryOnly: inMemoryOnly)
 			return try ModelContainer(for: schema, configurations: [configuration])
 		} catch {
 			fatalError("Failed to create EpisodeModelContainer: \(error)")

@@ -96,6 +96,13 @@ private extension CharacterEntityDataSource {
 
 	@discardableResult
 	func insertCharacter(_ dto: CharacterDTO) -> CharacterEntity {
+		let identifier = dto.id
+		let descriptor = FetchDescriptor<CharacterEntity>(
+			predicate: #Predicate { $0.identifier == identifier }
+		)
+		if let existing = try? modelContext.fetch(descriptor).first {
+			modelContext.delete(existing)
+		}
 		let entity = entityMapper.map(dto)
 		modelContext.insert(entity)
 		return entity
