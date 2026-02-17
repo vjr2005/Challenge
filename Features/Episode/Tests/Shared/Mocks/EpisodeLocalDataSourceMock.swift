@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeEpisode
 
-actor EpisodeMemoryDataSourceMock: EpisodeLocalDataSourceContract {
+actor EpisodeLocalDataSourceMock: EpisodeLocalDataSourceContract {
 	// MARK: - Configurable Returns
 
 	private(set) var episodesToReturn: EpisodeCharacterWithEpisodesDTO?

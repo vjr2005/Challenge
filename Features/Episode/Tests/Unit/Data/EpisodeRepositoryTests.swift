@@ -11,7 +11,8 @@ struct EpisodeRepositoryTests {
 	// MARK: - Properties
 
 	private let remoteDataSourceMock = EpisodeRemoteDataSourceMock()
-	private let memoryDataSourceMock = EpisodeMemoryDataSourceMock()
+	private let volatileDataSourceMock = EpisodeLocalDataSourceMock()
+	private let persistenceDataSourceMock = EpisodeLocalDataSourceMock()
 	private let sut: EpisodeRepository
 
 	// MARK: - Initialization
@@ -19,7 +20,8 @@ struct EpisodeRepositoryTests {
 	init() {
 		sut = EpisodeRepository(
 			remoteDataSource: remoteDataSourceMock,
-			memoryDataSource: memoryDataSourceMock
+			volatile: volatileDataSourceMock,
+			persistence: persistenceDataSourceMock
 		)
 	}
 
@@ -55,8 +57,37 @@ struct EpisodeRepositoryTests {
 
 	// MARK: - Cache Wiring
 
-	@Test("Saves to cache after successful remote fetch")
-	func savesToCacheAfterRemoteFetch() async throws {
+	@Test("Returns volatile cached value without calling remote")
+	func returnsVolatileCachedValue() async throws {
+		// Given
+		let dto: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
+		await volatileDataSourceMock.setEpisodesToReturn(dto)
+
+		// When
+		let value = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
+
+		// Then
+		#expect(value == EpisodeCharacterWithEpisodes.stub())
+		#expect(remoteDataSourceMock.fetchEpisodesCallCount == 0)
+	}
+
+	@Test("Falls back to persistence when volatile misses")
+	func fallsBackToPersistenceWhenVolatileMisses() async throws {
+		// Given
+		let dto: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
+		await persistenceDataSourceMock.setEpisodesToReturn(dto)
+
+		// When
+		let value = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
+
+		// Then
+		#expect(value == EpisodeCharacterWithEpisodes.stub())
+		#expect(remoteDataSourceMock.fetchEpisodesCallCount == 0)
+		#expect(await volatileDataSourceMock.saveEpisodesCallCount == 1)
+	}
+
+	@Test("Saves to both caches after successful remote fetch")
+	func savesToBothCachesAfterRemoteFetch() async throws {
 		// Given
 		let remoteDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
 		remoteDataSourceMock.episodesResult = .success(remoteDTO)
@@ -65,9 +96,12 @@ struct EpisodeRepositoryTests {
 		_ = try await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
 
 		// Then
-		#expect(await memoryDataSourceMock.saveEpisodesCallCount == 1)
-		#expect(await memoryDataSourceMock.lastSavedEpisodes == remoteDTO)
-		#expect(await memoryDataSourceMock.lastSavedCharacterIdentifier == 1)
+		#expect(await volatileDataSourceMock.saveEpisodesCallCount == 1)
+		#expect(await volatileDataSourceMock.lastSavedEpisodes == remoteDTO)
+		#expect(await volatileDataSourceMock.lastSavedCharacterIdentifier == 1)
+		#expect(await persistenceDataSourceMock.saveEpisodesCallCount == 1)
+		#expect(await persistenceDataSourceMock.lastSavedEpisodes == remoteDTO)
+		#expect(await persistenceDataSourceMock.lastSavedCharacterIdentifier == 1)
 	}
 
 	// MARK: - Error Handling
@@ -81,7 +115,8 @@ struct EpisodeRepositoryTests {
 		_ = try? await sut.getEpisodes(characterIdentifier: 1, cachePolicy: .localFirst)
 
 		// Then
-		#expect(await memoryDataSourceMock.saveEpisodesCallCount == 0)
+		#expect(await volatileDataSourceMock.saveEpisodesCallCount == 0)
+		#expect(await persistenceDataSourceMock.saveEpisodesCallCount == 0)
 	}
 
 	@Test("Maps generic error to loadFailed")

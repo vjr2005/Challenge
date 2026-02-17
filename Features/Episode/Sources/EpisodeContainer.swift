@@ -16,10 +16,14 @@ public final class EpisodeContainer {
 		self.tracker = tracker
 		let graphQLClient = GraphQLClient(httpClient: httpClient)
 		let remoteDataSource = EpisodeGraphQLDataSource(graphQLClient: graphQLClient)
-		let memoryDataSource = EpisodeMemoryDataSource()
+		let volatileContainer = EpisodeModelContainer.create(inMemoryOnly: true)
+		let persistenceContainer = EpisodeModelContainer.create()
+		let volatileDataSource = EpisodeEntityDataSource(modelContainer: volatileContainer)
+		let persistenceDataSource = EpisodeEntityDataSource(modelContainer: persistenceContainer)
 		self.episodeRepository = EpisodeRepository(
 			remoteDataSource: remoteDataSource,
-			memoryDataSource: memoryDataSource
+			volatile: volatileDataSource,
+			persistence: persistenceDataSource
 		)
 	}
 
