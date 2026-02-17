@@ -22,6 +22,15 @@ Home/
 ├── Sources/
 │   ├── HomeFeature.swift
 │   ├── HomeContainer.swift
+│   ├── Bundle+Home.swift
+│   ├── Resources/
+│   │   └── home.json
+│   ├── Domain/
+│   │   ├── Models/
+│   │   │   └── AboutInfo.swift
+│   │   └── UseCases/
+│   │       ├── GetAboutInfoUseCase.swift
+│   │       └── GetAboutInfoUseCaseContract.swift
 │   └── Presentation/
 │       ├── Navigation/
 │       │   ├── HomeIncomingNavigation.swift
@@ -96,6 +105,7 @@ public enum HomeOutgoingNavigation: OutgoingNavigationContract {
 
 | URL | Destination |
 |-----|-------------|
+| `challenge://home` | Home screen |
 | `challenge://home/main` | Home screen |
 
 ## Usage

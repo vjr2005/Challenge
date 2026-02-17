@@ -76,6 +76,8 @@ Character/
 │       │   ├── CharacterOutgoingNavigation.swift
 │       │   ├── CharacterFilterDelegate.swift
 │       │   └── CharacterDeepLinkHandler.swift
+│       ├── Shared/
+│       │   └── CharacterEnums+Localized.swift
 │       ├── CharacterList/
 │       │   ├── Views/
 │       │   │   └── CharacterListView.swift

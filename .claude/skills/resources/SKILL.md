@@ -1,6 +1,6 @@
 ---
 name: resources
-description: Resources module: localization, String extensions. Use when working with localized strings or shared resources.
+description: Manages localization and shared resources. Use when adding localized strings, working with String extensions, adding translations, or configuring the Resources module.
 ---
 
 # Skill: Resources

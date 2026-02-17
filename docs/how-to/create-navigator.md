@@ -56,6 +56,51 @@ Modal Navigation Flow:
 
 **Why?** Features remain decoupled. Feature A doesn't import Feature B. The App layer connects them via redirects.
 
+### Visibility Rules
+
+- **IncomingNavigation**: Must be `public` — used by `AppNavigationRedirect` to map outgoing navigations from other features.
+- **OutgoingNavigation**: Must be `public` — used by `AppNavigationRedirect` to pattern-match.
+- **NavigatorContract / Navigator**: `internal` — only used within the feature.
+
+### Equatable & Hashable
+
+`IncomingNavigationContract` requires `Hashable` conformance. When the enum has associated values with non-Hashable types (e.g., protocol references), you must provide manual `Equatable` and `Hashable` implementations:
+
+```swift
+public enum {Feature}IncomingNavigation: IncomingNavigationContract {
+    case list
+    case detail(identifier: Int)
+    case filter(delegate: any {Feature}FilterDelegate)
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.list, .list):
+            return true
+        case (.detail(let lhsID), .detail(let rhsID)):
+            return lhsID == rhsID
+        case (.filter, .filter):
+            return true
+        default:
+            return false
+        }
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .list:
+            hasher.combine(0)
+        case .detail(let identifier):
+            hasher.combine(1)
+            hasher.combine(identifier)
+        case .filter:
+            hasher.combine(2)
+        }
+    }
+}
+```
+
+> **Note:** Simple enums without associated values (or with only `Hashable` associated values) get automatic synthesis and don't need manual implementations.
+
 ## Navigator Pattern
 
 ViewModels use **Navigators** instead of NavigatorContract directly. This:

@@ -33,7 +33,7 @@ Tuist/
 ```swift
 // Config.swift
 appName = "Challenge"
-swiftVersion = "6.0"
+swiftVersion = "6.2"
 developmentTarget = .iOS("17.0")
 destinations = [.iPhone, .iPad]
 ```
@@ -44,7 +44,7 @@ The project uses strict Swift 6 concurrency with MainActor isolation by default:
 
 ```swift
 // Project.swift base settings
-"SWIFT_VERSION": "6.0"
+"SWIFT_VERSION": "6.2"
 "SWIFT_APPROACHABLE_CONCURRENCY": "YES"
 "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor"
 ```
