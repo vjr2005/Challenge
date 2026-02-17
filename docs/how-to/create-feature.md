@@ -331,10 +331,14 @@ public final class {Feature}Container {
         // Container creates specific clients internally — features never receive them
         let graphQLClient = GraphQLClient(httpClient: httpClient)
         let remoteDataSource = {Name}GraphQLDataSource(graphQLClient: graphQLClient)
-        let memoryDataSource = {Name}MemoryDataSource()
+        let volatileContainer = {Name}ModelContainer.create(inMemoryOnly: true)
+        let persistenceContainer = {Name}ModelContainer.create()
+        let volatileDataSource = {Name}EntityDataSource(modelContainer: volatileContainer)
+        let persistenceDataSource = {Name}EntityDataSource(modelContainer: persistenceContainer)
         self.{name}Repository = {Name}Repository(
             remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            volatile: volatileDataSource,
+            persistence: persistenceDataSource
         )
     }
 

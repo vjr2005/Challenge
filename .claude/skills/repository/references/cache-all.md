@@ -26,25 +26,30 @@ import ChallengeNetworking
 
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
-    private let memoryDataSource: {Name}LocalDataSourceContract
+    private let volatileDataSource: {Name}LocalDataSourceContract
+    private let persistenceDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
     private let cacheExecutor = CachePolicyExecutor()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
-        memoryDataSource: {Name}LocalDataSourceContract
+        volatile: {Name}LocalDataSourceContract,
+        persistence: {Name}LocalDataSourceContract
     ) {
         self.remoteDataSource = remoteDataSource
-        self.memoryDataSource = memoryDataSource
+        self.volatileDataSource = volatile
+        self.persistenceDataSource = persistence
     }
 
     func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
         try await cacheExecutor.execute(
             policy: cachePolicy,
             fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
-            getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
-            saveToCache: { await memoryDataSource.save{Name}($0) },
+            getFromVolatile: { await volatileDataSource.get{Name}(identifier: identifier) },
+            getFromPersistence: { await persistenceDataSource.get{Name}(identifier: identifier) },
+            saveToVolatile: { await volatileDataSource.save{Name}($0) },
+            saveToPersistence: { await persistenceDataSource.save{Name}($0) },
             mapper: { mapper.map($0) },
             errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
         )
@@ -97,10 +102,12 @@ struct {Name}RepositoryTests {
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .success(remoteDTO)
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
 
         // When
@@ -113,24 +120,66 @@ struct {Name}RepositoryTests {
 
     // MARK: - Cache Wiring
 
-    @Test("Saves to cache after successful remote fetch")
-    func savesToCacheAfterRemoteFetch() async throws {
+    @Test("Returns cached data from volatile cache")
+    func returnsCachedDataFromVolatileCache() async throws {
         // Given
-        let remoteDTO: {Name}DTO = try loadJSON("{name}")
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(remoteDTO)
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        await volatileDataSourceMock.setItemToReturn(try loadJSON("{name}"))
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
 
         // When
         _ = try await sut.get{Name}(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(await memoryDataSourceMock.saveCallCount == 1)
-        #expect(await memoryDataSourceMock.lastSavedValue == remoteDTO)
+        #expect(remoteDataSourceMock.fetchCallCount == 0)
+    }
+
+    @Test("Falls back to persistence cache on volatile miss")
+    func fallsBackToPersistenceCacheOnVolatileMiss() async throws {
+        // Given
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
+        await persistenceDataSourceMock.setItemToReturn(try loadJSON("{name}"))
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSourceMock,
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
+        )
+
+        // When
+        _ = try await sut.get{Name}(identifier: 1, cachePolicy: .localFirst)
+
+        // Then
+        #expect(remoteDataSourceMock.fetchCallCount == 0)
+    }
+
+    @Test("Saves to both caches after successful remote fetch")
+    func savesToBothCachesAfterRemoteFetch() async throws {
+        // Given
+        let remoteDTO: {Name}DTO = try loadJSON("{name}")
+        let remoteDataSourceMock = {Name}RemoteDataSourceMock()
+        remoteDataSourceMock.result = .success(remoteDTO)
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
+        let sut = {Name}Repository(
+            remoteDataSource: remoteDataSourceMock,
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
+        )
+
+        // When
+        _ = try await sut.get{Name}(identifier: 1, cachePolicy: .localFirst)
+
+        // Then
+        #expect(await volatileDataSourceMock.saveCallCount == 1)
+        #expect(await persistenceDataSourceMock.saveCallCount == 1)
     }
 
     // MARK: - Error Handling
@@ -140,17 +189,20 @@ struct {Name}RepositoryTests {
         // Given
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .failure(.invalidResponse)
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
 
         // When
         _ = try? await sut.get{Name}(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(await memoryDataSourceMock.saveCallCount == 0)
+        #expect(await volatileDataSourceMock.saveCallCount == 0)
+        #expect(await persistenceDataSourceMock.saveCallCount == 0)
     }
 
     @Test("Maps API error to domain error")
@@ -158,10 +210,12 @@ struct {Name}RepositoryTests {
         // Given
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .failure(.notFound)
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
 
         // When / Then

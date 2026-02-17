@@ -42,7 +42,7 @@ final class DataSourceMock: DataSourceContract {
 
 ### Mock Pattern for Actor Contracts (`: Actor`)
 
-When mocking `: Actor` protocols (e.g., MemoryDataSource, UserDefaultsDataSource), the mock must also be an `actor` with setter methods:
+When mocking `: Actor` protocols (e.g., EntityDataSource, UserDefaultsDataSource), the mock must also be an `actor` with setter methods:
 
 ```swift
 // Contract

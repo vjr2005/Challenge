@@ -1,6 +1,6 @@
 # Local Only Repository
 
-Implementation and tests for a repository that only uses a LocalDataSource (Memory or UserDefaults).
+Implementation and tests for a repository that only uses a LocalDataSource (UserDefaults).
 
 Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{AppName}` (app target prefix).
 
@@ -10,22 +10,22 @@ Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{A
 
 ```swift
 struct {Name}Repository: {Name}RepositoryContract {
-    private let memoryDataSource: {Name}LocalDataSourceContract
+    private let localDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
 
-    init(memoryDataSource: {Name}LocalDataSourceContract) {
-        self.memoryDataSource = memoryDataSource
+    init(localDataSource: {Name}LocalDataSourceContract) {
+        self.localDataSource = localDataSource
     }
 
     func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        guard let dto = await memoryDataSource.get{Name}(identifier: identifier) else {
+        guard let dto = await localDataSource.get{Name}(identifier: identifier) else {
             throw .notFound(identifier: identifier)
         }
         return mapper.map(dto)
     }
 
     func save{Name}(_ model: {Name}) async {
-        await memoryDataSource.save{Name}(model.toDTO())
+        await localDataSource.save{Name}(model.toDTO())
     }
 }
 ```
@@ -80,9 +80,9 @@ struct {Name}RepositoryTests {
     func getsModelFromLocalDataSource() async throws {
         // Given
         let expected = {Name}.stub()
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        await memoryDataSourceMock.setItemToReturn(try loadJSON("{name}"))
-        let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
+        let localDataSourceMock = {Name}LocalDataSourceMock()
+        await localDataSourceMock.setItemToReturn(try loadJSON("{name}"))
+        let sut = {Name}Repository(localDataSource: localDataSourceMock)
 
         // When
         let value = try await sut.get{Name}(identifier: expected.id)
@@ -94,8 +94,8 @@ struct {Name}RepositoryTests {
     @Test("Throws notFound when item does not exist")
     func throwsNotFoundWhenItemDoesNotExist() async throws {
         // Given
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
+        let localDataSourceMock = {Name}LocalDataSourceMock()
+        let sut = {Name}Repository(localDataSource: localDataSourceMock)
 
         // When / Then
         await #expect(throws: {Feature}Error.notFound(identifier: 999)) {
@@ -107,15 +107,15 @@ struct {Name}RepositoryTests {
     func savesModelToLocalDataSource() async throws {
         // Given
         let model = {Name}.stub()
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
+        let localDataSourceMock = {Name}LocalDataSourceMock()
+        let sut = {Name}Repository(localDataSource: localDataSourceMock)
 
         // When
         await sut.save{Name}(model)
 
         // Then
-        #expect(await memoryDataSourceMock.saveCallCount == 1)
-        #expect(await memoryDataSourceMock.saveLastValue == model.toDTO())
+        #expect(await localDataSourceMock.saveCallCount == 1)
+        #expect(await localDataSourceMock.saveLastValue == model.toDTO())
     }
 }
 ```

@@ -183,7 +183,7 @@ Shared abstractions for the data layer:
 
 - **`MapperContract`** — Generic protocol for mapping between DTOs and domain models.
 - **`CachePolicy`** — Enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`.
-- **`CachePolicyExecutor`** — Stateless struct that executes data fetch operations using a `CachePolicy`. Repositories delegate cache strategy logic to this executor, eliminating duplicated cache implementations. Accepts generic closures for remote fetch, cache read/write, DTO-to-domain mapping, and error mapping (transport errors to domain errors).
+- **`CachePolicyExecutor`** — Stateless struct that executes data fetch operations using a `CachePolicy`. Supports single-level (volatile only) and two-level (volatile + persistence) caching. When persistence closures are provided, the executor coordinates L1 (volatile, in-memory) and L2 (persistence, on-disk) automatically: reads try L1 → L2 (promoting to L1) → remote, writes save to both levels. Repositories delegate cache strategy logic to this executor, eliminating duplicated cache implementations.
 
 ### FeatureContract Protocol
 

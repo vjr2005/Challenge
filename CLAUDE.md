@@ -54,7 +54,7 @@ Use these skills for detailed implementation patterns:
 | `/project-structure` | Directory organization, feature modules, extensions |
 | `/resources` | Resources module: localization, String extensions |
 | `/tuist` | Tuist configuration: xcframeworks, dependencies, Project.swift |
-| `/datasource` | RemoteDataSource for APIs, MemoryDataSource for caching, DTOs |
+| `/datasource` | RemoteDataSource for APIs, EntityDataSource for SwiftData caching, DTOs |
 | `/repository` | Repository pattern, DTO-to-Domain mapping, local-first caching |
 | `/usecase` | UseCase pattern for business logic |
 | `/viewmodel` | ViewModels with ViewState pattern |
@@ -96,7 +96,7 @@ This project follows **MVVM + Clean Architecture** with feature-based modulariza
 │                       Data Layer                            │
 │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
 │  │     Repository      │  │       Data Source           │   │
-│  │  (Implementation)   │  │   (Remote/Memory)           │   │
+│  │  (Implementation)   │  │  (Remote/SwiftData)          │   │
 │  └─────────────────────┘  └─────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```

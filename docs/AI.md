@@ -24,7 +24,7 @@ Skills are specialized prompts that guide the AI in specific tasks. They ensure 
 | `/viewmodel` | Creates ViewModels with ViewState pattern and state management |
 | `/usecase` | Creates UseCases that encapsulate business logic |
 | `/repository` | Creates Repositories that abstract data access with DTO-to-Domain mapping |
-| `/datasource` | Creates DataSources for REST APIs (Remote) or in-memory storage (Memory) |
+| `/datasource` | Creates DataSources for REST APIs, GraphQL APIs, SwiftData persistence, or UserDefaults storage |
 | `/navigator` | Creates Navigator for navigation and deep linking |
 | `/dependency-injection` | Creates Features for dependency injection and wiring |
 

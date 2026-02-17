@@ -4,7 +4,7 @@ Feature module for displaying character information from the Rick and Morty API.
 
 ## Overview
 
-ChallengeCharacter implements the character listing and detail screens following Clean Architecture with MVVM presentation layer.
+ChallengeCharacter implements the character listing and detail screens following Clean Architecture with MVVM presentation layer. It uses two-level caching (volatile + persistence) with SwiftData for offline support.
 
 ## Default Actor Isolation
 
@@ -45,9 +45,17 @@ Character/
 │   │       ├── CharacterError.swift
 │   │       └── CharactersPageError.swift
 │   ├── Data/
+│   │   ├── Entities/
+│   │   │   ├── CharacterEntity.swift
+│   │   │   ├── CharactersPageEntity.swift
+│   │   │   ├── LocationEntity.swift
+│   │   │   └── CharacterModelContainer.swift
 │   │   ├── Mappers/
 │   │   │   ├── LocationMapper.swift
 │   │   │   ├── CharacterMapper.swift
+│   │   │   ├── CharacterEntityMapper.swift
+│   │   │   ├── CharacterEntityDTOMapper.swift
+│   │   │   ├── CharactersPageEntityDTOMapper.swift
 │   │   │   ├── CharacterErrorMapper.swift
 │   │   │   ├── CharacterFilterMapper.swift
 │   │   │   ├── CharactersPageMapper.swift
@@ -62,7 +70,7 @@ Character/
 │   │   │   │   └── CharacterRESTDataSource.swift
 │   │   │   └── Local/
 │   │   │       ├── CharacterLocalDataSourceContract.swift
-│   │   │       ├── CharacterMemoryDataSource.swift
+│   │   │       ├── CharacterEntityDataSource.swift
 │   │   │       ├── RecentSearchesLocalDataSourceContract.swift
 │   │   │       └── RecentSearchesUserDefaultsDataSource.swift
 │   │   └── DTOs/

@@ -31,7 +31,7 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
                     │                       Data Layer                            │
                     │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
                     │  │     Repository      │  │       Data Source           │   │
-                    │  │  (Implementation)   │  │   (REST/GraphQL/Memory)     │   │
+                    │  │  (Implementation)   │  │  (REST/GraphQL/SwiftData)   │   │
                     │  └─────────────────────┘  └─────────────────────────────┘   │
                     └─────────────────────────────────────────────────────────────┘
 ```
@@ -42,7 +42,7 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
 |-------|----------------|
 | **Presentation** | UI components, ViewModels with state management, navigation, tracking |
 | **Domain** | Business logic (UseCases), domain models, repository contracts |
-| **Data** | Repository implementations, data sources (REST, GraphQL, memory, UserDefaults), DTOs |
+| **Data** | Repository implementations, data sources (REST, GraphQL, SwiftData, UserDefaults), DTOs, SwiftData entities |
 
 ## SOLID Principles
 
@@ -100,7 +100,8 @@ The Repository pattern acts as a **boundary between Domain and Data layers**, pr
 │   CharacterRepository (Implementation)                                      │
 │           │                                                                 │
 │           ├── RemoteDataSource ──► REST or GraphQL API (DTOs)               │
-│           ├── MemoryDataSource ──► In-memory cache (DTOs)                   │
+│           ├── VolatileDataSource ──► In-memory SwiftData (Entities → DTOs)  │
+│           ├── PersistenceDataSource ──► On-disk SwiftData (Entities → DTOs) │
 │           ├── Mapper → DTO to Domain mapping                                │
 │           └── Error Mapper → APIError to Domain error mapping               │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -129,31 +130,26 @@ Each contract has its own implementation that handles **how** data is fetched, c
 ```swift
 struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
-    private let memoryDataSource: CharacterLocalDataSourceContract
+    private let volatileDataSource: CharacterLocalDataSourceContract
+    private let persistenceDataSource: CharacterLocalDataSourceContract
+    private let cacheExecutor = CachePolicyExecutor()
 
     func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-        switch cachePolicy {
-        case .localFirst:
-            // 1. Check cache first
-            if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-                return mapper.map(cached)  // DTO → Domain via Mapper
-            }
-            // 2. Fetch from remote
-            let dto = try await fetchFromRemote(identifier: identifier)
-            // 3. Save to cache
-            await memoryDataSource.saveCharacter(dto)
-            return mapper.map(dto)
-
-        case .remoteFirst:
-            // 1. Try remote first
-            // 2. Fallback to cache on error
-
-        case .noCache:
-            // No caching, always fetch from remote
-        }
+        try await cacheExecutor.execute(
+            policy: cachePolicy,
+            fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
+            getFromVolatile: { await volatileDataSource.getCharacter(identifier: identifier) },
+            getFromPersistence: { await persistenceDataSource.getCharacter(identifier: identifier) },
+            saveToVolatile: { await volatileDataSource.saveCharacter($0) },
+            saveToPersistence: { await persistenceDataSource.saveCharacter($0) },
+            mapper: { mapper.map($0) },
+            errorMapper: { errorMapper.map(CharacterErrorMapperInput(error: $0, identifier: identifier)) }
+        )
     }
 }
 ```
+
+The `CachePolicyExecutor` coordinates a two-level cache: L1 (volatile, in-memory SwiftData) and L2 (persistence, on-disk SwiftData). Both data sources implement the same `CharacterLocalDataSourceContract` — the difference is the backing `ModelContainer` (in-memory vs disk).
 
 ### Caching Strategies
 

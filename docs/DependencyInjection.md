@@ -49,16 +49,19 @@ protocol CharactersPageRepositoryContract: Sendable {
 
 // Concrete implementations (Data layer)
 struct CharacterRepository: CharacterRepositoryContract {
-    private let remoteDataSource: any CharacterRemoteDataSourceContract
-    private let memoryDataSource: any CharacterLocalDataSourceContract
+    private let remoteDataSource: CharacterRemoteDataSourceContract
+    private let volatileDataSource: CharacterLocalDataSourceContract
+    private let persistenceDataSource: CharacterLocalDataSourceContract
 
     // Dependencies injected through initializer
     init(
-        remoteDataSource: any CharacterRemoteDataSourceContract,
-        memoryDataSource: any CharacterLocalDataSourceContract
+        remoteDataSource: CharacterRemoteDataSourceContract,
+        volatile: CharacterLocalDataSourceContract,
+        persistence: CharacterLocalDataSourceContract
     ) {
         self.remoteDataSource = remoteDataSource
-        self.memoryDataSource = memoryDataSource
+        self.volatileDataSource = volatile
+        self.persistenceDataSource = persistence
     }
 }
 ```
@@ -129,21 +132,27 @@ public final class CharacterContainer {
     private let recentSearchesRepository: any RecentSearchesRepositoryContract
     private let charactersPageRepository: any CharactersPageRepositoryContract
 
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
         self.tracker = tracker
+        self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
-        let memoryDataSource = CharacterMemoryDataSource()
+        let volatileContainer = CharacterModelContainer.create(inMemoryOnly: true)
+        let persistenceContainer = CharacterModelContainer.create()
+        let volatileDataSource = CharacterEntityDataSource(modelContainer: volatileContainer)
+        let persistenceDataSource = CharacterEntityDataSource(modelContainer: persistenceContainer)
         let recentSearchesDataSource = RecentSearchesUserDefaultsDataSource()
         self.characterRepository = CharacterRepository(
             remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            volatile: volatileDataSource,
+            persistence: persistenceDataSource
         )
         self.recentSearchesRepository = RecentSearchesRepository(
             localDataSource: recentSearchesDataSource
         )
         self.charactersPageRepository = CharactersPageRepository(
             remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            volatile: volatileDataSource,
+            persistence: persistenceDataSource
         )
     }
 
@@ -186,10 +195,11 @@ AppContainer
     ├── CharacterFeature
     │       └── CharacterContainer
     │               ├── CharacterRESTDataSource ← HTTPClient
-    │               ├── CharacterMemoryDataSource
+    │               ├── CharacterEntityDataSource (volatile) ← In-memory ModelContainer
+    │               ├── CharacterEntityDataSource (persistence) ← On-disk ModelContainer
     │               ├── RecentSearchesUserDefaultsDataSource
-    │               ├── CharacterRepository ← Remote + Memory DataSources
-    │               ├── CharactersPageRepository ← Remote + Memory DataSources
+    │               ├── CharacterRepository ← Remote + Volatile + Persistence DataSources
+    │               ├── CharactersPageRepository ← Remote + Volatile + Persistence DataSources
     │               └── RecentSearchesRepository ← Local DataSource
     │                       ├── GetCharactersPageUseCase ← Repository
     │                       ├── GetRecentSearchesUseCase ← Repository
@@ -200,8 +210,9 @@ AppContainer
     ├── EpisodeFeature
     │       └── EpisodeContainer
     │               ├── EpisodeGraphQLDataSource ← HTTPClient (via GraphQLClient)
-    │               ├── EpisodeMemoryDataSource
-    │               ├── EpisodeRepository ← Remote + Memory DataSources
+    │               ├── EpisodeEntityDataSource (volatile) ← In-memory ModelContainer
+    │               ├── EpisodeEntityDataSource (persistence) ← On-disk ModelContainer
+    │               ├── EpisodeRepository ← Remote + Volatile + Persistence DataSources
     │               └── CharacterEpisodesViewModel ← UseCases, Navigator, Tracker
     │
     └── SystemFeature

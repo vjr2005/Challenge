@@ -1,6 +1,6 @@
 # How To: Create DataSource
 
-Create DataSources for data access: REST APIs, GraphQL APIs, in-memory caching, or UserDefaults persistence.
+Create DataSources for data access: REST APIs, GraphQL APIs, SwiftData persistence (two-level cache), or UserDefaults persistence.
 
 > **Source of truth:** `/datasource` skill. Consult it for the authoritative workflow and all patterns.
 
@@ -16,7 +16,7 @@ Create DataSources for data access: REST APIs, GraphQL APIs, in-memory caching, 
 |------|-----------|----------|----------------|-------------|
 | REST | HTTP | `: Sendable` | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
 | GraphQL | HTTP/GraphQL | `: Sendable` | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
-| Memory | In-memory | `: Actor` | `actor` with dictionary storage | -- |
+| SwiftData | SwiftData | `: Actor` | `@ModelActor actor` with `ModelContainer` | -- |
 | UserDefaults | Local | `: Actor` | `actor` with `UserDefaults` | -- |
 
 ## File Structure
@@ -31,8 +31,11 @@ Features/{Feature}/
 |       |   |   +-- {Name}RESTDataSource.swift (or {Name}GraphQLDataSource.swift)
 |       |   +-- Local/
 |       |       +-- {Name}LocalDataSourceContract.swift
-|       |       +-- {Name}MemoryDataSource.swift
-|       |       +-- {Name}UserDefaultsDataSource.swift    # Optional: UserDefaults
+|       |       +-- {Name}EntityDataSource.swift           # SwiftData (two-level cache)
+|       |       +-- {Name}UserDefaultsDataSource.swift     # Optional: UserDefaults
+|       +-- Entities/                                      # SwiftData models
+|       |   +-- {Name}Entity.swift
+|       |   +-- {Name}ModelContainer.swift
 |       +-- DTOs/
 |           +-- {Name}DTO.swift
 +-- Tests/
@@ -606,14 +609,84 @@ Tests use `GraphQLClientMock` (from `ChallengeNetworkingMocks`), which bypasses 
 
 ---
 
-## Part C: Memory DataSource
+## Part C: SwiftData EntityDataSource (Two-Level Cache)
 
-### 1. Create LocalDataSource Contract
+Used for two-level caching (volatile + persistence): same `EntityDataSource` type, different `ModelContainer` configurations (in-memory vs on-disk).
+
+### 1. Create Entity Models
+
+Create `Sources/Data/Entities/{Name}Entity.swift`:
+
+```swift
+import Foundation
+import SwiftData
+
+@Model
+nonisolated final class {Name}Entity {
+	@Attribute(.unique) var identifier: Int
+	var name: String
+
+	init(identifier: Int, name: String) {
+		self.identifier = identifier
+		self.name = name
+	}
+}
+```
+
+Rules: `@Model`, `nonisolated final class`, `@Attribute(.unique)` on identifier. Use `@Relationship(deleteRule: .cascade, inverse: \ChildEntity.parent)` for parent-child relationships.
+
+### 2. Create ModelContainer Factory
+
+Create `Sources/Data/Entities/{Name}ModelContainer.swift`:
+
+```swift
+import Foundation
+import SwiftData
+
+enum {Name}ModelContainer {
+	private static let schema = Schema([
+		{Name}Entity.self
+	])
+
+	static func create(inMemoryOnly: Bool = false) -> ModelContainer {
+		do {
+			let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemoryOnly)
+			return try ModelContainer(for: schema, configurations: [configuration])
+		} catch {
+			fatalError("Failed to create {Name}ModelContainer: \(error)")
+		}
+	}
+}
+```
+
+Rules: Factory enum, single schema definition. `inMemoryOnly: true` for volatile (L1), `false` for persistence (L2).
+
+### 3. Create Entity Mappers
+
+Create `Sources/Data/Mappers/{Name}EntityMapper.swift` and `{Name}EntityDTOMapper.swift`:
+
+```swift
+import ChallengeCore
+
+struct {Name}EntityMapper: MapperContract {
+	nonisolated func map(_ input: {Name}DTO) -> {Name}Entity {
+		{Name}Entity(identifier: input.id, name: input.name)
+	}
+}
+
+struct {Name}EntityDTOMapper: MapperContract {
+	nonisolated func map(_ input: {Name}Entity) -> {Name}DTO {
+		{Name}DTO(id: input.identifier, name: input.name)
+	}
+}
+```
+
+Rules: `nonisolated func map`, `MapperContract` from `ChallengeCore`. Sort collections by identifier when mapping from entity to DTO (SwiftData relationships don't guarantee order).
+
+### 4. Create LocalDataSource Contract
 
 Create `Sources/Data/DataSources/Local/{Name}LocalDataSourceContract.swift`:
 
-Single item caching:
-
 ```swift
 protocol {Name}LocalDataSourceContract: Actor {
 	func get{Name}(identifier: Int) -> {Name}DTO?
@@ -621,56 +694,62 @@ protocol {Name}LocalDataSourceContract: Actor {
 }
 ```
 
-With paginated results:
+Rules: `: Actor`, return optionals for get. Same contract for both volatile and persistence data sources.
+
+### 5. Create EntityDataSource Implementation
+
+Create `Sources/Data/DataSources/Local/{Name}EntityDataSource.swift`:
 
 ```swift
-protocol {Name}LocalDataSourceContract: Actor {
-	// MARK: - Single Item
-	func get{Name}(identifier: Int) -> {Name}DTO?
-	func save{Name}(_ item: {Name}DTO)
+import Foundation
+import SwiftData
 
-	// MARK: - Paginated Results
-	func getPage(_ page: Int) -> {Name}sResponseDTO?
-	func savePage(_ response: {Name}sResponseDTO, page: Int)
-}
-```
-
-Rules: `: Actor`, return optionals for get, `identifier` parameter name. Methods are actor-isolated (implicitly `async` from caller).
-
-### 2. Create MemoryDataSource Implementation
-
-Create `Sources/Data/DataSources/Local/{Name}MemoryDataSource.swift`:
-
-```swift
-actor {Name}MemoryDataSource: {Name}LocalDataSourceContract {
-	private var items: [Int: {Name}DTO] = [:]
-	private var pages: [Int: {Name}sResponseDTO] = [:]
-
-	// MARK: - Single Item
+@ModelActor
+actor {Name}EntityDataSource: {Name}LocalDataSourceContract {
+	private let entityMapper = {Name}EntityMapper()
+	private let entityDTOMapper = {Name}EntityDTOMapper()
 
 	func get{Name}(identifier: Int) -> {Name}DTO? {
-		items[identifier]
+		let descriptor = FetchDescriptor<{Name}Entity>(
+			predicate: #Predicate { $0.identifier == identifier }
+		)
+		guard let entity = try? modelContext.fetch(descriptor).first else { return nil }
+		return entityDTOMapper.map(entity)
 	}
 
 	func save{Name}(_ item: {Name}DTO) {
-		items[item.id] = item
-	}
-
-	// MARK: - Paginated Results
-
-	func getPage(_ page: Int) -> {Name}sResponseDTO? {
-		pages[page]
-	}
-
-	func savePage(_ response: {Name}sResponseDTO, page: Int) {
-		pages[page] = response
+		let deleteDescriptor = FetchDescriptor<{Name}Entity>(
+			predicate: #Predicate { $0.identifier == item.id }
+		)
+		if let existing = try? modelContext.fetch(deleteDescriptor).first {
+			modelContext.delete(existing)
+		}
+		let entity = entityMapper.map(item)
+		modelContext.insert(entity)
+		try? modelContext.save()
 	}
 }
 ```
 
-> **Note:** Actor methods omit `async` -- actor isolation provides it implicitly.
+Rules: `@ModelActor` provides automatic actor isolation + `modelContext`. For upsert: delete existing before insert.
 
-### 3. Create Mock
+### 6. Container Wiring
+
+```swift
+let volatileContainer = {Name}ModelContainer.create(inMemoryOnly: true)
+let persistenceContainer = {Name}ModelContainer.create()
+let volatileDataSource = {Name}EntityDataSource(modelContainer: volatileContainer)
+let persistenceDataSource = {Name}EntityDataSource(modelContainer: persistenceContainer)
+self.repository = {Name}Repository(
+	remoteDataSource: remoteDataSource,
+	volatile: volatileDataSource,
+	persistence: persistenceDataSource
+)
+```
+
+Two `ModelContainer` instances → two `EntityDataSource` instances → both injected into repository as `volatile:` and `persistence:`.
+
+### 7. Create Mock
 
 Create `Tests/Shared/Mocks/{Name}LocalDataSourceMock.swift`:
 
@@ -683,14 +762,9 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 	// MARK: - Configurable Returns
 
 	private(set) var itemToReturn: {Name}DTO?
-	private(set) var pageToReturn: {Name}sResponseDTO?
 
 	func setItemToReturn(_ item: {Name}DTO?) {
 		itemToReturn = item
-	}
-
-	func setPageToReturn(_ page: {Name}sResponseDTO?) {
-		pageToReturn = page
 	}
 
 	// MARK: - Call Tracking
@@ -698,10 +772,6 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 	private(set) var get{Name}CallCount = 0
 	private(set) var save{Name}CallCount = 0
 	private(set) var save{Name}LastValue: {Name}DTO?
-	private(set) var getPageCallCount = 0
-	private(set) var savePageCallCount = 0
-	private(set) var savePageLastResponse: {Name}sResponseDTO?
-	private(set) var savePageLastPage: Int?
 
 	// MARK: - {Name}LocalDataSourceContract
 
@@ -714,111 +784,74 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 		save{Name}CallCount += 1
 		save{Name}LastValue = item
 	}
-
-	func getPage(_ page: Int) -> {Name}sResponseDTO? {
-		getPageCallCount += 1
-		return pageToReturn
-	}
-
-	func savePage(_ response: {Name}sResponseDTO, page: Int) {
-		savePageCallCount += 1
-		savePageLastResponse = response
-		savePageLastPage = page
-	}
 }
 ```
 
 Actor mock: `private(set)` on configurable returns with setter methods. Tests use `await` for all property reads and setter calls.
 
-### 4. Create Tests
+### 8. Create Tests
 
-Create `Tests/Unit/Data/{Name}MemoryDataSourceTests.swift`:
+Create `Tests/Unit/Data/{Name}EntityDataSourceTests.swift`:
 
 ```swift
-import ChallengeCoreMocks
 import Foundation
 import Testing
 
 @testable import Challenge{Feature}
 
-struct {Name}MemoryDataSourceTests {
-	@Test("Saves and retrieves item")
-	func savesAndRetrievesItem() async throws {
-		// Given
-		let expected: {Name}DTO = try loadJSON("{name}")
-		let sut = {Name}MemoryDataSource()
+struct {Name}EntityDataSourceTests {
+	private let sut: {Name}EntityDataSource
 
-		// When
-		await sut.save{Name}(expected)
-		let result = await sut.get{Name}(identifier: expected.id)
-
-		// Then
-		#expect(result == expected)
+	init() {
+		let container = {Name}ModelContainer.create(inMemoryOnly: true)
+		sut = {Name}EntityDataSource(modelContainer: container)
 	}
 
-	@Test("Returns nil for non-existent item")
-	func returnsNilForNonExistentItem() async {
-		// Given
-		let sut = {Name}MemoryDataSource()
-
-		// When
+	@Test("Returns nil when not found")
+	func returnsNil() async {
 		let result = await sut.get{Name}(identifier: 999)
-
-		// Then
 		#expect(result == nil)
 	}
 
-	@Test("Updates existing item")
-	func updatesExistingItem() async throws {
+	@Test("Returns item after saving")
+	func returnsAfterSaving() async throws {
+		// Given
+		let dto: {Name}DTO = try loadJSON("{name}")
+
+		// When
+		await sut.save{Name}(dto)
+		let result = await sut.get{Name}(identifier: dto.id)
+
+		// Then
+		#expect(result == dto)
+	}
+
+	@Test("Upserts existing item")
+	func upsertsExistingItem() async throws {
 		// Given
 		let original: {Name}DTO = try loadJSON("{name}")
-		let updated: {Name}DTO = try loadJSON("{name}_updated")
-		let sut = {Name}MemoryDataSource()
 		await sut.save{Name}(original)
 
 		// When
+		let updated: {Name}DTO = try loadJSON("{name}_updated")
 		await sut.save{Name}(updated)
 		let result = await sut.get{Name}(identifier: original.id)
 
 		// Then
 		#expect(result == updated)
 	}
-
-	@Test("Saves and retrieves page")
-	func savesAndRetrievesPage() async throws {
-		// Given
-		let expected: {Name}sResponseDTO = try loadJSON("{name}s_response")
-		let sut = {Name}MemoryDataSource()
-
-		// When
-		await sut.savePage(expected, page: 1)
-		let result = await sut.getPage(1)
-
-		// Then
-		#expect(result == expected)
-	}
-
-	@Test("Returns nil for non-existent page")
-	func returnsNilForNonExistentPage() async {
-		// Given
-		let sut = {Name}MemoryDataSource()
-
-		// When
-		let result = await sut.getPage(999)
-
-		// Then
-		#expect(result == nil)
-	}
 }
 
 // MARK: - Private
 
-private extension {Name}MemoryDataSourceTests {
+private extension {Name}EntityDataSourceTests {
 	func loadJSON<T: Decodable>(_ filename: String) throws -> T {
 		try Bundle.module.loadJSON(filename)
 	}
 }
 ```
+
+Tests use in-memory `ModelContainer` for isolation.
 
 ---
 
@@ -1049,7 +1082,7 @@ Each test uses a dedicated `UserDefaults` suite to avoid cross-test contaminatio
 ## Key Principles
 
 - Transport clients (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` for off-MainActor execution — DataSource contracts do NOT need `@concurrent`
-- **Contracts** are transport-agnostic, in separate files. Remote: `: Sendable`. Local (Memory, UserDefaults): `: Actor`
+- **Contracts** are transport-agnostic, in separate files. Remote: `: Sendable`. Local (SwiftData, UserDefaults): `: Actor`
 - **DTOs** are anemic: `Decodable`, `Equatable`, no behavior, no `toDomain()`
 - **Error mapping**: DataSources catch transport errors and map to `APIError`. REST uses `HTTPErrorMapper`, GraphQL uses `GraphQLErrorMapper`
 - **Repositories and upper layers only see `APIError`**, never transport-specific errors
@@ -1072,11 +1105,14 @@ Each test uses a dedicated `UserDefaults` suite to avoid cross-test contaminatio
 - [ ] Create JSON fixtures in `Tests/Shared/Fixtures/`
 - [ ] Create tests
 
-### MemoryDataSource
+### EntityDataSource (SwiftData)
+- [ ] Create `@Model` entities in `Entities/` with `nonisolated final class`
+- [ ] Create `{Name}ModelContainer` enum with `create(inMemoryOnly:)` factory
 - [ ] Create Contract in `Local/` with `: Actor`
-- [ ] Create `actor` Implementation in `Local/`
+- [ ] Create `@ModelActor actor` Implementation in `Local/`
+- [ ] Create DTO ↔ Entity mappers in `Mappers/` (`MapperContract`)
 - [ ] Create `actor` Mock with setter methods and call tracking
-- [ ] Create tests (use `await` for all mock reads/writes)
+- [ ] Create tests (use in-memory `ModelContainer` for isolation)
 
 ### LocalDataSource (UserDefaults)
 - [ ] Create Contract in `Local/` with `: Actor`

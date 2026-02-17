@@ -106,9 +106,12 @@ FeatureName/
 │   │   │   │   └── {Name}RESTDataSource.swift
 │   │   │   └── Local/
 │   │   │       ├── {Name}LocalDataSourceContract.swift
-│   │   │       └── {Name}MemoryDataSource.swift
+│   │   │       └── {Name}EntityDataSource.swift
 │   │   ├── DTOs/
 │   │   │   └── {Name}DTO.swift
+│   │   ├── Entities/
+│   │   │   ├── {Name}Entity.swift
+│   │   │   └── {Name}ModelContainer.swift
 │   │   ├── Mappers/
 │   │   │   └── {Name}Mapper.swift
 │   │   └── Repositories/
@@ -521,7 +524,7 @@ AppKit/
 | Mapper | `{Name}Mapper.swift` | `CharacterMapper.swift` |
 | Contract | `{Name}Contract.swift` | `CharacterRepositoryContract.swift` |
 | DataSource Contract | `{Name}{Type}DataSourceContract.swift` | `CharacterRemoteDataSourceContract.swift` |
-| DataSource Implementation | `{Name}{Impl}DataSource.swift` | `CharacterRESTDataSource.swift`, `CharacterMemoryDataSource.swift` |
+| DataSource Implementation | `{Name}{Impl}DataSource.swift` | `CharacterRESTDataSource.swift`, `CharacterEntityDataSource.swift` |
 | Navigator | `{ScreenName}Navigator.swift` | `CharacterDetailNavigator.swift` |
 | NavigatorContract | `{ScreenName}NavigatorContract.swift` | `CharacterDetailNavigatorContract.swift` |
 | Tracker | `{ScreenName}Tracker.swift` | `CharacterDetailTracker.swift` |

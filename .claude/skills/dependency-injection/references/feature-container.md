@@ -21,10 +21,14 @@ public final class {Feature}Container {
     public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.tracker = tracker
         let remoteDataSource = {Name}RemoteDataSource(httpClient: httpClient)
-        let memoryDataSource = {Name}MemoryDataSource()
+        let volatileContainer = {Name}ModelContainer.create(inMemoryOnly: true)
+        let persistenceContainer = {Name}ModelContainer.create()
+        let volatileDataSource = {Name}EntityDataSource(modelContainer: volatileContainer)
+        let persistenceDataSource = {Name}EntityDataSource(modelContainer: persistenceContainer)
         self.repository = {Name}Repository(
             remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            volatile: volatileDataSource,
+            persistence: persistenceDataSource
         )
     }
 

@@ -158,13 +158,13 @@ When Periphery reports an unused protocol method:
 4. Delete test cases that test this method
 5. Update any mock that implements this protocol
 
-### Unused MemoryDataSource Methods
+### Unused EntityDataSource Methods
 
 Cache/storage methods might be unused if caching isn't implemented yet. Options:
 
 1. **Remove**: If not planned for near future
-   - Also remove from `{Name}MemoryDataSourceMock`
-   - Delete tests in `{Name}MemoryDataSourceTests.swift`
+   - Also remove from `{Name}LocalDataSourceMock`
+   - Delete tests in `{Name}EntityDataSourceTests.swift`
 2. **Keep**: Add to `report_exclude` if intentionally reserved
 
 ### Unused ViewState Equatable

@@ -1,6 +1,6 @@
 ---
 name: datasource
-description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs or GraphQL, MemoryDataSource for in-memory storage, LocalDataSource for UserDefaults persistence, or DTOs for API responses.
+description: Creates DataSources for data access. Use when creating RemoteDataSource for REST APIs or GraphQL, EntityDataSource for SwiftData persistence, LocalDataSource for UserDefaults persistence, or DTOs for API responses.
 ---
 
 # Skill: DataSource
@@ -24,7 +24,7 @@ Only proceed to implementation after the user confirms these details.
 |------|-----------|----------|----------------|-------------|
 | REST | HTTP | `: Sendable` | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
 | GraphQL | HTTP/GraphQL | `: Sendable` | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
-| Memory | In-memory | `: Actor` | `actor` with dictionary storage | — |
+| SwiftData | SwiftData | `: Actor` | `@ModelActor actor` with `ModelContainer` | — |
 | UserDefaults | Local | `: Actor` | `actor` with `UserDefaults` | — |
 
 ## Templates
@@ -33,7 +33,7 @@ Each reference contains full templates: contract, implementation, DTO, mock, fix
 
 - **REST API**: See [remote-rest.md](references/remote-rest.md)
 - **GraphQL API**: See [remote-graphql.md](references/remote-graphql.md)
-- **Memory cache**: See [local-memory.md](references/local-memory.md)
+- **SwiftData (Entity)**: See [local-entity.md](references/local-entity.md)
 - **UserDefaults**: See [local-userdefaults.md](references/local-userdefaults.md)
 
 ## File Structure
@@ -48,8 +48,10 @@ Features/{Feature}/
 │       │   │   └── {Name}RESTDataSource.swift (or {Name}GraphQLDataSource.swift)
 │       │   └── Local/
 │       │       ├── {Name}LocalDataSourceContract.swift
-│       │       ├── {Name}MemoryDataSource.swift
-│       │       └── {Name}UserDefaultsDataSource.swift    # Optional: UserDefaults
+│       │       └── {Name}EntityDataSource.swift           # SwiftData (two-level cache)
+│       ├── Entities/                                      # SwiftData models
+│       │   ├── {Name}Entity.swift
+│       │   └── {Name}ModelContainer.swift
 │       └── DTOs/
 │           └── {Name}DTO.swift
 └── Tests/
@@ -67,14 +69,14 @@ Features/{Feature}/
 ### Contracts
 
 - Internal visibility, separate file from implementation
-- Remote contracts: `: Sendable`. Local contracts (Memory, UserDefaults): `: Actor`
+- Remote contracts: `: Sendable`. Local contracts (SwiftData, UserDefaults): `: Actor`
 - Transport-agnostic: same contract for REST or GraphQL
 - Transport clients (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` for off-MainActor execution — DataSource contracts do NOT need `@concurrent`
 - `ChallengeNetworking` uses `nonisolated` default isolation — networking types don't need `nonisolated` annotations
 - **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects
-- Remote: `async throws`. Local (Memory, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
+- Remote: `async throws`. Local (SwiftData, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
 
-> **Sendable vs Actor contracts:** Use `: Actor` when the DataSource has its own mutable state to protect (Memory, UserDefaults, `ImageDiskCacheContract`). Use `: Sendable` with `nonisolated` methods only for stateless wrappers around thread-safe APIs (e.g., `FileSystem` wrapping `FileManager`). See `/concurrency` skill "Actor Reentrancy" section for when and why to choose `: Sendable`.
+> **Sendable vs Actor contracts:** Use `: Actor` when the DataSource has its own mutable state to protect (SwiftData EntityDataSource, UserDefaults, `ImageDiskCacheContract`). Use `: Sendable` with `nonisolated` methods only for stateless wrappers around thread-safe APIs (e.g., `FileSystem` wrapping `FileManager`). See `/concurrency` skill "Actor Reentrancy" section for when and why to choose `: Sendable`.
 
 ### DTOs (Data Transfer Objects)
 
@@ -133,12 +135,15 @@ Repositories and upper layers only see `APIError`, never transport-specific erro
 - [ ] Create JSON fixtures in `Tests/Shared/Fixtures/`
 - [ ] Create tests
 
-### MemoryDataSource
+### EntityDataSource (SwiftData)
 
+- [ ] Create `@Model` entities in `Entities/` with `nonisolated final class`
+- [ ] Create `{Name}ModelContainer` enum with `create(inMemoryOnly:)` factory
 - [ ] Create Contract in `Local/` with `: Actor`
-- [ ] Create `actor` Implementation in `Local/`
+- [ ] Create `@ModelActor actor` Implementation in `Local/`
+- [ ] Create DTO ↔ Entity mappers in `Mappers/` (`MapperContract`)
 - [ ] Create `actor` Mock with setter methods and call tracking
-- [ ] Create tests (use `await` for all mock reads/writes)
+- [ ] Create tests (use in-memory `ModelContainer` for isolation)
 
 ### LocalDataSource (UserDefaults)
 

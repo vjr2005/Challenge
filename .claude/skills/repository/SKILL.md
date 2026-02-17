@@ -46,15 +46,14 @@ Possible combinations:
 | Scenario | DataSources | Next step |
 |----------|-------------|-----------|
 | Remote only | `RemoteDataSource` only | → Step 3a |
-| Local only (memory) | `MemoryDataSource` only | → Step 3b |
 | Local only (persistent) | `LocalDataSource` (UserDefaults) only | → Step 3b |
-| Both (cached) | `RemoteDataSource` + `MemoryDataSource` | → Step 3c |
+| Both (cached) | `RemoteDataSource` + `EntityDataSource` (SwiftData) | → Step 3c |
 
 If the user wants a cached repository but **no local DataSource exists**:
 
 > "There is no local DataSource for caching. Do you want to create one using the `/datasource` skill?"
 
-If yes → invoke `/datasource` to create the Memory DataSource, then return to Step 3c.
+If yes → invoke `/datasource` to create the EntityDataSource (SwiftData), then return to Step 3c.
 
 ### Step 3a — Remote Only Repository
 
@@ -287,7 +286,7 @@ public enum CachePolicy {
 }
 ```
 
-`CachePolicyExecutor` is a stateless struct (same pattern as Mappers) that centralizes cache strategy execution. Repositories delegate to it via generic closures, including an `errorMapper` that maps transport errors to domain errors:
+`CachePolicyExecutor` is a stateless struct (same pattern as Mappers) that centralizes cache strategy execution. Supports single-level (volatile only) and two-level (volatile + persistence) caching. Repositories delegate to it via generic closures, including an `errorMapper` that maps transport errors to domain errors:
 
 ```swift
 private let cacheExecutor = CachePolicyExecutor()
@@ -295,16 +294,18 @@ private let cacheExecutor = CachePolicyExecutor()
 try await cacheExecutor.execute(
     policy: cachePolicy,
     fetchFromRemote: { try await remoteDataSource.fetch{Name}(...) },
-    getFromCache: { await memoryDataSource.get{Name}(...) },
-    saveToCache: { await memoryDataSource.save{Name}($0) },
+    getFromVolatile: { await volatileDataSource.get{Name}(...) },
+    getFromPersistence: { await persistenceDataSource.get{Name}(...) },
+    saveToVolatile: { await volatileDataSource.save{Name}($0) },
+    saveToPersistence: { await persistenceDataSource.save{Name}($0) },
     mapper: { mapper.map($0) },
     errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, ...)) }
 )
 ```
 
-The `errorMapper` closure receives `any Error` (raw transport error) and returns the typed domain error. This eliminates the need for a separate `fetchFromRemote` wrapper method in each repository — error mapping is handled entirely by the executor.
+The executor coordinates L1 (volatile, in-memory SwiftData) and L2 (persistence, on-disk SwiftData): reads try L1 → L2 (promoting to L1) → remote, writes save to both levels. The `getFromPersistence` and `saveToPersistence` closures are optional — omit them for single-level caching.
 
-Cache strategy logic is tested once in `CachePolicyExecutorTests` (15 tests). Repository tests only verify wiring, cache wiring, and error mapping.
+Cache strategy logic is tested once in `CachePolicyExecutorTests`. Repository tests only verify wiring, cache wiring, and error mapping.
 
 ---
 

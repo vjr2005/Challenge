@@ -24,25 +24,30 @@ import ChallengeNetworking
 
 struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
-    private let memoryDataSource: {Name}LocalDataSourceContract
+    private let volatileDataSource: {Name}LocalDataSourceContract
+    private let persistenceDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
     private let cacheExecutor = CachePolicyExecutor()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
-        memoryDataSource: {Name}LocalDataSourceContract
+        volatile: {Name}LocalDataSourceContract,
+        persistence: {Name}LocalDataSourceContract
     ) {
         self.remoteDataSource = remoteDataSource
-        self.memoryDataSource = memoryDataSource
+        self.volatileDataSource = volatile
+        self.persistenceDataSource = persistence
     }
 
     func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
         try await cacheExecutor.execute(
             policy: .remoteFirst,
             fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
-            getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
-            saveToCache: { await memoryDataSource.save{Name}($0) },
+            getFromVolatile: { await volatileDataSource.get{Name}(identifier: identifier) },
+            getFromPersistence: { await persistenceDataSource.get{Name}(identifier: identifier) },
+            saveToVolatile: { await volatileDataSource.save{Name}($0) },
+            saveToPersistence: { await persistenceDataSource.save{Name}($0) },
             mapper: { mapper.map($0) },
             errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
         )
@@ -69,10 +74,12 @@ struct {Name}RepositoryTests {
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .success(try loadJSON("{name}"))
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
 
         // When
@@ -88,10 +95,12 @@ struct {Name}RepositoryTests {
         // Given
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .failure(.invalidResponse)
-        let memoryDataSourceMock = {Name}LocalDataSourceMock()
+        let volatileDataSourceMock = {Name}LocalDataSourceMock()
+        let persistenceDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
 
         // When / Then

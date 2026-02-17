@@ -4,7 +4,7 @@ Feature module for displaying character episodes from the Rick and Morty API.
 
 ## Overview
 
-ChallengeEpisode implements the character episodes screen following Clean Architecture with MVVM presentation layer. It uses GraphQL for data fetching and in-memory caching for offline support.
+ChallengeEpisode implements the character episodes screen following Clean Architecture with MVVM presentation layer. It uses GraphQL for data fetching and two-level caching (volatile + persistence) with SwiftData for offline support.
 
 ## Default Actor Isolation
 
@@ -35,10 +35,17 @@ Episode/
 │   │   └── Errors/
 │   │       └── EpisodeError.swift
 │   ├── Data/
+│   │   ├── Entities/
+│   │   │   ├── EpisodeCharacterWithEpisodesEntity.swift
+│   │   │   ├── EpisodeEntity.swift
+│   │   │   ├── EpisodeCharacterEntity.swift
+│   │   │   └── EpisodeModelContainer.swift
 │   │   ├── Mappers/
 │   │   │   ├── EpisodeMapper.swift
 │   │   │   ├── EpisodeCharacterMapper.swift
 │   │   │   ├── EpisodeCharacterWithEpisodesMapper.swift
+│   │   │   ├── EpisodeCharacterWithEpisodesEntityMapper.swift
+│   │   │   ├── EpisodeCharacterWithEpisodesEntityDTOMapper.swift
 │   │   │   └── EpisodeErrorMapper.swift
 │   │   ├── Repositories/
 │   │   │   └── EpisodeRepository.swift
@@ -48,7 +55,7 @@ Episode/
 │   │   │   │   └── EpisodeGraphQLDataSource.swift
 │   │   │   └── Local/
 │   │   │       ├── EpisodeLocalDataSourceContract.swift
-│   │   │       └── EpisodeMemoryDataSource.swift
+│   │   │       └── EpisodeEntityDataSource.swift
 │   │   └── DTOs/
 │   │       ├── EpisodeDTO.swift
 │   │       ├── EpisodeCharacterDTO.swift

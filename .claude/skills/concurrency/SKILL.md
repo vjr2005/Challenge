@@ -77,16 +77,15 @@ Types that need to run off the main thread must explicitly opt out.
 Actors have their own isolation domain (not MainActor):
 
 ```swift
-// Actors are NOT MainActor-isolated
-actor CharacterMemoryDataSource {
-    private var storage: [Int: CharacterDTO] = [:]
-
-    func save(_ character: CharacterDTO) {
-        storage[character.id] = character
-    }
-
-    func get(id: Int) -> CharacterDTO? {
-        storage[id]
+// Actors are NOT MainActor-isolated — @ModelActor for SwiftData
+@ModelActor
+actor CharacterEntityDataSource: CharacterLocalDataSourceContract {
+    func getCharacter(identifier: Int) -> CharacterDTO? {
+        let descriptor = FetchDescriptor<CharacterEntity>(
+            predicate: #Predicate { $0.identifier == identifier }
+        )
+        guard let entity = try? modelContext.fetch(descriptor).first else { return nil }
+        return entityDTOMapper.map(entity)
     }
 }
 ```
@@ -260,7 +259,7 @@ actor DataStore {
 | HTTPClient / GraphQLClient | nonisolated (module default) | `@concurrent` on public methods |
 | Endpoint / HTTPMethod | nonisolated (module default) | Pure data types, keep explicit `Sendable` for cross-module use |
 | GraphQLResponse | nonisolated (module default) | Pure data envelope |
-| MemoryDataSource | No (actor) | Use `actor` keyword |
+| EntityDataSource | No (actor) | `@ModelActor actor` for SwiftData |
 | URLProtocol subclass | nonisolated | Framework requirement |
 | XCTestCase subclass | nonisolated | Framework requirement |
 
@@ -339,7 +338,7 @@ actor ImageDiskCache: ImageDiskCacheContract {
 
 | Pattern | Use when | Example |
 |---------|----------|---------|
-| `: Actor` protocol | Dependency has its **own mutable state** to protect | `MemoryDataSource`, `UserDefaultsDataSource` |
+| `: Actor` protocol | Dependency has its **own mutable state** to protect | `EntityDataSource` (SwiftData), `UserDefaultsDataSource` |
 | `: Sendable` + `nonisolated` | Dependency is a **stateless wrapper** around a thread-safe API | `FileSystem` (wraps `FileManager`) |
 
 ### `nonisolated` is mandatory on protocol methods
