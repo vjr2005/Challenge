@@ -2,9 +2,12 @@ import Foundation
 
 /// Executes data fetch operations using the cache strategy defined by a `CachePolicy`.
 ///
-/// Follows the same pattern as `MapperContract` implementations: a stateless struct
-/// that encapsulates a single operation. Repositories inject this executor and delegate
-/// cache strategy logic to it.
+/// Supports single-level (memory only) and two-level (memory + disk) caching.
+/// When persistence closures are provided, the executor coordinates L1 (memory)
+/// and L2 (disk) automatically: reads try L1 → L2 (promoting to L1) → remote,
+/// writes save to both levels.
+///
+/// Repositories inject this executor and delegate cache strategy logic to it.
 public struct CachePolicyExecutor {
 	public init() {}
 
@@ -13,16 +16,20 @@ public struct CachePolicyExecutor {
 	/// - Parameters:
 	///   - policy: The cache strategy to apply.
 	///   - fetchFromRemote: Closure that fetches data from the remote source (untyped throws).
-	///   - getFromCache: Closure that retrieves cached data, returning `nil` on cache miss.
-	///   - saveToCache: Closure that persists data to the local cache.
+	///   - getFromVolatile: Closure that retrieves data from L1 (memory) cache, returning `nil` on miss.
+	///   - getFromPersistence: Closure that retrieves data from L2 (disk) cache, returning `nil` on miss.
+	///   - saveToVolatile: Closure that persists data to L1 (memory) cache.
+	///   - saveToPersistence: Closure that persists data to L2 (disk) cache.
 	///   - mapper: Closure that transforms the raw DTO into a domain model.
 	///   - errorMapper: Closure that maps transport errors to domain errors.
 	/// - Returns: The domain model produced by the mapper.
 	public func execute<DTO, Domain, Failure: Error>(
 		policy: CachePolicy,
 		fetchFromRemote: () async throws -> DTO,
-		getFromCache: () async -> DTO?,
-		saveToCache: (DTO) async -> Void,
+		getFromVolatile: () async -> DTO?,
+		getFromPersistence: (() async -> DTO?)? = nil,
+		saveToVolatile: (DTO) async -> Void,
+		saveToPersistence: ((DTO) async -> Void)? = nil,
 		mapper: (DTO) -> Domain,
 		errorMapper: (any Error) -> Failure
 	) async throws(Failure) -> Domain {
@@ -30,16 +37,20 @@ public struct CachePolicyExecutor {
 		case .localFirst:
 			try await executeLocalFirst(
 				fetchFromRemote: fetchFromRemote,
-				getFromCache: getFromCache,
-				saveToCache: saveToCache,
+				getFromVolatile: getFromVolatile,
+				getFromPersistence: getFromPersistence,
+				saveToVolatile: saveToVolatile,
+				saveToPersistence: saveToPersistence,
 				mapper: mapper,
 				errorMapper: errorMapper
 			)
 		case .remoteFirst:
 			try await executeRemoteFirst(
 				fetchFromRemote: fetchFromRemote,
-				getFromCache: getFromCache,
-				saveToCache: saveToCache,
+				getFromVolatile: getFromVolatile,
+				getFromPersistence: getFromPersistence,
+				saveToVolatile: saveToVolatile,
+				saveToPersistence: saveToPersistence,
 				mapper: mapper,
 				errorMapper: errorMapper
 			)
@@ -58,17 +69,24 @@ public struct CachePolicyExecutor {
 private extension CachePolicyExecutor {
 	func executeLocalFirst<DTO, Domain, Failure: Error>(
 		fetchFromRemote: () async throws -> DTO,
-		getFromCache: () async -> DTO?,
-		saveToCache: (DTO) async -> Void,
+		getFromVolatile: () async -> DTO?,
+		getFromPersistence: (() async -> DTO?)? = nil,
+		saveToVolatile: (DTO) async -> Void,
+		saveToPersistence: ((DTO) async -> Void)? = nil,
 		mapper: (DTO) -> Domain,
 		errorMapper: (any Error) -> Failure
 	) async throws(Failure) -> Domain {
-		if let cached = await getFromCache() {
+		if let cached = await getFromVolatile() {
 			return mapper(cached)
+		}
+		if let persisted = await getFromPersistence?() {
+			await saveToVolatile(persisted)
+			return mapper(persisted)
 		}
 		do {
 			let dto = try await fetchFromRemote()
-			await saveToCache(dto)
+			await saveToVolatile(dto)
+			await saveToPersistence?(dto)
 			return mapper(dto)
 		} catch {
 			throw errorMapper(error)
@@ -77,18 +95,25 @@ private extension CachePolicyExecutor {
 
 	func executeRemoteFirst<DTO, Domain, Failure: Error>(
 		fetchFromRemote: () async throws -> DTO,
-		getFromCache: () async -> DTO?,
-		saveToCache: (DTO) async -> Void,
+		getFromVolatile: () async -> DTO?,
+		getFromPersistence: (() async -> DTO?)? = nil,
+		saveToVolatile: (DTO) async -> Void,
+		saveToPersistence: ((DTO) async -> Void)? = nil,
 		mapper: (DTO) -> Domain,
 		errorMapper: (any Error) -> Failure
 	) async throws(Failure) -> Domain {
 		do {
 			let dto = try await fetchFromRemote()
-			await saveToCache(dto)
+			await saveToVolatile(dto)
+			await saveToPersistence?(dto)
 			return mapper(dto)
 		} catch {
-			if let cached = await getFromCache() {
+			if let cached = await getFromVolatile() {
 				return mapper(cached)
+			}
+			if let persisted = await getFromPersistence?() {
+				await saveToVolatile(persisted)
+				return mapper(persisted)
 			}
 			throw errorMapper(error)
 		}

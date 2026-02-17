@@ -20,8 +20,8 @@ struct EpisodeRepository: EpisodeRepositoryContract {
 		try await cacheExecutor.execute(
 			policy: cachePolicy,
 			fetchFromRemote: { try await remoteDataSource.fetchEpisodes(characterIdentifier: characterIdentifier) },
-			getFromCache: { await memoryDataSource.getEpisodes(characterIdentifier: characterIdentifier) },
-			saveToCache: { await memoryDataSource.saveEpisodes($0, characterIdentifier: characterIdentifier) },
+			getFromVolatile: { await memoryDataSource.getEpisodes(characterIdentifier: characterIdentifier) },
+			saveToVolatile: { await memoryDataSource.saveEpisodes($0, characterIdentifier: characterIdentifier) },
 			mapper: { mapper.map($0) },
 			errorMapper: { errorMapper.map(EpisodeErrorMapperInput(error: $0, characterIdentifier: characterIdentifier)) }
 		)

@@ -14,14 +14,14 @@ struct CachePolicyExecutorTests {
 	func localFirstReturnsCachedValue() async throws {
 		// Given
 		var remoteFetchCallCount = 0
-		var saveToCacheCallCount = 0
+		var saveToVolatileCallCount = 0
 
 		// When
 		let value = try await sut.execute(
 			policy: .localFirst,
 			fetchFromRemote: { remoteFetchCallCount += 1; return "99" },
-			getFromCache: { "42" },
-			saveToCache: { _ in saveToCacheCallCount += 1 },
+			getFromVolatile: { "42" },
+			saveToVolatile: { _ in saveToVolatileCallCount += 1 },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -29,7 +29,7 @@ struct CachePolicyExecutorTests {
 		// Then
 		#expect(value == 42)
 		#expect(remoteFetchCallCount == 0)
-		#expect(saveToCacheCallCount == 0)
+		#expect(saveToVolatileCallCount == 0)
 	}
 
 	@Test("LocalFirst fetches from remote when cache miss")
@@ -41,8 +41,8 @@ struct CachePolicyExecutorTests {
 		let value = try await sut.execute(
 			policy: .localFirst,
 			fetchFromRemote: { remoteFetchCallCount += 1; return "99" },
-			getFromCache: { nil },
-			saveToCache: { _ in },
+			getFromVolatile: { nil },
+			saveToVolatile: { _ in },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -61,8 +61,8 @@ struct CachePolicyExecutorTests {
 		_ = try await sut.execute(
 			policy: .localFirst,
 			fetchFromRemote: { "42" },
-			getFromCache: { nil },
-			saveToCache: { savedValue = $0 },
+			getFromVolatile: { nil },
+			saveToVolatile: { savedValue = $0 },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -74,20 +74,20 @@ struct CachePolicyExecutorTests {
 	@Test("LocalFirst does not save to cache when remote fails")
 	func localFirstDoesNotSaveWhenRemoteFails() async throws {
 		// Given
-		var saveToCacheCallCount = 0
+		var saveToVolatileCallCount = 0
 
 		// When / Then
 		await #expect(throws: TestError.remoteFailed) {
 			try await sut.execute(
 				policy: .localFirst,
 				fetchFromRemote: { throw RawError.network },
-				getFromCache: { nil },
-				saveToCache: { (_: String) in saveToCacheCallCount += 1 },
+				getFromVolatile: { nil },
+				saveToVolatile: { (_: String) in saveToVolatileCallCount += 1 },
 				mapper: { Int($0) ?? 0 },
 				errorMapper: { _ in TestError.remoteFailed }
 			)
 		}
-		#expect(saveToCacheCallCount == 0)
+		#expect(saveToVolatileCallCount == 0)
 	}
 
 	@Test("LocalFirst applies mapper to cached value")
@@ -96,8 +96,8 @@ struct CachePolicyExecutorTests {
 		let value = try await sut.execute(
 			policy: .localFirst,
 			fetchFromRemote: { "ignored" },
-			getFromCache: { "100" },
-			saveToCache: { _ in },
+			getFromVolatile: { "100" },
+			saveToVolatile: { _ in },
 			mapper: { (Int($0) ?? 0) * 2 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -117,8 +117,8 @@ struct CachePolicyExecutorTests {
 		let value = try await sut.execute(
 			policy: .remoteFirst,
 			fetchFromRemote: { remoteFetchCallCount += 1; return "99" },
-			getFromCache: { "42" },
-			saveToCache: { _ in },
+			getFromVolatile: { "42" },
+			saveToVolatile: { _ in },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -137,8 +137,8 @@ struct CachePolicyExecutorTests {
 		_ = try await sut.execute(
 			policy: .remoteFirst,
 			fetchFromRemote: { "42" },
-			getFromCache: { nil },
-			saveToCache: { savedValue = $0 },
+			getFromVolatile: { nil },
+			saveToVolatile: { savedValue = $0 },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -153,8 +153,8 @@ struct CachePolicyExecutorTests {
 		let value = try await sut.execute(
 			policy: .remoteFirst,
 			fetchFromRemote: { throw RawError.network },
-			getFromCache: { "42" },
-			saveToCache: { _ in },
+			getFromVolatile: { "42" },
+			saveToVolatile: { _ in },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -170,8 +170,8 @@ struct CachePolicyExecutorTests {
 			try await sut.execute(
 				policy: .remoteFirst,
 				fetchFromRemote: { throw RawError.network },
-				getFromCache: { nil },
-				saveToCache: { (_: String) in },
+				getFromVolatile: { nil },
+				saveToVolatile: { (_: String) in },
 				mapper: { Int($0) ?? 0 },
 				errorMapper: { _ in TestError.remoteFailed }
 			)
@@ -189,8 +189,8 @@ struct CachePolicyExecutorTests {
 		let value = try await sut.execute(
 			policy: .noCache,
 			fetchFromRemote: { remoteFetchCallCount += 1; return "42" },
-			getFromCache: { "ignored" },
-			saveToCache: { _ in },
+			getFromVolatile: { "ignored" },
+			saveToVolatile: { _ in },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
@@ -203,39 +203,39 @@ struct CachePolicyExecutorTests {
 	@Test("NoCache does not read from cache")
 	func noCacheDoesNotReadFromCache() async throws {
 		// Given
-		var getFromCacheCallCount = 0
+		var getFromVolatileCallCount = 0
 
 		// When
 		_ = try await sut.execute(
 			policy: .noCache,
 			fetchFromRemote: { "42" },
-			getFromCache: { getFromCacheCallCount += 1; return "99" },
-			saveToCache: { _ in },
+			getFromVolatile: { getFromVolatileCallCount += 1; return "99" },
+			saveToVolatile: { _ in },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
 
 		// Then
-		#expect(getFromCacheCallCount == 0)
+		#expect(getFromVolatileCallCount == 0)
 	}
 
 	@Test("NoCache does not save to cache")
 	func noCacheDoesNotSaveToCache() async throws {
 		// Given
-		var saveToCacheCallCount = 0
+		var saveToVolatileCallCount = 0
 
 		// When
 		_ = try await sut.execute(
 			policy: .noCache,
 			fetchFromRemote: { "42" },
-			getFromCache: { nil },
-			saveToCache: { (_: String) in saveToCacheCallCount += 1 },
+			getFromVolatile: { nil },
+			saveToVolatile: { (_: String) in saveToVolatileCallCount += 1 },
 			mapper: { Int($0) ?? 0 },
 			errorMapper: { _ in TestError.remoteFailed }
 		)
 
 		// Then
-		#expect(saveToCacheCallCount == 0)
+		#expect(saveToVolatileCallCount == 0)
 	}
 
 	@Test("NoCache propagates mapped error")
@@ -245,8 +245,8 @@ struct CachePolicyExecutorTests {
 			try await sut.execute(
 				policy: .noCache,
 				fetchFromRemote: { throw RawError.network },
-				getFromCache: { nil },
-				saveToCache: { (_: String) in },
+				getFromVolatile: { nil },
+				saveToVolatile: { (_: String) in },
 				mapper: { Int($0) ?? 0 },
 				errorMapper: { _ in TestError.remoteFailed }
 			)
@@ -265,8 +265,8 @@ struct CachePolicyExecutorTests {
 			try await sut.execute(
 				policy: .noCache,
 				fetchFromRemote: { throw RawError.network },
-				getFromCache: { nil },
-				saveToCache: { (_: String) in },
+				getFromVolatile: { nil },
+				saveToVolatile: { (_: String) in },
 				mapper: { Int($0) ?? 0 },
 				errorMapper: { error in
 					receivedError = error

@@ -8,4 +8,8 @@ protocol CharacterLocalDataSourceContract: Actor {
 
 	func getPage(_ page: Int) async -> CharactersResponseDTO?
 	func savePage(_ response: CharactersResponseDTO, page: Int) async
+
+	// MARK: - Search
+
+	func searchCharacters(page: Int, filter: CharacterFilterDTO) async -> CharactersResponseDTO?
 }

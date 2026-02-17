@@ -2,11 +2,12 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
+actor CharacterLocalDataSourceMock: CharacterLocalDataSourceContract {
     // MARK: - Configurable Returns
 
     private(set) var characterToReturn: CharacterDTO?
     private(set) var pageToReturn: CharactersResponseDTO?
+    private(set) var searchResultToReturn: CharactersResponseDTO?
 
     func setCharacterToReturn(_ character: CharacterDTO?) {
         characterToReturn = character
@@ -14,6 +15,10 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
 
     func setPageToReturn(_ page: CharactersResponseDTO?) {
         pageToReturn = page
+    }
+
+    func setSearchResultToReturn(_ result: CharactersResponseDTO?) {
+        searchResultToReturn = result
     }
 
     // MARK: - Call Tracking
@@ -28,6 +33,9 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     private(set) var savePageCallCount = 0
     private(set) var savePageLastResponse: CharactersResponseDTO?
     private(set) var savePageLastPage: Int?
+
+    private(set) var searchCharactersCallCount = 0
+    private(set) var searchCharactersLastFilter: CharacterFilterDTO?
 
     // MARK: - CharacterLocalDataSourceContract
 
@@ -50,5 +58,11 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
         savePageCallCount += 1
         savePageLastResponse = response
         savePageLastPage = page
+    }
+
+    func searchCharacters(page: Int, filter: CharacterFilterDTO) -> CharactersResponseDTO? {
+        searchCharactersCallCount += 1
+        searchCharactersLastFilter = filter
+        return searchResultToReturn
     }
 }

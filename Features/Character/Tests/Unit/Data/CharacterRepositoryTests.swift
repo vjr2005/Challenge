@@ -11,7 +11,8 @@ struct CharacterRepositoryTests {
     // MARK: - Properties
 
     private let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-    private let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+    private let volatileDataSourceMock = CharacterLocalDataSourceMock()
+    private let persistenceDataSourceMock = CharacterLocalDataSourceMock()
     private let sut: CharacterRepository
 
     // MARK: - Initialization
@@ -19,7 +20,8 @@ struct CharacterRepositoryTests {
     init() {
         sut = CharacterRepository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
     }
 
@@ -40,7 +42,49 @@ struct CharacterRepositoryTests {
         #expect(remoteDataSourceMock.fetchCharacterCallCount == 1)
     }
 
+    @Test("Passes correct identifier to remote data source")
+    func passesCorrectIdentifierToRemote() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character")
+        remoteDataSourceMock.result = .success(characterDTO)
+
+        // When
+        _ = try await sut.getCharacter(identifier: 42, cachePolicy: .noCache)
+
+        // Then
+        #expect(remoteDataSourceMock.lastFetchedIdentifier == 42)
+    }
+
     // MARK: - Cache Wiring
+
+    @Test("Returns volatile cached value without calling remote")
+    func returnsVolatileCachedValue() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character")
+        await volatileDataSourceMock.setCharacterToReturn(characterDTO)
+
+        // When
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+
+        // Then
+        #expect(value == Character.stub())
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 0)
+    }
+
+    @Test("Falls back to persistence when volatile misses")
+    func fallsBackToPersistenceWhenVolatileMisses() async throws {
+        // Given
+        let characterDTO: CharacterDTO = try loadJSON("character")
+        await persistenceDataSourceMock.setCharacterToReturn(characterDTO)
+
+        // When
+        let value = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
+
+        // Then
+        #expect(value == Character.stub())
+        #expect(remoteDataSourceMock.fetchCharacterCallCount == 0)
+        #expect(await volatileDataSourceMock.saveCharacterCallCount == 1)
+    }
 
     @Test("Saves to cache after successful remote fetch")
     func savesToCacheAfterRemoteFetch() async throws {
@@ -52,8 +96,10 @@ struct CharacterRepositoryTests {
         _ = try await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(await memoryDataSourceMock.saveCharacterCallCount == 1)
-        #expect(await memoryDataSourceMock.saveCharacterLastValue == characterDTO)
+        #expect(await volatileDataSourceMock.saveCharacterCallCount == 1)
+        #expect(await volatileDataSourceMock.saveCharacterLastValue == characterDTO)
+        #expect(await persistenceDataSourceMock.saveCharacterCallCount == 1)
+        #expect(await persistenceDataSourceMock.saveCharacterLastValue == characterDTO)
     }
 
     // MARK: - Error Handling
@@ -67,7 +113,8 @@ struct CharacterRepositoryTests {
         _ = try? await sut.getCharacter(identifier: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(await memoryDataSourceMock.saveCharacterCallCount == 0)
+        #expect(await volatileDataSourceMock.saveCharacterCallCount == 0)
+        #expect(await persistenceDataSourceMock.saveCharacterCallCount == 0)
     }
 
     @Test("Maps API error to domain error")

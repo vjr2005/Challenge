@@ -25,18 +25,23 @@ public final class CharacterContainer {
         self.tracker = tracker
         self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
-        let memoryDataSource = CharacterMemoryDataSource()
+        let volatileContainer = CharacterModelContainer.create(inMemoryOnly: true)
+        let persistenceContainer = CharacterModelContainer.create()
+        let volatileDataSource = CharacterEntityDataSource(modelContainer: volatileContainer)
+        let persistenceDataSource = CharacterEntityDataSource(modelContainer: persistenceContainer)
         let recentSearchesDataSource = RecentSearchesUserDefaultsDataSource()
         self.characterRepository = CharacterRepository(
             remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            volatile: volatileDataSource,
+            persistence: persistenceDataSource
         )
         self.recentSearchesRepository = RecentSearchesRepository(
             localDataSource: recentSearchesDataSource
         )
         self.charactersPageRepository = CharactersPageRepository(
             remoteDataSource: remoteDataSource,
-            memoryDataSource: memoryDataSource
+            volatile: volatileDataSource,
+            persistence: persistenceDataSource
         )
     }
 

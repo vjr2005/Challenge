@@ -3,7 +3,8 @@ import Foundation
 
 struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
-	private let memoryDataSource: CharacterLocalDataSourceContract
+	private let volatileDataSource: CharacterLocalDataSourceContract
+	private let persistenceDataSource: CharacterLocalDataSourceContract
 	private let mapper = CharactersPageMapper()
 	private let filterMapper = CharacterFilterMapper()
 	private let errorMapper = CharactersPageErrorMapper()
@@ -11,18 +12,22 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 
 	init(
 		remoteDataSource: CharacterRemoteDataSourceContract,
-		memoryDataSource: CharacterLocalDataSourceContract
+		volatile: CharacterLocalDataSourceContract,
+		persistence: CharacterLocalDataSourceContract
 	) {
 		self.remoteDataSource = remoteDataSource
-		self.memoryDataSource = memoryDataSource
+		self.volatileDataSource = volatile
+		self.persistenceDataSource = persistence
 	}
 
 	func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
 		try await cacheExecutor.execute(
 			policy: cachePolicy,
 			fetchFromRemote: { try await remoteDataSource.fetchCharacters(page: page, filter: .empty) },
-			getFromCache: { await memoryDataSource.getPage(page) },
-			saveToCache: { await memoryDataSource.savePage($0, page: page) },
+			getFromVolatile: { await volatileDataSource.getPage(page) },
+			getFromPersistence: { await persistenceDataSource.getPage(page) },
+			saveToVolatile: { await volatileDataSource.savePage($0, page: page) },
+			saveToPersistence: { await persistenceDataSource.savePage($0, page: page) },
 			mapper: { mapper.map(CharactersPageMapperInput(response: $0, currentPage: page)) },
 			errorMapper: { errorMapper.map(CharactersPageErrorMapperInput(error: $0, page: page)) }
 		)

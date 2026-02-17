@@ -11,7 +11,8 @@ struct CharactersPageRepositoryTests {
     // MARK: - Properties
 
     private let remoteDataSourceMock = CharacterRemoteDataSourceMock()
-    private let memoryDataSourceMock = CharacterMemoryDataSourceMock()
+    private let volatileDataSourceMock = CharacterLocalDataSourceMock()
+    private let persistenceDataSourceMock = CharacterLocalDataSourceMock()
     private let sut: CharactersPageRepository
 
     // MARK: - Initialization
@@ -19,7 +20,8 @@ struct CharactersPageRepositoryTests {
     init() {
         sut = CharactersPageRepository(
             remoteDataSource: remoteDataSourceMock,
-            memoryDataSource: memoryDataSourceMock
+            volatile: volatileDataSourceMock,
+            persistence: persistenceDataSourceMock
         )
     }
 
@@ -55,6 +57,35 @@ struct CharactersPageRepositoryTests {
 
     // MARK: - Get Characters - Cache Wiring
 
+    @Test("Returns volatile cached page without calling remote")
+    func returnsVolatileCachedPage() async throws {
+        // Given
+        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        await volatileDataSourceMock.setPageToReturn(responseDTO)
+
+        // When
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
+
+        // Then
+        #expect(value == CharactersPage.stub())
+        #expect(remoteDataSourceMock.fetchCharactersCallCount == 0)
+    }
+
+    @Test("Falls back to persistence when volatile misses")
+    func fallsBackToPersistenceWhenVolatileMisses() async throws {
+        // Given
+        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        await persistenceDataSourceMock.setPageToReturn(responseDTO)
+
+        // When
+        let value = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
+
+        // Then
+        #expect(value == CharactersPage.stub())
+        #expect(remoteDataSourceMock.fetchCharactersCallCount == 0)
+        #expect(await volatileDataSourceMock.savePageCallCount == 1)
+    }
+
     @Test("Saves page to cache after successful remote fetch")
     func savesPageToCacheAfterRemoteFetch() async throws {
         // Given
@@ -65,9 +96,12 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(await memoryDataSourceMock.savePageCallCount == 1)
-        #expect(await memoryDataSourceMock.savePageLastResponse == responseDTO)
-        #expect(await memoryDataSourceMock.savePageLastPage == 1)
+        #expect(await volatileDataSourceMock.savePageCallCount == 1)
+        #expect(await volatileDataSourceMock.savePageLastResponse == responseDTO)
+        #expect(await volatileDataSourceMock.savePageLastPage == 1)
+        #expect(await persistenceDataSourceMock.savePageCallCount == 1)
+        #expect(await persistenceDataSourceMock.savePageLastResponse == responseDTO)
+        #expect(await persistenceDataSourceMock.savePageLastPage == 1)
     }
 
     // MARK: - Get Characters - Error Handling
@@ -81,7 +115,8 @@ struct CharactersPageRepositoryTests {
         _ = try? await sut.getCharactersPage(page: 1, cachePolicy: .localFirst)
 
         // Then
-        #expect(await memoryDataSourceMock.savePageCallCount == 0)
+        #expect(await volatileDataSourceMock.savePageCallCount == 0)
+        #expect(await persistenceDataSourceMock.savePageCallCount == 0)
     }
 
     // MARK: - Search Characters
@@ -91,7 +126,7 @@ struct CharactersPageRepositoryTests {
         // Given
         let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
         remoteDataSourceMock.charactersResult = .success(responseDTO)
-        await memoryDataSourceMock.setPageToReturn(responseDTO)
+        await volatileDataSourceMock.setPageToReturn(responseDTO)
 
         // When
         _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
@@ -110,7 +145,8 @@ struct CharactersPageRepositoryTests {
         _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
 
         // Then
-        #expect(await memoryDataSourceMock.savePageCallCount == 0)
+        #expect(await volatileDataSourceMock.savePageCallCount == 0)
+        #expect(await persistenceDataSourceMock.savePageCallCount == 0)
     }
 
     @Test("Search characters passes query to remote data source")
