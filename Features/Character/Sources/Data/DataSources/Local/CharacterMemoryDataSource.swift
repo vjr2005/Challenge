@@ -21,4 +21,8 @@ actor CharacterMemoryDataSource: CharacterLocalDataSourceContract {
 	func savePage(_ response: CharactersResponseDTO, page: Int) {
 		pageStorage[page] = response
 	}
+
+	func clearPages() {
+		pageStorage.removeAll()
+	}
 }

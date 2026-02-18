@@ -26,8 +26,11 @@ protocol {Name}LocalDataSourceContract: Actor {
 	// MARK: - Paginated Results
 	func getPage(_ page: Int) async -> {Name}sResponseDTO?
 	func savePage(_ response: {Name}sResponseDTO, page: Int) async
+	func clearPages() async
 }
 ```
+
+> **`clearPages()`** removes all cached pages. Called by `Refresh{Name}sPageUseCase` before fetching with `.remoteFirst` to prevent stale pages (2, 3, …) from being returned by subsequent `.localFirst` load-more requests.
 
 Rules: `: Actor`, return optionals for get, `identifier` parameter name. Methods are actor-isolated (implicitly `async` from caller).
 
@@ -56,6 +59,10 @@ actor {Name}MemoryDataSource: {Name}LocalDataSourceContract {
 
 	func savePage(_ response: {Name}sResponseDTO, page: Int) {
 		pages[page] = response
+	}
+
+	func clearPages() {
+		pages.removeAll()
 	}
 }
 ```
@@ -92,6 +99,7 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 	private(set) var savePageCallCount = 0
 	private(set) var savePageLastResponse: {Name}sResponseDTO?
 	private(set) var savePageLastPage: Int?
+	private(set) var clearPagesCallCount = 0
 
 	// MARK: - {Name}LocalDataSourceContract
 
@@ -114,6 +122,10 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 		savePageCallCount += 1
 		savePageLastResponse = response
 		savePageLastPage = page
+	}
+
+	func clearPages() {
+		clearPagesCallCount += 1
 	}
 }
 ```

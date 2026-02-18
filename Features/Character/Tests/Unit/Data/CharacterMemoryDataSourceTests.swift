@@ -90,6 +90,40 @@ struct CharacterMemoryDataSourceTests {
         #expect(cachedPage2 == page2Response)
     }
 
+    @Test("Clear pages removes all cached pages")
+    func clearPagesRemovesAllCachedPages() async throws {
+        // Given
+        let page1Response: CharactersResponseDTO = try loadJSON("characters_response")
+        let page2Response: CharactersResponseDTO = try loadJSON("characters_response_page_2")
+        await sut.savePage(page1Response, page: 1)
+        await sut.savePage(page2Response, page: 2)
+
+        // When
+        await sut.clearPages()
+
+        // Then
+        let cachedPage1 = await sut.getPage(1)
+        let cachedPage2 = await sut.getPage(2)
+        #expect(cachedPage1 == nil)
+        #expect(cachedPage2 == nil)
+    }
+
+    @Test("Clear pages does not affect individual characters")
+    func clearPagesDoesNotAffectIndividualCharacters() async throws {
+        // Given
+        let character: CharacterDTO = try loadJSON("character")
+        let pageResponse: CharactersResponseDTO = try loadJSON("characters_response")
+        await sut.saveCharacter(character)
+        await sut.savePage(pageResponse, page: 1)
+
+        // When
+        await sut.clearPages()
+
+        // Then
+        let cachedCharacter = await sut.getCharacter(identifier: character.id)
+        #expect(cachedCharacter == character)
+    }
+
     @Test("Save page does not save individual characters")
     func savePageDoesNotSaveIndividualCharacters() async throws {
         // Given

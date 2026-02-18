@@ -28,6 +28,10 @@ nonisolated struct CharactersPageRepository: CharactersPageRepositoryContract {
 		)
 	}
 
+	@concurrent func clearPagesCache() async {
+		await memoryDataSource.clearPages()
+	}
+
 	@concurrent func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let filterDTO = filterMapper.map(filter)

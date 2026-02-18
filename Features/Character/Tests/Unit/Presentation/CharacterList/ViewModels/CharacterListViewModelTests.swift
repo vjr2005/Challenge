@@ -421,6 +421,47 @@ struct CharacterListViewModelTests {
         #expect(statesDuringRefresh.first == .loaded(loadedPage))
     }
 
+    @Test("didPullToRefresh followed by load more fetches next page from use case")
+    func didPullToRefreshFollowedByLoadMoreFetchesNextPage() async {
+        // Given
+        let firstPage = CharactersPage.stub(
+            characters: [Character.stub(id: 1)],
+            currentPage: 1,
+            hasNextPage: true
+        )
+        let secondPage = CharactersPage.stub(
+            characters: [Character.stub(id: 2)],
+            currentPage: 2,
+            hasNextPage: true
+        )
+        getCharactersPageUseCaseMock.result = .success(firstPage)
+        await sut.didAppear()
+        getCharactersPageUseCaseMock.result = .success(secondPage)
+        await sut.didTapOnLoadMoreButton()
+
+        // When - pull to refresh resets to page 1
+        let refreshedPage = CharactersPage.stub(
+            characters: [Character.stub(id: 10)],
+            currentPage: 1,
+            hasNextPage: true
+        )
+        refreshCharactersPageUseCaseMock.result = .success(refreshedPage)
+        await sut.didPullToRefresh()
+
+        // Then - load more should fetch page 2 via getCharactersPageUseCase
+        let thirdPage = CharactersPage.stub(
+            characters: [Character.stub(id: 11)],
+            currentPage: 2,
+            hasNextPage: false
+        )
+        getCharactersPageUseCaseMock.result = .success(thirdPage)
+        let callCountBefore = getCharactersPageUseCaseMock.executeCallCount
+        await sut.didTapOnLoadMoreButton()
+
+        #expect(getCharactersPageUseCaseMock.executeCallCount == callCountBefore + 1)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 2)
+    }
+
     @Test("didPullToRefresh sets empty state when no characters returned")
     func didPullToRefreshSetsEmptyStateWhenNoCharacters() async {
         // Given

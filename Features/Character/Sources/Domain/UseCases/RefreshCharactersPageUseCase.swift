@@ -12,6 +12,7 @@ struct RefreshCharactersPageUseCase: RefreshCharactersPageUseCaseContract {
 	}
 
 	func execute(page: Int) async throws(CharactersPageError) -> CharactersPage {
-		try await repository.getCharactersPage(page: page, cachePolicy: .remoteFirst)
+		await repository.clearPagesCache()
+		return try await repository.getCharactersPage(page: page, cachePolicy: .remoteFirst)
 	}
 }

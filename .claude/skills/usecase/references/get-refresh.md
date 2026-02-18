@@ -77,7 +77,8 @@ struct Refresh{Name}sPageUseCase: Refresh{Name}sPageUseCaseContract {
     }
 
     func execute(page: Int) async throws({Feature}Error) -> {Name}sPage {
-        try await repository.get{Name}sPage(page: page, cachePolicy: .remoteFirst)
+        await repository.clearPagesCache()
+        return try await repository.get{Name}sPage(page: page, cachePolicy: .remoteFirst)
     }
 }
 ```
@@ -172,4 +173,4 @@ struct Get{Name}UseCaseTests {
 }
 ```
 
-For Refresh, replace `localFirst` with `remoteFirst` in test name and assertion.
+For Refresh, replace `localFirst` with `remoteFirst` in test name and assertion. For paginated Refresh, also add a test verifying `clearPagesCache()` is called before fetching.

@@ -46,6 +46,18 @@ struct RefreshCharactersPageUseCaseTests {
         #expect(repositoryMock.lastCharactersCachePolicy == .remoteFirst)
     }
 
+    @Test("Execute clears pages cache before fetching")
+    func executeClearsPagesCacheBeforeFetching() async throws {
+        // Given
+        repositoryMock.charactersResult = .success(.stub())
+
+        // When
+        _ = try await sut.execute(page: 1)
+
+        // Then
+        #expect(repositoryMock.clearPagesCacheCallCount == 1)
+    }
+
     @Test("Execute propagates repository error")
     func executePropagatesError() async throws {
         // Given

@@ -84,6 +84,17 @@ struct CharactersPageRepositoryTests {
         #expect(await memoryDataSourceMock.savePageCallCount == 0)
     }
 
+    // MARK: - Clear Pages Cache
+
+    @Test("Clear pages cache delegates to memory data source")
+    func clearPagesCacheDelegatesToMemoryDataSource() async {
+        // When
+        await sut.clearPagesCache()
+
+        // Then
+        #expect(await memoryDataSourceMock.clearPagesCallCount == 1)
+    }
+
     // MARK: - Search Characters
 
     @Test("Search characters always calls remote data source")

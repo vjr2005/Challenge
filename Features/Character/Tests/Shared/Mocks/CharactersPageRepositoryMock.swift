@@ -12,12 +12,17 @@ nonisolated final class CharactersPageRepositoryMock: CharactersPageRepositoryCo
 	private(set) var lastSearchedPage: Int?
 	private(set) var lastSearchedFilter: CharacterFilter?
 	private(set) var lastCharactersCachePolicy: CachePolicy?
+	private(set) var clearPagesCacheCallCount = 0
 
 	@concurrent func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
 		getCharactersPageCallCount += 1
 		lastRequestedPage = page
 		lastCharactersCachePolicy = cachePolicy
 		return try charactersResult.get()
+	}
+
+	@concurrent func clearPagesCache() async {
+		clearPagesCacheCallCount += 1
 	}
 
 	@concurrent func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
