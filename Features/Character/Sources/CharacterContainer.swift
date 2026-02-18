@@ -2,7 +2,7 @@ import ChallengeCore
 import ChallengeNetworking
 
 /// Dependency container for the Character feature.
-public final class CharacterContainer {
+struct CharacterContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
@@ -21,7 +21,7 @@ public final class CharacterContainer {
     ///   - httpClient: The HTTP client used for network requests.
     ///   - tracker: The tracker used to register analytics events.
     ///   - imageLoader: The image loader used to manage cached images.
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
+    init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
         self.tracker = tracker
         self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)

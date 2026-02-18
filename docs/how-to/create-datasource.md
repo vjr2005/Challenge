@@ -410,11 +410,11 @@ The container receives `HTTPClientContract` and creates the `GraphQLClient` inte
 import ChallengeCore
 import ChallengeNetworking
 
-public final class {Feature}Container {
+struct {Feature}Container {
 	private let tracker: any TrackerContract
 	private let {name}Repository: any {Name}RepositoryContract
 
-	public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+	init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
 		self.tracker = tracker
 		let graphQLClient = GraphQLClient(httpClient: httpClient)
 		let remoteDataSource = {Name}GraphQLDataSource(graphQLClient: graphQLClient)

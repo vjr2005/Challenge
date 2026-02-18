@@ -1,7 +1,7 @@
 import ChallengeCore
 
 /// Dependency container for the System feature.
-public final class SystemContainer {
+struct SystemContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
@@ -10,7 +10,7 @@ public final class SystemContainer {
 
     /// Creates a new system container.
     /// - Parameter tracker: The tracker used to register analytics events.
-    public init(tracker: any TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 

@@ -7,7 +7,7 @@
 import ChallengeCore
 import ChallengeNetworking
 
-public final class {Feature}Container {
+struct {Feature}Container {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
@@ -18,7 +18,7 @@ public final class {Feature}Container {
 
     // MARK: - Init
 
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+    init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.tracker = tracker
         let remoteDataSource = {Name}RemoteDataSource(httpClient: httpClient)
         let memoryDataSource = {Name}MemoryDataSource()
@@ -55,7 +55,7 @@ public final class {Feature}Container {
 ```
 
 **Rules:**
-- **public final class**
+- **internal struct** (only accessed by its Feature within the same module)
 - Receives `httpClient` and `tracker` from Feature (injected by AppContainer)
 - Only stores what factory methods need after `init` (`tracker`, repositories)
 - DataSources are **local variables in `init`** — only needed to build repositories
@@ -81,7 +81,7 @@ public struct {Feature}Feature: FeatureContract {
 
     // MARK: - Init
 
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+    init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.container = {Feature}Container(httpClient: httpClient, tracker: tracker)
     }
 
@@ -143,7 +143,7 @@ public struct HomeFeature: FeatureContract {
 
     // MARK: - Init
 
-    public init(tracker: any TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.container = HomeContainer(tracker: tracker)
     }
 
@@ -176,14 +176,14 @@ public struct HomeFeature: FeatureContract {
 // Sources/HomeContainer.swift
 import ChallengeCore
 
-public final class HomeContainer {
+struct HomeContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
 
     // MARK: - Init
 
-    public init(tracker: any TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 

@@ -1,7 +1,7 @@
 import ChallengeCore
 import ChallengeNetworking
 
-public final class EpisodeContainer {
+struct EpisodeContainer {
 	// MARK: - Dependencies
 
 	private let tracker: any TrackerContract
@@ -12,7 +12,7 @@ public final class EpisodeContainer {
 
 	// MARK: - Init
 
-	public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+	init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
 		self.tracker = tracker
 		let graphQLClient = GraphQLClient(httpClient: httpClient)
 		let remoteDataSource = EpisodeGraphQLDataSource(graphQLClient: graphQLClient)

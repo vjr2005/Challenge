@@ -300,10 +300,10 @@ Without networking (default for minimal features):
 ```swift
 import ChallengeCore
 
-public final class {Feature}Container {
+struct {Feature}Container {
     private let tracker: any TrackerContract
 
-    public init(tracker: any TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 
@@ -322,11 +322,11 @@ With networking (when DataSources/Repositories are added later):
 import ChallengeCore
 import ChallengeNetworking
 
-public final class {Feature}Container {
+struct {Feature}Container {
     private let tracker: any TrackerContract
     private let {name}Repository: {Name}RepositoryContract
 
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+    init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
         self.tracker = tracker
         // Container creates specific clients internally — features never receive them
         let graphQLClient = GraphQLClient(httpClient: httpClient)

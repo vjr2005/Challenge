@@ -124,7 +124,7 @@ public struct AppContainer {
 Each feature has its own container that manages its internal dependencies:
 
 ```swift
-public final class CharacterContainer {
+struct CharacterContainer {
     private let tracker: any TrackerContract
     private let imageLoader: any ImageLoaderContract
 
@@ -132,7 +132,7 @@ public final class CharacterContainer {
     private let recentSearchesRepository: any RecentSearchesRepositoryContract
     private let charactersPageRepository: any CharactersPageRepositoryContract
 
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
+    init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
         self.tracker = tracker
         self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)

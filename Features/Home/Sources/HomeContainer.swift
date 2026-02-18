@@ -1,7 +1,7 @@
 import ChallengeCore
 
 /// Dependency container for the Home feature.
-public final class HomeContainer {
+struct HomeContainer {
     // MARK: - Dependencies
 
     private let tracker: any TrackerContract
@@ -10,7 +10,7 @@ public final class HomeContainer {
 
     /// Creates a new home container.
     /// - Parameter tracker: The tracker used to register analytics events.
-    public init(tracker: any TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 

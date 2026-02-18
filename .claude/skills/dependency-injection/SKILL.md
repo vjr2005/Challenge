@@ -112,7 +112,7 @@ Features/{Feature}/
 |-----------|------------|--------|
 | Contract (Protocol) | **public** | API for consumers, enables DI |
 | {Feature}Feature | **public** | Entry point struct |
-| {Feature}Container | **public** | Created by Feature |
+| {Feature}Container | internal | Created by Feature within same module |
 | Feature.makeMainView() | **public** | Creates the feature's default entry point |
 | Feature.resolve() | **public** | Returns view for navigation or nil |
 | AppContainer.init | **public** | Only public member, created by ChallengeApp |
