@@ -1,6 +1,6 @@
 import Foundation
 
-public struct GraphQLErrorMapper {
+public struct GraphQLErrorMapper: Sendable {
 	public init() {}
 
 	public func map(_ input: GraphQLError) -> APIError {

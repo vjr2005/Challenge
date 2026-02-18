@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct LocationMapper: MapperContract {
+nonisolated struct LocationMapper: MapperContract {
 	func map(_ input: LocationDTO) -> Location {
 		Location(
 			name: input.name,

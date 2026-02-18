@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CharacterFilter: Equatable {
+nonisolated public struct CharacterFilter: Equatable, Sendable {
     var name: String?
     var status: CharacterStatus?
     var species: String?

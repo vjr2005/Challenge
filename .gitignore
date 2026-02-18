@@ -44,3 +44,6 @@ test_output/
 # IDEs
 .vscode/
 .idea/
+
+# Claude Code
+.claude/settings.local.json

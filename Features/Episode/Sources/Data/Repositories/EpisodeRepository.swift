@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct EpisodeRepository: EpisodeRepositoryContract {
+nonisolated struct EpisodeRepository: EpisodeRepositoryContract {
 	private let remoteDataSource: EpisodeRemoteDataSourceContract
 	private let memoryDataSource: EpisodeLocalDataSourceContract
 	private let mapper = EpisodeCharacterWithEpisodesMapper()
@@ -16,7 +16,7 @@ struct EpisodeRepository: EpisodeRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	func getEpisodes(characterIdentifier: Int, cachePolicy: CachePolicy) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
+	@concurrent func getEpisodes(characterIdentifier: Int, cachePolicy: CachePolicy) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
 		try await cacheExecutor.execute(
 			policy: cachePolicy,
 			fetchFromRemote: { try await remoteDataSource.fetchEpisodes(characterIdentifier: characterIdentifier) },

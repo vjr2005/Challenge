@@ -147,6 +147,56 @@ All members (properties, synthesized conformances) become nonisolated automatica
 
 > **Note:** In `ChallengeNetworking`, types are nonisolated by default (module-level override). In other modules, use the `nonisolated` keyword explicitly.
 
+### Nonisolated Data/Domain layer
+
+The entire Data and Domain layer uses explicit `nonisolated` annotations. This ensures Data layer work (network I/O, JSON decoding, mapping) runs off MainActor when combined with `@concurrent`:
+
+```swift
+// Contract — nonisolated protocol with @concurrent
+nonisolated protocol CharacterRepositoryContract: Sendable {
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+}
+
+// Implementation — nonisolated struct with @concurrent
+nonisolated struct CharacterRepository: CharacterRepositoryContract {
+    private let remoteDataSource: CharacterRemoteDataSourceContract
+    private let memoryDataSource: CharacterLocalDataSourceContract
+    private let mapper = CharacterMapper()
+    private let errorMapper = CharacterErrorMapper()
+    private let cacheExecutor = CachePolicyExecutor()
+
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        try await cacheExecutor.execute(
+            policy: cachePolicy,
+            fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
+            getFromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
+            saveToCache: { await memoryDataSource.saveCharacter($0) },
+            mapper: { mapper.map($0) },
+            errorMapper: { errorMapper.map(CharacterErrorMapperInput(error: $0, identifier: identifier)) }
+        )
+    }
+}
+
+// Domain model — nonisolated struct
+nonisolated struct Character: Equatable {
+    let id: Int
+    let name: String
+}
+
+// Domain error — nonisolated enum + nonisolated extensions
+nonisolated public enum CharacterError: Error, Equatable, LocalizedError {
+    case loadFailed(description: String = "")
+    case notFound(identifier: Int)
+}
+
+nonisolated extension CharacterError: CustomDebugStringConvertible { ... }
+```
+
+**Key rules:**
+- `nonisolated` on a type does NOT propagate to extensions — each extension needs its own `nonisolated`
+- Public nonisolated types crossing module boundaries need explicit `Sendable`
+- UseCases stay MainActor — they're the boundary between Presentation and Data
+
 ### `@concurrent` for off-MainActor execution
 
 > **Reference:** [SE-0461 — Async function isolation](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md) | [Improving app responsiveness](https://developer.apple.com/documentation/xcode/improving-app-responsiveness)
@@ -166,16 +216,50 @@ public protocol GraphQLClientContract: Sendable {
 
 **When to use:**
 - Transport clients (`HTTPClient`, `GraphQLClient`) — JSON decode + network I/O happen here
+- Repository contracts and implementations — ensures Data layer runs off MainActor
+- Remote DataSource contracts and implementations — defensive guarantee of background execution
 
 **When NOT to use:**
 - Actors — `@concurrent` cannot be used with actor isolation (SE-0461)
-- Trivial work — endpoint building, error mapping in DataSources (marginal benefit)
-- Repositories/UseCases/CachePolicyExecutor — trivial coordination work
+- UseCases — trivial coordination, stay MainActor
+- CachePolicyExecutor — nonisolated struct, delegates to @concurrent repos/datasources
 
 **Implementation notes:**
 - In modules with MainActor default: private helpers called from `@concurrent` methods must be `nonisolated`
 - `ChallengeNetworking` uses `nonisolated` default — helpers, types, and inits are nonisolated automatically
 - Types constructed inside `@concurrent` methods need `nonisolated` init (e.g., `Endpoint` — already nonisolated via module default)
+
+### Why both `nonisolated` and `@concurrent` are required
+
+They are complementary — each solves a different problem:
+
+| Annotation | Purpose | Without it |
+|------------|---------|------------|
+| `nonisolated` | Removes MainActor isolation from the type/method | `@concurrent` on a MainActor-isolated method is a compile error — contradicts "runs on MainActor" |
+| `@concurrent` | Executes on the cooperative thread pool | `nonisolated async` inherits the caller's executor (SE-0338) — runs on MainActor if called from MainActor |
+
+The flow with `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`:
+
+```
+MainActor (default)
+    → nonisolated         → inherits caller's executor (SE-0338)
+    → nonisolated + @concurrent → runs on thread pool (SE-0461)
+```
+
+**`nonisolated` is the prerequisite for `@concurrent`.** You cannot use `@concurrent` without first removing the actor isolation.
+
+**Types without async methods (DTOs, Mappers, Domain Models) also need `nonisolated`** because:
+- They are created/used **inside** `@concurrent` methods (repos, datasources)
+- A MainActor-isolated `init` cannot be called from a `@concurrent` context
+- Without `nonisolated`, passing them between contexts requires unnecessary actor hops
+
+```swift
+// Without nonisolated on CharacterMapper:
+@concurrent func getCharacter(...) async throws -> Character {
+    let dto = try await remoteDataSource.fetchCharacter(...)
+    return mapper.map(dto)  // mapper.map() is MainActor-isolated → compile error
+}
+```
 
 ---
 
@@ -250,17 +334,26 @@ actor DataStore {
 
 ## Common Patterns by Type
 
-| Type | MainActor? | Notes |
-|------|------------|-------|
-| View | Yes (default) | No annotation needed |
-| ViewModel | Yes (default) | No annotation needed |
-| UseCase | Yes (default) | No annotation needed |
-| Repository | Yes (default) | No annotation needed |
-| RemoteDataSource | Yes (default) | Struct, no annotation needed |
+| Type | Isolation | Notes |
+|------|-----------|-------|
+| View | MainActor (default) | No annotation needed |
+| ViewModel | MainActor (default) | No annotation needed |
+| UseCase | MainActor (default) | No annotation needed |
+| Container | MainActor (default) | No annotation needed |
+| Repository contract | `nonisolated protocol` | `@concurrent` on methods, explicit `Sendable` |
+| Repository impl | `nonisolated struct` | `@concurrent` on methods |
+| RemoteDataSource contract | `nonisolated protocol` | `@concurrent` on methods, explicit `Sendable` |
+| RemoteDataSource impl | `nonisolated struct` | `@concurrent` on methods |
+| DTO | `nonisolated struct` | Pure data, `Decodable` + `Equatable` |
+| Mapper | `nonisolated struct` | Stateless, `MapperContract` |
+| Domain Model | `nonisolated struct` | Pure data with behavior |
+| Domain Error | `nonisolated enum` | `nonisolated` on extensions too |
+| CachePolicy | `nonisolated enum` | Shared across features |
+| CachePolicyExecutor | `nonisolated struct: Sendable` | `sending` closures |
 | HTTPClient / GraphQLClient | nonisolated (module default) | `@concurrent` on public methods |
 | Endpoint / HTTPMethod | nonisolated (module default) | Pure data types, keep explicit `Sendable` for cross-module use |
 | GraphQLResponse | nonisolated (module default) | Pure data envelope |
-| MemoryDataSource | No (actor) | Use `actor` keyword |
+| MemoryDataSource | actor | Use `actor` keyword |
 | URLProtocol subclass | nonisolated | Framework requirement |
 | XCTestCase subclass | nonisolated | Framework requirement |
 
@@ -395,9 +488,12 @@ This is safe in practice because the actor serializes all calls to the mock. Tes
 - [ ] Async functions use `async throws` (not completion handlers)
 - [ ] Actors are used for shared mutable state
 - [ ] No `DispatchQueue` usage
-- [ ] No explicit `Sendable` conformance (it's inferred) — exception: public types crossing module boundaries (e.g., `Endpoint`, `HTTPMethod`, `GraphQLResponseError`) keep explicit `Sendable` because inference doesn't cross modules
+- [ ] No explicit `Sendable` conformance (it's inferred) — exception: public nonisolated types crossing module boundaries keep explicit `Sendable` because inference doesn't cross modules
 - [ ] No explicit `@MainActor` on ViewModels/Views (it's default)
+- [ ] Data/Domain layer types use `nonisolated` keyword (DTOs, Mappers, Models, Errors, Repos, Remote DS)
+- [ ] Repository and Remote DataSource contract methods use `@concurrent`
+- [ ] `nonisolated` extensions have their own `nonisolated` keyword (not inherited from type)
+- [ ] `CachePolicyExecutor` closures use `sending` modifier
 - [ ] Actor methods with multiple `await` calls reviewed for reentrancy risks
 - [ ] Stateless wrappers around thread-safe APIs use `: Sendable` + `nonisolated` (not `: Actor`)
 - [ ] Transport client methods use `@concurrent` for off-MainActor execution
-- [ ] Pure data types used in `@concurrent` contexts are `nonisolated struct` (or nonisolated by module default in ChallengeNetworking)

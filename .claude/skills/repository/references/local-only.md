@@ -9,7 +9,7 @@ Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{A
 ## Implementation
 
 ```swift
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
     private let memoryDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
 
@@ -47,7 +47,7 @@ import Foundation
 
 @testable import {AppName}{Feature}
 
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
     var getResult: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
     private(set) var get{Name}CallCount = 0
     private(set) var lastRequestedIdentifier: Int?

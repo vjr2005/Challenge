@@ -2,12 +2,12 @@ import ChallengeCore
 import ChallengeNetworking
 import Foundation
 
-struct EpisodeErrorMapperInput {
+nonisolated struct EpisodeErrorMapperInput {
 	let error: any Error
 	let characterIdentifier: Int
 }
 
-struct EpisodeErrorMapper: MapperContract {
+nonisolated struct EpisodeErrorMapper: MapperContract {
 	func map(_ input: EpisodeErrorMapperInput) -> EpisodeError {
 		guard let apiError = input.error as? APIError else {
 			return .loadFailed(description: String(describing: input.error))

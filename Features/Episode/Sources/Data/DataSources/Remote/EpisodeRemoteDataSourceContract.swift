@@ -1,5 +1,5 @@
 import Foundation
 
-protocol EpisodeRemoteDataSourceContract: Sendable {
-	func fetchEpisodes(characterIdentifier: Int) async throws -> EpisodeCharacterWithEpisodesDTO
+nonisolated protocol EpisodeRemoteDataSourceContract: Sendable {
+	@concurrent func fetchEpisodes(characterIdentifier: Int) async throws -> EpisodeCharacterWithEpisodesDTO
 }

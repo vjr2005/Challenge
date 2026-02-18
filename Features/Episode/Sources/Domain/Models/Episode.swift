@@ -1,6 +1,6 @@
 import Foundation
 
-struct Episode: Equatable {
+nonisolated struct Episode: Equatable {
 	let id: Int
 	let name: String
 	let airDate: String

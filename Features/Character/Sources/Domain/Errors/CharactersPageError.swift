@@ -2,7 +2,7 @@ import ChallengeResources
 import Foundation
 
 /// Errors that can occur when loading paginated character lists.
-public enum CharactersPageError: Error, Equatable, LocalizedError {
+nonisolated public enum CharactersPageError: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case invalidPage(page: Int)
 
@@ -27,7 +27,7 @@ public enum CharactersPageError: Error, Equatable, LocalizedError {
 	}
 }
 
-extension CharactersPageError: CustomDebugStringConvertible {
+nonisolated extension CharactersPageError: CustomDebugStringConvertible {
 	public var debugDescription: String {
 		switch self {
 		case .loadFailed(let description):

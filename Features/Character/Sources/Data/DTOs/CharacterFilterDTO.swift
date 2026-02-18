@@ -1,4 +1,4 @@
-struct CharacterFilterDTO: Equatable {
+nonisolated struct CharacterFilterDTO: Equatable {
 	var name: String?
 	var status: String?
 	var species: String?

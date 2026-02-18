@@ -59,9 +59,11 @@ public extension DSAsyncImage where Content == DSAsyncImageDefaultContentView {
 
 // MARK: - TaskTrigger
 
+// Properties are read by synthesized Equatable (used as .task(id:) trigger),
+// but Periphery cannot detect usage through synthesized conformances.
 private struct TaskTrigger: Equatable {
-	let url: URL?
-	let refreshID: UUID?
+	let url: URL? // periphery:ignore
+	let refreshID: UUID? // periphery:ignore
 }
 
 // MARK: - Private

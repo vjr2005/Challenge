@@ -1,6 +1,6 @@
 import Foundation
 
-struct EpisodeCharacterWithEpisodesDTO: Decodable, Equatable {
+nonisolated struct EpisodeCharacterWithEpisodesDTO: Decodable, Equatable {
 	let id: String
 	let name: String
 	let image: String

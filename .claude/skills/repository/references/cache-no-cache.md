@@ -20,7 +20,7 @@ Always fetch from remote → return (no cache read or write)
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
@@ -29,7 +29,7 @@ struct {Name}Repository: {Name}RepositoryContract {
         self.remoteDataSource = remoteDataSource
     }
 
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+    @concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
             return mapper.map(dto)
