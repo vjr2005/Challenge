@@ -1,6 +1,6 @@
 import Foundation
 
-public struct HTTPErrorMapper {
+public struct HTTPErrorMapper: Sendable {
 	public init() {}
 
 	public func map(_ input: HTTPError) -> APIError {

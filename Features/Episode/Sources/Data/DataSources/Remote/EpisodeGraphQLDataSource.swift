@@ -1,7 +1,7 @@
 import ChallengeNetworking
 import Foundation
 
-struct EpisodeGraphQLDataSource: EpisodeRemoteDataSourceContract {
+nonisolated struct EpisodeGraphQLDataSource: EpisodeRemoteDataSourceContract {
 	private let graphQLClient: any GraphQLClientContract
 	private let errorMapper = GraphQLErrorMapper()
 
@@ -9,7 +9,7 @@ struct EpisodeGraphQLDataSource: EpisodeRemoteDataSourceContract {
 		self.graphQLClient = graphQLClient
 	}
 
-	func fetchEpisodes(characterIdentifier: Int) async throws -> EpisodeCharacterWithEpisodesDTO {
+	@concurrent func fetchEpisodes(characterIdentifier: Int) async throws -> EpisodeCharacterWithEpisodesDTO {
 		let operation = GraphQLOperation(
 			query: Self.episodesByCharacterQuery,
 			variables: ["id": .string(String(characterIdentifier))],
@@ -23,7 +23,7 @@ struct EpisodeGraphQLDataSource: EpisodeRemoteDataSourceContract {
 
 // MARK: - Private
 
-private extension EpisodeGraphQLDataSource {
+nonisolated private extension EpisodeGraphQLDataSource {
 	func request<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
 		do {
 			return try await graphQLClient.execute(operation)
@@ -35,13 +35,13 @@ private extension EpisodeGraphQLDataSource {
 
 // MARK: - Response Wrappers
 
-private struct EpisodesByCharacterResponse: Decodable {
+nonisolated private struct EpisodesByCharacterResponse: Decodable {
 	let character: EpisodeCharacterWithEpisodesDTO
 }
 
 // MARK: - Queries
 
-extension EpisodeGraphQLDataSource {
+nonisolated extension EpisodeGraphQLDataSource {
 	static let episodesByCharacterQuery = """
 		query GetEpisodesByCharacter($id: ID!) {
 			character(id: $id) {

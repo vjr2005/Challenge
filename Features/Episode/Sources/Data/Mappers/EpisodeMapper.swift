@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct EpisodeMapper: MapperContract {
+nonisolated struct EpisodeMapper: MapperContract {
 	private let characterMapper = EpisodeCharacterMapper()
 
 	func map(_ input: EpisodeDTO) -> Episode {

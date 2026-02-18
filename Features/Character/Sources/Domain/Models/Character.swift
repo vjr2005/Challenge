@@ -1,6 +1,6 @@
 import Foundation
 
-struct Character: Equatable, Hashable {
+nonisolated struct Character: Equatable, Hashable {
 	let id: Int
 	let name: String
 	let status: CharacterStatus
@@ -11,7 +11,7 @@ struct Character: Equatable, Hashable {
 	let imageURL: URL?
 }
 
-enum CharacterStatus: String, CaseIterable {
+nonisolated enum CharacterStatus: String, CaseIterable {
 	case alive = "Alive"
 	case dead = "Dead"
 	case unknown
@@ -21,7 +21,7 @@ enum CharacterStatus: String, CaseIterable {
 	}
 }
 
-enum CharacterGender: String, CaseIterable {
+nonisolated enum CharacterGender: String, CaseIterable {
 	case female = "Female"
 	case male = "Male"
 	case genderless = "Genderless"

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Policy for controlling cache behavior when fetching data.
-public enum CachePolicy {
+nonisolated public enum CachePolicy {
 	/// Cache first, remote if not found. Default behavior.
 	case localFirst
 

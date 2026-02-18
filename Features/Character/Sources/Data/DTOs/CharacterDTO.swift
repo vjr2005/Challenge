@@ -1,6 +1,6 @@
 import Foundation
 
-struct CharacterDTO: Decodable, Equatable {
+nonisolated struct CharacterDTO: Decodable, Equatable {
 	let id: Int
 	let name: String
 	let status: String

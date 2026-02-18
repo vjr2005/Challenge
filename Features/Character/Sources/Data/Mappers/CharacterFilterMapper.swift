@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct CharacterFilterMapper: MapperContract {
+nonisolated struct CharacterFilterMapper: MapperContract {
 	func map(_ input: CharacterFilter) -> CharacterFilterDTO {
 		CharacterFilterDTO(
 			name: input.name,

@@ -22,8 +22,8 @@ Only proceed to implementation after the user confirms these details.
 
 | Type | Transport | Contract | Implementation | Error Mapper |
 |------|-----------|----------|----------------|-------------|
-| REST | HTTP | `: Sendable` | `struct` with `HTTPClientContract` | `HTTPErrorMapper` |
-| GraphQL | HTTP/GraphQL | `: Sendable` | `struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
+| REST | HTTP | `nonisolated protocol: Sendable` | `nonisolated struct` with `HTTPClientContract` | `HTTPErrorMapper` |
+| GraphQL | HTTP/GraphQL | `nonisolated protocol: Sendable` | `nonisolated struct` with `GraphQLClientContract` | `GraphQLErrorMapper` |
 | Memory | In-memory | `: Actor` | `actor` with dictionary storage | — |
 | UserDefaults | Local | `: Actor` | `actor` with `UserDefaults` | — |
 
@@ -67,12 +67,13 @@ Features/{Feature}/
 ### Contracts
 
 - Internal visibility, separate file from implementation
-- Remote contracts: `: Sendable`. Local contracts (Memory, UserDefaults): `: Actor`
+- Remote contracts: `nonisolated protocol: Sendable` with `@concurrent` on async methods. Local contracts (Memory, UserDefaults): `: Actor`
 - Transport-agnostic: same contract for REST or GraphQL
-- Transport clients (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` for off-MainActor execution — DataSource contracts do NOT need `@concurrent`
+- Remote DataSource implementations: `nonisolated struct` with `@concurrent` on async methods
+- Transport clients (`HTTPClientContract`, `GraphQLClientContract`) also use `@concurrent` for off-MainActor execution
 - `ChallengeNetworking` uses `nonisolated` default isolation — networking types don't need `nonisolated` annotations
 - **DataSources only work with DTOs** — parameters and return types must be DTOs, never domain objects
-- Remote: `async throws`. Local (Memory, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
+- Remote: `@concurrent async throws`. Local (Memory, UserDefaults): methods are actor-isolated (implicitly `async` from caller)
 
 > **Sendable vs Actor contracts:** Use `: Actor` when the DataSource has its own mutable state to protect (Memory, UserDefaults, `ImageDiskCacheContract`). Use `: Sendable` with `nonisolated` methods only for stateless wrappers around thread-safe APIs (e.g., `FileSystem` wrapping `FileManager`). See `/concurrency` skill "Actor Reentrancy" section for when and why to choose `: Sendable`.
 

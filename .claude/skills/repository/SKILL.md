@@ -165,7 +165,7 @@ Features/{Feature}/
 Domain models **should have behavior** intrinsic to the concept they represent (unlike DTOs, which are intentionally anemic):
 
 ```swift
-struct {Name}: Equatable {
+nonisolated struct {Name}: Equatable {
     let id: Int
     let name: String
     let items: [Item]
@@ -180,19 +180,19 @@ struct {Name}: Equatable {
 }
 ```
 
-**Rules:** `Domain/Models/`, internal visibility, `Equatable`, `let` properties, may include factory methods / computed properties / business rules. No persistence, presentation, or serialization logic.
+**Rules:** `Domain/Models/`, internal visibility, `nonisolated`, `Equatable`, `let` properties, may include factory methods / computed properties / business rules. No persistence, presentation, or serialization logic. Public types crossing module boundaries need explicit `Sendable`.
 
 ### Contract (Protocol)
 
 ```swift
 import ChallengeCore
 
-protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+nonisolated protocol {Name}RepositoryContract: Sendable {
+    @concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
 ```
 
-**Rules:** `Domain/Repositories/`, `Contract` suffix, internal, `Sendable`, return Domain models (not DTOs), typed throws. Include `cachePolicy: CachePolicy` for cached repos.
+**Rules:** `Domain/Repositories/`, `nonisolated protocol`, `Contract` suffix, internal, `Sendable`, `@concurrent` on methods, return Domain models (not DTOs), typed throws. Include `cachePolicy: CachePolicy` for cached repos.
 
 **Naming:** `get{Name}` (singular), `get{Name}sPage` (paginated list), `search{Name}sPage` (search). Separate contracts per ISP when concerns differ.
 
@@ -201,14 +201,14 @@ protocol {Name}RepositoryContract: Sendable {
 ```swift
 import ChallengeCore
 
-struct {Name}Mapper: MapperContract {
+nonisolated struct {Name}Mapper: MapperContract {
     func map(_ input: {Name}DTO) -> {Name} {
         {Name}(id: input.id, name: input.name)
     }
 }
 ```
 
-Pure stateless structs, `MapperContract` from `ChallengeCore`. Used as concrete types in repositories (not injected). Composable: mappers can delegate to other mappers.
+Pure stateless `nonisolated` structs, `MapperContract` from `ChallengeCore`. Used as concrete types in repositories (not injected). Composable: mappers can delegate to other mappers.
 
 ### Error Mapping
 
@@ -216,12 +216,12 @@ Pure stateless structs, `MapperContract` from `ChallengeCore`. Used as concrete 
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}ErrorMapperInput {
+nonisolated struct {Name}ErrorMapperInput {
     let error: any Error
     let identifier: Int
 }
 
-struct {Name}ErrorMapper: MapperContract {
+nonisolated struct {Name}ErrorMapper: MapperContract {
     func map(_ input: {Name}ErrorMapperInput) -> {Feature}Error {
         guard let apiError = input.error as? APIError else {
             return .loadFailed(description: String(describing: input.error))
@@ -239,7 +239,7 @@ struct {Name}ErrorMapper: MapperContract {
 ### Domain Error
 
 ```swift
-public enum {Feature}Error: Error, Equatable, LocalizedError {
+nonisolated public enum {Feature}Error: Error, Equatable, LocalizedError {
     case loadFailed(description: String = "")
     case notFound(identifier: Int)
 
@@ -261,7 +261,7 @@ public enum {Feature}Error: Error, Equatable, LocalizedError {
     }
 }
 
-extension {Feature}Error: CustomDebugStringConvertible {
+nonisolated extension {Feature}Error: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
         case .loadFailed(let description): description
@@ -280,14 +280,14 @@ extension {Feature}Error: CustomDebugStringConvertible {
 Defined in `ChallengeCore`, shared across features:
 
 ```swift
-public enum CachePolicy {
+nonisolated public enum CachePolicy {
     case localFirst   // Cache → Remote (if miss) → Save to cache
     case remoteFirst  // Remote → Save to cache → Cache (if error)
     case noCache      // Remote only, no cache interaction
 }
 ```
 
-`CachePolicyExecutor` is a stateless struct (same pattern as Mappers) that centralizes cache strategy execution. Repositories delegate to it via generic closures, including an `errorMapper` that maps transport errors to domain errors:
+`CachePolicyExecutor` is a `nonisolated public struct: Sendable` that centralizes cache strategy execution. All closure parameters use the `sending` modifier for region-based isolation. Repositories delegate to it via generic closures, including an `errorMapper` that maps transport errors to domain errors:
 
 ```swift
 private let cacheExecutor = CachePolicyExecutor()
@@ -303,6 +303,8 @@ try await cacheExecutor.execute(
 ```
 
 The `errorMapper` closure receives `any Error` (raw transport error) and returns the typed domain error. This eliminates the need for a separate `fetchFromRemote` wrapper method in each repository — error mapping is handled entirely by the executor.
+
+> **Note:** `nonisolated` on `CachePolicyExecutor` does NOT propagate to its `private extension` — the extension must also be marked `nonisolated`.
 
 Cache strategy logic is tested once in `CachePolicyExecutorTests` (15 tests). Repository tests only verify wiring, cache wiring, and error mapping.
 

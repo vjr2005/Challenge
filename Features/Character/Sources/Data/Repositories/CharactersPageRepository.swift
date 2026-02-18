@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct CharactersPageRepository: CharactersPageRepositoryContract {
+nonisolated struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterLocalDataSourceContract
 	private let mapper = CharactersPageMapper()
@@ -17,7 +17,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
+	@concurrent func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
 		try await cacheExecutor.execute(
 			policy: cachePolicy,
 			fetchFromRemote: { try await remoteDataSource.fetchCharacters(page: page, filter: .empty) },
@@ -28,7 +28,7 @@ struct CharactersPageRepository: CharactersPageRepositoryContract {
 		)
 	}
 
-	func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
+	@concurrent func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
 		do {
 			let filterDTO = filterMapper.map(filter)
 			let response = try await remoteDataSource.fetchCharacters(page: page, filter: filterDTO)

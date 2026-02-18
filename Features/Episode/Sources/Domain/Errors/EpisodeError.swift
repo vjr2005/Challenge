@@ -1,7 +1,7 @@
 import ChallengeResources
 import Foundation
 
-public enum EpisodeError: Error, Equatable, LocalizedError {
+nonisolated public enum EpisodeError: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case notFound(identifier: Int)
 
@@ -26,7 +26,7 @@ public enum EpisodeError: Error, Equatable, LocalizedError {
 	}
 }
 
-extension EpisodeError: CustomDebugStringConvertible {
+nonisolated extension EpisodeError: CustomDebugStringConvertible {
 	public var debugDescription: String {
 		switch self {
 		case .loadFailed(let description):

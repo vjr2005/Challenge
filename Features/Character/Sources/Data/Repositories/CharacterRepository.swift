@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct CharacterRepository: CharacterRepositoryContract {
+nonisolated struct CharacterRepository: CharacterRepositoryContract {
 	private let remoteDataSource: CharacterRemoteDataSourceContract
 	private let memoryDataSource: CharacterLocalDataSourceContract
 	private let mapper = CharacterMapper()
@@ -16,7 +16,7 @@ struct CharacterRepository: CharacterRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+	@concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
 		try await cacheExecutor.execute(
 			policy: cachePolicy,
 			fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },

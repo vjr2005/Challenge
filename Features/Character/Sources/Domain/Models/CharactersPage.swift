@@ -1,6 +1,6 @@
 import Foundation
 
-struct CharactersPage: Equatable {
+nonisolated struct CharactersPage: Equatable {
 	let characters: [Character]
 	let currentPage: Int
 	let totalPages: Int

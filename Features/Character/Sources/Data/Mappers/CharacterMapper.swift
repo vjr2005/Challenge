@@ -1,7 +1,7 @@
 import ChallengeCore
 import Foundation
 
-struct CharacterMapper: MapperContract {
+nonisolated struct CharacterMapper: MapperContract {
 	private let locationMapper = LocationMapper()
 
 	func map(_ input: CharacterDTO) -> Character {

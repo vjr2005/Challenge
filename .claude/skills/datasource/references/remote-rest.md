@@ -7,7 +7,7 @@ Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{n
 ### {Name}DTO.swift — `Sources/Data/DTOs/`
 
 ```swift
-struct {Name}DTO: Decodable, Equatable {
+nonisolated struct {Name}DTO: Decodable, Equatable {
 	let id: Int
 	let name: String
 	// Add fields matching JSON response
@@ -17,12 +17,12 @@ struct {Name}DTO: Decodable, Equatable {
 For paginated responses, create a wrapper:
 
 ```swift
-struct {Name}sResponseDTO: Decodable, Equatable {
+nonisolated struct {Name}sResponseDTO: Decodable, Equatable {
 	let info: PaginationInfoDTO
 	let results: [{Name}DTO]
 }
 
-struct PaginationInfoDTO: Decodable, Equatable {
+nonisolated struct PaginationInfoDTO: Decodable, Equatable {
 	let count: Int
 	let pages: Int
 	let next: String?
@@ -33,8 +33,8 @@ struct PaginationInfoDTO: Decodable, Equatable {
 ### {Name}RemoteDataSourceContract.swift — `Sources/Data/DataSources/Remote/`
 
 ```swift
-protocol {Name}RemoteDataSourceContract: Sendable {
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO
+nonisolated protocol {Name}RemoteDataSourceContract: Sendable {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO
 }
 ```
 
@@ -44,7 +44,7 @@ protocol {Name}RemoteDataSourceContract: Sendable {
 import ChallengeNetworking
 import Foundation
 
-struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
+nonisolated struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
 	private let httpClient: any HTTPClientContract
 	private let errorMapper = HTTPErrorMapper()
 
@@ -52,7 +52,7 @@ struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
 		self.httpClient = httpClient
 	}
 
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
 		let endpoint = Endpoint(path: "{endpoint}/\(identifier)")
 		return try await request(endpoint)
 	}
@@ -60,7 +60,7 @@ struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
 
 // MARK: - Private
 
-private extension {Name}RESTDataSource {
+nonisolated private extension {Name}RESTDataSource {
 	func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		do {
 			return try await httpClient.request(endpoint)
@@ -71,12 +71,12 @@ private extension {Name}RESTDataSource {
 }
 ```
 
-> **Note:** `@concurrent` is on `HTTPClientContract.request()`, NOT on DataSource methods. The transport client handles off-MainActor execution (JSON decode + network I/O). DataSources only do trivial work (endpoint building, error mapping). `ChallengeNetworking` uses `nonisolated` default isolation — `Endpoint`, `HTTPMethod`, and other networking types don't need `nonisolated` annotations.
+> **Note:** Both the contract and implementation use `nonisolated` + `@concurrent`. `@concurrent` guarantees execution on the cooperative thread pool (not MainActor). Extensions must have their own `nonisolated` keyword — it doesn't propagate from the type. `ChallengeNetworking` uses `nonisolated` default isolation — `Endpoint`, `HTTPMethod`, and other networking types don't need `nonisolated` annotations.
 
 For endpoints with query parameters:
 
 ```swift
-func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
+@concurrent func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 	var queryItems = [URLQueryItem(name: "page", value: String(page))]
 	if let name = filter.name, !name.isEmpty {
 		queryItems.append(URLQueryItem(name: "name", value: name))
@@ -93,12 +93,12 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
+nonisolated final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
 	var result: Result<{Name}DTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetchCallCount = 0
 	private(set) var lastFetchedIdentifier: Int?
 
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
 		fetchCallCount += 1
 		lastFetchedIdentifier = identifier
 		return try result.get()

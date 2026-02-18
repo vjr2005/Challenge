@@ -13,8 +13,8 @@ Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{A
 ```swift
 import ChallengeCore
 
-protocol {Name}RepositoryContract: Sendable {
-    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+nonisolated protocol {Name}RepositoryContract: Sendable {
+    @concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
 ```
 
@@ -24,7 +24,7 @@ protocol {Name}RepositoryContract: Sendable {
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
@@ -39,7 +39,7 @@ struct {Name}Repository: {Name}RepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+    @concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
         try await cacheExecutor.execute(
             policy: cachePolicy,
             fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
@@ -60,13 +60,13 @@ import Foundation
 
 @testable import {AppName}{Feature}
 
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
     var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
     private(set) var get{Name}CallCount = 0
     private(set) var lastRequestedIdentifier: Int?
     private(set) var lastCachePolicy: CachePolicy?
 
-    func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+    @concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
         get{Name}CallCount += 1
         lastRequestedIdentifier = identifier
         lastCachePolicy = cachePolicy

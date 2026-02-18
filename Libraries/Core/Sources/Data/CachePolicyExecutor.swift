@@ -5,7 +5,7 @@ import Foundation
 /// Follows the same pattern as `MapperContract` implementations: a stateless struct
 /// that encapsulates a single operation. Repositories inject this executor and delegate
 /// cache strategy logic to it.
-public struct CachePolicyExecutor {
+nonisolated public struct CachePolicyExecutor: Sendable {
 	public init() {}
 
 	/// Executes a data fetch using the given cache policy.
@@ -20,11 +20,11 @@ public struct CachePolicyExecutor {
 	/// - Returns: The domain model produced by the mapper.
 	public func execute<DTO, Domain, Failure: Error>(
 		policy: CachePolicy,
-		fetchFromRemote: () async throws -> DTO,
-		getFromCache: () async -> DTO?,
-		saveToCache: (DTO) async -> Void,
-		mapper: (DTO) -> Domain,
-		errorMapper: (any Error) -> Failure
+		fetchFromRemote: sending () async throws -> DTO,
+		getFromCache: sending () async -> DTO?,
+		saveToCache: sending (DTO) async -> Void,
+		mapper: sending (DTO) -> Domain,
+		errorMapper: sending (any Error) -> Failure
 	) async throws(Failure) -> Domain {
 		switch policy {
 		case .localFirst:
@@ -55,13 +55,13 @@ public struct CachePolicyExecutor {
 
 // MARK: - Cache Strategies
 
-private extension CachePolicyExecutor {
+nonisolated private extension CachePolicyExecutor {
 	func executeLocalFirst<DTO, Domain, Failure: Error>(
-		fetchFromRemote: () async throws -> DTO,
-		getFromCache: () async -> DTO?,
-		saveToCache: (DTO) async -> Void,
-		mapper: (DTO) -> Domain,
-		errorMapper: (any Error) -> Failure
+		fetchFromRemote: sending () async throws -> DTO,
+		getFromCache: sending () async -> DTO?,
+		saveToCache: sending (DTO) async -> Void,
+		mapper: sending (DTO) -> Domain,
+		errorMapper: sending (any Error) -> Failure
 	) async throws(Failure) -> Domain {
 		if let cached = await getFromCache() {
 			return mapper(cached)
@@ -76,11 +76,11 @@ private extension CachePolicyExecutor {
 	}
 
 	func executeRemoteFirst<DTO, Domain, Failure: Error>(
-		fetchFromRemote: () async throws -> DTO,
-		getFromCache: () async -> DTO?,
-		saveToCache: (DTO) async -> Void,
-		mapper: (DTO) -> Domain,
-		errorMapper: (any Error) -> Failure
+		fetchFromRemote: sending () async throws -> DTO,
+		getFromCache: sending () async -> DTO?,
+		saveToCache: sending (DTO) async -> Void,
+		mapper: sending (DTO) -> Domain,
+		errorMapper: sending (any Error) -> Failure
 	) async throws(Failure) -> Domain {
 		do {
 			let dto = try await fetchFromRemote()
@@ -95,9 +95,9 @@ private extension CachePolicyExecutor {
 	}
 
 	func executeNoCache<DTO, Domain, Failure: Error>(
-		fetchFromRemote: () async throws -> DTO,
-		mapper: (DTO) -> Domain,
-		errorMapper: (any Error) -> Failure
+		fetchFromRemote: sending () async throws -> DTO,
+		mapper: sending (DTO) -> Domain,
+		errorMapper: sending (any Error) -> Failure
 	) async throws(Failure) -> Domain {
 		do {
 			let dto = try await fetchFromRemote()

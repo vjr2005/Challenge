@@ -12,7 +12,7 @@ Placeholders: `{Name}` (PascalCase entity), `{Feature}` (PascalCase module), `{A
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
@@ -21,7 +21,7 @@ struct {Name}Repository: {Name}RepositoryContract {
         self.remoteDataSource = remoteDataSource
     }
 
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+    @concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
         do {
             let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
             return mapper.map(dto)
@@ -40,12 +40,12 @@ import Foundation
 
 @testable import {AppName}{Feature}
 
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
     var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
     private(set) var get{Name}CallCount = 0
     private(set) var lastRequestedIdentifier: Int?
 
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+    @concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
         get{Name}CallCount += 1
         lastRequestedIdentifier = identifier
         return try result.get()

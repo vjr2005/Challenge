@@ -1,12 +1,12 @@
 import ChallengeCore
 import Foundation
 
-struct CharactersPageMapperInput {
+nonisolated struct CharactersPageMapperInput {
 	let response: CharactersResponseDTO
 	let currentPage: Int
 }
 
-struct CharactersPageMapper: MapperContract {
+nonisolated struct CharactersPageMapper: MapperContract {
 	private let characterMapper = CharacterMapper()
 
 	func map(_ input: CharactersPageMapperInput) -> CharactersPage {

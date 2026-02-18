@@ -1,7 +1,7 @@
 import ChallengeNetworking
 import Foundation
 
-struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
+nonisolated struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
 	private let httpClient: any HTTPClientContract
 	private let errorMapper = HTTPErrorMapper()
 
@@ -9,12 +9,12 @@ struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
 		self.httpClient = httpClient
 	}
 
-	func fetchCharacter(identifier: Int) async throws -> CharacterDTO {
+	@concurrent func fetchCharacter(identifier: Int) async throws -> CharacterDTO {
 		let endpoint = Endpoint(path: "/api/character/\(identifier)")
 		return try await request(endpoint)
 	}
 
-	func fetchCharacters(page: Int, filter: CharacterFilterDTO) async throws -> CharactersResponseDTO {
+	@concurrent func fetchCharacters(page: Int, filter: CharacterFilterDTO) async throws -> CharactersResponseDTO {
 		var queryItems = [URLQueryItem(name: "page", value: String(page))]
 		if let name = filter.name, !name.isEmpty {
 			queryItems.append(URLQueryItem(name: "name", value: name))
@@ -38,7 +38,7 @@ struct CharacterRESTDataSource: CharacterRemoteDataSourceContract {
 
 // MARK: - Private
 
-private extension CharacterRESTDataSource {
+nonisolated private extension CharacterRESTDataSource {
 	func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		do {
 			return try await httpClient.request(endpoint)

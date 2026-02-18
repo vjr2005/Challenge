@@ -21,7 +21,7 @@ Cache miss → fetch from remote → save to cache → return
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
     private let remoteDataSource: {Name}RemoteDataSourceContract
     private let memoryDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
@@ -36,7 +36,7 @@ struct {Name}Repository: {Name}RepositoryContract {
         self.memoryDataSource = memoryDataSource
     }
 
-    func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+    @concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
         try await cacheExecutor.execute(
             policy: .localFirst,
             fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },

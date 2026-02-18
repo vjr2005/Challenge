@@ -179,11 +179,11 @@ Disk-based image cache with TTL expiration and LRU eviction:
 
 ### Data
 
-Shared abstractions for the data layer:
+Shared abstractions for the data layer. All types in this section are `nonisolated` (opt out of MainActor default) since they are used from `@concurrent` repository methods:
 
-- **`MapperContract`** — Generic protocol for mapping between DTOs and domain models.
-- **`CachePolicy`** — Enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`.
-- **`CachePolicyExecutor`** — Stateless struct that executes data fetch operations using a `CachePolicy`. Repositories delegate cache strategy logic to this executor, eliminating duplicated cache implementations. Accepts generic closures for remote fetch, cache read/write, DTO-to-domain mapping, and error mapping (transport errors to domain errors).
+- **`MapperContract`** — `nonisolated` generic protocol for mapping between DTOs and domain models.
+- **`CachePolicy`** — `nonisolated` enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`.
+- **`CachePolicyExecutor`** — `nonisolated struct: Sendable` that executes data fetch operations using a `CachePolicy`. Repositories delegate cache strategy logic to this executor, eliminating duplicated cache implementations. Accepts generic `sending` closures for remote fetch, cache read/write, DTO-to-domain mapping, and error mapping (transport errors to domain errors).
 
 ### FeatureContract Protocol
 

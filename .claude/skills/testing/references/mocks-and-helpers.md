@@ -69,9 +69,37 @@ actor CharacterLocalDataSourceMock: CharacterLocalDataSourceContract {
 
 Tests use `await` for all mock property reads and setter calls.
 
+### Mock Pattern for Nonisolated Contracts with `@concurrent` Methods
+
+When mocking `nonisolated protocol: Sendable` with `@concurrent` methods (e.g., Repositories, Remote DataSources), use `nonisolated final class` + `@unchecked Sendable`:
+
+```swift
+// Contract — nonisolated protocol with @concurrent
+nonisolated protocol CharacterRepositoryContract: Sendable {
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+}
+
+// Mock — nonisolated final class (no nonisolated(unsafe) needed, no @MainActor init needed)
+nonisolated final class CharacterRepositoryMock: CharacterRepositoryContract, @unchecked Sendable {
+    var result: Result<Character, CharacterError> = .failure(.loadFailed())
+    private(set) var getCharacterCallCount = 0
+    private(set) var lastRequestedIdentifier: Int?
+    private(set) var lastCharacterCachePolicy: CachePolicy?
+
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        getCharacterCallCount += 1
+        lastRequestedIdentifier = identifier
+        lastCharacterCachePolicy = cachePolicy
+        return try result.get()
+    }
+}
+```
+
+**Why `nonisolated final class` is cleaner:** The `nonisolated` on the class opts all members out of MainActor, eliminating the need for `nonisolated(unsafe)` on each property and `@MainActor init()`. Properties and methods are nonisolated by default.
+
 ### Mock Pattern for Sendable Contracts with `nonisolated` Methods
 
-When mocking `: Sendable` protocols with `nonisolated` methods (e.g., FileSystem wrapping a thread-safe API), use `final class` + `@unchecked Sendable` + `nonisolated(unsafe)` properties + `nonisolated` methods:
+When mocking `: Sendable` protocols with explicit `nonisolated` methods (e.g., FileSystem wrapping a thread-safe API), use `final class` + `@unchecked Sendable` + `nonisolated(unsafe)` properties + `nonisolated` methods:
 
 ```swift
 // Contract — Sendable with nonisolated methods (NOT Actor)
@@ -108,7 +136,8 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 | Protocol type | Mock type | Properties | Methods | `await` in tests |
 |--------------|-----------|------------|---------|-----------------|
 | `: Actor` | `actor` | `private(set)` + setter methods | Actor-isolated | Yes, for all access |
-| `: Sendable` + `nonisolated` | `final class @unchecked Sendable` | `nonisolated(unsafe)` | `nonisolated` | No |
+| `nonisolated protocol` + `@concurrent` | `nonisolated final class @unchecked Sendable` | Direct `var`/`private(set)` | `@concurrent` | No |
+| `: Sendable` + `nonisolated` methods | `final class @unchecked Sendable` | `nonisolated(unsafe)` | `nonisolated` | No |
 
 ---
 

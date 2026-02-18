@@ -1,6 +1,6 @@
 import Foundation
 
-struct EpisodeDTO: Decodable, Equatable {
+nonisolated struct EpisodeDTO: Decodable, Equatable {
 	let id: String
 	let name: String
 	let airDate: String

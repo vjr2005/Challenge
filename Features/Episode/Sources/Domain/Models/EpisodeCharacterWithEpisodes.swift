@@ -1,6 +1,6 @@
 import Foundation
 
-struct EpisodeCharacterWithEpisodes: Equatable {
+nonisolated struct EpisodeCharacterWithEpisodes: Equatable {
 	let id: Int
 	let name: String
 	let imageURL: URL?
