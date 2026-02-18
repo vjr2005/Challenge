@@ -156,7 +156,7 @@ public protocol ImageLoaderContract: Sendable {
 
 #### CachedImageLoader
 
-Two-tier image loader with in-memory caching, disk caching, and deduplication of in-flight network requests. Depends on `ImageMemoryCacheContract` and `ImageDiskCacheContract` abstractions (Dependency Inversion), both injectable via the internal init for testing.
+Two-tier image loader with in-memory caching, disk caching, and deduplication of in-flight network requests. Depends on `ImageMemoryCacheContract` and `ImageDiskCacheContract` abstractions (Dependency Inversion), both injectable via the internal init for testing. The `URLSession` is injectable via the public convenience init (defaults to `.shared`).
 
 Lookup order: memory cache → disk cache → network. On network success, the image is stored in both caches.
 

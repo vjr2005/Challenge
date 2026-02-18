@@ -174,6 +174,19 @@ public enum CachePolicy {
 }
 ```
 
+### Why URLCache Is Disabled
+
+`URLSession`'s built-in `URLCache` is disabled globally (`urlCache = nil` on the session configuration). The app manages its own cache layer through `CachePolicyExecutor` + memory DataSources, which provides concrete advantages over URLCache:
+
+| Concern | App Cache | URLCache |
+|---------|-----------|----------|
+| **Who controls freshness** | Client (ViewModel decides via CachePolicy) | Server (HTTP cache headers) |
+| **Cache hit performance** | Serves decoded Swift objects — zero deserialization | Serves raw `Data` — requires JSON decoding on every hit |
+| **Image cache hits** | Serves decoded `UIImage` from memory | Serves raw bytes — requires `UIImage(data:)` on every hit |
+| **Request deduplication** | `ImageRequestCoordinator` deduplicates concurrent image downloads | No deduplication |
+
+Keeping both cache layers would create conflicts: a pull-to-refresh with `.remoteFirst` would bypass the app cache but `URLCache` would silently serve a stale response, preventing the request from reaching the network. Disabling URLCache ensures a single, predictable cache layer controlled by the app.
+
 ### DTO to Domain Mapping
 
 The repository transforms Data Transfer Objects (DTOs) into Domain Models, keeping the Domain layer clean:
