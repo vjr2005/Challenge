@@ -2,11 +2,11 @@ import ChallengeResources
 import Foundation
 
 /// Errors that can occur when working with character detail.
-nonisolated public enum CharacterError: Error, Equatable, LocalizedError {
+nonisolated enum CharacterError: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case notFound(identifier: Int)
 
-	public static func == (lhs: CharacterError, rhs: CharacterError) -> Bool {
+	static func == (lhs: CharacterError, rhs: CharacterError) -> Bool {
 		switch (lhs, rhs) {
 		case (.loadFailed, .loadFailed):
 			true
@@ -17,7 +17,7 @@ nonisolated public enum CharacterError: Error, Equatable, LocalizedError {
 		}
 	}
 
-	public var errorDescription: String? {
+	var errorDescription: String? {
 		switch self {
 		case .loadFailed:
 			"characterError.loadFailed".localized()
@@ -28,7 +28,7 @@ nonisolated public enum CharacterError: Error, Equatable, LocalizedError {
 }
 
 nonisolated extension CharacterError: CustomDebugStringConvertible {
-	public var debugDescription: String {
+	var debugDescription: String {
 		switch self {
 		case .loadFailed(let description):
 			description

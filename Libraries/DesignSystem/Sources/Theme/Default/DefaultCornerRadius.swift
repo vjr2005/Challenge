@@ -1,14 +1,12 @@
 import Foundation
 
 /// Default corner radius implementation matching the standard design system scale.
-public struct DefaultCornerRadius: DSCornerRadiusContract {
-	public init() {}
-
-	public var zero: CGFloat { 0 }
-	public var xs: CGFloat { 4 }
-	public var sm: CGFloat { 8 }
-	public var md: CGFloat { 12 }
-	public var lg: CGFloat { 16 }
-	public var xl: CGFloat { 20 }
-	public var full: CGFloat { 9999 }
+struct DefaultCornerRadius: DSCornerRadiusContract {
+	var zero: CGFloat { 0 }
+	var xs: CGFloat { 4 }
+	var sm: CGFloat { 8 }
+	var md: CGFloat { 12 }
+	var lg: CGFloat { 16 }
+	var xl: CGFloat { 20 }
+	var full: CGFloat { 9999 }
 }

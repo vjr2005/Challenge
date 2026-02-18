@@ -1,11 +1,11 @@
 import ChallengeResources
 import Foundation
 
-nonisolated public enum EpisodeError: Error, Equatable, LocalizedError {
+nonisolated enum EpisodeError: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case notFound(identifier: Int)
 
-	public static func == (lhs: EpisodeError, rhs: EpisodeError) -> Bool {
+	static func == (lhs: EpisodeError, rhs: EpisodeError) -> Bool {
 		switch (lhs, rhs) {
 		case (.loadFailed, .loadFailed):
 			true
@@ -16,7 +16,7 @@ nonisolated public enum EpisodeError: Error, Equatable, LocalizedError {
 		}
 	}
 
-	public var errorDescription: String? {
+	var errorDescription: String? {
 		switch self {
 		case .loadFailed:
 			"episodeError.loadFailed".localized()
@@ -27,7 +27,7 @@ nonisolated public enum EpisodeError: Error, Equatable, LocalizedError {
 }
 
 nonisolated extension EpisodeError: CustomDebugStringConvertible {
-	public var debugDescription: String {
+	var debugDescription: String {
 		switch self {
 		case .loadFailed(let description):
 			description

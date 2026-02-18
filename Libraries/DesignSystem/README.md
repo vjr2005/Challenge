@@ -129,23 +129,35 @@ struct MyView: View {
 
 ### Creating a Custom Theme
 
+The `Default*` implementations are internal to the module. To create a fully custom theme, implement all contracts:
+
 ```swift
 struct BrandColorPalette: DSColorPaletteContract {
     var accent: Color { .blue }
-    // ... implement all 18 color properties
+    // ... implement all color properties
 }
+
+struct BrandTypography: DSTypographyContract {
+    // ... implement all typography properties
+}
+
+// Implement DSSpacingContract, DSDimensionsContract,
+// DSBorderWidthContract, DSCornerRadiusContract,
+// DSOpacityContract, DSShadowContract
 
 let brandTheme = DSTheme(
     colors: BrandColorPalette(),
-    typography: DefaultTypography(),
-    spacing: DefaultSpacing(),
-    dimensions: DefaultDimensions(),
-    borderWidth: DefaultBorderWidth(),
-    cornerRadius: DefaultCornerRadius(),
-    opacity: DefaultOpacity(),
-    shadow: DefaultShadow()
+    typography: BrandTypography(),
+    spacing: BrandSpacing(),
+    dimensions: BrandDimensions(),
+    borderWidth: BrandBorderWidth(),
+    cornerRadius: BrandCornerRadius(),
+    opacity: BrandOpacity(),
+    shadow: BrandShadow()
 )
 ```
+
+For most cases, use the built-in default theme via `DSTheme.default`.
 
 ## Design Tokens
 

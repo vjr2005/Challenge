@@ -184,7 +184,7 @@ nonisolated struct Character: Equatable {
 }
 
 // Domain error — nonisolated enum + nonisolated extensions
-nonisolated public enum CharacterError: Error, Equatable, LocalizedError {
+nonisolated enum CharacterError: Error, Equatable, LocalizedError {
     case loadFailed(description: String = "")
     case notFound(identifier: Int)
 }
