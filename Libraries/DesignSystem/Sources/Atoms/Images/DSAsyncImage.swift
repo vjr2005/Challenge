@@ -4,6 +4,7 @@ import SwiftUI
 /// A view that asynchronously loads and displays an image with caching support.
 public struct DSAsyncImage<Content: View>: View {
 	private let url: URL?
+	private let refreshID: UUID?
 	private let content: (AsyncImagePhase) -> Content
 
 	@Environment(\.imageLoader) private var imageLoader
@@ -12,19 +13,23 @@ public struct DSAsyncImage<Content: View>: View {
 	/// Creates a cached async image view with phase-based content.
 	/// - Parameters:
 	///   - url: The URL of the image to load.
+	///   - refreshID: Optional identifier to force image reload. Change this value to re-fetch the image (e.g. after cache invalidation).
 	///   - content: A closure that takes the current async image phase and returns a view.
 	public init(
 		url: URL?,
+		refreshID: UUID? = nil,
 		@ViewBuilder content: @escaping (AsyncImagePhase) -> Content
 	) {
 		self.url = url
+		self.refreshID = refreshID
 		self.content = content
 	}
 
 	public var body: some View {
 		content(displayPhase)
 			.accessibilityHidden(true)
-			.task(id: url) {
+			.task(id: TaskTrigger(url: url, refreshID: refreshID)) {
+				phase = .empty
 				await loadImage()
 			}
 	}
@@ -36,18 +41,27 @@ public extension DSAsyncImage where Content == DSAsyncImageDefaultContentView {
 	/// Creates a cached async image view with default content.
 	/// - Parameters:
 	///   - url: The URL of the image to load.
+	///   - refreshID: Optional identifier to force image reload. Change this value to re-fetch the image (e.g. after cache invalidation).
 	///   - failureImage: The system image name displayed when loading fails. Defaults to `"photo"`.
 	///
 	/// Default behavior:
 	/// - **Success**: displays the image with `resizable()` and `scaledToFill()`
 	/// - **Empty**: displays a `ProgressView`
 	/// - **Failure**: displays a themed placeholder with the specified system image
-	init(url: URL?, failureImage: String = "photo") {
+	init(url: URL?, refreshID: UUID? = nil, failureImage: String = "photo") {
 		self.url = url
+		self.refreshID = refreshID
 		self.content = { phase in
 			DSAsyncImageDefaultContentView(phase: phase, failureImage: failureImage)
 		}
 	}
+}
+
+// MARK: - TaskTrigger
+
+private struct TaskTrigger: Equatable {
+	let url: URL?
+	let refreshID: UUID?
 }
 
 // MARK: - Private

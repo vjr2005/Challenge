@@ -4,6 +4,7 @@ import Foundation
 @Observable
 final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     private(set) var state: CharacterDetailViewState = .idle
+    private(set) var imageRefreshID = UUID()
 
     private let identifier: Int
     private let getCharacterUseCase: GetCharacterUseCaseContract
@@ -68,6 +69,7 @@ private extension CharacterDetailViewModel {
             let character = try await refreshCharacterUseCase.execute(identifier: identifier)
             if let imageURL = character.imageURL {
                 await imageLoader.removeCachedImage(for: imageURL)
+                imageRefreshID = UUID()
             }
             state = .loaded(character)
         } catch {

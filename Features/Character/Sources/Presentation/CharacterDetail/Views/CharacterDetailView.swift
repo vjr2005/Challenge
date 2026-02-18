@@ -85,7 +85,7 @@ private extension CharacterDetailView {
 	}
 
 	func characterImage(_ character: Character) -> some View {
-		DSAsyncImage(url: character.imageURL)
+		DSAsyncImage(url: character.imageURL, refreshID: viewModel.imageRefreshID)
 			.frame(width: theme.dimensions.xxxxl, height: theme.dimensions.xxxxl)
 			.clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius.xl))
 			.shadow(theme.shadow.medium)
@@ -234,6 +234,7 @@ private enum AccessibilityIdentifier {
 }
 private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {
 	var state: CharacterDetailViewState
+	var imageRefreshID = UUID()
 
 	init(state: CharacterDetailViewState) {
 		self.state = state

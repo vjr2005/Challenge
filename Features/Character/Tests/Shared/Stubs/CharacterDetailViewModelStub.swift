@@ -7,6 +7,7 @@ import Foundation
 @Observable
 final class CharacterDetailViewModelStub: CharacterDetailViewModelContract {
 	var state: CharacterDetailViewState
+	var imageRefreshID = UUID()
 
 	init(state: CharacterDetailViewState) {
 		self.state = state

@@ -224,6 +224,48 @@ struct CharacterDetailViewModelTests {
         #expect(imageLoaderMock.removeCachedImageCallCount == 0)
     }
 
+    // MARK: - Image Refresh ID
+
+    @Test("didPullToRefresh generates new imageRefreshID on success with image URL")
+    func didPullToRefreshGeneratesNewImageRefreshIDOnSuccess() async {
+        // Given
+        let imageURL = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")!
+        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: imageURL))
+        let initialRefreshID = sut.imageRefreshID
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(sut.imageRefreshID != initialRefreshID)
+    }
+
+    @Test("didPullToRefresh does not change imageRefreshID on failure")
+    func didPullToRefreshDoesNotChangeImageRefreshIDOnFailure() async {
+        // Given
+        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
+        let initialRefreshID = sut.imageRefreshID
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(sut.imageRefreshID == initialRefreshID)
+    }
+
+    @Test("didPullToRefresh does not change imageRefreshID when character has no image URL")
+    func didPullToRefreshDoesNotChangeImageRefreshIDWhenNoImageURL() async {
+        // Given
+        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: nil))
+        let initialRefreshID = sut.imageRefreshID
+
+        // When
+        await sut.didPullToRefresh()
+
+        // Then
+        #expect(sut.imageRefreshID == initialRefreshID)
+    }
+
     // MARK: - Tracking
 
     @Test("didAppear tracks screen viewed with identifier")
