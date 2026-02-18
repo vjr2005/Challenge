@@ -21,12 +21,12 @@ struct FileAttributes: Equatable {
 	}
 }
 
-protocol FileSystemContract: Sendable {
-	nonisolated func contents(at url: URL) throws -> Data
-	nonisolated func write(_ data: Data, to url: URL) throws
-	nonisolated func removeItem(at url: URL) throws
-	nonisolated func createDirectory(at url: URL) throws
-	nonisolated func contentsOfDirectory(at url: URL) throws -> [URL]
-	nonisolated func fileAttributes(at url: URL) throws -> FileAttributes
-	nonisolated func updateModificationDate(at url: URL) throws
+nonisolated protocol FileSystemContract: Sendable {
+	func contents(at url: URL) throws -> Data
+	func write(_ data: Data, to url: URL) throws
+	func removeItem(at url: URL) throws
+	func createDirectory(at url: URL) throws
+	func contentsOfDirectory(at url: URL) throws -> [URL]
+	func fileAttributes(at url: URL) throws -> FileAttributes
+	func updateModificationDate(at url: URL) throws
 }
