@@ -39,14 +39,14 @@ The project uses **Mocks** to isolate units under test. Mocks are located in:
 ### Example Mock
 
 ```swift
-final class CharactersPageRepositoryMock: CharactersPageRepositoryContract, @unchecked Sendable {
+nonisolated final class CharactersPageRepositoryMock: CharactersPageRepositoryContract, @unchecked Sendable {
     var charactersResult: Result<CharactersPage, CharactersPageError> = .failure(.loadFailed)
 
-    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
+    @concurrent func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
         try charactersResult.get()
     }
 
-    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
+    @concurrent func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage {
         try charactersResult.get()
     }
 }
@@ -131,7 +131,7 @@ A benchmark study found inter-target parallelization (simulator cloning) is **~4
 **Why inter-target parallelization is slower:**
 
 - **Unit + Snapshot Tests:** 12 test targets compete for CPU/GPU when running concurrently on a cloned simulator. Simulator cloning overhead, cold caches, and rendering contention nearly double the time.
-- **UI Tests:** Xcode distributes by class, using 4 clones. Booting each clone (~15s) costs more than it saves with only 8 tests.
+- **UI Tests:** Xcode distributes by class, using 4 clones. Booting each clone (~15s) costs more than it saves with only 5 tests.
 
 ### When to Re-evaluate Inter-target
 

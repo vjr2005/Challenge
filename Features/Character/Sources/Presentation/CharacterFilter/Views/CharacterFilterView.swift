@@ -1,3 +1,4 @@
+import ChallengeCore
 import ChallengeDesignSystem
 import ChallengeResources
 import SwiftUI
@@ -45,7 +46,7 @@ struct CharacterFilterView<ViewModel: CharacterFilterViewModelContract>: View {
                 .accessibilityIdentifier(AccessibilityIdentifier.resetButton)
             }
         }
-        .onAppear {
+        .onFirstAppear {
             viewModel.didAppear()
         }
     }

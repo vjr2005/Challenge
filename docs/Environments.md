@@ -83,11 +83,14 @@ extension AppEnvironment {
     public var rickAndMorty: API {
         let urlString: String = switch self {
         case .development:
-            "https://dev-api.example.com/api"
+            // TODO: replace by development url
+            "https://rickandmortyapi.com"
         case .staging:
-            "https://staging-api.example.com/api"
+            // TODO: replace by staging url
+            "https://rickandmortyapi.com"
         case .production:
-            "https://api.example.com/api"
+            // TODO: replace by production url
+            "https://rickandmortyapi.com"
         }
         guard let url = URL(string: urlString) else {
             preconditionFailure("Invalid API base URL: \(urlString)")

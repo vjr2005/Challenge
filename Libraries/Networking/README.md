@@ -17,6 +17,39 @@ All types are **nonisolated by default** — no `nonisolated` keyword needed on 
 
 Transport client methods (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` ([SE-0461](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md)) to guarantee execution on the generic executor (thread pool), keeping network I/O and JSON decoding off MainActor.
 
+## Structure
+
+```
+Networking/
+├── Sources/
+│   ├── API/
+│   │   └── APIError.swift
+│   ├── HTTP/
+│   │   ├── HTTPClientContract.swift
+│   │   ├── HTTPClient.swift
+│   │   ├── Endpoint.swift
+│   │   ├── HTTPMethod.swift
+│   │   ├── HTTPError.swift
+│   │   └── HTTPErrorMapper.swift
+│   └── GraphQL/
+│       ├── GraphQLClientContract.swift
+│       ├── GraphQLClient.swift
+│       ├── GraphQLOperation.swift
+│       ├── GraphQLVariable.swift
+│       ├── GraphQLError.swift
+│       ├── GraphQLErrorMapper.swift
+│       ├── GraphQLResponse.swift
+│       └── GraphQLResponseError.swift
+├── Mocks/
+│   ├── HTTP/
+│   │   └── HTTPClientMock.swift
+│   └── GraphQL/
+│       └── GraphQLClientMock.swift
+├── Tests/
+│   └── ...
+└── README.md
+```
+
 ## Components
 
 ### HTTP (REST)

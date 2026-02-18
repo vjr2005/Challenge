@@ -37,25 +37,25 @@ The Composition Root is the **single location** where the entire object graph is
 All dependencies are defined as **protocols** (named with `Contract` suffix). Concrete implementations are only known at the Composition Root.
 
 ```swift
-// Protocol definitions (Domain layer)
-protocol CharacterRepositoryContract: Sendable {
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+// Protocol definitions (Domain layer) — nonisolated + @concurrent for background execution
+nonisolated protocol CharacterRepositoryContract: Sendable {
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
 }
 
-protocol CharactersPageRepositoryContract: Sendable {
-    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
-    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
+nonisolated protocol CharactersPageRepositoryContract: Sendable {
+    @concurrent func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    @concurrent func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
 }
 
-// Concrete implementations (Data layer)
-struct CharacterRepository: CharacterRepositoryContract {
-    private let remoteDataSource: any CharacterRemoteDataSourceContract
-    private let memoryDataSource: any CharacterLocalDataSourceContract
+// Concrete implementations (Data layer) — nonisolated struct with @concurrent methods
+nonisolated struct CharacterRepository: CharacterRepositoryContract {
+    private let remoteDataSource: CharacterRemoteDataSourceContract
+    private let memoryDataSource: CharacterLocalDataSourceContract
 
     // Dependencies injected through initializer
     init(
-        remoteDataSource: any CharacterRemoteDataSourceContract,
-        memoryDataSource: any CharacterLocalDataSourceContract
+        remoteDataSource: CharacterRemoteDataSourceContract,
+        memoryDataSource: CharacterLocalDataSourceContract
     ) {
         self.remoteDataSource = remoteDataSource
         self.memoryDataSource = memoryDataSource
@@ -96,9 +96,11 @@ public struct AppContainer {
         tracker: (any TrackerContract)? = nil,
         imageLoader: (any ImageLoaderContract)? = nil
     ) {
-        self.imageLoader = imageLoader ?? CachedImageLoader()
+        let session = Self.makeURLSession()
+        self.imageLoader = imageLoader ?? CachedImageLoader(session: session)
         self.httpClient = httpClient ?? HTTPClient(
-            baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL
+            baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL,
+            session: session
         )
         self.tracker = tracker ?? Self.makeTracker()
 
@@ -124,13 +126,15 @@ Each feature has its own container that manages its internal dependencies:
 ```swift
 public final class CharacterContainer {
     private let tracker: any TrackerContract
+    private let imageLoader: any ImageLoaderContract
 
     private let characterRepository: any CharacterRepositoryContract
     private let recentSearchesRepository: any RecentSearchesRepositoryContract
     private let charactersPageRepository: any CharactersPageRepositoryContract
 
-    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract) {
+    public init(httpClient: any HTTPClientContract, tracker: any TrackerContract, imageLoader: any ImageLoaderContract) {
         self.tracker = tracker
+        self.imageLoader = imageLoader
         let remoteDataSource = CharacterRESTDataSource(httpClient: httpClient)
         let memoryDataSource = CharacterMemoryDataSource()
         let recentSearchesDataSource = RecentSearchesUserDefaultsDataSource()

@@ -221,7 +221,6 @@ private enum AccessibilityIdentifier {
 	}
 }
 
-@Observable
 private final class CharacterEpisodesViewModelPreviewStub: CharacterEpisodesViewModelContract {
 	var state: CharacterEpisodesViewState
 

@@ -92,7 +92,7 @@ All protocol methods describe the **UI event**, using the `did` prefix:
 
 ### ViewState `==` Operator
 
-All ViewState enums implement `==` **on the enum itself** for testability (enables direct state comparison in tests). Error cases compare via `localizedDescription`.
+ViewState enums do NOT conform to `Equatable` directly. Instead, `==` is implemented in **test-only `@retroactive Equatable` extensions** (in `Tests/Shared/Extensions/{Screen}ViewState+Equatable.swift`) for testability. This keeps production code clean while enabling direct state comparison in tests.
 
 ---
 
@@ -221,22 +221,28 @@ Single item load with optional pull-to-refresh. Uses `@Observable` with `private
 Create `Sources/Presentation/{Screen}/ViewModels/{Screen}ViewState.swift`:
 
 ```swift
-import Foundation
-
 enum {Screen}ViewState {
     case idle
     case loading
     case loaded({Name})
     case error({Feature}Error)
+}
+```
 
-    static func == (lhs: Self, rhs: Self) -> Bool {
+Create a test-only Equatable extension in `Tests/Shared/Extensions/{Screen}ViewState+Equatable.swift`:
+
+```swift
+@testable import {AppName}{Feature}
+
+extension {Screen}ViewState: @retroactive Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle), (.loading, .loading):
             true
         case let (.loaded(lhsData), .loaded(rhsData)):
             lhsData == rhsData
         case let (.error(lhsError), .error(rhsError)):
-            lhsError.localizedDescription == rhsError.localizedDescription
+            lhsError == rhsError
         default:
             false
         }
@@ -513,23 +519,29 @@ List load with empty/error states and optional pull-to-refresh. Uses `@Observabl
 Create `Sources/Presentation/{Screen}/ViewModels/{Screen}ViewState.swift`:
 
 ```swift
-import Foundation
-
 enum {Screen}ViewState {
     case idle
     case loading
     case loaded([{Name}])
     case empty
     case error({Feature}Error)
+}
+```
 
-    static func == (lhs: Self, rhs: Self) -> Bool {
+Create a test-only Equatable extension in `Tests/Shared/Extensions/{Screen}ViewState+Equatable.swift`:
+
+```swift
+@testable import {AppName}{Feature}
+
+extension {Screen}ViewState: @retroactive Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle), (.loading, .loading), (.empty, .empty):
             true
         case let (.loaded(lhsData), .loaded(rhsData)):
             lhsData == rhsData
         case let (.error(lhsError), .error(rhsError)):
-            lhsError.localizedDescription == rhsError.localizedDescription
+            lhsError == rhsError
         default:
             false
         }
@@ -908,16 +920,15 @@ private extension {Screen}ViewModel {
 
     func searchQueryDidChange() {
         searchTask?.cancel()
-        searchTask = Task { @MainActor in
+        searchTask = Task { [weak self, debounceInterval] in
             try? await Task.sleep(for: debounceInterval)
-            if !Task.isCancelled {
-                if let query = normalizedQuery {
-                    tracker.trackSearchPerformed(query: query)
-                    await saveRecentSearchUseCase.execute(query: query)
-                    await loadRecentSearches()
-                }
-                await fetchResults()
+            guard let self, !Task.isCancelled else { return }
+            if let query = normalizedQuery {
+                tracker.trackSearchPerformed(query: query)
+                await saveRecentSearchUseCase.execute(query: query)
+                await loadRecentSearches()
             }
+            await fetchResults()
         }
     }
 
@@ -1269,7 +1280,7 @@ struct {Screen}ViewModelTests {
 ## Checklist
 
 - [ ] Create ViewModelContract (`AnyObject` for stateful, plain protocol for stateless)
-- [ ] Create ViewState enum with `==` operator (stateful only)
+- [ ] Create ViewState enum (stateful only) with `@retroactive Equatable` test extension
 - [ ] Create ViewModel (`@Observable` for stateful, plain `final class` for stateless)
 - [ ] Inject UseCases via protocol (contract)
 - [ ] Inject NavigatorContract for navigation

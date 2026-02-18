@@ -169,7 +169,7 @@ Module/Tests/
 | Unit tests | Use Swift Testing (`@Test("description")`, `#expect`) |
 | Snapshot tests | Import `ChallengeSnapshotTestKit` |
 | UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
-| **Previews** | All Views must have `#Preview` blocks (commented out with `/* */`) covering every visual state except `idle`. Preview stubs wrapped in `#if DEBUG`. Code must compile and stay in sync with the View. |
+| **Previews** | All Views must have `#Preview` blocks (commented out with `/* */`) covering every visual state. Preview stubs wrapped in `#if DEBUG`. Code must compile and stay in sync with the View. |
 
 | Simulator | Tests run on **iPhone 17 Pro** simulator. The simulator language must be set to **English** to prevent snapshot test failures |
 

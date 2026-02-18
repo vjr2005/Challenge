@@ -90,7 +90,7 @@ Domain models **should have behavior** — unlike DTOs (which are intentionally 
 Create `Sources/Domain/Models/{Name}.swift`:
 
 ```swift
-struct {Name}: Equatable {
+nonisolated struct {Name}: Equatable {
 	let id: Int
 	let name: String
 	let items: [Item]
@@ -115,7 +115,7 @@ Create `Sources/Domain/Errors/{Feature}Error.swift`:
 import ChallengeResources
 import Foundation
 
-public enum {Feature}Error: Error, Equatable, LocalizedError {
+nonisolated public enum {Feature}Error: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case notFound(identifier: Int)
 
@@ -137,7 +137,7 @@ public enum {Feature}Error: Error, Equatable, LocalizedError {
 	}
 }
 
-extension {Feature}Error: CustomDebugStringConvertible {
+nonisolated extension {Feature}Error: CustomDebugStringConvertible {
 	public var debugDescription: String {
 		switch self {
 		case .loadFailed(let description): description
@@ -156,7 +156,7 @@ Create `Sources/Data/Mappers/{Name}Mapper.swift`:
 ```swift
 import ChallengeCore
 
-struct {Name}Mapper: MapperContract {
+nonisolated struct {Name}Mapper: MapperContract {
 	func map(_ input: {Name}DTO) -> {Name} {
 		{Name}(id: input.id, name: input.name)
 	}
@@ -173,12 +173,12 @@ Create `Sources/Data/Mappers/{Name}ErrorMapper.swift`:
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}ErrorMapperInput {
+nonisolated struct {Name}ErrorMapperInput {
 	let error: any Error
 	let identifier: Int
 }
 
-struct {Name}ErrorMapper: MapperContract {
+nonisolated struct {Name}ErrorMapper: MapperContract {
 	func map(_ input: {Name}ErrorMapperInput) -> {Feature}Error {
 		guard let apiError = input.error as? APIError else {
 			return .loadFailed(description: String(describing: input.error))
@@ -202,12 +202,14 @@ struct {Name}ErrorMapper: MapperContract {
 Create `Sources/Domain/Repositories/{Name}RepositoryContract.swift`:
 
 ```swift
-protocol {Name}RepositoryContract: Sendable {
-	func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name}
+import ChallengeCore
+
+nonisolated protocol {Name}RepositoryContract: Sendable {
+	@concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name}
 }
 ```
 
-**Naming:** `get{Name}` (singular), `get{Name}sPage` (paginated list), `search{Name}sPage` (search). Separate contracts per ISP when concerns differ.
+**Naming:** `get{Name}` (singular), `get{Name}sPage` (paginated list), `search{Name}sPage` (search). Separate contracts per ISP when concerns differ. `nonisolated` removes MainActor isolation; `@concurrent` ensures execution on the thread pool.
 
 ### Implementation
 
@@ -217,7 +219,7 @@ Create `Sources/Data/Repositories/{Name}Repository.swift`:
 import ChallengeCore
 import ChallengeNetworking
 
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
 	private let remoteDataSource: {Name}RemoteDataSourceContract
 	private let mapper = {Name}Mapper()
 	private let errorMapper = {Name}ErrorMapper()
@@ -226,7 +228,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 		self.remoteDataSource = remoteDataSource
 	}
 
-	func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+	@concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
 		do {
 			let dto = try await remoteDataSource.fetch{Name}(identifier: identifier)
 			return mapper.map(dto)
@@ -247,12 +249,12 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
 	var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
 	private(set) var getCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
 
-	func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+	@concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
 		getCallCount += 1
 		lastRequestedIdentifier = identifier
 		return try result.get()
@@ -339,13 +341,13 @@ private enum GenericTestError: Error {
 
 ### Checklist
 
-- [ ] Domain model (`Equatable`, `let` properties, in `Domain/Models/`)
-- [ ] Domain error enum in `Domain/Errors/` (typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
-- [ ] Contract in `Domain/Repositories/` (typed throws, `Sendable`)
-- [ ] Mapper in `Data/Mappers/` (`MapperContract`)
-- [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
-- [ ] Implementation in `Data/Repositories/` (injects RemoteDataSource, uses Mapper + Error Mapper)
-- [ ] Mock in `Tests/Shared/Mocks/`
+- [ ] Domain model (`nonisolated struct`, `Equatable`, `let` properties, in `Domain/Models/`)
+- [ ] Domain error enum in `Domain/Errors/` (`nonisolated public enum`, typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
+- [ ] Contract in `Domain/Repositories/` (`nonisolated protocol: Sendable`, `@concurrent` on async methods)
+- [ ] Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
+- [ ] Error Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
+- [ ] Implementation in `Data/Repositories/` (`nonisolated struct`, `@concurrent` methods, injects RemoteDataSource, uses Mapper + Error Mapper)
+- [ ] Mock in `Tests/Shared/Mocks/` (`nonisolated final class`, `@concurrent` methods)
 - [ ] Mapper tests, Error Mapper tests, Repository tests
 - [ ] Localized strings for error messages
 
@@ -358,9 +360,11 @@ private enum GenericTestError: Error {
 Create `Sources/Domain/Repositories/{Name}RepositoryContract.swift`:
 
 ```swift
-protocol {Name}RepositoryContract: Sendable {
-	func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name}
-	func save{Name}(_ model: {Name}) async
+import ChallengeCore
+
+nonisolated protocol {Name}RepositoryContract: Sendable {
+	@concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name}
+	@concurrent func save{Name}(_ model: {Name}) async
 }
 ```
 
@@ -369,7 +373,7 @@ protocol {Name}RepositoryContract: Sendable {
 Create `Sources/Data/Repositories/{Name}Repository.swift`:
 
 ```swift
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
 	private let localDataSource: {Name}LocalDataSourceContract
 	private let mapper = {Name}Mapper()
 
@@ -377,14 +381,14 @@ struct {Name}Repository: {Name}RepositoryContract {
 		self.localDataSource = localDataSource
 	}
 
-	func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+	@concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
 		guard let dto = await localDataSource.get{Name}(identifier: identifier) else {
 			throw .notFound(identifier: identifier)
 		}
 		return mapper.map(dto)
 	}
 
-	func save{Name}(_ model: {Name}) async {
+	@concurrent func save{Name}(_ model: {Name}) async {
 		await localDataSource.save{Name}(model.toDTO())
 	}
 }
@@ -393,7 +397,7 @@ struct {Name}Repository: {Name}RepositoryContract {
 ### Domain to DTO Mapping
 
 ```swift
-extension {Name} {
+nonisolated extension {Name} {
 	func toDTO() -> {Name}DTO {
 		{Name}DTO(id: id, name: name)
 	}
@@ -409,20 +413,20 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
 	var getResult: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
 	private(set) var getCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
 	private(set) var saveCallCount = 0
 	private(set) var lastSavedModel: {Name}?
 
-	func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
+	@concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
 		getCallCount += 1
 		lastRequestedIdentifier = identifier
 		return try getResult.get()
 	}
 
-	func save{Name}(_ model: {Name}) async {
+	@concurrent func save{Name}(_ model: {Name}) async {
 		saveCallCount += 1
 		lastSavedModel = model
 	}
@@ -486,13 +490,13 @@ struct {Name}RepositoryTests {
 
 ### Checklist
 
-- [ ] Domain model (`Equatable`, `let` properties, in `Domain/Models/`)
-- [ ] Domain error enum in `Domain/Errors/`
-- [ ] Contract in `Domain/Repositories/` (typed throws, `Sendable`)
-- [ ] Mapper in `Data/Mappers/` (`MapperContract`)
-- [ ] Implementation in `Data/Repositories/` (injects LocalDataSource, uses Mapper)
+- [ ] Domain model (`nonisolated struct`, `Equatable`, `let` properties, in `Domain/Models/`)
+- [ ] Domain error enum in `Domain/Errors/` (`nonisolated public enum`)
+- [ ] Contract in `Domain/Repositories/` (`nonisolated protocol: Sendable`, `@concurrent` on async methods)
+- [ ] Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
+- [ ] Implementation in `Data/Repositories/` (`nonisolated struct`, `@concurrent` methods, injects LocalDataSource, uses Mapper)
 - [ ] Domain-to-DTO mapping (for saving)
-- [ ] Mock in `Tests/Shared/Mocks/`
+- [ ] Mock in `Tests/Shared/Mocks/` (`nonisolated final class`, `@concurrent` methods)
 - [ ] Tests
 
 ---
@@ -525,8 +529,8 @@ Create `Sources/Domain/Repositories/{Name}RepositoryContract.swift`:
 ```swift
 import ChallengeCore
 
-protocol {Name}RepositoryContract: Sendable {
-	func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
+nonisolated protocol {Name}RepositoryContract: Sendable {
+	@concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name}
 }
 ```
 
@@ -534,79 +538,41 @@ protocol {Name}RepositoryContract: Sendable {
 
 Create `Sources/Data/Repositories/{Name}Repository.swift`:
 
+The implementation delegates cache strategy logic to `CachePolicyExecutor` (from `ChallengeCore`), which centralizes `localFirst`/`remoteFirst`/`noCache` behavior:
+
 ```swift
 import ChallengeCore
-import ChallengeNetworking
+import Foundation
 
-struct {Name}Repository: {Name}RepositoryContract {
+nonisolated struct {Name}Repository: {Name}RepositoryContract {
 	private let remoteDataSource: {Name}RemoteDataSourceContract
-	private let localDataSource: {Name}LocalDataSourceContract
+	private let memoryDataSource: {Name}LocalDataSourceContract
 	private let mapper = {Name}Mapper()
 	private let errorMapper = {Name}ErrorMapper()
+	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
 		remoteDataSource: {Name}RemoteDataSourceContract,
-		localDataSource: {Name}LocalDataSourceContract
+		memoryDataSource: {Name}LocalDataSourceContract
 	) {
 		self.remoteDataSource = remoteDataSource
-		self.localDataSource = localDataSource
+		self.memoryDataSource = memoryDataSource
 	}
 
-	func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
-		switch cachePolicy {
-		case .localFirst:
-			try await get{Name}LocalFirst(identifier: identifier)
-		case .remoteFirst:
-			try await get{Name}RemoteFirst(identifier: identifier)
-		case .noCache:
-			try await get{Name}NoCache(identifier: identifier)
-		}
-	}
-}
-
-// MARK: - Remote Fetch Helper
-
-private extension {Name}Repository {
-	func fetchFromRemote(identifier: Int) async throws({Feature}Error) -> {Name}DTO {
-		do {
-			return try await remoteDataSource.fetch{Name}(identifier: identifier)
-		} catch {
-			throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
-		}
-	}
-}
-
-// MARK: - Cache Strategies
-
-private extension {Name}Repository {
-	func get{Name}LocalFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-		if let cached = await localDataSource.get{Name}(identifier: identifier) {
-			return mapper.map(cached)
-		}
-		let dto = try await fetchFromRemote(identifier: identifier)
-		await localDataSource.save{Name}(dto)
-		return mapper.map(dto)
-	}
-
-	func get{Name}RemoteFirst(identifier: Int) async throws({Feature}Error) -> {Name} {
-		do {
-			let dto = try await fetchFromRemote(identifier: identifier)
-			await localDataSource.save{Name}(dto)
-			return mapper.map(dto)
-		} catch {
-			if let cached = await localDataSource.get{Name}(identifier: identifier) {
-				return mapper.map(cached)
-			}
-			throw error
-		}
-	}
-
-	func get{Name}NoCache(identifier: Int) async throws({Feature}Error) -> {Name} {
-		let dto = try await fetchFromRemote(identifier: identifier)
-		return mapper.map(dto)
+	@concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+		try await cacheExecutor.execute(
+			policy: cachePolicy,
+			fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
+			getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
+			saveToCache: { await memoryDataSource.save{Name}($0) },
+			mapper: { mapper.map($0) },
+			errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
+		)
 	}
 }
 ```
+
+> **Note:** `CachePolicyExecutor.execute()` handles all cache strategy logic (`localFirst`, `remoteFirst`, `noCache`) internally. The repository only provides closures for remote fetch, cache read/write, mapping, and error mapping. `fetchFromRemote` uses untyped `throws` — the executor handles error mapping via the `errorMapper` closure.
 
 ### Mock (All configurable)
 
@@ -618,13 +584,13 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
+nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @unchecked Sendable {
 	var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
 	private(set) var getCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
 	private(set) var lastCachePolicy: CachePolicy?
 
-	func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+	@concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
 		getCallCount += 1
 		lastRequestedIdentifier = identifier
 		lastCachePolicy = cachePolicy
@@ -801,16 +767,14 @@ private enum GenericTestError: Error {
 
 ### Checklist (All configurable)
 
-- [ ] Import `ChallengeCore` (provides `CachePolicy` and `MapperContract`)
-- [ ] Domain model (`Equatable`, `let` properties, in `Domain/Models/`)
-- [ ] Domain error enum in `Domain/Errors/` (typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
-- [ ] Contract in `Domain/Repositories/` with `cachePolicy: CachePolicy` parameter
-- [ ] Mapper in `Data/Mappers/` (`MapperContract`)
-- [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
-- [ ] Implementation in `Data/Repositories/` (injects both DataSources, uses Mapper + Error Mapper)
-- [ ] Extract `fetchFromRemote` helper (avoids duplication)
-- [ ] Implement cache strategies
-- [ ] Mock in `Tests/Shared/Mocks/` (tracks `cachePolicy`)
+- [ ] Import `ChallengeCore` (provides `CachePolicy`, `CachePolicyExecutor`, and `MapperContract`)
+- [ ] Domain model (`nonisolated struct`, `Equatable`, `let` properties, in `Domain/Models/`)
+- [ ] Domain error enum in `Domain/Errors/` (`nonisolated public enum`, typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
+- [ ] Contract in `Domain/Repositories/` (`nonisolated protocol: Sendable`, `@concurrent`, `cachePolicy: CachePolicy` parameter)
+- [ ] Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
+- [ ] Error Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
+- [ ] Implementation in `Data/Repositories/` (`nonisolated struct`, `@concurrent` methods, uses `CachePolicyExecutor`)
+- [ ] Mock in `Tests/Shared/Mocks/` (`nonisolated final class`, `@concurrent` methods, tracks `cachePolicy`)
 - [ ] Mapper tests, Error Mapper tests
 - [ ] Tests for each cache strategy
 - [ ] Tests for error handling

@@ -232,6 +232,7 @@ private enum AccessibilityIdentifier {
 		CharacterDetailView(viewModel: CharacterDetailViewModelPreviewStub(state: .error(.loadFailed())))
 	}
 }
+
 private final class CharacterDetailViewModelPreviewStub: CharacterDetailViewModelContract {
 	var state: CharacterDetailViewState
 	var imageRefreshID = UUID()

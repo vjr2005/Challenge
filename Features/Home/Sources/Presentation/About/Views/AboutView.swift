@@ -1,3 +1,4 @@
+import ChallengeCore
 import ChallengeDesignSystem
 import ChallengeResources
 import SwiftUI
@@ -45,7 +46,7 @@ struct AboutView<ViewModel: AboutViewModelContract>: View {
 				.accessibilityIdentifier(AccessibilityIdentifier.closeButton)
 			}
 		}
-		.onAppear {
+		.onFirstAppear {
 			viewModel.didAppear()
 		}
 	}

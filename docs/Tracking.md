@@ -236,20 +236,22 @@ Creates the `Tracker` with providers and injects it into all features:
 
 ```swift
 public struct AppContainer {
-    public let tracker: any TrackerContract
+    private let tracker: any TrackerContract
 
     public init(tracker: (any TrackerContract)? = nil) {
-        let providers = Self.makeTrackingProviders()
-        providers.forEach { $0.configure() }
-        self.tracker = tracker ?? Tracker(providers: providers)
+        // ...
+        self.tracker = tracker ?? Self.makeTracker()
 
         homeFeature = HomeFeature(tracker: self.tracker)
-        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker)
+        characterFeature = CharacterFeature(httpClient: self.httpClient, tracker: self.tracker, imageLoader: self.imageLoader)
+        episodeFeature = EpisodeFeature(httpClient: self.httpClient, tracker: self.tracker)
         systemFeature = SystemFeature(tracker: self.tracker)
     }
 
-    private static func makeTrackingProviders() -> [any TrackingProviderContract] {
-        [ConsoleTrackingProvider()]
+    private static func makeTracker() -> Tracker {
+        let providers: [any TrackingProviderContract] = [ConsoleTrackingProvider()]
+        providers.forEach { $0.configure() }
+        return Tracker(providers: providers)
     }
 }
 ```

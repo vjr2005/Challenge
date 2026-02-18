@@ -55,7 +55,7 @@ Features/{Feature}/
 Create `Sources/Data/DTOs/{Name}DTO.swift`:
 
 ```swift
-struct {Name}DTO: Decodable, Equatable {
+nonisolated struct {Name}DTO: Decodable, Equatable {
 	let id: Int
 	let name: String
 	// Add fields matching JSON response
@@ -65,12 +65,12 @@ struct {Name}DTO: Decodable, Equatable {
 For paginated responses, create a wrapper:
 
 ```swift
-struct {Name}sResponseDTO: Decodable, Equatable {
+nonisolated struct {Name}sResponseDTO: Decodable, Equatable {
 	let info: PaginationInfoDTO
 	let results: [{Name}DTO]
 }
 
-struct PaginationInfoDTO: Decodable, Equatable {
+nonisolated struct PaginationInfoDTO: Decodable, Equatable {
 	let count: Int
 	let pages: Int
 	let next: String?
@@ -85,12 +85,12 @@ struct PaginationInfoDTO: Decodable, Equatable {
 Create `Sources/Data/DataSources/Remote/{Name}RemoteDataSourceContract.swift`:
 
 ```swift
-protocol {Name}RemoteDataSourceContract: Sendable {
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO
+nonisolated protocol {Name}RemoteDataSourceContract: Sendable {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO
 }
 ```
 
-The contract is transport-agnostic -- the same contract works for both REST and GraphQL implementations.
+The contract is transport-agnostic -- the same contract works for both REST and GraphQL implementations. `nonisolated` removes MainActor isolation; `@concurrent` ensures execution on the thread pool.
 
 ### 3. Create REST Implementation
 
@@ -100,7 +100,7 @@ Create `Sources/Data/DataSources/Remote/{Name}RESTDataSource.swift`:
 import ChallengeNetworking
 import Foundation
 
-struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
+nonisolated struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
 	private let httpClient: any HTTPClientContract
 	private let errorMapper = HTTPErrorMapper()
 
@@ -108,7 +108,7 @@ struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
 		self.httpClient = httpClient
 	}
 
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
 		let endpoint = Endpoint(path: "{endpoint}/\(identifier)")
 		return try await request(endpoint)
 	}
@@ -116,7 +116,7 @@ struct {Name}RESTDataSource: {Name}RemoteDataSourceContract {
 
 // MARK: - Private
 
-private extension {Name}RESTDataSource {
+nonisolated private extension {Name}RESTDataSource {
 	func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
 		do {
 			return try await httpClient.request(endpoint)
@@ -130,7 +130,7 @@ private extension {Name}RESTDataSource {
 For endpoints with query parameters:
 
 ```swift
-func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
+@concurrent func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 	var queryItems = [URLQueryItem(name: "page", value: String(page))]
 	if let name = filter.name, !name.isEmpty {
 		queryItems.append(URLQueryItem(name: "name", value: name))
@@ -164,12 +164,12 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
+nonisolated final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
 	var result: Result<{Name}DTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetchCallCount = 0
 	private(set) var lastFetchedIdentifier: Int?
 
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
 		fetchCallCount += 1
 		lastFetchedIdentifier = identifier
 		return try result.get()
@@ -264,7 +264,7 @@ private extension {Name}RESTDataSourceTests {
 Create `Sources/Data/DTOs/{Name}DTO.swift`:
 
 ```swift
-struct {Name}DTO: Decodable, Equatable {
+nonisolated struct {Name}DTO: Decodable, Equatable {
 	let id: String
 	let name: String
 	// Add fields matching GraphQL response. Use CodingKeys for snake_case fields.
@@ -276,12 +276,12 @@ struct {Name}DTO: Decodable, Equatable {
 For paginated responses:
 
 ```swift
-struct {Name}sResponseDTO: Decodable, Equatable {
+nonisolated struct {Name}sResponseDTO: Decodable, Equatable {
 	let info: {Name}PaginationInfoDTO
 	let results: [{Name}DTO]
 }
 
-struct {Name}PaginationInfoDTO: Decodable, Equatable {
+nonisolated struct {Name}PaginationInfoDTO: Decodable, Equatable {
 	let count: Int
 	let pages: Int
 	let next: Int?
@@ -296,9 +296,9 @@ GraphQL pagination returns page numbers (not URLs like REST).
 Same transport-agnostic contract as REST:
 
 ```swift
-protocol {Name}RemoteDataSourceContract: Sendable {
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO
-	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO
+nonisolated protocol {Name}RemoteDataSourceContract: Sendable {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO
+	@concurrent func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO
 }
 ```
 
@@ -310,7 +310,7 @@ Create `Sources/Data/DataSources/Remote/{Name}GraphQLDataSource.swift`:
 import ChallengeNetworking
 import Foundation
 
-struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
+nonisolated struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 	private let graphQLClient: any GraphQLClientContract
 	private let errorMapper = GraphQLErrorMapper()
 
@@ -318,7 +318,7 @@ struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 		self.graphQLClient = graphQLClient
 	}
 
-	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
+	@concurrent func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 		var variables: [String: GraphQLVariable] = ["page": .int(page)]
 
 		if let name = filter.name, !name.isEmpty {
@@ -335,7 +335,7 @@ struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 		return response.{name}s
 	}
 
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
 		let operation = GraphQLOperation(
 			query: Self.{name}Query,
 			variables: ["id": .string(String(identifier))],
@@ -349,7 +349,7 @@ struct {Name}GraphQLDataSource: {Name}RemoteDataSourceContract {
 
 // MARK: - Private
 
-private extension {Name}GraphQLDataSource {
+nonisolated private extension {Name}GraphQLDataSource {
 	func request<T: Decodable>(_ operation: GraphQLOperation) async throws -> T {
 		do {
 			return try await graphQLClient.execute(operation)
@@ -361,17 +361,17 @@ private extension {Name}GraphQLDataSource {
 
 // MARK: - Response Wrappers
 
-private struct {Name}sQueryResponse: Decodable {
+nonisolated private struct {Name}sQueryResponse: Decodable {
 	let {name}s: {Name}sResponseDTO
 }
 
-private struct {Name}QueryResponse: Decodable {
+nonisolated private struct {Name}QueryResponse: Decodable {
 	let {name}: {Name}DTO
 }
 
 // MARK: - Queries
 
-extension {Name}GraphQLDataSource {
+nonisolated extension {Name}GraphQLDataSource {
 	static let {name}sQuery = """
 		query Get{Name}s($page: Int, $name: String) {
 			{name}s(page: $page, filter: { name: $name }) {
@@ -458,7 +458,7 @@ import Foundation
 
 @testable import Challenge{Feature}
 
-final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
+nonisolated final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @unchecked Sendable {
 	var {name}sResult: Result<{Name}sResponseDTO, Error> = .failure(NotConfiguredError.notConfigured)
 	var {name}Result: Result<{Name}DTO, Error> = .failure(NotConfiguredError.notConfigured)
 	private(set) var fetch{Name}sCallCount = 0
@@ -467,14 +467,14 @@ final class {Name}RemoteDataSourceMock: {Name}RemoteDataSourceContract, @uncheck
 	private(set) var lastFetchedFilter: {Name}Filter?
 	private(set) var lastFetchedIdentifier: Int?
 
-	func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
+	@concurrent func fetch{Name}s(page: Int, filter: {Name}FilterDTO) async throws -> {Name}sResponseDTO {
 		fetch{Name}sCallCount += 1
 		lastFetchedPage = page
 		lastFetchedFilter = filter
 		return try {name}sResult.get()
 	}
 
-	func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
+	@concurrent func fetch{Name}(identifier: Int) async throws -> {Name}DTO {
 		fetch{Name}CallCount += 1
 		lastFetchedIdentifier = identifier
 		return try {name}Result.get()
@@ -1048,27 +1048,27 @@ Each test uses a dedicated `UserDefaults` suite to avoid cross-test contaminatio
 
 ## Key Principles
 
-- Transport clients (`HTTPClientContract`, `GraphQLClientContract`) use `@concurrent` for off-MainActor execution — DataSource contracts do NOT need `@concurrent`
-- **Contracts** are transport-agnostic, in separate files. Remote: `: Sendable`. Local (Memory, UserDefaults): `: Actor`
-- **DTOs** are anemic: `Decodable`, `Equatable`, no behavior, no `toDomain()`
+- **Remote DataSource contracts and implementations** use `nonisolated` (removes MainActor isolation) and `@concurrent` (runs on thread pool). Both are required — they are complementary, not redundant
+- **Contracts** are transport-agnostic, in separate files. Remote: `nonisolated protocol: Sendable`. Local (Memory, UserDefaults): `: Actor`
+- **DTOs** are anemic: `nonisolated struct`, `Decodable`, `Equatable`, no behavior, no `toDomain()`
 - **Error mapping**: DataSources catch transport errors and map to `APIError`. REST uses `HTTPErrorMapper`, GraphQL uses `GraphQLErrorMapper`
 - **Repositories and upper layers only see `APIError`**, never transport-specific errors
 
 ## Checklists
 
 ### RemoteDataSource (REST)
-- [ ] Create DTO (`Decodable`, `Equatable`, IDs are `Int`)
-- [ ] Create Contract in `Remote/` with `async throws`
-- [ ] Create RESTDataSource in `Remote/` with `HTTPErrorMapper`
-- [ ] Create Mock in `Tests/Shared/Mocks/`
+- [ ] Create DTO (`nonisolated struct`, `Decodable`, `Equatable`, IDs are `Int`)
+- [ ] Create Contract in `Remote/` (`nonisolated protocol: Sendable`, `@concurrent` on async methods)
+- [ ] Create RESTDataSource in `Remote/` (`nonisolated struct`, `@concurrent` methods, `HTTPErrorMapper`)
+- [ ] Create Mock in `Tests/Shared/Mocks/` (`nonisolated final class`, `@concurrent` methods)
 - [ ] Create JSON fixtures in `Tests/Shared/Fixtures/`
 - [ ] Create tests
 
 ### RemoteDataSource (GraphQL)
-- [ ] Create DTO (`Decodable`, `Equatable`, IDs are `String`)
-- [ ] Create Contract in `Remote/` with `async throws`
-- [ ] Create GraphQLDataSource in `Remote/` with `GraphQLErrorMapper`
-- [ ] Create Mock in `Tests/Shared/Mocks/`
+- [ ] Create DTO (`nonisolated struct`, `Decodable`, `Equatable`, IDs are `String`)
+- [ ] Create Contract in `Remote/` (`nonisolated protocol: Sendable`, `@concurrent` on async methods)
+- [ ] Create GraphQLDataSource in `Remote/` (`nonisolated struct`, `@concurrent` methods, `GraphQLErrorMapper`)
+- [ ] Create Mock in `Tests/Shared/Mocks/` (`nonisolated final class`, `@concurrent` methods)
 - [ ] Create JSON fixtures in `Tests/Shared/Fixtures/`
 - [ ] Create tests
 

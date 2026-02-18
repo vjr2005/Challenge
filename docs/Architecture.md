@@ -112,13 +112,13 @@ The contract defines **what** operations are available, using only domain types:
 
 ```swift
 // Domain layer - no knowledge of Data layer implementation
-protocol CharacterRepositoryContract: Sendable {
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
+nonisolated protocol CharacterRepositoryContract: Sendable {
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character
 }
 
-protocol CharactersPageRepositoryContract: Sendable {
-    func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
-    func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
+nonisolated protocol CharactersPageRepositoryContract: Sendable {
+    @concurrent func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage
+    @concurrent func searchCharactersPage(page: Int, filter: CharacterFilter) async throws(CharactersPageError) -> CharactersPage
 }
 ```
 
@@ -127,30 +127,22 @@ protocol CharactersPageRepositoryContract: Sendable {
 Each contract has its own implementation that handles **how** data is fetched, cached, and transformed:
 
 ```swift
-struct CharacterRepository: CharacterRepositoryContract {
+nonisolated struct CharacterRepository: CharacterRepositoryContract {
     private let remoteDataSource: CharacterRemoteDataSourceContract
     private let memoryDataSource: CharacterLocalDataSourceContract
+    private let mapper = CharacterMapper()
+    private let errorMapper = CharacterErrorMapper()
+    private let cacheExecutor = CachePolicyExecutor()
 
-    func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-        switch cachePolicy {
-        case .localFirst:
-            // 1. Check cache first
-            if let cached = await memoryDataSource.getCharacter(identifier: identifier) {
-                return mapper.map(cached)  // DTO → Domain via Mapper
-            }
-            // 2. Fetch from remote
-            let dto = try await fetchFromRemote(identifier: identifier)
-            // 3. Save to cache
-            await memoryDataSource.saveCharacter(dto)
-            return mapper.map(dto)
-
-        case .remoteFirst:
-            // 1. Try remote first
-            // 2. Fallback to cache on error
-
-        case .noCache:
-            // No caching, always fetch from remote
-        }
+    @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
+        try await cacheExecutor.execute(
+            policy: cachePolicy,
+            fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
+            getFromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
+            saveToCache: { await memoryDataSource.saveCharacter($0) },
+            mapper: { mapper.map($0) },
+            errorMapper: { errorMapper.map(CharacterErrorMapperInput(error: $0, identifier: identifier)) }
+        )
     }
 }
 ```
@@ -193,7 +185,7 @@ The repository transforms Data Transfer Objects (DTOs) into Domain Models, keepi
 
 ```swift
 // Data layer - DTO from API
-struct CharacterDTO: Decodable {
+nonisolated struct CharacterDTO: Decodable {
     let id: Int
     let name: String
     let status: String  // Raw string from API
@@ -201,7 +193,7 @@ struct CharacterDTO: Decodable {
 }
 
 // Domain layer - Clean model
-struct Character: Equatable {
+nonisolated struct Character: Equatable {
     let id: Int
     let name: String
     let status: CharacterStatus  // Type-safe enum
@@ -209,7 +201,7 @@ struct Character: Equatable {
 }
 
 // Mapping via MapperContract (in Data/Mappers/)
-struct CharacterMapper: MapperContract {
+nonisolated struct CharacterMapper: MapperContract {
     func map(_ input: CharacterDTO) -> Character {
         Character(
             id: input.id,
@@ -217,16 +209,6 @@ struct CharacterMapper: MapperContract {
             status: CharacterStatus(from: input.status),
             imageURL: URL(string: input.image)
         )
-    }
-}
-
-// Usage in Repository
-struct CharacterRepository: CharacterRepositoryContract {
-    private let mapper = CharacterMapper()
-
-    func getCharacter(...) async throws(CharacterError) -> Character {
-        let dto = try await remoteDataSource.fetchCharacter(identifier: identifier)
-        return mapper.map(dto)  // DTO → Domain via Mapper
     }
 }
 ```
@@ -237,12 +219,12 @@ Error mapping uses dedicated **Error Mapper types** that conform to `MapperContr
 
 ```swift
 // Sources/Data/Mappers/CharacterErrorMapper.swift
-struct CharacterErrorMapperInput {
+nonisolated struct CharacterErrorMapperInput {
     let error: any Error
     let identifier: Int
 }
 
-struct CharacterErrorMapper: MapperContract {
+nonisolated struct CharacterErrorMapper: MapperContract {
     func map(_ input: CharacterErrorMapperInput) -> CharacterError {
         guard let apiError = input.error as? APIError else {
             return .loadFailed(description: String(describing: input.error))
@@ -257,18 +239,7 @@ struct CharacterErrorMapper: MapperContract {
 }
 ```
 
-```swift
-// In Repository — single catch block delegates all error mapping
-private let errorMapper = CharacterErrorMapper()
-
-func fetchFromRemote(identifier: Int) async throws(CharacterError) -> CharacterDTO {
-    do {
-        return try await remoteDataSource.fetchCharacter(identifier: identifier)
-    } catch {
-        throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
-    }
-}
-```
+The repository delegates error mapping to `CachePolicyExecutor` via the `errorMapper` closure — no need for a separate `fetchFromRemote` helper.
 
 ### Repository Benefits
 

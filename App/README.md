@@ -38,9 +38,12 @@ App/
     │   ├── Scenarios/
     │   │   └── UITestCase+Scenarios.swift
     │   ├── Stubs/
+    │   │   └── Data+Stub.swift
     │   ├── Extensions/
+    │   │   └── Bundle+Module.swift
     │   ├── Fixtures/
     │   └── Resources/
+    │       └── test-avatar.jpg
     └── UI/
         ├── CharacterDetailUITests.swift
         ├── CharacterEpisodesUITests.swift

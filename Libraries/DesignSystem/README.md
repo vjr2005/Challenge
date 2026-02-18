@@ -49,7 +49,8 @@ DesignSystem/
 │   │   ├── Chips/
 │   │   │   └── DSChip.swift
 │   │   ├── Images/
-│   │   │   └── DSAsyncImage.swift
+│   │   │   ├── DSAsyncImage.swift
+│   │   │   └── DSAsyncImageDefaultContentView.swift
 │   │   ├── Indicators/
 │   │   │   └── DSStatusIndicator.swift
 │   │   └── TextFields/

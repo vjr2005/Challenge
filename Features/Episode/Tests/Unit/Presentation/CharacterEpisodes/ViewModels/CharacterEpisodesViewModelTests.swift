@@ -3,6 +3,7 @@ import Testing
 
 @testable import ChallengeEpisode
 
+@Suite(.timeLimit(.minutes(1)))
 struct CharacterEpisodesViewModelTests {
 	// MARK: - Properties
 
