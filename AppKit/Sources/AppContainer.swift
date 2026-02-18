@@ -39,9 +39,11 @@ public struct AppContainer {
 		imageLoader: (any ImageLoaderContract)? = nil
 	) {
 		self.launchEnvironment = launchEnvironment
-		self.imageLoader = imageLoader ?? CachedImageLoader()
+		let session = Self.makeURLSession()
+		self.imageLoader = imageLoader ?? CachedImageLoader(session: session)
 		self.httpClient = httpClient ?? HTTPClient(
-			baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL
+			baseURL: launchEnvironment.apiBaseURL ?? AppEnvironment.current.rickAndMorty.baseURL,
+			session: session
 		)
 		self.tracker = tracker ?? Self.makeTracker()
 
@@ -101,6 +103,19 @@ private extension AppContainer {
 			return navigation
 		}
 		return UnknownNavigation.notFound
+	}
+}
+
+// MARK: - Networking
+
+extension AppContainer {
+	static func makeURLSession() -> URLSession {
+		let configuration = URLSessionConfiguration.default
+		// The app manages its own cache layer (CachePolicyExecutor + memory/persistent DataSources).
+		// Disabling URLCache avoids a hidden second cache that would serve stale responses
+		// even when the app explicitly requests fresh data (e.g. pull-to-refresh).
+		configuration.urlCache = nil
+		return URLSession(configuration: configuration)
 	}
 }
 

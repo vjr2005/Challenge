@@ -37,6 +37,17 @@ struct AppContainerTests {
 		#expect(sut.imageLoader is CachedImageLoader)
 	}
 
+	// MARK: - URL Session
+
+	@Test("URL session has URL cache disabled")
+	func urlSessionHasURLCacheDisabled() {
+		// When
+		let session = AppContainer.makeURLSession()
+
+		// Then
+		#expect(session.configuration.urlCache == nil)
+	}
+
 	// MARK: - Resolve View
 
 	@Test("Resolve view falls back to NotFoundView when no feature handles navigation")
