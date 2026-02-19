@@ -94,6 +94,6 @@ let project = Project(
 		]) { _, new in new },
 		configurations: BuildConfiguration.all
 	),
-	targets: [appTarget, appUITestsTarget] + Modules.targets,
-	schemes: AppScheme.allSchemes() + [appUITestsScheme] + Modules.schemes
+	targets: [appTarget, appUITestsTarget],
+	schemes: AppScheme.allSchemes() + [appUITestsScheme]
 )

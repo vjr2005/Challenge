@@ -1,12 +1,11 @@
 import ProjectDescription
 
 public enum AppKitModule {
-	private static let name = "AppKit"
-
 	public static let module = FrameworkModule.create(
 		name: name,
 		baseFolder: ".",
-		path: "AppKit",
+		path: name,
+		standalone: true,
 		dependencies: [
 			CoreModule.targetDependency,
 			HomeModule.targetDependency,
@@ -25,7 +24,17 @@ public enum AppKitModule {
 		]
 	)
 
-	public static var targetReferences: [TargetReference] {
-		[.target("\(appName)\(name)")]
+	public static var project: Project {
+		ProjectModule.create(module: module)
 	}
+
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(name)")
+
+	public static var targetDependency: TargetDependency {
+		.project(target: module.name, path: path)
+	}
+}
+
+private extension AppKitModule {
+	static let name = "AppKit"
 }
