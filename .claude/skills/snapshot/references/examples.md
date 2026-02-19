@@ -374,14 +374,15 @@ struct HomeViewSnapshotTests {
 ### Test Dependencies
 
 ```swift
-let characterModule = FrameworkModule.create(
-    name: "Character",
-    path: "Features/Character",
+public static let module = FrameworkModule.create(
+    name: name,
+    baseFolder: "Features",
+    standalone: true,
     dependencies: [
-        .target(name: "\(appName)Core"),
+        CoreModule.targetDependency,
     ],
     testDependencies: [
-        .target(name: "\(appName)CoreMocks"),
+        CoreModule.mocksTargetDependency,
     ]
 )
 ```

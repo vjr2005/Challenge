@@ -7,12 +7,13 @@ The project uses [Tuist](https://tuist.io/) for Xcode project generation and dep
 ```
 Tuist/
 ├── ProjectDescriptionHelpers/
-│   ├── Config.swift              # App name, Swift version, deployment target
-│   ├── Modules.swift             # Module registry and app dependencies
+│   ├── Config.swift              # App name, Swift version, deployment target, workspaceRoot
+│   ├── Modules.swift             # Module registry, app dependencies, coverage targets
 │   ├── FrameworkModule.swift     # Module definition helper
+│   ├── ProjectModule.swift       # Standalone Project factory
 │   ├── BuildConfiguration.swift  # Debug/Release configurations
 │   ├── Environment.swift         # Environment-specific settings (Dev/Staging/Prod)
-│   ├── AppScheme.swift           # Xcode scheme generation
+│   ├── AppScheme.swift           # Workspace-level scheme generation
 │   ├── SwiftLint.swift           # SwiftLint build phase integration
 │   └── Modules/                  # Individual module definitions
 │       ├── CoreModule.swift
@@ -38,12 +39,38 @@ developmentTarget = .iOS("17.0")
 destinations = [.iPhone, .iPad]
 ```
 
+## Standalone Modules
+
+Every module is a **standalone Tuist project** with its own `Project.swift`. Each module directory contains:
+
+```
+{Module}/
+├── Project.swift    # Just: let project = {Module}Module.project
+├── Sources/
+├── Tests/
+└── Mocks/           # (if applicable)
+```
+
+All schemes (app, tests, UI tests) are defined at **workspace level** in `Workspace.swift`, not in `Project.swift`. This is required because workspace-level schemes can reference targets across projects.
+
+Each module exposes:
+
+| Property | Type | Purpose |
+|----------|------|---------|
+| `module` | `FrameworkModule` | Module definition (targets, schemes) |
+| `project` | `Project` | Standalone project via `ProjectModule.create()` |
+| `path` | `Path` | Absolute path to module directory |
+| `testableTargets` | `[TestableTarget]` | All test targets (unit + snapshot) |
+| `targetReference` | `TargetReference` | For scheme references (coverage, build actions) |
+| `targetDependency` | `TargetDependency` | For target dependencies |
+| `mocksTargetDependency` | `TargetDependency` | For mock dependencies (if module has mocks) |
+
 ## Swift 6 Concurrency
 
 The project uses strict Swift 6 concurrency with MainActor isolation by default:
 
 ```swift
-// Project.swift base settings
+// Config.swift — projectBaseSettings (shared across all projects and targets)
 "SWIFT_VERSION": "6.2"
 "SWIFT_APPROACHABLE_CONCURRENCY": "YES"
 "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor"
@@ -183,30 +210,59 @@ Modules are defined using `FrameworkModule.create()` which automatically:
 ```swift
 public enum CharacterModule {
     public static let module = FrameworkModule.create(
-        name: "Character",
+        name: name,
         baseFolder: "Features",
-        path: "Character",
+        standalone: true,
         dependencies: [
-            .target(name: "\(appName)Core"),
-            .target(name: "\(appName)Networking"),
-            .target(name: "\(appName)Resources"),
-            .target(name: "\(appName)DesignSystem"),
+            CoreModule.targetDependency,
+            NetworkingModule.targetDependency,
+            ResourcesModule.targetDependency,
+            DesignSystemModule.targetDependency,
         ],
         testDependencies: [
-            .target(name: "\(appName)CoreMocks"),
-            .target(name: "\(appName)NetworkingMocks"),
+            CoreModule.mocksTargetDependency,
+            NetworkingModule.mocksTargetDependency,
         ],
         snapshotTestDependencies: [
-            .target(name: "\(appName)CoreMocks"),
-            .target(name: "\(appName)NetworkingMocks"),
+            CoreModule.mocksTargetDependency,
+            NetworkingModule.mocksTargetDependency,
         ]
     )
+
+    public static var project: Project {
+        ProjectModule.create(module: module)
+    }
+
+    public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
+
+    public static var testableTargets: [TestableTarget] {
+        [
+            .testableTarget(target: .project(path: path, target: "\(module.name)Tests"), parallelization: .swiftTestingOnly),
+            .testableTarget(target: .project(path: path, target: "\(module.name)SnapshotTests"), parallelization: .swiftTestingOnly),
+        ]
+    }
+
+    public static var targetReference: TargetReference {
+        .project(path: path, target: module.name)
+    }
+
+    public static var targetDependency: TargetDependency {
+        .project(target: module.name, path: path)
+    }
+
+    public static var mocksTargetDependency: TargetDependency {
+        .project(target: module.name.appending("Mocks"), path: path)
+    }
+}
+
+private extension CharacterModule {
+    static let name = "Character"
 }
 ```
 
 ## Per-Target Overrides
 
-`FrameworkModule.create()` accepts an optional `settings` parameter to override build settings. The settings are propagated to **all targets**: framework, mocks, and test targets (unit + snapshot). This ensures consistent isolation across a module and its associated targets.
+`FrameworkModule.create()` accepts an optional `targetSettingsOverrides` parameter to override build settings. The overrides are merged on top of `projectBaseSettings` and propagated to **all targets**: framework, mocks, and test targets (unit + snapshot). This ensures consistent isolation across a module and its associated targets.
 
 ### ChallengeNetworking
 
@@ -214,19 +270,20 @@ The Networking module overrides the project-wide `MainActor` default to `nonisol
 
 ```swift
 public static let module = FrameworkModule.create(
-    name: "Networking",
+    name: name,
+    standalone: true,
     testDependencies: [
-        .target(name: "\(appName)CoreMocks"),
+        CoreModule.mocksTargetDependency,
     ],
-    settings: .settings(base: [
+    targetSettingsOverrides: [
         "SWIFT_DEFAULT_ACTOR_ISOLATION": .string("nonisolated"),
-    ])
+    ]
 )
 ```
 
 This is appropriate because all Networking types are pure data structures or stateless services with no UI concerns. The override eliminates the need for `nonisolated` annotations on every type and method in the module.
 
-> **Note:** The `settings` override applies to `ChallengeNetworkingMocks` and `ChallengeNetworkingTests` as well, ensuring mocks and tests share the same isolation context as the module they mock/test.
+> **Note:** The `targetSettingsOverrides` applies to `ChallengeNetworkingMocks` and `ChallengeNetworkingTests` as well, ensuring mocks and tests share the same isolation context as the module they mock/test.
 
 ## Commands
 

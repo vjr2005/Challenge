@@ -84,32 +84,62 @@ Create `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`:
 import ProjectDescription
 
 public enum {Feature}Module {
-    public static let module = FrameworkModule.create(
-        name: "{Feature}",
-        baseFolder: "Features",
-        path: "{Feature}",
-        dependencies: [
-            .target(name: "\(appName)Core"),
-            .target(name: "\(appName)DesignSystem"),
-            .target(name: "\(appName)Resources"),
-        ],
-        testDependencies: [
-            .target(name: "\(appName)CoreMocks"),
-        ],
-        snapshotTestDependencies: [
-            .target(name: "\(appName)CoreMocks"),
-        ]
-    )
+	public static let module = FrameworkModule.create(
+		name: name,
+		baseFolder: "Features",
+		standalone: true,
+		dependencies: [
+			CoreModule.targetDependency,
+			DesignSystemModule.targetDependency,
+			ResourcesModule.targetDependency,
+		],
+		testDependencies: [
+			CoreModule.mocksTargetDependency,
+		],
+		snapshotTestDependencies: [
+			CoreModule.mocksTargetDependency,
+		]
+	)
 
-    public static let targetReferences: [TargetReference] = [
-        .target("\(appName){Feature}"),
-    ]
+	public static var project: Project {
+		ProjectModule.create(module: module)
+	}
+
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
+
+	public static var testableTargets: [TestableTarget] {
+		[
+			.testableTarget(target: .project(path: path, target: "\(module.name)Tests"), parallelization: .swiftTestingOnly),
+		]
+	}
+
+	public static var targetReference: TargetReference {
+		.project(path: path, target: module.name)
+	}
+
+	public static var targetDependency: TargetDependency {
+		.project(target: module.name, path: path)
+	}
+}
+
+private extension {Feature}Module {
+	static let name = "{Feature}"
 }
 ```
 
-Register in `Tuist/ProjectDescriptionHelpers/Modules.swift`:
-- Add `{Feature}Module.module` to `all` array (before `AppKitModule`)
-- Add `{Feature}Module.targetReferences` to `codeCoverageTargets`
+Create `Features/{Feature}/Project.swift`:
+
+```swift
+import ProjectDescription
+import ProjectDescriptionHelpers
+
+let project = {Feature}Module.project
+```
+
+Register in these files:
+- **`Modules.swift`** — Add `{Feature}Module.targetReference` to `codeCoverageTargets`
+- **`Workspace.swift`** — Add `{Feature}Module.path` to `projects` array
+- **`AppScheme.swift`** — Add `{Feature}Module.testableTargets` to the test targets concatenation
 
 > **Note:** Tuist automatically detects folders to create targets:
 > - `Mocks/` → Target `Challenge{Feature}Mocks`
@@ -708,23 +738,14 @@ struct {Screen}ViewModelTests {
 
 ## Step 4 — App Integration
 
-Wire the feature into the app — 4 files to modify:
+Wire the feature into the app — 2 files to modify:
 
 ### `Tuist/ProjectDescriptionHelpers/Modules/AppKitModule.swift`
 
 Add dependency:
 ```swift
-.target(name: "\(appName){Feature}"),
+{Feature}Module.targetDependency,
 ```
-
-### `Tuist/ProjectDescriptionHelpers/AppScheme.swift`
-
-Add test target:
-```swift
-"\(appName){Feature}Tests",
-```
-
-Add `"\(appName){Feature}SnapshotTests"` only if snapshot tests exist.
 
 ### `AppKit/Sources/AppContainer.swift`
 

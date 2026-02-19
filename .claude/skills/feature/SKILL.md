@@ -90,31 +90,61 @@ import ProjectDescription
 
 public enum {Feature}Module {
 	public static let module = FrameworkModule.create(
-		name: "{Feature}",
+		name: name,
 		baseFolder: "Features",
-		path: "{Feature}",
+		standalone: true,
 		dependencies: [
-			.target(name: "\(appName)Core"),
-			.target(name: "\(appName)DesignSystem"),
-			.target(name: "\(appName)Resources"),
+			CoreModule.targetDependency,
+			DesignSystemModule.targetDependency,
+			ResourcesModule.targetDependency,
 		],
 		testDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 		],
 		snapshotTestDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 		]
 	)
 
-	public static let targetReferences: [TargetReference] = [
-		.target("\(appName){Feature}"),
-	]
+	public static var project: Project {
+		ProjectModule.create(module: module)
+	}
+
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
+
+	public static var testableTargets: [TestableTarget] {
+		[
+			.testableTarget(target: .project(path: path, target: "\(module.name)Tests"), parallelization: .swiftTestingOnly),
+		]
+	}
+
+	public static var targetReference: TargetReference {
+		.project(path: path, target: module.name)
+	}
+
+	public static var targetDependency: TargetDependency {
+		.project(target: module.name, path: path)
+	}
+}
+
+private extension {Feature}Module {
+	static let name = "{Feature}"
 }
 ```
 
-Register in `Modules.swift`:
-- Add `{Feature}Module.module` to `all` array (before `AppKitModule`)
-- Add `{Feature}Module.targetReferences` to `codeCoverageTargets`
+Create `Features/{Feature}/Project.swift`:
+
+```swift
+import ProjectDescription
+import ProjectDescriptionHelpers
+
+let project = {Feature}Module.project
+```
+
+Register in these files:
+- **`Modules.swift`** — Add `{Feature}Module.targetReference` to `codeCoverageTargets`
+- **`Workspace.swift`** — Add `{Feature}Module.path` to `projects` array
+- **`AppScheme.swift`** — Add `{Feature}Module.testableTargets` to the test targets concatenation
 
 ### Step 2: Source Files
 
@@ -134,14 +164,8 @@ Wire the feature into the app — 4 files to modify:
 
 **`Tuist/ProjectDescriptionHelpers/Modules/AppKitModule.swift`** — Add dependency:
 ```swift
-.target(name: "\(appName){Feature}"),
+{Feature}Module.targetDependency,
 ```
-
-**`Tuist/ProjectDescriptionHelpers/AppScheme.swift`** — Add test target:
-```swift
-"\(appName){Feature}Tests",
-```
-Add `"\(appName){Feature}SnapshotTests"` only if snapshot tests exist.
 
 **`AppKit/Sources/AppContainer.swift`** — Three changes:
 1. Add import: `import Challenge{Feature}`

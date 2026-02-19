@@ -48,10 +48,10 @@ ReadMcpResourceTool(
 
 ## Project Options
 
-The project disables Tuist's code generation to keep full control over the codebase:
+The root `Project.swift` defines the app and UI test targets only. All schemes are at workspace level in `Workspace.swift`. Each module has its own `Project.swift` created via `ProjectModule.create()`.
 
 ```swift
-// Project.swift
+// Project.swift (root — app targets only, no schemes)
 let project = Project(
     name: appName,
     options: .options(
@@ -60,6 +60,16 @@ let project = Project(
         disableBundleAccessors: true,              // No TuistBundle+*.swift
         disableSynthesizedResourceAccessors: true  // No TuistAssets+*.swift
     ),
+    targets: [appTarget, appUITestsTarget]
+)
+```
+
+```swift
+// Workspace.swift — all schemes defined here (workspace-level can reference cross-project targets)
+let workspace = Workspace(
+    name: appName,
+    projects: [".", CoreModule.path, NetworkingModule.path, ...],
+    schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme()],
     ...
 )
 ```
