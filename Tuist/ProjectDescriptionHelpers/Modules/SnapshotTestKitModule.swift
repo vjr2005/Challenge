@@ -10,14 +10,14 @@ public enum SnapshotTestKitModule {
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			deploymentTargets: developmentTarget,
-			sources: ["Libraries/SnapshotTestKit/Sources/**"],
-			scripts: [SwiftLint.script(path: "Libraries/SnapshotTestKit/Sources")],
+			sources: ["Sources/**"],
+			scripts: [SwiftLint.script(path: "Sources", workspaceRoot: "../..")],
 			dependencies: [
 				.external(name: "SnapshotTesting"),
 			],
-			settings: .settings(base: [
+			settings: .settings(base: projectBaseSettings.merging([
 				"ENABLE_TESTING_SEARCH_PATHS": "YES",
-			])
+			]) { _, new in new })
 		)
 
 		let scheme = Scheme.scheme(
@@ -32,4 +32,18 @@ public enum SnapshotTestKitModule {
 			schemes: [scheme]
 		)
 	}()
+
+	public static var project: Project {
+		ProjectModule.create(module: module)
+	}
+
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
+
+	public static var targetDependency: TargetDependency {
+		.project(target: module.name, path: path)
+	}
+}
+
+private extension SnapshotTestKitModule {
+	static let name = "SnapshotTestKit"
 }

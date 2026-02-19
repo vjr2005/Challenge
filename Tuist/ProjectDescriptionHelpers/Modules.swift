@@ -5,7 +5,6 @@ import ProjectDescription
 public enum Modules {
 	/// All framework modules in dependency order.
 	private static let all: [FrameworkModule] = [
-		SnapshotTestKitModule.module,
 		ResourcesModule.module,
 		DesignSystemModule.module,
 		CharacterModule.module,
