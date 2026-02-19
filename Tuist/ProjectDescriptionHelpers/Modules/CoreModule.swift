@@ -7,7 +7,7 @@ public enum CoreModule {
 		ProjectModule.create(module: module)
 	}
 
-	public static let path: ProjectDescription.Path = .path(module.baseFolder.appending("/").appending(name))
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
 
 	public static var targetDependency: TargetDependency {
 		.project(target: module.name, path: path)

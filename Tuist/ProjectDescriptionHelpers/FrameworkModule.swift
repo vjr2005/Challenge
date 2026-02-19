@@ -8,18 +8,6 @@ public struct FrameworkModule: @unchecked Sendable {
 	public let targets: [Target]
 	public let schemes: [Scheme]
 
-	/// Returns the project root directory (parent of Tuist/).
-	private static var projectRoot: String {
-		let filePath = #file
-		// #file returns: .../Tuist/ProjectDescriptionHelpers/FrameworkModule.swift
-		// We need to go up 3 levels to get to project root
-		let url = URL(fileURLWithPath: filePath)
-			.deletingLastPathComponent() // Remove FrameworkModule.swift
-			.deletingLastPathComponent() // Remove ProjectDescriptionHelpers
-			.deletingLastPathComponent() // Remove Tuist
-		return url.path
-	}
-
 	/// Checks if a folder contains any files (searches recursively).
 	/// - Parameters:
 	///   - path: The absolute path to the folder
@@ -52,27 +40,27 @@ public struct FrameworkModule: @unchecked Sendable {
 
 	/// Checks if a Mocks folder exists with Swift files.
 	private static func hasMocksFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Mocks", withExtension: ".swift")
+		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Mocks", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests/Unit folder exists with Swift files.
 	private static func hasUnitTestsFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Tests/Unit", withExtension: ".swift")
+		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Tests/Unit", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests/Snapshots folder exists with Swift files.
 	private static func hasSnapshotTestsFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Tests/Snapshots", withExtension: ".swift")
+		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Tests/Snapshots", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests/Shared folder exists with Swift files.
 	private static func hasSharedTestsFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Tests/Shared", withExtension: ".swift")
+		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Tests/Shared", withExtension: ".swift")
 	}
 
 	/// Checks if a Sources/Resources folder exists with any files.
 	private static func hasResourcesFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(projectRoot)/\(baseFolder)/\(path)/Sources/Resources")
+		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Sources/Resources")
 	}
 
 	/// Builds a path for target source/resource globs.
@@ -94,7 +82,8 @@ public struct FrameworkModule: @unchecked Sendable {
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
 	///   - snapshotTestDependencies: Additional snapshot test-only dependencies (SnapshotTesting is added automatically)
-	///   - settings: Optional per-target build settings override (applied to framework, mocks, and test targets)
+	///   - targetSettingsOverrides: Additional per-target build settings merged on top of `projectBaseSettings`.
+	///                              Use to override specific keys (e.g., `SWIFT_DEFAULT_ACTOR_ISOLATION` for nonisolated modules).
 	/// - Note: Mocks and test targets are automatically created if the corresponding folders exist.
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
 	public static func create(
@@ -106,13 +95,14 @@ public struct FrameworkModule: @unchecked Sendable {
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
 		snapshotTestDependencies: [TargetDependency] = [],
-		settings: Settings? = nil
+		targetSettingsOverrides: SettingsDictionary = [:]
 	) -> FrameworkModule {
 		let targetName = "\(appName)\(name)"
 		let testsTargetName = "\(targetName)Tests"
 		let sourcesPath = path ?? name
 		let fullPath = "\(baseFolder)/\(sourcesPath)"
 		let targetPrefix = standalone ? "" : fullPath
+		let settings: Settings = .settings(base: projectBaseSettings.merging(targetSettingsOverrides) { _, new in new })
 
 		let resources: ResourceFileElements? = hasResourcesFolder(baseFolder: baseFolder, path: sourcesPath) ? [
 			.glob(pattern: "\(targetPath(targetPrefix, "Sources/Resources/**"))", excluding: [])

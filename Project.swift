@@ -88,18 +88,10 @@ let project = Project(
 		disableSynthesizedResourceAccessors: true
 	),
 	settings: .settings(
-		base: [
-			// Sets the Swift language version for compilation
-			"SWIFT_VERSION": .string(swiftVersion),
-			// Enables implicit Sendable conformance for MainActor-isolated types
-			"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
-			// Makes all declarations MainActor-isolated by default (opt-out with nonisolated)
-			"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),
+		base: projectBaseSettings.merging([
 			// Generates Swift symbols for localized strings in String Catalogs
 			"SWIFT_EMIT_LOC_STRINGS": .string("YES"),
-			// Disabled: SwiftLint script requires access to mise outside the sandbox
-			"ENABLE_USER_SCRIPT_SANDBOXING": .string("NO"),
-		],
+		]) { _, new in new },
 		configurations: BuildConfiguration.all
 	),
 	targets: [appTarget, appUITestsTarget] + Modules.targets,

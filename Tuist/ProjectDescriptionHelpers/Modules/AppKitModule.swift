@@ -13,15 +13,15 @@ public enum AppKitModule {
 			.target(name: "\(appName)Character"),
 			.target(name: "\(appName)Episode"),
 			.target(name: "\(appName)System"),
-			.target(name: "\(appName)Networking"),
+			NetworkingModule.targetDependency,
 		],
 		testDependencies: [
 			CoreModule.mocksTargetDependency,
-			.target(name: "\(appName)NetworkingMocks"),
+			NetworkingModule.mocksTargetDependency,
 		],
 		snapshotTestDependencies: [
 			CoreModule.mocksTargetDependency,
-			.target(name: "\(appName)NetworkingMocks"),
+			NetworkingModule.mocksTargetDependency,
 		]
 	)
 

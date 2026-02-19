@@ -6,7 +6,6 @@ public enum Modules {
 	/// All framework modules in dependency order.
 	private static let all: [FrameworkModule] = [
 		SnapshotTestKitModule.module,
-		NetworkingModule.module,
 		ResourcesModule.module,
 		DesignSystemModule.module,
 		CharacterModule.module,
@@ -31,7 +30,6 @@ public enum Modules {
 	/// Never include mock targets - they exist to support tests, not to be measured.
 	public static var codeCoverageTargets: [TargetReference] {
 		[.target(appName)]
-			+ NetworkingModule.targetReferences
 			+ ResourcesModule.targetReferences
 			+ DesignSystemModule.targetReferences
 			+ CharacterModule.targetReferences

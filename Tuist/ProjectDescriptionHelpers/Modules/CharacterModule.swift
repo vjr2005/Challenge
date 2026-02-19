@@ -7,17 +7,17 @@ public enum CharacterModule {
 		path: "Character",
 		dependencies: [
 			CoreModule.targetDependency,
-			.target(name: "\(appName)Networking"),
+			NetworkingModule.targetDependency,
 			.target(name: "\(appName)Resources"),
 			.target(name: "\(appName)DesignSystem"),
 		],
 		testDependencies: [
 			CoreModule.mocksTargetDependency,
-			.target(name: "\(appName)NetworkingMocks"),
+			NetworkingModule.mocksTargetDependency,
 		],
 		snapshotTestDependencies: [
 			CoreModule.mocksTargetDependency,
-			.target(name: "\(appName)NetworkingMocks"),
+			NetworkingModule.mocksTargetDependency,
 		]
 	)
 

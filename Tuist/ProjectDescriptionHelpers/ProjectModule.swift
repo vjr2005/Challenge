@@ -13,12 +13,7 @@ public enum ProjectModule {
 				disableSynthesizedResourceAccessors: true
 			),
 			settings: .settings(
-				base: [
-					"SWIFT_VERSION": .string(swiftVersion),
-					"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
-					"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),
-					"ENABLE_USER_SCRIPT_SANDBOXING": .string("NO"),
-				],
+				base: projectBaseSettings,
 				configurations: BuildConfiguration.all
 			),
 			targets: module.targets,
