@@ -9,7 +9,7 @@ public enum CharacterModule {
 			CoreModule.targetDependency,
 			NetworkingModule.targetDependency,
 			.target(name: "\(appName)Resources"),
-			.target(name: "\(appName)DesignSystem"),
+			DesignSystemModule.targetDependency,
 		],
 		testDependencies: [
 			CoreModule.mocksTargetDependency,

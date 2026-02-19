@@ -8,7 +8,7 @@ public enum SystemModule {
         dependencies: [
 			CoreModule.targetDependency,
             .target(name: "\(appName)Resources"),
-            .target(name: "\(appName)DesignSystem"),
+			DesignSystemModule.targetDependency,
         ],
         testDependencies: [
 			CoreModule.mocksTargetDependency

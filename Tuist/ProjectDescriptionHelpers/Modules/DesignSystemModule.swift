@@ -2,7 +2,8 @@ import ProjectDescription
 
 public enum DesignSystemModule {
 	public static let module = FrameworkModule.create(
-		name: "DesignSystem",
+		name: name,
+		standalone: true,
 		dependencies: [
 			CoreModule.targetDependency
 		],
@@ -14,7 +15,17 @@ public enum DesignSystemModule {
 		]
 	)
 
-	public static let targetReferences: [TargetReference] = [
-		.target("\(appName)DesignSystem"),
-	]
+	public static var project: Project {
+		ProjectModule.create(module: module)
+	}
+
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
+
+	public static var targetDependency: TargetDependency {
+		.project(target: module.name, path: path)
+	}
+}
+
+private extension DesignSystemModule {
+	static let name = "DesignSystem"
 }

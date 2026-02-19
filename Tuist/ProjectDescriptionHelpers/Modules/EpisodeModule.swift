@@ -7,7 +7,7 @@ public enum EpisodeModule {
 		path: "Episode",
 		dependencies: [
 			CoreModule.targetDependency,
-			.target(name: "\(appName)DesignSystem"),
+			DesignSystemModule.targetDependency,
 			NetworkingModule.targetDependency,
 			.target(name: "\(appName)Resources"),
 		],

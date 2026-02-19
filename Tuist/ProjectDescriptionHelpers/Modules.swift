@@ -6,7 +6,6 @@ public enum Modules {
 	/// All framework modules in dependency order.
 	private static let all: [FrameworkModule] = [
 		ResourcesModule.module,
-		DesignSystemModule.module,
 		CharacterModule.module,
 		EpisodeModule.module,
 		HomeModule.module,
@@ -30,7 +29,6 @@ public enum Modules {
 	public static var codeCoverageTargets: [TargetReference] {
 		[.target(appName)]
 			+ ResourcesModule.targetReferences
-			+ DesignSystemModule.targetReferences
 			+ CharacterModule.targetReferences
 			+ EpisodeModule.targetReferences
 			+ HomeModule.targetReferences
