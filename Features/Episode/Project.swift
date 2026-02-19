@@ -1,4 +1,4 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let project = EpisodeModule.project
+let project = episodeModule.project

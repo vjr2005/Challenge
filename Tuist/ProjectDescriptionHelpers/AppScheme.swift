@@ -16,14 +16,14 @@ public enum AppScheme {
 
 		if includeTests {
 			let testableTargets: [TestableTarget] =
-				AppKitModule.testableTargets
-				+ CoreModule.testableTargets
-				+ NetworkingModule.testableTargets
-				+ DesignSystemModule.testableTargets
-				+ CharacterModule.testableTargets
-				+ EpisodeModule.testableTargets
-				+ HomeModule.testableTargets
-				+ SystemModule.testableTargets
+				appKitModule.testableTargets
+				+ coreModule.testableTargets
+				+ networkingModule.testableTargets
+				+ designSystemModule.testableTargets
+				+ characterModule.testableTargets
+				+ episodeModule.testableTargets
+				+ homeModule.testableTargets
+				+ systemModule.testableTargets
 
 			testAction = .targets(
 				testableTargets,

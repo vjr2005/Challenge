@@ -2,11 +2,72 @@ import Foundation
 import ProjectDescription
 
 /// A module containing targets and schemes for a framework.
-public struct FrameworkModule: @unchecked Sendable {
-	public let baseFolder: String
+public struct Module: @unchecked Sendable {
+	public let directory: String
 	public let name: String
+	public let hasMocks: Bool
+	public let hasUnitTests: Bool
+	public let hasSnapshotTests: Bool
 	public let targets: [Target]
 	public let schemes: [Scheme]
+
+	// MARK: - Computed Properties
+
+	public var project: Project {
+		Project(
+			name: name,
+			options: .options(
+				automaticSchemesOptions: .disabled,
+				disableBundleAccessors: true,
+				disableSynthesizedResourceAccessors: true
+			),
+			settings: .settings(
+				base: projectBaseSettings,
+				configurations: BuildConfiguration.all
+			),
+			targets: targets,
+			schemes: schemes
+		)
+	}
+
+	public var path: ProjectDescription.Path {
+		.path("\(workspaceRoot)/\(directory)")
+	}
+
+	public var targetReference: TargetReference {
+		.project(path: path, target: name)
+	}
+
+	public var targetDependency: TargetDependency {
+		.project(target: name, path: path)
+	}
+
+	public var testableTargets: [TestableTarget] {
+		var targets: [TestableTarget] = []
+		if hasUnitTests {
+			targets.append(
+				.testableTarget(
+					target: .project(path: path, target: "\(name)Tests"),
+					parallelization: .swiftTestingOnly
+				)
+			)
+		}
+		if hasSnapshotTests {
+			targets.append(
+				.testableTarget(
+					target: .project(path: path, target: "\(name)SnapshotTests"),
+					parallelization: .swiftTestingOnly
+				)
+			)
+		}
+		return targets
+	}
+
+	public var mocksTargetDependency: TargetDependency {
+		.project(target: name.appending("Mocks"), path: path)
+	}
+
+	// MARK: - Private Helpers
 
 	/// Checks if a folder contains any files (searches recursively).
 	/// - Parameters:
@@ -39,45 +100,40 @@ public struct FrameworkModule: @unchecked Sendable {
 	}
 
 	/// Checks if a Mocks folder exists with Swift files.
-	private static func hasMocksFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Mocks", withExtension: ".swift")
+	private static func hasMocksFolder(directory: String) -> Bool {
+		folderContainsFiles(at: "\(workspaceRoot)/\(directory)/Mocks", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests/Unit folder exists with Swift files.
-	private static func hasUnitTestsFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Tests/Unit", withExtension: ".swift")
+	private static func hasUnitTestsFolder(directory: String) -> Bool {
+		folderContainsFiles(at: "\(workspaceRoot)/\(directory)/Tests/Unit", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests/Snapshots folder exists with Swift files.
-	private static func hasSnapshotTestsFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Tests/Snapshots", withExtension: ".swift")
+	private static func hasSnapshotTestsFolder(directory: String) -> Bool {
+		folderContainsFiles(at: "\(workspaceRoot)/\(directory)/Tests/Snapshots", withExtension: ".swift")
 	}
 
 	/// Checks if a Tests/Shared folder exists with Swift files.
-	private static func hasSharedTestsFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Tests/Shared", withExtension: ".swift")
+	private static func hasSharedTestsFolder(directory: String) -> Bool {
+		folderContainsFiles(at: "\(workspaceRoot)/\(directory)/Tests/Shared", withExtension: ".swift")
 	}
 
 	/// Checks if a Sources/Resources folder exists with any files.
-	private static func hasResourcesFolder(baseFolder: String, path: String) -> Bool {
-		folderContainsFiles(at: "\(workspaceRoot)/\(baseFolder)/\(path)/Sources/Resources")
+	private static func hasResourcesFolder(directory: String) -> Bool {
+		folderContainsFiles(at: "\(workspaceRoot)/\(directory)/Sources/Resources")
 	}
 
-	/// Builds a path for target source/resource globs.
-	/// When prefix is empty (standalone mode), returns the suffix directly.
-	private static func targetPath(_ prefix: String, _ suffix: String) -> String {
-		prefix.isEmpty ? suffix : "\(prefix)/\(suffix)"
-	}
+	// MARK: - Factory
 
 	/// Creates a framework module with targets (framework, mocks, tests, snapshot tests) and scheme with coverage.
+	///
+	/// Each module has its own `Project.swift`, so target paths are relative to the module directory.
+	/// Folder existence checks use the full path from the workspace root.
+	///
 	/// - Parameters:
-	///   - name: The framework name (e.g., "Networking", "Character"). Must not contain "/".
-	///   - baseFolder: The base folder containing the module (e.g., "Libraries" or "Features").
-	///                 Defaults to "Libraries".
-	///   - path: The path to the module sources relative to baseFolder (e.g., "Character").
-	///           Defaults to name if not specified.
-	///   - standalone: When true, target paths are relative to the module directory (for modules with their own Project.swift).
-	///                 Folder existence checks still use the full path from the workspace root.
+	///   - directory: The module's directory relative to the workspace root (e.g., "Libraries/Core", "Features/Character", "AppKit").
+	///                The last path component is used as the module name (e.g., "Core" → target `ChallengeCore`).
 	///   - destinations: Deployment destinations (default: iPhone, iPad)
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
@@ -87,32 +143,28 @@ public struct FrameworkModule: @unchecked Sendable {
 	/// - Note: Mocks and test targets are automatically created if the corresponding folders exist.
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
 	public static func create(
-		name: String,
-		baseFolder: String = "Libraries",
-		path: String? = nil,
-		standalone: Bool = false,
+		directory: String,
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
 		snapshotTestDependencies: [TargetDependency] = [],
 		targetSettingsOverrides: SettingsDictionary = [:]
-	) -> FrameworkModule {
-		let targetName = "\(appName)\(name)"
+	) -> Module {
+		let components = directory.split(separator: "/")
+		guard let last = components.last else {
+			fatalError("Module directory must not be empty")
+		}
+		let shortName = String(last)
+		let targetName = "\(appName)\(shortName)"
 		let testsTargetName = "\(targetName)Tests"
-		let sourcesPath = path ?? name
-		let fullPath = "\(baseFolder)/\(sourcesPath)"
-		let targetPrefix = standalone ? "" : fullPath
 		let settings: Settings = .settings(base: projectBaseSettings.merging(targetSettingsOverrides) { _, new in new })
 
-		let resources: ResourceFileElements? = hasResourcesFolder(baseFolder: baseFolder, path: sourcesPath) ? [
-			.glob(pattern: "\(targetPath(targetPrefix, "Sources/Resources/**"))", excluding: [])
+		let resources: ResourceFileElements? = hasResourcesFolder(directory: directory) ? [
+			.glob(pattern: "Sources/Resources/**", excluding: [])
 		] : nil
 
-		let workspaceRoot: String = {
-			guard standalone else { return "." }
-			let depth = [baseFolder, sourcesPath]
-				.filter { !$0.isEmpty && $0 != "." }
-				.count
+		let relativeWorkspaceRoot: String = {
+			let depth = components.count
 			return depth > 0 ? Array(repeating: "..", count: depth).joined(separator: "/") : "."
 		}()
 
@@ -122,9 +174,9 @@ public struct FrameworkModule: @unchecked Sendable {
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			deploymentTargets: developmentTarget,
-			sources: ["\(targetPath(targetPrefix, "Sources/**"))"],
+			sources: ["Sources/**"],
 			resources: resources,
-			scripts: [SwiftLint.script(path: targetPath(targetPrefix, "Sources"), workspaceRoot: workspaceRoot)],
+			scripts: [SwiftLint.script(path: "Sources", workspaceRoot: relativeWorkspaceRoot)],
 			dependencies: dependencies,
 			settings: settings
 		)
@@ -132,14 +184,15 @@ public struct FrameworkModule: @unchecked Sendable {
 		var targets = [framework]
 		var testsDependencies: [TargetDependency] = [.target(name: targetName)]
 
-		if hasMocksFolder(baseFolder: baseFolder, path: sourcesPath) {
+		let moduleHasMocks = hasMocksFolder(directory: directory)
+		if moduleHasMocks {
 			let mocks = Target.target(
 				name: "\(targetName)Mocks",
 				destinations: destinations,
 				product: .framework,
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)Mocks",
 				deploymentTargets: developmentTarget,
-				sources: ["\(targetPath(targetPrefix, "Mocks/**"))"],
+				sources: ["Mocks/**"],
 				dependencies: [.target(name: targetName)],
 				settings: settings
 			)
@@ -151,17 +204,18 @@ public struct FrameworkModule: @unchecked Sendable {
 		var testableTargets: [TestableTarget] = []
 		var buildTargets: [TargetReference] = [.target(targetName)]
 
-		let hasShared = hasSharedTestsFolder(baseFolder: baseFolder, path: sourcesPath)
+		let hasShared = hasSharedTestsFolder(directory: directory)
 
+		let moduleHasUnitTests = hasUnitTestsFolder(directory: directory)
 		// Unit Tests target (Tests/Unit/ + Tests/Shared/)
-		if hasUnitTestsFolder(baseFolder: baseFolder, path: sourcesPath) {
+		if moduleHasUnitTests {
 			let unitSources: SourceFilesList = hasShared
-				? ["\(targetPath(targetPrefix, "Tests/Unit/**"))", "\(targetPath(targetPrefix, "Tests/Shared/**"))"]
-				: ["\(targetPath(targetPrefix, "Tests/Unit/**"))"]
+				? ["Tests/Unit/**", "Tests/Shared/**"]
+				: ["Tests/Unit/**"]
 
 			let unitResources: ResourceFileElements = hasShared ? [
-				.glob(pattern: "\(targetPath(targetPrefix, "Tests/Shared/Resources/**"))", excluding: []),
-				.glob(pattern: "\(targetPath(targetPrefix, "Tests/Shared/Fixtures/**"))", excluding: []),
+				.glob(pattern: "Tests/Shared/Resources/**", excluding: []),
+				.glob(pattern: "Tests/Shared/Fixtures/**", excluding: []),
 			] : []
 
 			let tests = Target.target(
@@ -187,13 +241,14 @@ public struct FrameworkModule: @unchecked Sendable {
 
 		// Snapshot Tests target (Tests/Snapshots/ + Tests/Shared/)
 		let snapshotTestsTargetName = "\(targetName)SnapshotTests"
-		if hasSnapshotTestsFolder(baseFolder: baseFolder, path: sourcesPath) {
+		let moduleHasSnapshotTests = hasSnapshotTestsFolder(directory: directory)
+		if moduleHasSnapshotTests {
 			let snapshotSources: SourceFilesList = hasShared
-				? ["\(targetPath(targetPrefix, "Tests/Snapshots/**"))", "\(targetPath(targetPrefix, "Tests/Shared/**"))"]
-				: ["\(targetPath(targetPrefix, "Tests/Snapshots/**"))"]
+				? ["Tests/Snapshots/**", "Tests/Shared/**"]
+				: ["Tests/Snapshots/**"]
 
 			let snapshotResources: ResourceFileElements = hasShared ? [
-				.glob(pattern: "\(targetPath(targetPrefix, "Tests/Shared/Resources/**"))", excluding: []),
+				.glob(pattern: "Tests/Shared/Resources/**", excluding: []),
 			] : []
 
 			let snapshotTests = Target.target(
@@ -204,7 +259,7 @@ public struct FrameworkModule: @unchecked Sendable {
 				deploymentTargets: developmentTarget,
 				sources: snapshotSources,
 				resources: snapshotResources,
-				dependencies: testsDependencies + [SnapshotTestKitModule.targetDependency] + snapshotTestDependencies,
+				dependencies: testsDependencies + [snapshotTestKitModule.targetDependency] + snapshotTestDependencies,
 				settings: settings
 			)
 			targets.append(snapshotTests)
@@ -236,9 +291,12 @@ public struct FrameworkModule: @unchecked Sendable {
 			)
 		}
 
-		return FrameworkModule(
-			baseFolder: baseFolder,
+		return Module(
+			directory: directory,
 			name: targetName,
+			hasMocks: moduleHasMocks,
+			hasUnitTests: moduleHasUnitTests,
+			hasSnapshotTests: moduleHasSnapshotTests,
 			targets: targets,
 			schemes: [scheme],
 		)

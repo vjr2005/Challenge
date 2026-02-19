@@ -1,4 +1,4 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let project = SnapshotTestKitModule.project
+let project = snapshotTestKitModule.project

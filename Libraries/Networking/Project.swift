@@ -1,4 +1,4 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let project = NetworkingModule.project
+let project = networkingModule.project

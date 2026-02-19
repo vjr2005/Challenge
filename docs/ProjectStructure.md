@@ -14,7 +14,7 @@ Challenge/
 │       ├── Shared/                  # Robots, Scenarios, Stubs, Fixtures
 │       └── UI/                      # UI tests (XCTest)
 ├── AppKit/                          # Composition layer
-│   ├── Project.swift                # let project = AppKitModule.project
+│   ├── Project.swift                # let project = appKitModule.project
 │   ├── Sources/
 │   │   ├── Data/                    # App-level data configuration
 │   │   └── Presentation/            # Root views and navigation
@@ -23,42 +23,42 @@ Challenge/
 │       └── Snapshots/
 ├── Features/                        # Feature modules (standalone projects)
 │   ├── Character/
-│   │   ├── Project.swift            # let project = CharacterModule.project
+│   │   ├── Project.swift            # let project = characterModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Home/
-│   │   ├── Project.swift            # let project = HomeModule.project
+│   │   ├── Project.swift            # let project = homeModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Episode/
-│   │   ├── Project.swift            # let project = EpisodeModule.project
+│   │   ├── Project.swift            # let project = episodeModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── System/
-│       ├── Project.swift            # let project = SystemModule.project
+│       ├── Project.swift            # let project = systemModule.project
 │       ├── Sources/
 │       └── Tests/
 ├── Libraries/                       # Shared libraries (standalone projects)
 │   ├── Core/                        # Navigation, routing, image loading
-│   │   ├── Project.swift            # let project = CoreModule.project
+│   │   ├── Project.swift            # let project = coreModule.project
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── Networking/                  # HTTP client
-│   │   ├── Project.swift            # let project = NetworkingModule.project
+│   │   ├── Project.swift            # let project = networkingModule.project
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── DesignSystem/                # UI components (Atomic Design)
-│   │   ├── Project.swift            # let project = DesignSystemModule.project
+│   │   ├── Project.swift            # let project = designSystemModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── SnapshotTestKit/             # Snapshot testing framework
-│       ├── Project.swift            # let project = SnapshotTestKitModule.project
+│       ├── Project.swift            # let project = snapshotTestKitModule.project
 │       └── Sources/
 ├── Shared/
 │   └── Resources/                   # Localization, shared resources
-│       ├── Project.swift            # let project = ResourcesModule.project
+│       ├── Project.swift            # let project = resourcesModule.project
 │       └── Sources/
 ├── Tuist/
 │   ├── ProjectDescriptionHelpers/

@@ -48,7 +48,7 @@ ReadMcpResourceTool(
 
 ## Project Options
 
-The root `Project.swift` defines the app and UI test targets only. All schemes are at workspace level in `Workspace.swift`. Each module has its own `Project.swift` created via `ProjectModule.create()`.
+The root `Project.swift` defines the app and UI test targets only. All schemes are at workspace level in `Workspace.swift`. Each module has its own `Project.swift` using the module's `.project` computed property.
 
 ```swift
 // Project.swift (root — app targets only, no schemes)
@@ -68,7 +68,7 @@ let project = Project(
 // Workspace.swift — all schemes defined here (workspace-level can reference cross-project targets)
 let workspace = Workspace(
     name: appName,
-    projects: [".", CoreModule.path, NetworkingModule.path, ...],
+    projects: [".", coreModule.path, networkingModule.path, ...],
     schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme()],
     ...
 )

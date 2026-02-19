@@ -15,19 +15,19 @@ public enum Modules {
 	public static var codeCoverageTargets: [TargetReference] {
 		[
 			appTargetReference,
-			AppKitModule.targetReference,
-			CoreModule.targetReference,
-			NetworkingModule.targetReference,
-			DesignSystemModule.targetReference,
-			CharacterModule.targetReference,
-			EpisodeModule.targetReference,
-			HomeModule.targetReference,
-			SystemModule.targetReference,
+			appKitModule.targetReference,
+			coreModule.targetReference,
+			networkingModule.targetReference,
+			designSystemModule.targetReference,
+			characterModule.targetReference,
+			episodeModule.targetReference,
+			homeModule.targetReference,
+			systemModule.targetReference,
 		]
 	}
 
 	/// App dependencies (modules that the app target depends on).
 	public static var appDependencies: [TargetDependency] {
-		[AppKitModule.targetDependency]
+		[appKitModule.targetDependency]
 	}
 }

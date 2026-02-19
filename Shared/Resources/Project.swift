@@ -1,4 +1,4 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let project = ResourcesModule.project
+let project = resourcesModule.project

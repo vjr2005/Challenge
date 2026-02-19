@@ -9,8 +9,7 @@ Tuist/
 ├── ProjectDescriptionHelpers/
 │   ├── Config.swift              # App name, Swift version, deployment target, workspaceRoot
 │   ├── Modules.swift             # Module registry, app dependencies, coverage targets
-│   ├── FrameworkModule.swift     # Module definition helper
-│   ├── ProjectModule.swift       # Standalone Project factory
+│   ├── Module.swift              # Module definition and factory
 │   ├── BuildConfiguration.swift  # Debug/Release configurations
 │   ├── Environment.swift         # Environment-specific settings (Dev/Staging/Prod)
 │   ├── AppScheme.swift           # Workspace-level scheme generation
@@ -53,12 +52,11 @@ Every module is a **standalone Tuist project** with its own `Project.swift`. Eac
 
 All schemes (app, tests, UI tests) are defined at **workspace level** in `Workspace.swift`, not in `Project.swift`. This is required because workspace-level schemes can reference targets across projects.
 
-Each module exposes:
+Each module is a global `Module` constant with computed properties:
 
 | Property | Type | Purpose |
 |----------|------|---------|
-| `module` | `FrameworkModule` | Module definition (targets, schemes) |
-| `project` | `Project` | Standalone project via `ProjectModule.create()` |
+| `project` | `Project` | Standalone project for `Project.swift` |
 | `path` | `Path` | Absolute path to module directory |
 | `testableTargets` | `[TestableTarget]` | All test targets (unit + snapshot) |
 | `targetReference` | `TargetReference` | For scheme references (coverage, build actions) |
@@ -195,7 +193,7 @@ This ensures features remain independent and can be developed, tested, and poten
 
 ## Module Definition
 
-Modules are defined using `FrameworkModule.create()` which automatically:
+Modules are defined using `Module.create()` which automatically:
 
 - Creates the framework target
 - Creates a Mocks target (if `Mocks/` folder exists)
@@ -208,72 +206,38 @@ Modules are defined using `FrameworkModule.create()` which automatically:
 ### Example Module
 
 ```swift
-public enum CharacterModule {
-    public static let module = FrameworkModule.create(
-        name: name,
-        baseFolder: "Features",
-        standalone: true,
-        dependencies: [
-            CoreModule.targetDependency,
-            NetworkingModule.targetDependency,
-            ResourcesModule.targetDependency,
-            DesignSystemModule.targetDependency,
-        ],
-        testDependencies: [
-            CoreModule.mocksTargetDependency,
-            NetworkingModule.mocksTargetDependency,
-        ],
-        snapshotTestDependencies: [
-            CoreModule.mocksTargetDependency,
-            NetworkingModule.mocksTargetDependency,
-        ]
-    )
-
-    public static var project: Project {
-        ProjectModule.create(module: module)
-    }
-
-    public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
-
-    public static var testableTargets: [TestableTarget] {
-        [
-            .testableTarget(target: .project(path: path, target: "\(module.name)Tests"), parallelization: .swiftTestingOnly),
-            .testableTarget(target: .project(path: path, target: "\(module.name)SnapshotTests"), parallelization: .swiftTestingOnly),
-        ]
-    }
-
-    public static var targetReference: TargetReference {
-        .project(path: path, target: module.name)
-    }
-
-    public static var targetDependency: TargetDependency {
-        .project(target: module.name, path: path)
-    }
-
-    public static var mocksTargetDependency: TargetDependency {
-        .project(target: module.name.appending("Mocks"), path: path)
-    }
-}
-
-private extension CharacterModule {
-    static let name = "Character"
-}
+public let characterModule = Module.create(
+    directory: "Features/Character",
+    dependencies: [
+        coreModule.targetDependency,
+        networkingModule.targetDependency,
+        resourcesModule.targetDependency,
+        designSystemModule.targetDependency,
+    ],
+    testDependencies: [
+        coreModule.mocksTargetDependency,
+        networkingModule.mocksTargetDependency,
+    ],
+    snapshotTestDependencies: [
+        coreModule.mocksTargetDependency,
+        networkingModule.mocksTargetDependency,
+    ]
+)
 ```
 
 ## Per-Target Overrides
 
-`FrameworkModule.create()` accepts an optional `targetSettingsOverrides` parameter to override build settings. The overrides are merged on top of `projectBaseSettings` and propagated to **all targets**: framework, mocks, and test targets (unit + snapshot). This ensures consistent isolation across a module and its associated targets.
+`Module.create()` accepts an optional `targetSettingsOverrides` parameter to override build settings. The overrides are merged on top of `projectBaseSettings` and propagated to **all targets**: framework, mocks, and test targets (unit + snapshot). This ensures consistent isolation across a module and its associated targets.
 
 ### ChallengeNetworking
 
 The Networking module overrides the project-wide `MainActor` default to `nonisolated`:
 
 ```swift
-public static let module = FrameworkModule.create(
-    name: name,
-    standalone: true,
+public let networkingModule = Module.create(
+    directory: "Libraries/Networking",
     testDependencies: [
-        CoreModule.mocksTargetDependency,
+        coreModule.mocksTargetDependency,
     ],
     targetSettingsOverrides: [
         "SWIFT_DEFAULT_ACTOR_ISOLATION": .string("nonisolated"),

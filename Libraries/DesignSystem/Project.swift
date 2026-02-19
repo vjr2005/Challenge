@@ -1,4 +1,4 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let project = DesignSystemModule.project
+let project = designSystemModule.project
