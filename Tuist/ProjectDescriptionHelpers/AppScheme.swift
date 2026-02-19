@@ -7,7 +7,7 @@ public enum AppScheme {
 	///   - environment: The target environment.
 	///   - includeTests: Whether to include test targets in the scheme.
 	/// - Returns: A configured Scheme.
-	public static func create(
+	static func create(
 		environment: Environment,
 		includeTests: Bool = false
 	) -> Scheme {

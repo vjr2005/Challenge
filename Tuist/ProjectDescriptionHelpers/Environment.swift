@@ -1,13 +1,13 @@
 import ProjectDescription
 
 /// Represents the different build environments for the app.
-public enum Environment: String, CaseIterable {
+enum Environment: String, CaseIterable {
 	case dev
 	case staging
 	case prod
 
 	/// Display name for the scheme.
-	public var schemeName: String {
+	var schemeName: String {
 		switch self {
 		case .dev: "\(appName) (Dev)"
 		case .staging: "\(appName) (Staging)"
@@ -16,7 +16,7 @@ public enum Environment: String, CaseIterable {
 	}
 
 	/// Bundle identifier suffix for each environment.
-	public var bundleIdSuffix: String {
+	var bundleIdSuffix: String {
 		switch self {
 		case .dev: ".dev"
 		case .staging: ".staging"
@@ -25,12 +25,12 @@ public enum Environment: String, CaseIterable {
 	}
 
 	/// Full bundle identifier for each environment.
-	public var bundleId: String {
+	var bundleId: String {
 		"com.app.\(appName)\(bundleIdSuffix)"
 	}
 
 	/// App icon asset name for each environment.
-	public var appIconName: String {
+	var appIconName: String {
 		switch self {
 		case .dev: "AppIconDev"
 		case .staging: "AppIconStaging"
@@ -39,7 +39,7 @@ public enum Environment: String, CaseIterable {
 	}
 
 	/// Debug configuration name for running the app.
-	public var debugConfigurationName: ConfigurationName {
+	var debugConfigurationName: ConfigurationName {
 		switch self {
 		case .dev: "Debug"
 		case .staging: "Debug-Staging"
@@ -48,7 +48,7 @@ public enum Environment: String, CaseIterable {
 	}
 
 	/// Release configuration name for archiving.
-	public var releaseConfigurationName: ConfigurationName {
+	var releaseConfigurationName: ConfigurationName {
 		switch self {
 		case .dev: "Release"
 		case .staging: "Staging"
@@ -57,7 +57,7 @@ public enum Environment: String, CaseIterable {
 	}
 
 	/// Target settings for this environment.
-	public var targetSettings: Configuration {
+	var targetSettings: Configuration {
 		let settings: SettingsDictionary = [
 			"PRODUCT_BUNDLE_IDENTIFIER": .string(bundleId),
 			"ASSETCATALOG_COMPILER_APPICON_NAME": .string(appIconName),
@@ -74,7 +74,7 @@ public enum Environment: String, CaseIterable {
 	}
 
 	/// Release target settings for this environment.
-	public var releaseTargetSettings: Configuration {
+	var releaseTargetSettings: Configuration {
 		// Code Signing Configuration
 		// --------------------------
 		// Current: Disabled for building without Apple Developer account.
@@ -107,7 +107,7 @@ public enum Environment: String, CaseIterable {
 
 // MARK: - App Target Settings
 
-public extension Environment {
+extension Environment {
 	/// All configurations for the app target.
 	static var appTargetConfigurations: [Configuration] {
 		[

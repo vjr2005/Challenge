@@ -3,25 +3,25 @@ import ProjectDescription
 /// Configuration and targets for the main app project.
 public enum App {
 	/// Path to the main app project (workspace root).
-	public static let projectPath: ProjectDescription.Path = .path(workspaceRoot)
+	static let projectPath: ProjectDescription.Path = .path(workspaceRoot)
 
 	/// Target reference for the main app target (workspace-level).
-	public static var targetReference: TargetReference {
+	static var targetReference: TargetReference {
 		.project(path: projectPath, target: appName)
 	}
 
 	/// Target reference for the UI tests target (workspace-level).
-	public static var uiTestsTargetReference: TargetReference {
+	static var uiTestsTargetReference: TargetReference {
 		.project(path: projectPath, target: "\(appName)UITests")
 	}
 
 	/// App dependencies (modules that the app target depends on).
-	public static var dependencies: [TargetDependency] {
+	private static var dependencies: [TargetDependency] {
 		[appKitModule.targetDependency]
 	}
 
 	/// All testable targets across all modules.
-	public static var testableTargets: [TestableTarget] {
+	static var testableTargets: [TestableTarget] {
 		Modules.testableTargets
 	}
 

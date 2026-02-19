@@ -4,7 +4,7 @@ import ProjectDescription
 /// Add new modules here to include them in the workspace.
 public enum Modules {
 	/// All modules in the project.
-	public static let all: [Module] = [
+	static let all: [Module] = [
 		coreModule,
 		networkingModule,
 		snapshotTestKitModule,
@@ -14,7 +14,7 @@ public enum Modules {
 		episodeModule,
 		homeModule,
 		systemModule,
-		appKitModule
+		appKitModule,
 	]
 
 	/// All module project paths for the workspace.
@@ -23,12 +23,12 @@ public enum Modules {
 	}
 
 	/// All testable targets across all modules.
-	public static var testableTargets: [TestableTarget] {
+	static var testableTargets: [TestableTarget] {
 		all.flatMap(\.testableTargets)
 	}
 
 	/// All source target references for code coverage (modules only, excludes app).
-	public static var codeCoverageTargets: [TargetReference] {
+	static var codeCoverageTargets: [TargetReference] {
 		all.filter(\.includeInCoverage).map(\.targetReference)
 	}
 }

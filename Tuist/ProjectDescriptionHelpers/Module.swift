@@ -3,14 +3,14 @@ import ProjectDescription
 
 /// A module containing targets and schemes for a framework.
 public struct Module: @unchecked Sendable {
-	public let directory: String
-	public let name: String
-	public let hasMocks: Bool
-	public let hasUnitTests: Bool
-	public let hasSnapshotTests: Bool
-	public let includeInCoverage: Bool
-	public let targets: [Target]
-	public let schemes: [Scheme]
+	let directory: String
+	let name: String
+	let hasMocks: Bool
+	let hasUnitTests: Bool
+	let hasSnapshotTests: Bool
+	let includeInCoverage: Bool
+	let targets: [Target]
+	let schemes: [Scheme]
 
 	// MARK: - Computed Properties
 
@@ -31,19 +31,19 @@ public struct Module: @unchecked Sendable {
 		)
 	}
 
-	public var path: ProjectDescription.Path {
+	var path: ProjectDescription.Path {
 		.path("\(workspaceRoot)/\(directory)")
 	}
 
-	public var targetReference: TargetReference {
+	var targetReference: TargetReference {
 		.project(path: path, target: name)
 	}
 
-	public var targetDependency: TargetDependency {
+	var targetDependency: TargetDependency {
 		.project(target: name, path: path)
 	}
 
-	public var testableTargets: [TestableTarget] {
+	var testableTargets: [TestableTarget] {
 		var targets: [TestableTarget] = []
 		if hasUnitTests {
 			targets.append(
@@ -64,7 +64,7 @@ public struct Module: @unchecked Sendable {
 		return targets
 	}
 
-	public var mocksTargetDependency: TargetDependency {
+	var mocksTargetDependency: TargetDependency {
 		.project(target: name.appending("Mocks"), path: path)
 	}
 
@@ -145,7 +145,7 @@ public struct Module: @unchecked Sendable {
 	///                              Use to override specific keys (e.g., `SWIFT_DEFAULT_ACTOR_ISOLATION` for nonisolated modules).
 	/// - Note: Mocks and test targets are automatically created if the corresponding folders exist.
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
-	public static func create(
+	static func create(
 		directory: String,
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
