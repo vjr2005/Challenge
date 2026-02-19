@@ -4,13 +4,13 @@ public enum DesignSystemModule {
 	public static let module = FrameworkModule.create(
 		name: "DesignSystem",
 		dependencies: [
-			.target(name: "\(appName)Core"),
+			CoreModule.targetDependency
 		],
 		testDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
 		],
 		snapshotTestDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
 		]
 	)
 

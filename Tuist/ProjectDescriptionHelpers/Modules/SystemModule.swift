@@ -6,15 +6,15 @@ public enum SystemModule {
         baseFolder: "Features",
         path: "System",
         dependencies: [
-            .target(name: "\(appName)Core"),
+			CoreModule.targetDependency,
             .target(name: "\(appName)Resources"),
             .target(name: "\(appName)DesignSystem"),
         ],
         testDependencies: [
-            .target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
         ],
         snapshotTestDependencies: [
-            .target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
         ]
     )
 

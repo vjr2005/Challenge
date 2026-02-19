@@ -26,6 +26,8 @@ public enum SnapshotTestKitModule {
 		)
 
 		return FrameworkModule(
+			baseFolder: "Libraries",
+			name: targetName,
 			targets: [framework],
 			schemes: [scheme]
 		)

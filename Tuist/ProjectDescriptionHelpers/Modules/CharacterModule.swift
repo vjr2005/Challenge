@@ -6,17 +6,17 @@ public enum CharacterModule {
 		baseFolder: "Features",
 		path: "Character",
 		dependencies: [
-			.target(name: "\(appName)Core"),
+			CoreModule.targetDependency,
 			.target(name: "\(appName)Networking"),
 			.target(name: "\(appName)Resources"),
 			.target(name: "\(appName)DesignSystem"),
 		],
 		testDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 			.target(name: "\(appName)NetworkingMocks"),
 		],
 		snapshotTestDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 			.target(name: "\(appName)NetworkingMocks"),
 		]
 	)

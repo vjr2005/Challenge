@@ -6,16 +6,16 @@ public enum HomeModule {
         baseFolder: "Features",
         path: "Home",
         dependencies: [
-            .target(name: "\(appName)Core"),
+			CoreModule.targetDependency,
             .target(name: "\(appName)DesignSystem"),
             .target(name: "\(appName)Resources"),
-            .external(name: "Lottie"),
+            .external(name: "Lottie")
         ],
         testDependencies: [
-            .target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
         ],
         snapshotTestDependencies: [
-            .target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
         ]
     )
 

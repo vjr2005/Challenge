@@ -32,5 +32,8 @@ fi
 echo "Installing dependencies..."
 mise x -- tuist install
 
+echo "Removing standalone project files..."
+find . -path ./Tuist -prune -o -name "*.xcodeproj" -print -exec rm -rf {} + 2>/dev/null
+
 echo "Generating project..."
 mise x -- tuist generate

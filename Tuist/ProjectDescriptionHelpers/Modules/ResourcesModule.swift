@@ -6,7 +6,7 @@ public enum ResourcesModule {
 		baseFolder: "Shared",
 		path: "Resources",
 		dependencies: [
-			.target(name: "\(appName)Core"),
+			CoreModule.targetDependency
 		]
 	)
 

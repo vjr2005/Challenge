@@ -4,7 +4,7 @@ public enum NetworkingModule {
 	public static let module = FrameworkModule.create(
 		name: "Networking",
 		testDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency
 		],
 		settings: .settings(base: [
 			"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("nonisolated"),

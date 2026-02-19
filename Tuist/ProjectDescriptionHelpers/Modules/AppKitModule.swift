@@ -8,7 +8,7 @@ public enum AppKitModule {
 		baseFolder: ".",
 		path: "AppKit",
 		dependencies: [
-			.target(name: "\(appName)Core"),
+			CoreModule.targetDependency,
 			.target(name: "\(appName)Home"),
 			.target(name: "\(appName)Character"),
 			.target(name: "\(appName)Episode"),
@@ -16,11 +16,11 @@ public enum AppKitModule {
 			.target(name: "\(appName)Networking"),
 		],
 		testDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 			.target(name: "\(appName)NetworkingMocks"),
 		],
 		snapshotTestDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 			.target(name: "\(appName)NetworkingMocks"),
 		]
 	)

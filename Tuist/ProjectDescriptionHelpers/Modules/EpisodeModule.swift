@@ -6,17 +6,17 @@ public enum EpisodeModule {
 		baseFolder: "Features",
 		path: "Episode",
 		dependencies: [
-			.target(name: "\(appName)Core"),
+			CoreModule.targetDependency,
 			.target(name: "\(appName)DesignSystem"),
 			.target(name: "\(appName)Networking"),
 			.target(name: "\(appName)Resources"),
 		],
 		testDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 			.target(name: "\(appName)NetworkingMocks"),
 		],
 		snapshotTestDependencies: [
-			.target(name: "\(appName)CoreMocks"),
+			CoreModule.mocksTargetDependency,
 			.target(name: "\(appName)NetworkingMocks"),
 		]
 	)
