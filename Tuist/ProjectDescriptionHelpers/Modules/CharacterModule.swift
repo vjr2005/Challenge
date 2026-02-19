@@ -2,9 +2,9 @@ import ProjectDescription
 
 public enum CharacterModule {
 	public static let module = FrameworkModule.create(
-		name: "Character",
+		name: name,
 		baseFolder: "Features",
-		path: "Character",
+		standalone: true,
 		dependencies: [
 			CoreModule.targetDependency,
 			NetworkingModule.targetDependency,
@@ -21,7 +21,21 @@ public enum CharacterModule {
 		]
 	)
 
-	public static let targetReferences: [TargetReference] = [
-		.target("\(appName)Character"),
-	]
+	public static var project: Project {
+		ProjectModule.create(module: module)
+	}
+
+	public static let path: ProjectDescription.Path = .path("\(workspaceRoot)/\(module.baseFolder)/\(name)")
+
+	public static var targetDependency: TargetDependency {
+		.project(target: module.name, path: path)
+	}
+
+	public static var mocksTargetDependency: TargetDependency {
+		.project(target: module.name.appending("Mocks"), path: path)
+	}
+}
+
+private extension CharacterModule {
+	static let name = "Character"
 }

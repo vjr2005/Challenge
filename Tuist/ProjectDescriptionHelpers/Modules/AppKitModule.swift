@@ -9,10 +9,10 @@ public enum AppKitModule {
 		path: "AppKit",
 		dependencies: [
 			CoreModule.targetDependency,
-			.target(name: "\(appName)Home"),
-			.target(name: "\(appName)Character"),
-			.target(name: "\(appName)Episode"),
-			.target(name: "\(appName)System"),
+			HomeModule.targetDependency,
+			CharacterModule.targetDependency,
+			EpisodeModule.targetDependency,
+			SystemModule.targetDependency,
 			NetworkingModule.targetDependency,
 		],
 		testDependencies: [

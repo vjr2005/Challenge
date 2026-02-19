@@ -5,10 +5,6 @@ import ProjectDescription
 public enum Modules {
 	/// All framework modules in dependency order.
 	private static let all: [FrameworkModule] = [
-		CharacterModule.module,
-		EpisodeModule.module,
-		HomeModule.module,
-		SystemModule.module,
 		AppKitModule.module,
 	]
 
@@ -27,10 +23,6 @@ public enum Modules {
 	/// Never include mock targets - they exist to support tests, not to be measured.
 	public static var codeCoverageTargets: [TargetReference] {
 		[.target(appName)]
-			+ CharacterModule.targetReferences
-			+ EpisodeModule.targetReferences
-			+ HomeModule.targetReferences
-			+ SystemModule.targetReferences
 			+ AppKitModule.targetReferences
 	}
 
