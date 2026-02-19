@@ -8,7 +8,7 @@ public enum HomeModule {
         dependencies: [
 			CoreModule.targetDependency,
 			DesignSystemModule.targetDependency,
-            .target(name: "\(appName)Resources"),
+			ResourcesModule.targetDependency,
             .external(name: "Lottie")
         ],
         testDependencies: [

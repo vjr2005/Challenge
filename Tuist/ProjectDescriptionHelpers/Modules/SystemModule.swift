@@ -7,7 +7,7 @@ public enum SystemModule {
         path: "System",
         dependencies: [
 			CoreModule.targetDependency,
-            .target(name: "\(appName)Resources"),
+			ResourcesModule.targetDependency,
 			DesignSystemModule.targetDependency,
         ],
         testDependencies: [

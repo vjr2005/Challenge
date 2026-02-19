@@ -9,7 +9,7 @@ public enum EpisodeModule {
 			CoreModule.targetDependency,
 			DesignSystemModule.targetDependency,
 			NetworkingModule.targetDependency,
-			.target(name: "\(appName)Resources"),
+			ResourcesModule.targetDependency,
 		],
 		testDependencies: [
 			CoreModule.mocksTargetDependency,
