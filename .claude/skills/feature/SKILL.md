@@ -113,10 +113,7 @@ import ProjectDescriptionHelpers
 let project = {feature}Module.project
 ```
 
-Register in these files:
-- **`Modules.swift`** — Add `{feature}Module.targetReference` to `codeCoverageTargets`
-- **`Workspace.swift`** — Add `{feature}Module.path` to `projects` array
-- **`AppScheme.swift`** — Add `{feature}Module.testableTargets` to the test targets concatenation
+Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module in the workspace projects, test schemes, and code coverage.
 
 ### Step 2: Source Files
 

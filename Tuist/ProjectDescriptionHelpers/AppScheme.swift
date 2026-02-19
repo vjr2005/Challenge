@@ -11,26 +11,16 @@ public enum AppScheme {
 		environment: Environment,
 		includeTests: Bool = false
 	) -> Scheme {
-		let appTarget = Modules.appTargetReference
+		let appTarget = App.targetReference
 		var testAction: TestAction?
 
 		if includeTests {
-			let testableTargets: [TestableTarget] =
-				appKitModule.testableTargets
-				+ coreModule.testableTargets
-				+ networkingModule.testableTargets
-				+ designSystemModule.testableTargets
-				+ characterModule.testableTargets
-				+ episodeModule.testableTargets
-				+ homeModule.testableTargets
-				+ systemModule.testableTargets
-
 			testAction = .targets(
-				testableTargets,
+				App.testableTargets,
 				configuration: environment.debugConfigurationName,
 				options: .options(
 					coverage: true,
-					codeCoverageTargets: Modules.codeCoverageTargets
+					codeCoverageTargets: App.codeCoverageTargets
 				)
 			)
 		}
@@ -55,22 +45,21 @@ public enum AppScheme {
 	/// Creates the UI tests scheme.
 	/// - Returns: A configured Scheme for UI tests.
 	public static func uiTestsScheme() -> Scheme {
-		let appTarget = Modules.appTargetReference
-		let uiTestsTarget: TargetReference = .project(path: Modules.appProjectPath, target: "\(appName)UITests")
+		let appTarget = App.targetReference
 
 		return .scheme(
 			name: "\(appName)UITests",
-			buildAction: .buildAction(targets: [appTarget, uiTestsTarget]),
+			buildAction: .buildAction(targets: [appTarget, App.uiTestsTargetReference]),
 			testAction: .targets(
 				[
 					.testableTarget(
-						target: uiTestsTarget
+						target: App.uiTestsTargetReference
 					),
 				],
 				options: .options(
 					preferredScreenCaptureFormat: .screenRecording,
 					coverage: true,
-					codeCoverageTargets: Modules.codeCoverageTargets
+					codeCoverageTargets: App.codeCoverageTargets
 				)
 			)
 		)

@@ -8,7 +8,8 @@ The project uses [Tuist](https://tuist.io/) for Xcode project generation and dep
 Tuist/
 ├── ProjectDescriptionHelpers/
 │   ├── Config.swift              # App name, Swift version, deployment target, workspaceRoot
-│   ├── Modules.swift             # Module registry, app dependencies, coverage targets
+│   ├── Modules.swift             # Central module registry (array + derived properties)
+│   ├── App.swift                 # App project, targets, references, dependencies, coverage
 │   ├── Module.swift              # Module definition and factory
 │   ├── BuildConfiguration.swift  # Debug/Release configurations
 │   ├── Environment.swift         # Environment-specific settings (Dev/Staging/Prod)
@@ -62,6 +63,32 @@ Each module is a global `Module` constant with computed properties:
 | `targetReference` | `TargetReference` | For scheme references (coverage, build actions) |
 | `targetDependency` | `TargetDependency` | For target dependencies |
 | `mocksTargetDependency` | `TargetDependency` | For mock dependencies (if module has mocks) |
+| `includeInCoverage` | `Bool` | Whether the module is included in workspace code coverage (default `true`) |
+
+## App, Modules, and AppScheme
+
+Three enums with clear responsibilities and a unidirectional dependency chain:
+
+```
+AppScheme → App → Modules
+```
+
+| Enum | File | Responsibility |
+|------|------|----------------|
+| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived properties (`projectPaths`, `testableTargets`, `codeCoverageTargets`) |
+| `App` | `App.swift` | App project definition (targets, info plist), workspace-level references (`targetReference`, `uiTestsTargetReference`), and aggregated properties from `Modules` (`testableTargets`, `codeCoverageTargets`) |
+| `AppScheme` | `AppScheme.swift` | Scheme factory — consumes only `App.*` to create environment and UI test schemes |
+
+The root `Project.swift` is minimal: `let project = App.project`.
+
+### Adding a New Module
+
+Only **2 files** needed:
+
+1. Create module definition in `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`
+2. Add the module to `Modules.all` in `Modules.swift`
+
+This single registration automatically includes the module in workspace projects, test schemes, and code coverage. Modules with `includeInCoverage: false` (e.g., `resourcesModule`, `snapshotTestKitModule`) are excluded from coverage targets.
 
 ## Swift 6 Concurrency
 

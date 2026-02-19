@@ -8,6 +8,7 @@ public struct Module: @unchecked Sendable {
 	public let hasMocks: Bool
 	public let hasUnitTests: Bool
 	public let hasSnapshotTests: Bool
+	public let includeInCoverage: Bool
 	public let targets: [Target]
 	public let schemes: [Scheme]
 
@@ -138,6 +139,8 @@ public struct Module: @unchecked Sendable {
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
 	///   - snapshotTestDependencies: Additional snapshot test-only dependencies (SnapshotTesting is added automatically)
+	///   - includeInCoverage: Whether the module's source target should be included in workspace-level code coverage.
+	///                        Defaults to `true`. Set to `false` for infrastructure modules without meaningful source (e.g., Resources, SnapshotTestKit).
 	///   - targetSettingsOverrides: Additional per-target build settings merged on top of `projectBaseSettings`.
 	///                              Use to override specific keys (e.g., `SWIFT_DEFAULT_ACTOR_ISOLATION` for nonisolated modules).
 	/// - Note: Mocks and test targets are automatically created if the corresponding folders exist.
@@ -148,6 +151,7 @@ public struct Module: @unchecked Sendable {
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
 		snapshotTestDependencies: [TargetDependency] = [],
+		includeInCoverage: Bool = true,
 		targetSettingsOverrides: SettingsDictionary = [:]
 	) -> Module {
 		let components = directory.split(separator: "/")
@@ -297,6 +301,7 @@ public struct Module: @unchecked Sendable {
 			hasMocks: moduleHasMocks,
 			hasUnitTests: moduleHasUnitTests,
 			hasSnapshotTests: moduleHasSnapshotTests,
+			includeInCoverage: includeInCoverage,
 			targets: targets,
 			schemes: [scheme],
 		)
