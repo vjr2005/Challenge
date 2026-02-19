@@ -64,19 +64,6 @@ let appUITestsTarget = Target.target(
 	]
 )
 
-let appUITestsScheme = Scheme.scheme(
-	name: "\(appName)UITests",
-	buildAction: .buildAction(targets: [.target(appName), .target("\(appName)UITests")]),
-	testAction: .targets(
-		["\(appName)UITests"],
-		options: .options(
-			preferredScreenCaptureFormat: .screenRecording,
-			coverage: true,
-			codeCoverageTargets: Modules.codeCoverageTargets
-		)
-	)
-)
-
 // MARK: - Project
 
 let project = Project(
@@ -94,6 +81,5 @@ let project = Project(
 		]) { _, new in new },
 		configurations: BuildConfiguration.all
 	),
-	targets: [appTarget, appUITestsTarget],
-	schemes: AppScheme.allSchemes() + [appUITestsScheme]
+	targets: [appTarget, appUITestsTarget]
 )

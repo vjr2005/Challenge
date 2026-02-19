@@ -11,34 +11,19 @@ public enum AppScheme {
 		environment: Environment,
 		includeTests: Bool = false
 	) -> Scheme {
+		let appTarget = Modules.appTargetReference
 		var testAction: TestAction?
 
 		if includeTests {
-			let testTargetNames = [
-				// Unit Tests
-				"\(appName)AppKitTests",
-				"\(appName)CoreTests",
-				"\(appName)NetworkingTests",
-				"\(appName)DesignSystemTests",
-				"\(appName)CharacterTests",
-				"\(appName)EpisodeTests",
-				"\(appName)HomeTests",
-				"\(appName)SystemTests",
-				// Snapshot Tests
-				"\(appName)AppKitSnapshotTests",
-				"\(appName)DesignSystemSnapshotTests",
-				"\(appName)CharacterSnapshotTests",
-				"\(appName)EpisodeSnapshotTests",
-				"\(appName)HomeSnapshotTests",
-				"\(appName)SystemSnapshotTests",
-			]
-
-			let testableTargets = testTargetNames.map { name in
-				TestableTarget.testableTarget(
-					target: .target(name),
-					parallelization: .swiftTestingOnly
-				)
-			}
+			let testableTargets: [TestableTarget] =
+				AppKitModule.testableTargets
+				+ CoreModule.testableTargets
+				+ NetworkingModule.testableTargets
+				+ DesignSystemModule.testableTargets
+				+ CharacterModule.testableTargets
+				+ EpisodeModule.testableTargets
+				+ HomeModule.testableTargets
+				+ SystemModule.testableTargets
 
 			testAction = .targets(
 				testableTargets,
@@ -52,18 +37,42 @@ public enum AppScheme {
 
 		return .scheme(
 			name: environment.schemeName,
-			buildAction: .buildAction(targets: [.target(appName)]),
+			buildAction: .buildAction(targets: [appTarget]),
 			testAction: testAction,
 			runAction: .runAction(
 				configuration: environment.debugConfigurationName,
-				executable: .target(appName)
+				executable: appTarget
 			),
 			archiveAction: .archiveAction(configuration: environment.releaseConfigurationName),
 			profileAction: .profileAction(
 				configuration: environment.releaseConfigurationName,
-				executable: .target(appName)
+				executable: appTarget
 			),
 			analyzeAction: .analyzeAction(configuration: environment.debugConfigurationName)
+		)
+	}
+
+	/// Creates the UI tests scheme.
+	/// - Returns: A configured Scheme for UI tests.
+	public static func uiTestsScheme() -> Scheme {
+		let appTarget = Modules.appTargetReference
+		let uiTestsTarget: TargetReference = .project(path: Modules.appProjectPath, target: "\(appName)UITests")
+
+		return .scheme(
+			name: "\(appName)UITests",
+			buildAction: .buildAction(targets: [appTarget, uiTestsTarget]),
+			testAction: .targets(
+				[
+					.testableTarget(
+						target: uiTestsTarget
+					),
+				],
+				options: .options(
+					preferredScreenCaptureFormat: .screenRecording,
+					coverage: true,
+					codeCoverageTargets: Modules.codeCoverageTargets
+				)
+			)
 		)
 	}
 
