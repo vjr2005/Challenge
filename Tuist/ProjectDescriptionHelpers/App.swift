@@ -115,7 +115,8 @@ public enum App {
 				]) { _, new in new },
 				configurations: BuildConfiguration.all
 			),
-			targets: [appTarget, uiTestsTarget]
+			targets: [appTarget, uiTestsTarget] + Modules.frameworkTargets,
+			schemes: Modules.frameworkSchemes
 		)
 	}
 }

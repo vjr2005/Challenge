@@ -1,7 +1,6 @@
 import ProjectDescription
 
 /// Central registry of all modules in the project.
-/// Add new modules here to include them in the workspace.
 public enum Modules {
 	/// All modules in the project.
 	static let all: [Module] = [
@@ -17,9 +16,19 @@ public enum Modules {
 		appKitModule,
 	]
 
-	/// All module project paths for the workspace.
-	public static var projectPaths: [ProjectDescription.Path] {
-		all.map(\.path)
+	/// Project paths for standalone-project-mode modules (Workspace includes these).
+	public static var standaloneProjectPaths: [ProjectDescription.Path] {
+		all.filter { $0.strategy == .project }.map(\.path)
+	}
+
+	/// Targets from framework-mode modules (root project aggregates these).
+	static var frameworkTargets: [Target] {
+		all.filter { $0.strategy == .framework }.flatMap(\.targets)
+	}
+
+	/// Schemes from framework-mode modules (root project includes these).
+	static var frameworkSchemes: [Scheme] {
+		all.filter { $0.strategy == .framework }.flatMap(\.schemes)
 	}
 
 	/// All testable targets across all modules.

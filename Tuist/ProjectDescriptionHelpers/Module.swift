@@ -1,10 +1,23 @@
 import Foundation
 import ProjectDescription
 
+/// Module generation strategy.
+enum ModuleStrategy {
+	/// Module as standalone Tuist project with its own `.xcodeproj`.
+	case project
+	/// Module as framework target in the root project.
+	case framework
+
+	/// Default strategy used by all modules.
+	/// Change this single value to switch every module at once.
+	static let `default`: ModuleStrategy = .project
+}
+
 /// A module containing targets and schemes for a framework.
 public struct Module: @unchecked Sendable {
 	let directory: String
 	let name: String
+	let strategy: ModuleStrategy
 	let hasMocks: Bool
 	let hasUnitTests: Bool
 	let hasSnapshotTests: Bool
@@ -36,27 +49,41 @@ public struct Module: @unchecked Sendable {
 	}
 
 	var targetReference: TargetReference {
-		.project(path: path, target: name)
+		switch strategy {
+		case .project: .project(path: path, target: name)
+		case .framework: .target(name)
+		}
 	}
 
 	var targetDependency: TargetDependency {
-		.project(target: name, path: path)
+		switch strategy {
+		case .project: .project(target: name, path: path)
+		case .framework: .target(name: name)
+		}
 	}
 
 	var testableTargets: [TestableTarget] {
 		var targets: [TestableTarget] = []
 		if hasUnitTests {
+			let target: TargetReference = switch strategy {
+			case .project: .project(path: path, target: "\(name)Tests")
+			case .framework: .target("\(name)Tests")
+			}
 			targets.append(
 				.testableTarget(
-					target: .project(path: path, target: "\(name)Tests"),
+					target: target,
 					parallelization: .swiftTestingOnly
 				)
 			)
 		}
 		if hasSnapshotTests {
+			let target: TargetReference = switch strategy {
+			case .project: .project(path: path, target: "\(name)SnapshotTests")
+			case .framework: .target("\(name)SnapshotTests")
+			}
 			targets.append(
 				.testableTarget(
-					target: .project(path: path, target: "\(name)SnapshotTests"),
+					target: target,
 					parallelization: .swiftTestingOnly
 				)
 			)
@@ -65,7 +92,10 @@ public struct Module: @unchecked Sendable {
 	}
 
 	var mocksTargetDependency: TargetDependency {
-		.project(target: name.appending("Mocks"), path: path)
+		switch strategy {
+		case .project: .project(target: name.appending("Mocks"), path: path)
+		case .framework: .target(name: name.appending("Mocks"))
+		}
 	}
 
 	// MARK: - Private Helpers
@@ -129,12 +159,14 @@ public struct Module: @unchecked Sendable {
 
 	/// Creates a framework module with targets (framework, mocks, tests, snapshot tests) and scheme with coverage.
 	///
-	/// Each module has its own `Project.swift`, so target paths are relative to the module directory.
-	/// Folder existence checks use the full path from the workspace root.
+	/// In `.project` mode, each module has its own `Project.swift`, so target paths are relative to the module directory.
+	/// In `.framework` mode, targets are added to the root project, so paths are prefixed with the module directory.
+	/// Folder existence checks always use the full path from the workspace root.
 	///
 	/// - Parameters:
 	///   - directory: The module's directory relative to the workspace root (e.g., "Libraries/Core", "Features/Character", "AppKit").
 	///                The last path component is used as the module name (e.g., "Core" → target `ChallengeCore`).
+	///   - strategy: The module generation strategy (`.project` for standalone project, `.framework` for root project target). Defaults to `.default`.
 	///   - destinations: Deployment destinations (default: iPhone, iPad)
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
@@ -147,6 +179,7 @@ public struct Module: @unchecked Sendable {
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
 	static func create(
 		directory: String,
+		strategy: ModuleStrategy = .default,
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
@@ -163,14 +196,23 @@ public struct Module: @unchecked Sendable {
 		let testsTargetName = "\(targetName)Tests"
 		let settings: Settings = .settings(base: projectBaseSettings.merging(targetSettingsOverrides) { _, new in new })
 
+		// In framework mode, paths are relative to the workspace root.
+		// In spm mode, paths are relative to the module directory.
+		let pathPrefix = strategy == .project ? "" : "\(directory)/"
+
 		let resources: ResourceFileElements? = hasResourcesFolder(directory: directory) ? [
-			.glob(pattern: "Sources/Resources/**", excluding: [])
+			.glob(pattern: "\(pathPrefix)Sources/Resources/**", excluding: [])
 		] : nil
 
-		let relativeWorkspaceRoot: String = {
-			let depth = components.count
-			return depth > 0 ? Array(repeating: "..", count: depth).joined(separator: "/") : "."
-		}()
+		let swiftLintWorkspaceRoot: String = switch strategy {
+		case .project:
+			{
+				let depth = components.count
+				return depth > 0 ? Array(repeating: "..", count: depth).joined(separator: "/") : "."
+			}()
+		case .framework:
+			"."
+		}
 
 		let framework = Target.target(
 			name: targetName,
@@ -178,9 +220,9 @@ public struct Module: @unchecked Sendable {
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			deploymentTargets: developmentTarget,
-			sources: ["Sources/**"],
+			sources: ["\(pathPrefix)Sources/**"],
 			resources: resources,
-			scripts: [SwiftLint.script(path: "Sources", workspaceRoot: relativeWorkspaceRoot)],
+			scripts: [SwiftLint.script(path: "\(pathPrefix)Sources", workspaceRoot: swiftLintWorkspaceRoot)],
 			dependencies: dependencies,
 			settings: settings
 		)
@@ -196,7 +238,7 @@ public struct Module: @unchecked Sendable {
 				product: .framework,
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)Mocks",
 				deploymentTargets: developmentTarget,
-				sources: ["Mocks/**"],
+				sources: ["\(pathPrefix)Mocks/**"],
 				dependencies: [.target(name: targetName)],
 				settings: settings
 			)
@@ -214,12 +256,12 @@ public struct Module: @unchecked Sendable {
 		// Unit Tests target (Tests/Unit/ + Tests/Shared/)
 		if moduleHasUnitTests {
 			let unitSources: SourceFilesList = hasShared
-				? ["Tests/Unit/**", "Tests/Shared/**"]
-				: ["Tests/Unit/**"]
+				? ["\(pathPrefix)Tests/Unit/**", "\(pathPrefix)Tests/Shared/**"]
+				: ["\(pathPrefix)Tests/Unit/**"]
 
 			let unitResources: ResourceFileElements = hasShared ? [
-				.glob(pattern: "Tests/Shared/Resources/**", excluding: []),
-				.glob(pattern: "Tests/Shared/Fixtures/**", excluding: []),
+				.glob(pattern: "\(pathPrefix)Tests/Shared/Resources/**", excluding: []),
+				.glob(pattern: "\(pathPrefix)Tests/Shared/Fixtures/**", excluding: []),
 			] : []
 
 			let tests = Target.target(
@@ -248,11 +290,11 @@ public struct Module: @unchecked Sendable {
 		let moduleHasSnapshotTests = hasSnapshotTestsFolder(directory: directory)
 		if moduleHasSnapshotTests {
 			let snapshotSources: SourceFilesList = hasShared
-				? ["Tests/Snapshots/**", "Tests/Shared/**"]
-				: ["Tests/Snapshots/**"]
+				? ["\(pathPrefix)Tests/Snapshots/**", "\(pathPrefix)Tests/Shared/**"]
+				: ["\(pathPrefix)Tests/Snapshots/**"]
 
 			let snapshotResources: ResourceFileElements = hasShared ? [
-				.glob(pattern: "Tests/Shared/Resources/**", excluding: []),
+				.glob(pattern: "\(pathPrefix)Tests/Shared/Resources/**", excluding: []),
 			] : []
 
 			let snapshotTests = Target.target(
@@ -298,6 +340,7 @@ public struct Module: @unchecked Sendable {
 		return Module(
 			directory: directory,
 			name: targetName,
+			strategy: strategy,
 			hasMocks: moduleHasMocks,
 			hasUnitTests: moduleHasUnitTests,
 			hasSnapshotTests: moduleHasSnapshotTests,
