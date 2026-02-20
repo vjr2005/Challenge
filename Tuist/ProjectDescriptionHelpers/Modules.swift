@@ -16,19 +16,14 @@ public enum Modules {
 		appKitModule,
 	]
 
-	/// Project paths for standalone-project-mode modules (Workspace includes these).
-	public static var standaloneProjectPaths: [ProjectDescription.Path] {
-		all.filter { $0.strategy == .project }.map(\.path)
-	}
-
-	/// Targets from framework-mode modules (root project aggregates these).
+	/// All module targets (root project aggregates these).
 	static var frameworkTargets: [Target] {
-		all.filter { $0.strategy == .framework }.flatMap(\.targets)
+		all.flatMap(\.targets)
 	}
 
-	/// Schemes from framework-mode modules (root project includes these).
+	/// All module schemes (root project includes these).
 	static var frameworkSchemes: [Scheme] {
-		all.filter { $0.strategy == .framework }.flatMap(\.schemes)
+		all.flatMap(\.schemes)
 	}
 
 	/// All testable targets across all modules.
@@ -38,6 +33,6 @@ public enum Modules {
 
 	/// All source target references for code coverage (modules only, excludes app).
 	static var codeCoverageTargets: [TargetReference] {
-		all.filter(\.includeInCoverage).map(\.targetReference)
+		all.filter(\.includeInCoverage).map { .target($0.name) }
 	}
 }

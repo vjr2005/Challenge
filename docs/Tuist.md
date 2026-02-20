@@ -13,7 +13,7 @@ Tuist/
 │   ├── Module.swift              # Module definition and factory
 │   ├── BuildConfiguration.swift  # Debug/Release configurations
 │   ├── Environment.swift         # Environment-specific settings (Dev/Staging/Prod)
-│   ├── AppScheme.swift           # Workspace-level scheme generation
+│   ├── AppScheme.swift           # App scheme generation (per-environment + UI tests)
 │   ├── SwiftLint.swift           # SwiftLint build phase integration
 │   └── Modules/                  # Individual module definitions
 │       ├── CoreModule.swift
@@ -39,31 +39,18 @@ developmentTarget = .iOS("17.0")
 destinations = [.iPhone, .iPad]
 ```
 
-## Standalone Modules
+## Modules
 
-Every module is a **standalone Tuist project** with its own `Project.swift`. Each module directory contains:
+All module targets (framework, mocks, tests) are defined in the **root project** (`Project.swift`). There are no per-module `Project.swift` files. All schemes (app, tests, UI tests) are defined at **project level** in `App.project`.
 
-```
-{Module}/
-├── Project.swift    # Just: let project = {Module}Module.project
-├── Sources/
-├── Tests/
-└── Mocks/           # (if applicable)
-```
-
-All schemes (app, tests, UI tests) are defined at **workspace level** in `Workspace.swift`, not in `Project.swift`. This is required because workspace-level schemes can reference targets across projects.
-
-Each module is a global `Module` constant with computed properties:
+Each module is a global `Module` constant with the following properties:
 
 | Property | Type | Purpose |
 |----------|------|---------|
-| `project` | `Project` | Standalone project for `Project.swift` |
-| `path` | `Path` | Absolute path to module directory |
-| `testableTargets` | `[TestableTarget]` | All test targets (unit + snapshot) |
-| `targetReference` | `TargetReference` | For scheme references (coverage, build actions) |
 | `targetDependency` | `TargetDependency` | For target dependencies |
 | `mocksTargetDependency` | `TargetDependency` | For mock dependencies (if module has mocks) |
-| `includeInCoverage` | `Bool` | Whether the module is included in workspace code coverage (default `true`) |
+| `testableTargets` | `[TestableTarget]` | All test targets (unit + snapshot) |
+| `includeInCoverage` | `Bool` | Whether the module is included in code coverage (default `true`) |
 
 ## App, Modules, and AppScheme
 
@@ -75,11 +62,11 @@ AppScheme → App → Modules
 
 | Enum | File | Responsibility |
 |------|------|----------------|
-| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived properties (`projectPaths`, `testableTargets`, `codeCoverageTargets`) |
-| `App` | `App.swift` | App project definition (targets, info plist), workspace-level references (`targetReference`, `uiTestsTargetReference`), and aggregated properties from `Modules` (`testableTargets`, `codeCoverageTargets`) |
+| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived properties (`frameworkTargets`, `frameworkSchemes`, `testableTargets`, `codeCoverageTargets`) |
+| `App` | `App.swift` | App project definition (targets, info plist, schemes), references (`targetReference`, `uiTestsTargetReference`), and aggregated properties from `Modules` (`testableTargets`, `codeCoverageTargets`) |
 | `AppScheme` | `AppScheme.swift` | Scheme factory — consumes only `App.*` to create environment and UI test schemes |
 
-The root `Project.swift` is minimal: `let project = App.project`.
+The root `Project.swift` is: `let project = App.project`. It includes all app targets, module targets, and schemes.
 
 ### Adding a New Module
 
@@ -88,14 +75,14 @@ Only **2 files** needed:
 1. Create module definition in `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`
 2. Add the module to `Modules.all` in `Modules.swift`
 
-This single registration automatically includes the module in workspace projects, test schemes, and code coverage. Modules with `includeInCoverage: false` (e.g., `resourcesModule`, `snapshotTestKitModule`) are excluded from coverage targets.
+This single registration automatically includes the module's targets in the root project, test schemes, and code coverage. Modules with `includeInCoverage: false` (e.g., `resourcesModule`, `snapshotTestKitModule`) are excluded from coverage targets.
 
 ## Swift 6 Concurrency
 
 The project uses strict Swift 6 concurrency with MainActor isolation by default:
 
 ```swift
-// Config.swift — projectBaseSettings (shared across all projects and targets)
+// Config.swift — projectBaseSettings (shared across all targets)
 "SWIFT_VERSION": "6.2"
 "SWIFT_APPROACHABLE_CONCURRENCY": "YES"
 "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor"

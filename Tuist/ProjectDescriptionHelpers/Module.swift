@@ -1,23 +1,10 @@
 import Foundation
 import ProjectDescription
 
-/// Module generation strategy.
-enum ModuleStrategy {
-	/// Module as standalone Tuist project with its own `.xcodeproj`.
-	case project
-	/// Module as framework target in the root project.
-	case framework
-
-	/// Default strategy used by all modules.
-	/// Change this single value to switch every module at once.
-	static let `default`: ModuleStrategy = .project
-}
-
 /// A module containing targets and schemes for a framework.
 public struct Module: @unchecked Sendable {
 	let directory: String
 	let name: String
-	let strategy: ModuleStrategy
 	let hasMocks: Bool
 	let hasUnitTests: Bool
 	let hasSnapshotTests: Bool
@@ -27,63 +14,25 @@ public struct Module: @unchecked Sendable {
 
 	// MARK: - Computed Properties
 
-	public var project: Project {
-		Project(
-			name: name,
-			options: .options(
-				automaticSchemesOptions: .disabled,
-				disableBundleAccessors: true,
-				disableSynthesizedResourceAccessors: true
-			),
-			settings: .settings(
-				base: projectBaseSettings,
-				configurations: BuildConfiguration.all
-			),
-			targets: targets,
-			schemes: schemes
-		)
-	}
-
-	var path: ProjectDescription.Path {
-		.path("\(workspaceRoot)/\(directory)")
-	}
-
-	var targetReference: TargetReference {
-		switch strategy {
-		case .project: .project(path: path, target: name)
-		case .framework: .target(name)
-		}
-	}
-
+	/// Target dependency for project-level build dependencies.
 	var targetDependency: TargetDependency {
-		switch strategy {
-		case .project: .project(target: name, path: path)
-		case .framework: .target(name: name)
-		}
+		.target(name: name)
 	}
 
 	var testableTargets: [TestableTarget] {
 		var targets: [TestableTarget] = []
 		if hasUnitTests {
-			let target: TargetReference = switch strategy {
-			case .project: .project(path: path, target: "\(name)Tests")
-			case .framework: .target("\(name)Tests")
-			}
 			targets.append(
 				.testableTarget(
-					target: target,
+					target: .target("\(name)Tests"),
 					parallelization: .swiftTestingOnly
 				)
 			)
 		}
 		if hasSnapshotTests {
-			let target: TargetReference = switch strategy {
-			case .project: .project(path: path, target: "\(name)SnapshotTests")
-			case .framework: .target("\(name)SnapshotTests")
-			}
 			targets.append(
 				.testableTarget(
-					target: target,
+					target: .target("\(name)SnapshotTests"),
 					parallelization: .swiftTestingOnly
 				)
 			)
@@ -91,11 +40,9 @@ public struct Module: @unchecked Sendable {
 		return targets
 	}
 
+	/// Mocks dependency for project-level build dependencies.
 	var mocksTargetDependency: TargetDependency {
-		switch strategy {
-		case .project: .project(target: name.appending("Mocks"), path: path)
-		case .framework: .target(name: name.appending("Mocks"))
-		}
+		.target(name: name.appending("Mocks"))
 	}
 
 	// MARK: - Private Helpers
@@ -159,14 +106,12 @@ public struct Module: @unchecked Sendable {
 
 	/// Creates a framework module with targets (framework, mocks, tests, snapshot tests) and scheme with coverage.
 	///
-	/// In `.project` mode, each module has its own `Project.swift`, so target paths are relative to the module directory.
-	/// In `.framework` mode, targets are added to the root project, so paths are prefixed with the module directory.
+	/// All targets are framework targets in the root project. Paths are relative to the workspace root.
 	/// Folder existence checks always use the full path from the workspace root.
 	///
 	/// - Parameters:
 	///   - directory: The module's directory relative to the workspace root (e.g., "Libraries/Core", "Features/Character", "AppKit").
 	///                The last path component is used as the module name (e.g., "Core" → target `ChallengeCore`).
-	///   - strategy: The module generation strategy (`.project` for standalone project, `.framework` for root project target). Defaults to `.default`.
 	///   - destinations: Deployment destinations (default: iPhone, iPad)
 	///   - dependencies: Framework dependencies
 	///   - testDependencies: Additional test-only dependencies
@@ -179,7 +124,6 @@ public struct Module: @unchecked Sendable {
 	///         Test structure: Tests/Unit/, Tests/Snapshots/, Tests/Shared/ (Stubs, Fixtures, Resources).
 	static func create(
 		directory: String,
-		strategy: ModuleStrategy = .default,
 		destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
 		dependencies: [TargetDependency] = [],
 		testDependencies: [TargetDependency] = [],
@@ -196,23 +140,11 @@ public struct Module: @unchecked Sendable {
 		let testsTargetName = "\(targetName)Tests"
 		let settings: Settings = .settings(base: projectBaseSettings.merging(targetSettingsOverrides) { _, new in new })
 
-		// In framework mode, paths are relative to the workspace root.
-		// In spm mode, paths are relative to the module directory.
-		let pathPrefix = strategy == .project ? "" : "\(directory)/"
+		let pathPrefix = "\(directory)/"
 
 		let resources: ResourceFileElements? = hasResourcesFolder(directory: directory) ? [
 			.glob(pattern: "\(pathPrefix)Sources/Resources/**", excluding: [])
 		] : nil
-
-		let swiftLintWorkspaceRoot: String = switch strategy {
-		case .project:
-			{
-				let depth = components.count
-				return depth > 0 ? Array(repeating: "..", count: depth).joined(separator: "/") : "."
-			}()
-		case .framework:
-			"."
-		}
 
 		let framework = Target.target(
 			name: targetName,
@@ -222,7 +154,7 @@ public struct Module: @unchecked Sendable {
 			deploymentTargets: developmentTarget,
 			sources: ["\(pathPrefix)Sources/**"],
 			resources: resources,
-			scripts: [SwiftLint.script(path: "\(pathPrefix)Sources", workspaceRoot: swiftLintWorkspaceRoot)],
+			scripts: [SwiftLint.script(path: "\(pathPrefix)Sources", workspaceRoot: ".")],
 			dependencies: dependencies,
 			settings: settings
 		)
@@ -340,7 +272,6 @@ public struct Module: @unchecked Sendable {
 		return Module(
 			directory: directory,
 			name: targetName,
-			strategy: strategy,
 			hasMocks: moduleHasMocks,
 			hasUnitTests: moduleHasUnitTests,
 			hasSnapshotTests: moduleHasSnapshotTests,

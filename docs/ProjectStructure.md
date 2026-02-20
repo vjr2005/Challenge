@@ -14,51 +14,41 @@ Challenge/
 │       ├── Shared/                  # Robots, Scenarios, Stubs, Fixtures
 │       └── UI/                      # UI tests (XCTest)
 ├── AppKit/                          # Composition layer
-│   ├── Project.swift                # let project = appKitModule.project
 │   ├── Sources/
 │   │   ├── Data/                    # App-level data configuration
 │   │   └── Presentation/            # Root views and navigation
 │   └── Tests/
 │       ├── Unit/
 │       └── Snapshots/
-├── Features/                        # Feature modules (standalone projects)
+├── Features/                        # Feature modules
 │   ├── Character/
-│   │   ├── Project.swift            # let project = characterModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Home/
-│   │   ├── Project.swift            # let project = homeModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Episode/
-│   │   ├── Project.swift            # let project = episodeModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── System/
-│       ├── Project.swift            # let project = systemModule.project
 │       ├── Sources/
 │       └── Tests/
-├── Libraries/                       # Shared libraries (standalone projects)
+├── Libraries/                       # Shared libraries
 │   ├── Core/                        # Navigation, routing, image loading
-│   │   ├── Project.swift            # let project = coreModule.project
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── Networking/                  # HTTP client
-│   │   ├── Project.swift            # let project = networkingModule.project
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── DesignSystem/                # UI components (Atomic Design)
-│   │   ├── Project.swift            # let project = designSystemModule.project
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── SnapshotTestKit/             # Snapshot testing framework
-│       ├── Project.swift            # let project = snapshotTestKitModule.project
 │       └── Sources/
 ├── Shared/
 │   └── Resources/                   # Localization, shared resources
-│       ├── Project.swift            # let project = resourcesModule.project
 │       └── Sources/
 ├── Tuist/
 │   ├── ProjectDescriptionHelpers/
@@ -66,8 +56,8 @@ Challenge/
 │   └── Package.swift
 ├── Scripts/
 ├── docs/
-├── Project.swift                    # Root project (app + UI test targets only)
-├── Workspace.swift                  # Workspace with all projects and schemes
+├── Project.swift                    # Root project (all targets and schemes)
+├── Workspace.swift                  # Workspace configuration (code coverage)
 ├── Tuist.swift
 └── .mise.toml
 ```

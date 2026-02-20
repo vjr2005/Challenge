@@ -55,7 +55,8 @@ Guide for project organization and directory structure.
 │   └── InfoPlists/
 ├── Tuist/
 │   └── ProjectDescriptionHelpers/
-├── Project.swift
+├── Project.swift                    # Root project (all targets and schemes)
+├── Workspace.swift                  # Workspace configuration (code coverage)
 ├── Tuist.swift
 └── CLAUDE.md
 ```

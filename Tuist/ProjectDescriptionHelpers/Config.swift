@@ -17,7 +17,7 @@ let developmentTarget: DeploymentTargets = .iOS("17.0")
 
 let destinations: ProjectDescription.Destinations = [.iPhone, .iPad]
 
-/// Base project-level build settings shared across all projects (main app and standalone modules).
+/// Base build settings shared across all targets.
 let projectBaseSettings: SettingsDictionary = [
 	"SWIFT_VERSION": .string(swiftVersion),
 	"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
