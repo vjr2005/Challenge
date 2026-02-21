@@ -18,7 +18,7 @@ let developmentTarget: DeploymentTargets = .iOS("17.0")
 let destinations: ProjectDescription.Destinations = [.iPhone, .iPad]
 
 /// Base build settings shared across all targets.
-let projectBaseSettings: SettingsDictionary = [
+public let projectBaseSettings: SettingsDictionary = [
 	"SWIFT_VERSION": .string(swiftVersion),
 	"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
 	"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),

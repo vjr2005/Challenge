@@ -76,7 +76,6 @@ App/Tests/
     ├── Stubs/
     │   └── Data+Stub.swift               # Avatar image + fixture loader
     ├── Extensions/
-    │   └── Bundle+Module.swift
     └── Resources/
         └── test-avatar.jpg
 ```
@@ -489,13 +488,13 @@ final class NotFoundUITests: UITestCase {
 Run a specific test class:
 
 ```bash
-mise x -- tuist test ChallengeUITests -- -only-testing:ChallengeUITests/SettingsUITests
+mise x -- tuist test "ChallengeUITests" -- -only-testing:ChallengeUITests/SettingsUITests
 ```
 
 Run all UI tests:
 
 ```bash
-mise x -- tuist test --skip-unit-tests 2>&1 | tee /tmp/ui-tests.txt | tail -30
+mise x -- tuist test "ChallengeUITests" 2>&1 | tee /tmp/ui-tests.txt | tail -30
 ```
 
 Verify results:

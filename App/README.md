@@ -110,6 +110,13 @@ tuist generate
 # Build
 tuist build
 
-# Run tests
-tuist test
+# Run module tests
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+
+# Run UI tests
+mise x -- tuist test "ChallengeUITests"
 ```

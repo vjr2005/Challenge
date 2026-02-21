@@ -39,9 +39,9 @@ The app uses `.xcstrings` format (Apple's modern localization format for iOS 16+
 **Structure:**
 ```
 Shared/Resources/
+├── Package.swift
 ├── Sources/
 │   ├── Extensions/
-│   │   ├── Bundle+Module.swift       # Bundle.module accessor
 │   │   └── String+Localized.swift    # localized() extension
 │   └── Resources/
 │       └── Localizable.xcstrings
@@ -119,24 +119,9 @@ private enum LocalizedStrings {
 
 ## Bundle.module
 
-The `Bundle+Module.swift` file provides access to the module's resource bundle.
-
-**Why manual?** Tuist's bundle accessor generation is disabled (`disableBundleAccessors: true`) to avoid generated code.
-
-```swift
-// Shared/Resources/Sources/Extensions/Bundle+Module.swift
-import Foundation
-
-private final class BundleFinder {}
-
-extension Bundle {
-    static let module = Bundle(for: BundleFinder.self)
-}
-```
+SPM automatically generates `Bundle.module` for targets that declare resources in their `Package.swift`. No manual `Bundle+Module.swift` is needed.
 
 **Used by:** `String.localized()` to access `Localizable.xcstrings`.
-
-**Note:** Any module needing `Bundle.module` must include its own `Bundle+Module.swift`.
 
 ---
 

@@ -13,6 +13,8 @@ excluded:
   - DerivedData
   - build
   - .build
+  - "**/.build"
+  - "**/Package.swift"
 
 # MARK: - Enabled Rules
 

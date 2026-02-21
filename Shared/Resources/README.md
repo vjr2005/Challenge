@@ -28,9 +28,9 @@ The app uses `.xcstrings` format (Apple's modern localization format for iOS 16+
 
 ```
 Resources/
+├── Package.swift
 └── Sources/
     ├── Extensions/
-    │   ├── Bundle+Module.swift
     │   └── String+Localized.swift
     └── Resources/
         └── Localizable.xcstrings
@@ -40,7 +40,7 @@ Resources/
 
 | Target | Type | Purpose |
 |--------|------|---------|
-| `ChallengeResources` | Framework | Localization utilities |
+| `ChallengeResources` | SPM Library | Localization utilities |
 
 ## Components
 
@@ -55,15 +55,9 @@ public extension String {
 }
 ```
 
-### Bundle+Module
+### Bundle.module
 
-Manual bundle accessor (Tuist's generated accessors are disabled):
-
-```swift
-extension Bundle {
-    static let module: Bundle
-}
-```
+SPM automatically generates `Bundle.module` for targets with resources. No manual accessor needed.
 
 ## Usage
 
@@ -131,5 +125,9 @@ let appInfoPlist: [String: Plist.Value] = [
 ## Testing
 
 ```bash
-tuist test ChallengeResources
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```

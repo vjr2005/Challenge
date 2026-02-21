@@ -109,7 +109,7 @@ The project uses a **three-level parallelization strategy** to optimize test exe
 
 ### Intra-target Parallelism
 
-All test targets use `parallelization: .swiftTestingOnly` in their Tuist scheme configuration. This allows Swift Testing to run tests in parallel within each target while keeping XCTest-based tests (snapshot tests) serial.
+Swift Testing runs tests in parallel within each target by default. XCTest-based tests (snapshot tests) run serially.
 
 To support safe parallel execution:
 - **`HTTPClientTests`** uses unique hosts per test (e.g., `test-builds-url.example.com`) to prevent `URLProtocolMock` handler collisions.

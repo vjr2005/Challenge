@@ -233,13 +233,13 @@ When using `accessibilityIdentifier: "characterList.row.1"` on `DSCardInfoRow`:
 Run a specific test class:
 
 ```bash
-mise x -- tuist test ChallengeUITests -- -only-testing:ChallengeUITests/CharacterDetailUITests
+mise x -- tuist test "ChallengeUITests" -- -only-testing:ChallengeUITests/CharacterDetailUITests
 ```
 
 Run all UI tests:
 
 ```bash
-mise x -- tuist test --skip-unit-tests 2>&1 | tee /tmp/ui-tests.txt | tail -30
+mise x -- tuist test "ChallengeUITests" 2>&1 | tee /tmp/ui-tests.txt | tail -30
 ```
 
 ---

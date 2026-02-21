@@ -144,5 +144,9 @@ Uses the [Rick and Morty GraphQL API](https://rickandmortyapi.com/graphql):
 ## Testing
 
 ```bash
-tuist test ChallengeEpisode
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```

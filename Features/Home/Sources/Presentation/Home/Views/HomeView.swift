@@ -46,7 +46,7 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 
 private extension HomeView {
 	var lottieAnimation: some View {
-		LottieView(animation: .named("home", bundle: .home))
+		LottieView(animation: .named("home", bundle: .module))
 			.playbackMode(playbackMode)
 			.animationDidFinish { _ in
 				withAnimation(.spring(duration: 0.5, bounce: 0.3)) {

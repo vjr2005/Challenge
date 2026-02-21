@@ -35,14 +35,19 @@ jobs:
           device: ${{ env.TUIST_TEST_DEVICE }}
           derived-data-prefix: unit
 
+      - name: Generate project
+        run: mise x -- tuist generate --no-open
+
       - name: Run unit and snapshot tests
         timeout-minutes: 35
         run: |
-          mise x -- tuist test "Challenge (Dev)" \
-            --device "$TUIST_TEST_DEVICE" \
-            --os "$TUIST_TEST_OS" \
-            --result-bundle-path "$RESULT_BUNDLE_PATH" \
-            -- -derivedDataPath "$DERIVED_DATA_PATH" \
+          xcodebuild test \
+            -workspace Challenge.xcworkspace \
+            -scheme ChallengeModuleTests \
+            -testPlan Challenge \
+            -destination "platform=iOS Simulator,name=$TUIST_TEST_DEVICE,OS=$TUIST_TEST_OS" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -resultBundlePath "$RESULT_BUNDLE_PATH" \
             -retry-tests-on-failure
 
       - name: Upload coverage data
@@ -243,9 +248,10 @@ jobs:
             const THRESHOLD = parseInt(process.env.THRESHOLD, 10);
 
             const targets = report.targets.filter(t =>
-              (t.name.endsWith('.framework') || t.name.endsWith('.app')) &&
               !t.name.includes('Mock') &&
-              !t.name.includes('Test')
+              !t.name.includes('Test') &&
+              !t.name.includes('SnapshotTestKit') &&
+              t.name !== 'SnapshotTesting'
             );
 
             let totalCovered = 0;
@@ -258,7 +264,7 @@ jobs:
                 totalExecutable += t.executableLines;
                 const pct = (t.lineCoverage * 100).toFixed(1);
                 const icon = parseFloat(pct) >= THRESHOLD ? ':white_check_mark:' : ':x:';
-                const name = t.name.replace(/\.(framework|app)$/, '');
+                const name = t.name.replace(/\.(framework|app|o)$/, '');
                 return `| ${icon} | ${name} | ${t.coveredLines} / ${t.executableLines} | ${pct}% |`;
               });
 

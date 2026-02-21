@@ -5,30 +5,15 @@ public enum AppScheme {
 	/// Creates a scheme for the given environment.
 	/// - Parameters:
 	///   - environment: The target environment.
-	///   - includeTests: Whether to include test targets in the scheme.
 	/// - Returns: A configured Scheme.
 	static func create(
-		environment: Environment,
-		includeTests: Bool = false
+		environment: Environment
 	) -> Scheme {
 		let appTarget = App.targetReference
-		var testAction: TestAction?
-
-		if includeTests {
-			testAction = .targets(
-				App.testableTargets,
-				configuration: environment.debugConfigurationName,
-				options: .options(
-					coverage: true,
-					codeCoverageTargets: App.codeCoverageTargets
-				)
-			)
-		}
 
 		return .scheme(
 			name: environment.schemeName,
 			buildAction: .buildAction(targets: [appTarget]),
-			testAction: testAction,
 			runAction: .runAction(
 				configuration: environment.debugConfigurationName,
 				executable: appTarget
@@ -59,9 +44,19 @@ public enum AppScheme {
 				options: .options(
 					preferredScreenCaptureFormat: .screenRecording,
 					coverage: true,
-					codeCoverageTargets: App.codeCoverageTargets
+					codeCoverageTargets: [appTarget]
 				)
 			)
+		)
+	}
+
+	/// Creates the module tests scheme using the test plan.
+	/// - Returns: A configured Scheme for all module tests.
+	public static func moduleTestsScheme() -> Scheme {
+		.scheme(
+			name: "\(appName)ModuleTests",
+			buildAction: .buildAction(targets: [App.targetReference]),
+			testAction: .testPlans(["Challenge.xctestplan"])
 		)
 	}
 
@@ -69,10 +64,7 @@ public enum AppScheme {
 	/// - Returns: Array of schemes for all environments.
 	public static func allSchemes() -> [Scheme] {
 		Environment.allCases.map { environment in
-			create(
-				environment: environment,
-				includeTests: environment == .dev
-			)
+			create(environment: environment)
 		}
 	}
 }

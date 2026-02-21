@@ -380,5 +380,9 @@ The module includes:
 Run tests with:
 
 ```bash
-mise x -- tuist test
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```

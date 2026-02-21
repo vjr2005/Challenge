@@ -122,7 +122,11 @@ private struct TestEvent: TrackingEventContract {
 ## Generate and Verify
 
 ```bash
-mise x -- tuist test
+mise x -- tuist generate && xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```
 
 ---

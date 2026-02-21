@@ -13,51 +13,62 @@ Challenge/
 │   └── Tests/
 │       ├── Shared/                  # Robots, Scenarios, Stubs, Fixtures
 │       └── UI/                      # UI tests (XCTest)
-├── AppKit/                          # Composition layer
+├── AppKit/                          # Composition layer (SPM local package)
+│   ├── Package.swift
 │   ├── Sources/
 │   │   ├── Data/                    # App-level data configuration
 │   │   └── Presentation/            # Root views and navigation
 │   └── Tests/
 │       ├── Unit/
 │       └── Snapshots/
-├── Features/                        # Feature modules
+├── Features/                        # Feature modules (SPM local packages)
 │   ├── Character/
+│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Home/
+│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Episode/
+│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── System/
+│       ├── Package.swift
 │       ├── Sources/
 │       └── Tests/
-├── Libraries/                       # Shared libraries
+├── Libraries/                       # Shared libraries (SPM local packages)
 │   ├── Core/                        # Navigation, routing, image loading
+│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── Networking/                  # HTTP client
+│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── DesignSystem/                # UI components (Atomic Design)
+│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── SnapshotTestKit/             # Snapshot testing framework
+│       ├── Package.swift
 │       └── Sources/
 ├── Shared/
 │   └── Resources/                   # Localization, shared resources
+│       ├── Package.swift
 │       └── Sources/
 ├── Tuist/
 │   ├── ProjectDescriptionHelpers/
 │   │   └── Modules/
-│   └── Package.swift
+│   └── Package.swift               # External SPM dependencies + target settings
 ├── Scripts/
 ├── docs/
-├── Project.swift                    # Root project (all targets and schemes)
+├── Project.swift                    # Root project (app + UI tests + module packages)
 ├── Workspace.swift                  # Workspace configuration (code coverage)
+├── Challenge.xctestplan            # Test plan aggregating all module test targets
 ├── Tuist.swift
 └── .mise.toml
 ```
@@ -90,7 +101,7 @@ Composition layer that wires all features together.
 | **ChallengeNetworking** | HTTP client (REST) and GraphQL client abstraction over URLSession |
 | **ChallengeDesignSystem** | Atomic Design UI components and design tokens |
 | **ChallengeResources** | Localization and shared resources |
-| **ChallengeSnapshotTestKit** | Snapshot testing framework (test-only) |
+| **ChallengeSnapshotTestKit** | Snapshot testing helpers (test-only, wraps swift-snapshot-testing) |
 
 ### Features
 
@@ -133,5 +144,5 @@ Libraries (base dependencies):
 ├── ChallengeNetworking (no dependencies)
 ├── ChallengeResources → ChallengeCore
 ├── ChallengeDesignSystem → ChallengeCore
-└── ChallengeSnapshotTestKit (test-only, auto-linked to snapshot test targets)
+└── ChallengeSnapshotTestKit (test-only, wraps swift-snapshot-testing)
 ```

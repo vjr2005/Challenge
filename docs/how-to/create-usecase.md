@@ -711,7 +711,11 @@ struct Get{Name}With{Related}sUseCaseTests {
 ## Generate and verify
 
 ```bash
-mise x -- tuist test --skip-ui-tests
+mise x -- tuist generate && xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```
 
 ## Next steps

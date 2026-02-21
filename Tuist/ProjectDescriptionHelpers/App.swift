@@ -17,16 +17,6 @@ public enum App {
 		[appKitModule.targetDependency]
 	}
 
-	/// All testable targets across all modules.
-	static var testableTargets: [TestableTarget] {
-		Modules.testableTargets
-	}
-
-	/// All source target references for code coverage (app + all modules).
-	public static var codeCoverageTargets: [TargetReference] {
-		[targetReference] + Modules.codeCoverageTargets
-	}
-
 	// MARK: - Targets
 
 	private static let infoPlist: [String: Plist.Value] = [
@@ -101,19 +91,20 @@ public enum App {
 		Project(
 			name: appName,
 			options: .options(
-				automaticSchemesOptions: .disabled,
+				automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
 				developmentRegion: "en",
 				disableBundleAccessors: true,
 				disableSynthesizedResourceAccessors: true
 			),
+			packages: Modules.packageReferences,
 			settings: .settings(
 				base: projectBaseSettings.merging([
 					"SWIFT_EMIT_LOC_STRINGS": .string("YES"),
 				]) { _, new in new },
 				configurations: BuildConfiguration.all
 			),
-			targets: [appTarget, uiTestsTarget] + Modules.frameworkTargets,
-			schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme()] + Modules.frameworkSchemes
+			targets: [appTarget, uiTestsTarget],
+			schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme(), AppScheme.moduleTestsScheme()]
 		)
 	}
 }

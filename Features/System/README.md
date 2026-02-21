@@ -83,5 +83,9 @@ func resolve(_ navigation: any NavigationContract, navigator: any NavigatorContr
 ## Testing
 
 ```bash
-tuist test ChallengeSystem
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```

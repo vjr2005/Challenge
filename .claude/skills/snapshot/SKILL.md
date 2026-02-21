@@ -104,22 +104,24 @@ struct {Name}ViewSnapshotTests {
 ### First Run (Recording)
 
 ```bash
-tuist test {Module}
+mise x -- tuist generate && xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```
 
 First run creates references and **fails** (expected).
 
 ### Subsequent Runs
 
-```bash
-tuist test {Module}
-```
+Re-run the same command. Snapshots now compare against recorded references.
 
 ### Regenerate Snapshots
 
 ```bash
 rm -rf Tests/Snapshots/Presentation/{Name}/__Snapshots__
-tuist test {Module}  # Run twice
+# Run twice: first creates references, second verifies
 ```
 
 ---

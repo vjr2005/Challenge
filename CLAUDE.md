@@ -20,7 +20,7 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards. **After generating code**, use the `/testing` skill to create corresponding tests.
 >
-> **After writing code, always verify compilation** by running `mise x -- tuist test`.
+> **After writing code, always verify compilation** by running module tests via `xcodebuild test -workspace Challenge.xcworkspace -scheme ChallengeModuleTests -testPlan Challenge -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'`.
 >
 > **All code must pass SwiftLint validation.**
 >

@@ -94,7 +94,11 @@ mise x -- swiftlint --fix --quiet
 Build and execute **all tests** in the workspace:
 
 ```bash
-mise x -- tuist test
+mise x -- tuist generate && xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```
 
 If tests fail:
@@ -105,7 +109,7 @@ If tests fail:
 
 ### Step 6: Final Verification
 
-Run Periphery again to confirm no unused code remains. The `tuist test` build from the previous step provides a fresh index store:
+Run Periphery again to confirm no unused code remains. The `xcodebuild test` build from the previous step provides a fresh index store:
 
 ```bash
 INDEX_STORE=$(find ~/Library/Developer/Xcode/DerivedData/Challenge-*/Index.noindex/DataStore -maxdepth 0 2>/dev/null | head -1)
@@ -224,5 +228,5 @@ If a Domain Model property is unused:
 - [ ] Related tests deleted or updated
 - [ ] Equatable extensions created in Tests/Extensions/ if needed
 - [ ] SwiftLint auto-fix executed
-- [ ] `tuist test` passes (build + tests)
+- [ ] All module tests pass (build + tests)
 - [ ] Final Periphery scan shows no unused code

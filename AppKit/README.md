@@ -219,5 +219,9 @@ public struct RootContainerView: View {
 ## Testing
 
 ```bash
-tuist test ChallengeAppKit
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeModuleTests \
+  -testPlan Challenge \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 ```

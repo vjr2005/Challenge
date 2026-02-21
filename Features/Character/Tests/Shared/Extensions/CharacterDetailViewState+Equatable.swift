@@ -1,6 +1,6 @@
 @testable import ChallengeCharacter
 
-extension CharacterDetailViewState: @retroactive Equatable {
+extension CharacterDetailViewState: Equatable {
 	public static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
 		case (.idle, .idle), (.loading, .loading):
