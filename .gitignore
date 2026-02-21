@@ -28,6 +28,7 @@ Tuist/.cache/
 Packages/
 Package.pins
 Package.resolved
+.package.resolved
 
 # Test output
 test_output/
