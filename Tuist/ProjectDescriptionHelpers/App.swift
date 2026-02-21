@@ -17,6 +17,11 @@ public enum App {
 		[appKitModule.targetDependency]
 	}
 
+	/// All testable targets across all modules.
+	static var testableTargets: [TestableTarget] {
+		Modules.testableTargets
+	}
+
 	// MARK: - Targets
 
 	private static let infoPlist: [String: Plist.Value] = [
@@ -91,20 +96,20 @@ public enum App {
 		Project(
 			name: appName,
 			options: .options(
-				automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
+				automaticSchemesOptions: .disabled,
 				developmentRegion: "en",
 				disableBundleAccessors: true,
 				disableSynthesizedResourceAccessors: true
 			),
-			packages: Modules.packageReferences,
 			settings: .settings(
 				base: projectBaseSettings.merging([
 					"SWIFT_EMIT_LOC_STRINGS": .string("YES"),
 				]) { _, new in new },
 				configurations: BuildConfiguration.all
 			),
-			targets: [appTarget, uiTestsTarget],
+			targets: [appTarget, uiTestsTarget] + Modules.testTargets,
 			schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme(), AppScheme.moduleTestsScheme()]
+				+ Modules.testSchemes
 		)
 	}
 }

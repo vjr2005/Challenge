@@ -48,21 +48,21 @@ ReadMcpResourceTool(
 
 ## Project Options
 
-The root `Project.swift` defines only the app target and UI tests target. All modules are SPM local packages referenced via `packages:`. Auto-generated schemes handle per-package testing.
+The root `Project.swift` defines the app target, UI tests target, and all module test targets. Source and mocks are SPM packages resolved via `Tuist/Package.swift` as `.framework` products. Test targets are Tuist-managed in the root project.
 
 ```swift
-// Project.swift (root — app + UI tests + module packages)
+// Project.swift (root — app + UI tests + module test targets)
 let project = Project(
     name: appName,
     options: .options(
-        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
+        automaticSchemesOptions: .disabled,
         developmentRegion: "en",
         disableBundleAccessors: true,              // No TuistBundle+*.swift
         disableSynthesizedResourceAccessors: true  // No TuistAssets+*.swift
     ),
-    packages: Modules.packageReferences,
-    targets: [appTarget, uiTestsTarget],
+    targets: [appTarget, uiTestsTarget] + Modules.testTargets,
     schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme(), AppScheme.moduleTestsScheme()]
+        + Modules.testSchemes
 )
 ```
 
@@ -82,7 +82,7 @@ let workspace = Workspace(
 
 ### Module Test Scheme
 
-The `ChallengeModuleTests` scheme uses a `.xctestplan` file to aggregate all module test targets. This is necessary because SPM package test targets cannot be referenced via Tuist's `.target()` scheme API. Tests run via `xcodebuild test` (not `tuist test`).
+The `ChallengeModuleTests` scheme aggregates all module test targets using `.targets()`. Per-module schemes (e.g., `ChallengeCore`) are also generated for running individual module tests.
 
 ### Why disable synthesizers?
 
@@ -93,7 +93,7 @@ The `ChallengeModuleTests` scheme uses a `.xctestplan` file to aggregate all mod
 
 ### Bundle.module
 
-SPM automatically generates `Bundle.module` for targets that declare resources in their `Package.swift`. No manual `Bundle+Module.swift` is needed for SPM local packages.
+SPM automatically generates `Bundle.module` for package targets that declare resources. For Tuist-managed test targets (which are not SPM targets), a manual `Bundle+Module.swift` using `Bundle(for: BundleFinder.self)` is needed in `Tests/Shared/Extensions/`.
 
 ---
 

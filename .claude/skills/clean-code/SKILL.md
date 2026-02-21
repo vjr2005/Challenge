@@ -94,11 +94,7 @@ mise x -- swiftlint --fix --quiet
 Build and execute **all tests** in the workspace:
 
 ```bash
-mise x -- tuist generate && xcodebuild test \
-  -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
-  -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+mise x -- tuist generate && mise x -- tuist test --skip-ui-tests
 ```
 
 If tests fail:
@@ -109,7 +105,7 @@ If tests fail:
 
 ### Step 6: Final Verification
 
-Run Periphery again to confirm no unused code remains. The `xcodebuild test` build from the previous step provides a fresh index store:
+Run Periphery again to confirm no unused code remains. The `tuist test` build from the previous step provides a fresh index store:
 
 ```bash
 INDEX_STORE=$(find ~/Library/Developer/Xcode/DerivedData/Challenge-*/Index.noindex/DataStore -maxdepth 0 2>/dev/null | head -1)

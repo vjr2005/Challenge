@@ -1,3 +1,11 @@
 import ProjectDescription
 
-public let networkingModule = Module.create(directory: "Libraries/Networking")
+public let networkingModule = Module.create(
+	directory: "Libraries/Networking",
+	testDependencies: [
+		coreModule.mocksTargetDependency,
+	],
+	testTargetSettingsOverrides: [
+		"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("nonisolated"),
+	]
+)

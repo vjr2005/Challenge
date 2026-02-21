@@ -41,15 +41,15 @@ destinations = [.iPhone, .iPad]
 
 ## Modules
 
-All modules are **SPM local packages** with their own `Package.swift`. Each package defines `.library()` products (source + mocks) and a single `.testTarget` combining all test sources. The root project references them via `packages: Modules.packageReferences`.
+All modules are **SPM local packages** with their own `Package.swift`. Each package defines `.library()` products (source + mocks) resolved as `.framework` via `Tuist/Package.swift`. Test targets are Tuist-managed in the root project, depending on package frameworks via `.external(name:)`.
 
 Each module is a global `Module` constant with the following properties:
 
 | Property | Type | Purpose |
 |----------|------|---------|
-| `targetDependency` | `TargetDependency` | `.package(product: name)` for consuming targets |
-| `mocksTargetDependency` | `TargetDependency` | `.package(product: "\(name)Mocks")` for mock dependencies |
-| `packageReference` | `Package` | `.package(path: directory)` for the project packages array |
+| `targetDependency` | `TargetDependency` | `.external(name: name)` for consuming targets |
+| `mocksTargetDependency` | `TargetDependency` | `.external(name: "\(name)Mocks")` for mock dependencies |
+| `testableTargets` | `[TestableTarget]` | Unit and snapshot test targets for schemes |
 
 ## App, Modules, and AppScheme
 
@@ -61,11 +61,11 @@ AppScheme → App → Modules
 
 | Enum | File | Responsibility |
 |------|------|----------------|
-| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived `packageReferences` |
-| `App` | `App.swift` | App project definition (targets, packages, schemes), references (`targetReference`, `uiTestsTargetReference`) |
+| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived `testTargets`, `testSchemes`, `testableTargets` |
+| `App` | `App.swift` | App project definition (targets, schemes), references (`targetReference`, `uiTestsTargetReference`, `testableTargets`) |
 | `AppScheme` | `AppScheme.swift` | Scheme factory — creates environment, UI test, and module test schemes |
 
-The root `Project.swift` is: `let project = App.project`. It includes the app target, UI tests target, and all module packages.
+The root `Project.swift` is: `let project = App.project`. It includes the app target, UI tests target, module test targets, and module test schemes.
 
 ### Adding a New Module
 
@@ -75,7 +75,7 @@ The root `Project.swift` is: `let project = App.project`. It includes the app ta
 2. Create module definition in `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`
 3. Add the module to `Modules.all` in `Modules.swift`
 
-Additionally, add the module's test target to `Challenge.xctestplan` and its target settings to `Tuist/Package.swift`.
+Additionally, add the module's source and mocks target settings to `Tuist/Package.swift` and its local package path to the `dependencies:` array.
 
 ## Swift 6 Concurrency
 
@@ -207,13 +207,23 @@ This ensures features remain independent and can be developed, tested, and poten
 
 ## Module Definition
 
-Each module has its own `Package.swift` that defines source, mocks, and test targets. The Tuist `Module.create()` factory creates a metadata holder that auto-detects the Mocks folder:
+Each module has its own `Package.swift` that defines source and mocks products. Test targets are Tuist-managed in the root project. The `Module.create()` factory auto-detects Mocks, Unit, and Snapshot test folders:
 
 ### Example Module Definition (Tuist)
 
 ```swift
 // Tuist/ProjectDescriptionHelpers/Modules/CharacterModule.swift
-public let characterModule = Module.create(directory: "Features/Character")
+public let characterModule = Module.create(
+    directory: "Features/Character",
+    testDependencies: [
+        coreModule.mocksTargetDependency,
+        networkingModule.mocksTargetDependency,
+    ],
+    snapshotTestDependencies: [
+        coreModule.mocksTargetDependency,
+        networkingModule.mocksTargetDependency,
+    ]
+)
 ```
 
 ### Example Package.swift (SPM)
@@ -261,24 +271,18 @@ The Networking module overrides the project-wide `MainActor` default to `nonisol
 
 ## Testing
 
-Module tests run via `xcodebuild` using the `Challenge.xctestplan` test plan, which aggregates all 8 module test targets. Tuist's `tuist test` command does not support test plan schemes.
+Test targets are Tuist-managed in the root project (not SPM test targets). They depend on package frameworks via `.external(name:)`. The `ChallengeModuleTests` scheme aggregates all module test targets using `.targets()`.
 
 ```bash
-# Generate project first
-mise x -- tuist generate
-
 # Run all module tests (unit + snapshot)
-xcodebuild test \
-  -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
-  -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+mise x -- tuist test --skip-ui-tests
 
-# Run UI tests (still uses tuist test)
+# Run a specific module's tests
+mise x -- tuist test "ChallengeCore"
+
+# Run UI tests
 mise x -- tuist test "ChallengeUITests"
 ```
-
-The `ChallengeModuleTests` scheme uses `.testPlans(["Challenge.xctestplan"])` which references test targets by container path and identifier. This is necessary because SPM package test targets cannot be referenced via Tuist's `.target()` scheme API.
 
 ## Commands
 
@@ -293,11 +297,7 @@ mise x -- tuist generate
 mise x -- tuist build
 
 # Run module tests (unit + snapshot)
-mise x -- tuist generate && xcodebuild test \
-  -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
-  -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+mise x -- tuist test --skip-ui-tests
 
 # Run UI tests
 mise x -- tuist test "ChallengeUITests"

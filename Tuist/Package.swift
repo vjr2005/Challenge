@@ -15,6 +15,20 @@ let snapshotTestKitSettings: SettingsDictionary = projectBaseSettings.merging([
 
 let packageSettings = PackageSettings(
 	productTypes: [
+		// Local packages
+		"ChallengeCore": .framework,
+		"ChallengeCoreMocks": .framework,
+		"ChallengeNetworking": .framework,
+		"ChallengeNetworkingMocks": .framework,
+		"ChallengeSnapshotTestKit": .framework,
+		"ChallengeDesignSystem": .framework,
+		"ChallengeResources": .framework,
+		"ChallengeCharacter": .framework,
+		"ChallengeEpisode": .framework,
+		"ChallengeHome": .framework,
+		"ChallengeSystem": .framework,
+		"ChallengeAppKit": .framework,
+		// External packages
 		"SnapshotTesting": .framework,
 		"SwiftMockServerBinary": .framework,
 	],
@@ -25,24 +39,16 @@ let packageSettings = PackageSettings(
 		// MainActor-default targets
 		"ChallengeCore": .settings(base: projectBaseSettings),
 		"ChallengeCoreMocks": .settings(base: projectBaseSettings),
-		"ChallengeCoreTests": .settings(base: projectBaseSettings),
 		"ChallengeDesignSystem": .settings(base: projectBaseSettings),
-		"ChallengeDesignSystemTests": .settings(base: projectBaseSettings),
 		"ChallengeResources": .settings(base: projectBaseSettings),
 		"ChallengeCharacter": .settings(base: projectBaseSettings),
-		"ChallengeCharacterTests": .settings(base: projectBaseSettings),
 		"ChallengeEpisode": .settings(base: projectBaseSettings),
-		"ChallengeEpisodeTests": .settings(base: projectBaseSettings),
 		"ChallengeHome": .settings(base: projectBaseSettings),
-		"ChallengeHomeTests": .settings(base: projectBaseSettings),
 		"ChallengeSystem": .settings(base: projectBaseSettings),
-		"ChallengeSystemTests": .settings(base: projectBaseSettings),
 		"ChallengeAppKit": .settings(base: projectBaseSettings),
-		"ChallengeAppKitTests": .settings(base: projectBaseSettings),
 		// Nonisolated targets
 		"ChallengeNetworking": .settings(base: nonisolatedSettings),
 		"ChallengeNetworkingMocks": .settings(base: nonisolatedSettings),
-		"ChallengeNetworkingTests": .settings(base: nonisolatedSettings),
 		// SnapshotTestKit
 		"ChallengeSnapshotTestKit": .settings(base: snapshotTestKitSettings),
 	]
@@ -52,6 +58,18 @@ let packageSettings = PackageSettings(
 let package = Package(
 	name: "ChallengePackages",
 	dependencies: [
+		// Local packages
+		.package(path: "../Libraries/Core"),
+		.package(path: "../Libraries/Networking"),
+		.package(path: "../Libraries/SnapshotTestKit"),
+		.package(path: "../Libraries/DesignSystem"),
+		.package(path: "../Shared/Resources"),
+		.package(path: "../Features/Character"),
+		.package(path: "../Features/Episode"),
+		.package(path: "../Features/Home"),
+		.package(path: "../Features/System"),
+		.package(path: "../AppKit"),
+		// External packages
 		.package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.0"),
 		.package(url: "https://github.com/airbnb/lottie-ios", from: "4.6.0"),
 		.package(url: "https://github.com/vjr2005/SwiftMockServer", from: "1.1.1"),

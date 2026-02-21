@@ -16,8 +16,18 @@ public enum Modules {
 		appKitModule,
 	]
 
-	/// All package references for Project.swift packages array.
-	static var packageReferences: [Package] {
-		all.map(\.packageReference)
+	/// Test targets from all modules (added to root project).
+	static var testTargets: [Target] {
+		all.flatMap(\.targets)
+	}
+
+	/// Per-module test schemes.
+	static var testSchemes: [Scheme] {
+		all.flatMap(\.schemes)
+	}
+
+	/// All testable targets across all modules.
+	static var testableTargets: [TestableTarget] {
+		all.flatMap(\.testableTargets)
 	}
 }

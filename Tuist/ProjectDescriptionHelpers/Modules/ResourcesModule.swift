@@ -1,3 +1,6 @@
 import ProjectDescription
 
-public let resourcesModule = Module.create(directory: "Shared/Resources")
+public let resourcesModule = Module.create(
+	directory: "Shared/Resources",
+	includeInCoverage: false
+)
