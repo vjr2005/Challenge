@@ -66,6 +66,7 @@ Use these skills for detailed implementation patterns:
 | `/design-system` | Atomic Design System: tokens, components, theming |
 | `/feature` | Feature module scaffolding with Container and entry point |
 | `/skill-creator` | Guide for creating new Claude Code skills |
+| `/tuist-migration` | Tuist integration into existing Xcode projects with SPM local packages |
 
 ---
 
