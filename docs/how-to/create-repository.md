@@ -806,11 +806,11 @@ Add to `Shared/Resources/Sources/Resources/Localizable.xcstrings`:
 ## Generate and verify
 
 ```bash
-mise x -- tuist generate && xcodebuild test \
+xcodebuild test \
   -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
+  -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 ```
 
 ## Next steps

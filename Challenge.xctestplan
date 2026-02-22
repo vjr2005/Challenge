@@ -9,7 +9,54 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : true
+    "codeCoverage" : true,
+    "codeCoverageTargets" : [
+      {
+        "containerPath" : "container:",
+        "identifier" : "Challenge",
+        "name" : "Challenge"
+      },
+      {
+        "containerPath" : "container:Libraries\/Core",
+        "identifier" : "ChallengeCore",
+        "name" : "ChallengeCore"
+      },
+      {
+        "containerPath" : "container:Libraries\/Networking",
+        "identifier" : "ChallengeNetworking",
+        "name" : "ChallengeNetworking"
+      },
+      {
+        "containerPath" : "container:Libraries\/DesignSystem",
+        "identifier" : "ChallengeDesignSystem",
+        "name" : "ChallengeDesignSystem"
+      },
+      {
+        "containerPath" : "container:Features\/Character",
+        "identifier" : "ChallengeCharacter",
+        "name" : "ChallengeCharacter"
+      },
+      {
+        "containerPath" : "container:Features\/Episode",
+        "identifier" : "ChallengeEpisode",
+        "name" : "ChallengeEpisode"
+      },
+      {
+        "containerPath" : "container:Features\/Home",
+        "identifier" : "ChallengeHome",
+        "name" : "ChallengeHome"
+      },
+      {
+        "containerPath" : "container:Features\/System",
+        "identifier" : "ChallengeSystem",
+        "name" : "ChallengeSystem"
+      },
+      {
+        "containerPath" : "container:AppKit",
+        "identifier" : "ChallengeAppKit",
+        "name" : "ChallengeAppKit"
+      }
+    ]
   },
   "testTargets" : [
     {

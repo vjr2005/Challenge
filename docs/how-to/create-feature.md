@@ -83,30 +83,12 @@ Create `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`:
 ```swift
 import ProjectDescription
 
-public let {feature}Module = Module.create(
-	directory: "Features/{Feature}",
-	dependencies: [
-		coreModule.targetDependency,
-		designSystemModule.targetDependency,
-		resourcesModule.targetDependency,
-	],
-	testDependencies: [
-		coreModule.mocksTargetDependency,
-	],
-	snapshotTestDependencies: [
-		coreModule.mocksTargetDependency,
-	]
-)
+public let {feature}Module = Module.create(directory: "Features/{Feature}")
 ```
 
-Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's targets in the root project, test schemes, and code coverage.
+Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's package in the root project and its test target in the `Challenge.xctestplan`.
 
-> **Note:** Tuist automatically detects folders to create targets:
-> - `Mocks/` → Target `Challenge{Feature}Mocks`
-> - `Tests/Unit/` → Target `Challenge{Feature}Tests`
-> - `Tests/Snapshots/` → Target `Challenge{Feature}SnapshotTests`
->
-> The contents of `Tests/Shared/` are automatically included in Unit and Snapshot test targets (it does not create its own target).
+> **Note:** Each module is an SPM local package with its own `Package.swift`. Dependencies (source, mocks, tests) are defined there. The `Mocks/` folder produces the `Challenge{Feature}Mocks` product and the `Tests/` folder produces the `Challenge{Feature}Tests` test target. `Tests/Shared/` contents are included in the test target automatically.
 
 ---
 
@@ -726,11 +708,11 @@ Increment features count assertion.
 ## Step 5 — Verify
 
 ```bash
-mise x -- tuist generate && xcodebuild test \
+xcodebuild test \
   -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
+  -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 ```
 
 ---

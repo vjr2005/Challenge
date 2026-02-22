@@ -6,6 +6,7 @@ public struct Module: @unchecked Sendable {
 	let directory: String
 	let name: String
 	let hasMocks: Bool
+	let includeInCoverage: Bool
 
 	// MARK: - Computed Properties
 
@@ -60,9 +61,12 @@ public struct Module: @unchecked Sendable {
 
 	/// Creates a module metadata holder for an SPM local package.
 	///
-	/// - Parameter directory: The module's directory relative to the workspace root (e.g., "Libraries/Core", "Features/Character", "AppKit").
-	///                        The last path component is used as the module name (e.g., "Core" → target `ChallengeCore`).
-	static func create(directory: String) -> Module {
+	/// - Parameters:
+	///   - directory: The module's directory relative to the workspace root (e.g., "Libraries/Core", "Features/Character", "AppKit").
+	///                The last path component is used as the module name (e.g., "Core" → target `ChallengeCore`).
+	///   - includeInCoverage: Whether the module's source target should be included in code coverage.
+	///                        Defaults to `true`. Set to `false` for infrastructure modules without meaningful source (e.g., Resources, SnapshotTestKit).
+	static func create(directory: String, includeInCoverage: Bool = true) -> Module {
 		let components = directory.split(separator: "/")
 		guard let last = components.last else {
 			fatalError("Module directory must not be empty")
@@ -73,7 +77,8 @@ public struct Module: @unchecked Sendable {
 		return Module(
 			directory: directory,
 			name: targetName,
-			hasMocks: hasMocksFolder(directory: directory)
+			hasMocks: hasMocksFolder(directory: directory),
+			includeInCoverage: includeInCoverage
 		)
 	}
 }

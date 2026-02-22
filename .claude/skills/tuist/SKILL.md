@@ -82,7 +82,15 @@ let workspace = Workspace(
 
 ### Module Test Scheme
 
-The `ChallengeModuleTests` scheme uses a `.xctestplan` file to aggregate all module test targets. This is necessary because SPM package test targets cannot be referenced via Tuist's `.target()` scheme API. Tests run via `xcodebuild test` (not `tuist test`).
+The `Challenge (Dev)` scheme includes a `.xctestplan` file that aggregates all module test targets. Tests run via `xcodebuild test` (not `tuist test`) because Tuist can't resolve SPM package test targets when using `.testPlans()`.
+
+```bash
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme "Challenge (Dev)" \
+  -testPlan Challenge \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+```
 
 ### Why disable synthesizers?
 

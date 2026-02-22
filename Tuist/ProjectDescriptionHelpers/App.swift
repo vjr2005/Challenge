@@ -91,7 +91,7 @@ public enum App {
 		Project(
 			name: appName,
 			options: .options(
-				automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
+				automaticSchemesOptions: .disabled,
 				developmentRegion: "en",
 				disableBundleAccessors: true,
 				disableSynthesizedResourceAccessors: true
@@ -104,7 +104,7 @@ public enum App {
 				configurations: BuildConfiguration.all
 			),
 			targets: [appTarget, uiTestsTarget],
-			schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme(), AppScheme.moduleTestsScheme()]
+			schemes: AppScheme.allSchemes() + [AppScheme.uiTestsScheme()]
 		)
 	}
 }

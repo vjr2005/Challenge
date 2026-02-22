@@ -261,24 +261,19 @@ The Networking module overrides the project-wide `MainActor` default to `nonisol
 
 ## Testing
 
-Module tests run via `xcodebuild` using the `Challenge.xctestplan` test plan, which aggregates all 8 module test targets. Tuist's `tuist test` command does not support test plan schemes.
+Module unit+snapshot tests use `xcodebuild test` with the `Challenge (Dev)` scheme and `Challenge` test plan, because `tuist test` doesn't support `.testPlans()` with SPM packages. UI tests use `tuist test "ChallengeUITests"`.
 
 ```bash
-# Generate project first
-mise x -- tuist generate
-
 # Run all module tests (unit + snapshot)
 xcodebuild test \
   -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
+  -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 
-# Run UI tests (still uses tuist test)
+# Run UI tests
 mise x -- tuist test "ChallengeUITests"
 ```
-
-The `ChallengeModuleTests` scheme uses `.testPlans(["Challenge.xctestplan"])` which references test targets by container path and identifier. This is necessary because SPM package test targets cannot be referenced via Tuist's `.target()` scheme API.
 
 ## Commands
 
@@ -293,11 +288,11 @@ mise x -- tuist generate
 mise x -- tuist build
 
 # Run module tests (unit + snapshot)
-mise x -- tuist generate && xcodebuild test \
+xcodebuild test \
   -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
+  -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 
 # Run UI tests
 mise x -- tuist test "ChallengeUITests"

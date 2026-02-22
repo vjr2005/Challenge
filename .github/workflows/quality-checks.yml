@@ -43,7 +43,7 @@ jobs:
         run: |
           xcodebuild test \
             -workspace Challenge.xcworkspace \
-            -scheme ChallengeModuleTests \
+            -scheme "Challenge (Dev)" \
             -testPlan Challenge \
             -destination "platform=iOS Simulator,name=$TUIST_TEST_DEVICE,OS=$TUIST_TEST_OS" \
             -derivedDataPath "$DERIVED_DATA_PATH" \

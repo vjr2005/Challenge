@@ -40,7 +40,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 | Checkout | Clone the repository |
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
 | Generate project | `mise x -- tuist generate --no-open` |
-| Run unit and snapshot tests | `xcodebuild test` with `ChallengeModuleTests` scheme and `Challenge` test plan, retry-on-failure (35 min timeout, 1 retry) |
+| Run unit and snapshot tests | `xcodebuild test` with `Challenge (Dev)` scheme and `Challenge` test plan, retry-on-failure (35 min timeout, 1 retry) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
 | Test report | Always: composite action that uploads `.xcresult` artifact (on failure), parses failures and retried tests, writes combined summary to Actions Summary and PR comment |
 | Detect dead code | `mise x -- periphery scan --skip-build` reusing the test build index (informational, never blocks CI) |

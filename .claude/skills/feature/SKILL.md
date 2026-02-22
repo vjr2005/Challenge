@@ -88,23 +88,10 @@ Create `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`:
 ```swift
 import ProjectDescription
 
-public let {feature}Module = Module.create(
-	directory: "Features/{Feature}",
-	dependencies: [
-		coreModule.targetDependency,
-		designSystemModule.targetDependency,
-		resourcesModule.targetDependency,
-	],
-	testDependencies: [
-		coreModule.mocksTargetDependency,
-	],
-	snapshotTestDependencies: [
-		coreModule.mocksTargetDependency,
-	]
-)
+public let {feature}Module = Module.create(directory: "Features/{Feature}")
 ```
 
-Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's targets in the root project, test schemes, and code coverage.
+Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's package in the root project and its test target in the `Challenge.xctestplan`.
 
 ### Step 2: Source Files
 
@@ -140,11 +127,11 @@ Wire the feature into the app — 4 files to modify:
 ### Step 5: Verify
 
 ```bash
-mise x -- tuist generate && xcodebuild test \
+xcodebuild test \
   -workspace Challenge.xcworkspace \
-  -scheme ChallengeModuleTests \
+  -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 ```
 
 ## Extending the Feature
