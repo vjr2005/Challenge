@@ -14,17 +14,18 @@ public struct Module: @unchecked Sendable {
 
 	// MARK: - Computed Properties
 
-	/// Target dependency for project-level build dependencies.
+	/// Cross-project target dependency for build dependencies.
 	var targetDependency: TargetDependency {
-		.target(name: name)
+		.project(target: name, path: .relativeToRoot(directory))
 	}
 
+	/// Cross-project testable targets for workspace-level test plans.
 	var testableTargets: [TestableTarget] {
 		var targets: [TestableTarget] = []
 		if hasUnitTests {
 			targets.append(
 				.testableTarget(
-					target: .target("\(name)Tests"),
+					target: .project(path: .relativeToRoot(directory), target: "\(name)Tests"),
 					parallelization: .swiftTestingOnly
 				)
 			)
@@ -32,7 +33,7 @@ public struct Module: @unchecked Sendable {
 		if hasSnapshotTests {
 			targets.append(
 				.testableTarget(
-					target: .target("\(name)SnapshotTests"),
+					target: .project(path: .relativeToRoot(directory), target: "\(name)SnapshotTests"),
 					parallelization: .swiftTestingOnly
 				)
 			)
@@ -40,9 +41,14 @@ public struct Module: @unchecked Sendable {
 		return targets
 	}
 
-	/// Mocks dependency for project-level build dependencies.
+	/// Cross-project mocks dependency for build dependencies.
 	var mocksTargetDependency: TargetDependency {
-		.target(name: name.appending("Mocks"))
+		.project(target: name.appending("Mocks"), path: .relativeToRoot(directory))
+	}
+
+	/// Cross-project target reference for code coverage.
+	var codeCoverageTargetReference: TargetReference {
+		.project(path: .relativeToRoot(directory), target: name)
 	}
 
 	// MARK: - Private Helpers
@@ -106,8 +112,8 @@ public struct Module: @unchecked Sendable {
 
 	/// Creates a framework module with targets (framework, mocks, tests, snapshot tests) and scheme with coverage.
 	///
-	/// All targets are framework targets in the root project. Paths are relative to the workspace root.
-	/// Folder existence checks always use the full path from the workspace root.
+	/// Each module becomes an independent Tuist project with its own `Project.swift`.
+	/// Source/test paths are relative to the module directory. Folder existence checks use the full workspace-root path.
 	///
 	/// - Parameters:
 	///   - directory: The module's directory relative to the workspace root (e.g., "Libraries/Core", "Features/Character", "AppKit").
@@ -140,10 +146,11 @@ public struct Module: @unchecked Sendable {
 		let testsTargetName = "\(targetName)Tests"
 		let settings: Settings = .settings(base: projectBaseSettings.merging(targetSettingsOverrides) { _, new in new })
 
-		let pathPrefix = "\(directory)/"
+		let depth = components.count
+		let workspaceRoot = (0..<depth).map { _ in ".." }.joined(separator: "/")
 
 		let resources: ResourceFileElements? = hasResourcesFolder(directory: directory) ? [
-			.glob(pattern: "\(pathPrefix)Sources/Resources/**", excluding: [])
+			.glob(pattern: "Sources/Resources/**", excluding: [])
 		] : nil
 
 		let framework = Target.target(
@@ -152,9 +159,9 @@ public struct Module: @unchecked Sendable {
 			product: .framework,
 			bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
 			deploymentTargets: developmentTarget,
-			sources: ["\(pathPrefix)Sources/**"],
+			sources: ["Sources/**"],
 			resources: resources,
-			scripts: [SwiftLint.script(path: "\(pathPrefix)Sources", workspaceRoot: ".")],
+			scripts: [SwiftLint.script(path: "Sources", workspaceRoot: workspaceRoot)],
 			dependencies: dependencies,
 			settings: settings
 		)
@@ -170,7 +177,7 @@ public struct Module: @unchecked Sendable {
 				product: .framework,
 				bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)Mocks",
 				deploymentTargets: developmentTarget,
-				sources: ["\(pathPrefix)Mocks/**"],
+				sources: ["Mocks/**"],
 				dependencies: [.target(name: targetName)],
 				settings: settings
 			)
@@ -188,12 +195,12 @@ public struct Module: @unchecked Sendable {
 		// Unit Tests target (Tests/Unit/ + Tests/Shared/)
 		if moduleHasUnitTests {
 			let unitSources: SourceFilesList = hasShared
-				? ["\(pathPrefix)Tests/Unit/**", "\(pathPrefix)Tests/Shared/**"]
-				: ["\(pathPrefix)Tests/Unit/**"]
+				? ["Tests/Unit/**", "Tests/Shared/**"]
+				: ["Tests/Unit/**"]
 
 			let unitResources: ResourceFileElements = hasShared ? [
-				.glob(pattern: "\(pathPrefix)Tests/Shared/Resources/**", excluding: []),
-				.glob(pattern: "\(pathPrefix)Tests/Shared/Fixtures/**", excluding: []),
+				.glob(pattern: "Tests/Shared/Resources/**", excluding: []),
+				.glob(pattern: "Tests/Shared/Fixtures/**", excluding: []),
 			] : []
 
 			let tests = Target.target(
@@ -222,11 +229,11 @@ public struct Module: @unchecked Sendable {
 		let moduleHasSnapshotTests = hasSnapshotTestsFolder(directory: directory)
 		if moduleHasSnapshotTests {
 			let snapshotSources: SourceFilesList = hasShared
-				? ["\(pathPrefix)Tests/Snapshots/**", "\(pathPrefix)Tests/Shared/**"]
-				: ["\(pathPrefix)Tests/Snapshots/**"]
+				? ["Tests/Snapshots/**", "Tests/Shared/**"]
+				: ["Tests/Snapshots/**"]
 
 			let snapshotResources: ResourceFileElements = hasShared ? [
-				.glob(pattern: "\(pathPrefix)Tests/Shared/Resources/**", excluding: []),
+				.glob(pattern: "Tests/Shared/Resources/**", excluding: []),
 			] : []
 
 			let snapshotTests = Target.target(
@@ -278,6 +285,26 @@ public struct Module: @unchecked Sendable {
 			includeInCoverage: includeInCoverage,
 			targets: targets,
 			schemes: [scheme],
+		)
+	}
+
+	// MARK: - Project
+
+	/// Generates an independent Tuist project for this module.
+	public var project: Project {
+		Project(
+			name: name,
+			options: .options(
+				automaticSchemesOptions: .disabled,
+				disableBundleAccessors: true,
+				disableSynthesizedResourceAccessors: true
+			),
+			settings: .settings(
+				base: projectBaseSettings,
+				configurations: BuildConfiguration.all
+			),
+			targets: targets,
+			schemes: schemes
 		)
 	}
 }

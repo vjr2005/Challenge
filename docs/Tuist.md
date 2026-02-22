@@ -41,41 +41,45 @@ destinations = [.iPhone, .iPad]
 
 ## Modules
 
-All module targets (framework, mocks, tests) are defined in the **root project** (`Project.swift`). There are no per-module `Project.swift` files. All schemes (app, tests, UI tests) are defined at **project level** in `App.project`.
+Each module is an **independent Tuist project** with its own `Project.swift` and `.xcodeproj`. The root project (`Project.swift`) only contains the app target and UI tests. App schemes are defined at **workspace level** in `Workspace.swift` so they can reference targets across all projects.
 
 Each module is a global `Module` constant with the following properties:
 
 | Property | Type | Purpose |
 |----------|------|---------|
-| `targetDependency` | `TargetDependency` | For target dependencies |
-| `mocksTargetDependency` | `TargetDependency` | For mock dependencies (if module has mocks) |
-| `testableTargets` | `[TestableTarget]` | All test targets (unit + snapshot) |
+| `targetDependency` | `TargetDependency` | Cross-project dependency reference |
+| `mocksTargetDependency` | `TargetDependency` | Cross-project mock dependency reference |
+| `testableTargets` | `[TestableTarget]` | Cross-project test targets (unit + snapshot) |
+| `codeCoverageTargetReference` | `TargetReference` | Cross-project target reference for code coverage |
+| `project` | `Project` | Generates the module's independent Tuist project |
 | `includeInCoverage` | `Bool` | Whether the module is included in code coverage (default `true`) |
 
-## App, Modules, and AppScheme
+## App, Modules, Workspace, and AppScheme
 
-Three enums with clear responsibilities and a unidirectional dependency chain:
+Four components with clear responsibilities and a unidirectional dependency chain:
 
 ```
-AppScheme → App → Modules
+Workspace → AppScheme → App → Modules
 ```
 
-| Enum | File | Responsibility |
-|------|------|----------------|
-| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived properties (`frameworkTargets`, `frameworkSchemes`, `testableTargets`, `codeCoverageTargets`) |
-| `App` | `App.swift` | App project definition (targets, info plist, schemes), references (`targetReference`, `uiTestsTargetReference`), and aggregated properties from `Modules` (`testableTargets`, `codeCoverageTargets`) |
+| Component | File | Responsibility |
+|-----------|------|----------------|
+| `Modules` | `Modules.swift` | Central module registry (`all` array) with derived properties (`testableTargets`, `codeCoverageTargets`, `projectPaths`) |
+| `App` | `App.swift` | App project definition (app + UI test targets only), cross-project references (`targetReference`, `uiTestsTargetReference`), and aggregated properties from `Modules` |
 | `AppScheme` | `AppScheme.swift` | Scheme factory — consumes only `App.*` to create environment and UI test schemes |
+| `Workspace` | `Workspace.swift` | Includes all module projects, hosts app schemes at workspace level, configures code coverage |
 
-The root `Project.swift` is: `let project = App.project`. It includes all app targets, module targets, and schemes.
+The root `Project.swift` is: `let project = App.project`. It includes only the app target and UI tests. Each module's `Project.swift` is: `let project = <module>.project`.
 
 ### Adding a New Module
 
-Only **2 files** needed:
+Only **3 files** needed:
 
 1. Create module definition in `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`
 2. Add the module to `Modules.all` in `Modules.swift`
+3. Create `<ModuleDirectory>/Project.swift` with: `let project = <module>.project`
 
-This single registration automatically includes the module's targets in the root project, test schemes, and code coverage. Modules with `includeInCoverage: false` (e.g., `resourcesModule`, `snapshotTestKitModule`) are excluded from coverage targets.
+This registration automatically includes the module's project in the workspace, cross-project dependencies, test schemes, and code coverage. Modules with `includeInCoverage: false` (e.g., `resourcesModule`, `snapshotTestKitModule`) are excluded from coverage targets.
 
 ## Swift 6 Concurrency
 

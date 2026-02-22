@@ -56,8 +56,8 @@ Challenge/
 │   └── Package.swift
 ├── Scripts/
 ├── docs/
-├── Project.swift                    # Root project (all targets and schemes)
-├── Workspace.swift                  # Workspace configuration (code coverage)
+├── Project.swift                    # Root project (app + UI tests)
+├── Workspace.swift                  # Workspace (includes all module projects, hosts app schemes)
 ├── Tuist.swift
 └── .mise.toml
 ```

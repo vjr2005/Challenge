@@ -16,16 +16,6 @@ public enum Modules {
 		appKitModule,
 	]
 
-	/// All module targets (root project aggregates these).
-	static var frameworkTargets: [Target] {
-		all.flatMap(\.targets)
-	}
-
-	/// All module schemes (root project includes these).
-	static var frameworkSchemes: [Scheme] {
-		all.flatMap(\.schemes)
-	}
-
 	/// All testable targets across all modules.
 	static var testableTargets: [TestableTarget] {
 		all.flatMap(\.testableTargets)
@@ -33,6 +23,11 @@ public enum Modules {
 
 	/// All source target references for code coverage (modules only, excludes app).
 	static var codeCoverageTargets: [TargetReference] {
-		all.filter(\.includeInCoverage).map { .target($0.name) }
+		all.filter(\.includeInCoverage).map(\.codeCoverageTargetReference)
+	}
+
+	/// Paths to all module projects for workspace inclusion.
+	public static var projectPaths: [Path] {
+		all.map { .relativeToRoot($0.directory) }
 	}
 }

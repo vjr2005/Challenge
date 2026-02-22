@@ -104,7 +104,7 @@ public let {feature}Module = Module.create(
 )
 ```
 
-Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's targets in the root project, test schemes, and code coverage.
+Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. Create `Features/{Feature}/Project.swift` with `let project = {feature}Module.project`. This automatically includes the module's project in the workspace, cross-project dependencies, test schemes, and code coverage.
 
 ### Step 2: Source Files
 
