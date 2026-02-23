@@ -20,6 +20,7 @@ let destinations: ProjectDescription.Destinations = [.iPhone, .iPad]
 /// Base build settings shared across all targets.
 public let projectBaseSettings: SettingsDictionary = [
 	"SWIFT_VERSION": .string(swiftVersion),
+	"SWIFT_STRICT_CONCURRENCY": .string("complete"),
 	"SWIFT_APPROACHABLE_CONCURRENCY": .string("YES"),
 	"SWIFT_DEFAULT_ACTOR_ISOLATION": .string("MainActor"),
 	"ENABLE_USER_SCRIPT_SANDBOXING": .string("NO"),
