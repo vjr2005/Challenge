@@ -19,8 +19,6 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     private(set) var saveCharacterCallCount = 0
     private(set) var saveCharacterLastValue: CharacterDTO?
 
-    private(set) var getPageCallCount = 0
-
     private(set) var savePageCallCount = 0
     private(set) var savePageLastResponse: CharactersResponseDTO?
     private(set) var savePageLastPage: Int?
@@ -40,7 +38,6 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     }
 
     func getPage(_ page: Int) -> CharactersResponseDTO? {
-        getPageCallCount += 1
         return pageToReturn
     }
 

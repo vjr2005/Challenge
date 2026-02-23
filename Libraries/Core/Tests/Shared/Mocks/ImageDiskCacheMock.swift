@@ -31,7 +31,7 @@ actor ImageDiskCacheMock: ImageDiskCacheContract {
 		return imageToReturn
 	}
 
-	func store(_ data: Data, for url: URL) {
+	func store(_: Data, for url: URL) {
 		storeCallCount += 1
 		storeLastURL = url
 	}

@@ -36,13 +36,11 @@ else
 fi
 ```
 
-Analyze the output to identify unused code. The scan excludes:
-- Domain Models (`**/Domain/Models/**`)
-- DTOs (`**/DTOs/**`)
-- Test targets
+Analyze the output to identify unused code. The scan retains:
 - SwiftUI Previews
 - Codable properties
 - Public declarations (library code)
+- ObjC-annotated declarations
 
 ### Step 2: Search for Related Tests and Mocks (BEFORE removing code)
 
@@ -128,25 +126,25 @@ Periphery configuration is in `.periphery.yml`:
 project: {AppName}.xcworkspace
 schemes:
   - "{AppName} (Dev)"
+  - "{AppName}UITests"
 retain_public: true
 retain_objc_annotated: true
 retain_codable_properties: true
 retain_swift_ui_previews: true
-exclude_tests: true
-report_exclude:
-  - "**/Domain/Models/**"
-  - "**/DTOs/**"
 ```
+
+**Why two schemes:** `{AppName} (Dev)` covers the app and all SPM package dependencies. `{AppName}UITests` covers the native UI test target. Both are analyzed for dead code.
+
+**Why no `exclude_tests`:** With `--skip-build --index-store-path`, Periphery cannot correctly identify SPM test targets from the pre-built index store, causing false positives. Instead, the two schemes explicitly define the analysis scope — only app, SPM source packages, and UI tests are analyzed. SPM test targets are not in any scheme, so they are not analyzed.
 
 ### Configuration Options
 
 | Option | Description |
 |--------|-------------|
 | `retain_public` | Keep public declarations (for libraries) |
+| `retain_objc_annotated` | Keep ObjC-annotated declarations |
 | `retain_codable_properties` | Keep Codable properties even if unread |
 | `retain_swift_ui_previews` | Keep SwiftUI Preview providers |
-| `exclude_tests` | Don't analyze test targets |
-| `report_exclude` | Glob patterns to exclude from reports |
 
 ---
 
@@ -173,11 +171,7 @@ Cache/storage methods might be unused if caching isn't implemented yet. Options:
 
 ### Unused ViewState Equatable
 
-Custom `==` implementations on ViewState enums are reported as unused because:
-- SwiftUI doesn't require `Equatable` for view state
-- Periphery excludes test targets from analysis
-
-**Important:** Tests likely use these implementations for assertions like `#expect(sut.state == .loaded(expected))`.
+Custom `==` implementations on ViewState enums may be reported as unused because SwiftUI doesn't require `Equatable` for view state. However, tests use these implementations for assertions like `#expect(sut.state == .loaded(expected))`.
 
 **When removing `==` from ViewState:**
 

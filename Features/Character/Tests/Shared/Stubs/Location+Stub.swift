@@ -4,12 +4,8 @@ import Foundation
 
 extension Location {
 	static func stub(
-		name: String = "Earth (C-137)",
-		url: URL? = URL(string: "https://rickandmortyapi.com/api/location/1"),
+		name: String = "Earth (C-137)"
 	) -> Location {
-		Location(
-			name: name,
-			url: url
-		)
+		Location(name: name)
 	}
 }

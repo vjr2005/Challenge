@@ -11,17 +11,14 @@ struct LocationMapperTests {
 
 	// MARK: - Tests
 
-	@Test("Maps name and URL from LocationDTO to Location")
-	func mapsNameAndURL() {
+	@Test("Maps name from LocationDTO to Location")
+	func mapsName() {
 		// Given
 		let dto = LocationDTO(
 			name: "Earth (C-137)",
 			url: "https://rickandmortyapi.com/api/location/1"
 		)
-		let expected = Location(
-			name: "Earth (C-137)",
-			url: URL(string: "https://rickandmortyapi.com/api/location/1")
-		)
+		let expected = Location(name: "Earth (C-137)")
 
 		// When
 		let result = sut.map(dto)
@@ -30,17 +27,14 @@ struct LocationMapperTests {
 		#expect(result == expected)
 	}
 
-	@Test("Maps empty URL string to nil")
-	func mapsEmptyURLToNil() {
+	@Test("Maps name from LocationDTO with empty URL")
+	func mapsNameWithEmptyURL() {
 		// Given
 		let dto = LocationDTO(
 			name: "unknown",
 			url: ""
 		)
-		let expected = Location(
-			name: "unknown",
-			url: nil
-		)
+		let expected = Location(name: "unknown")
 
 		// When
 		let result = sut.map(dto)

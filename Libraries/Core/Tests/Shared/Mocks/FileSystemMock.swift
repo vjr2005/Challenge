@@ -53,11 +53,11 @@ nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable 
 		fileModificationDates[url] = nil
 	}
 
-	func createDirectory(at url: URL) throws {
+	func createDirectory(at _: URL) throws {
 		createDirectoryCallCount += 1
 	}
 
-	func contentsOfDirectory(at url: URL) throws -> [URL] {
+	func contentsOfDirectory(at _: URL) throws -> [URL] {
 		contentsOfDirectoryCallCount += 1
 		if let contentsOfDirectoryError {
 			throw contentsOfDirectoryError

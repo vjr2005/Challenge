@@ -10,7 +10,7 @@ extension Character {
 		species: String = "Human",
 		gender: CharacterGender = .male,
 		origin: Location = .stub(name: "Earth (C-137)"),
-		location: Location = .stub(name: "Citadel of Ricks", url: URL(string: "https://rickandmortyapi.com/api/location/3")),
+		location: Location = .stub(name: "Citadel of Ricks"),
 		imageURL: URL? = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
 	) -> Character {
 		Character(
