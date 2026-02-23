@@ -8,10 +8,6 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     private(set) var characterToReturn: CharacterDTO?
     private(set) var pageToReturn: CharactersResponseDTO?
 
-    func setCharacterToReturn(_ character: CharacterDTO?) {
-        characterToReturn = character
-    }
-
     func setPageToReturn(_ page: CharactersResponseDTO?) {
         pageToReturn = page
     }

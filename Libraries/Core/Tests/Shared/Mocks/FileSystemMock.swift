@@ -20,12 +20,10 @@ nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable 
 	private(set) var contentsCallCount = 0
 	private(set) var writeCallCount = 0
 	private(set) var removeItemCallCount = 0
-	private(set) var removeItemLastURL: URL?
 	private(set) var createDirectoryCallCount = 0
 	private(set) var contentsOfDirectoryCallCount = 0
 	private(set) var fileAttributesCallCount = 0
 	private(set) var updateModificationDateCallCount = 0
-	private(set) var updateModificationDateLastURL: URL?
 
 	// MARK: - FileSystemContract
 
@@ -50,7 +48,6 @@ nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable 
 
 	func removeItem(at url: URL) throws {
 		removeItemCallCount += 1
-		removeItemLastURL = url
 		files[url] = nil
 		fileCreationDates[url] = nil
 		fileModificationDates[url] = nil
@@ -85,7 +82,6 @@ nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable 
 
 	func updateModificationDate(at url: URL) throws {
 		updateModificationDateCallCount += 1
-		updateModificationDateLastURL = url
 		fileModificationDates[url] = Date()
 	}
 }

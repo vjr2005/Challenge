@@ -15,10 +15,8 @@ actor ImageDiskCacheMock: ImageDiskCacheContract {
 	// MARK: - Call Tracking
 
 	private(set) var imageCallCount = 0
-	private(set) var imageLastURL: URL?
 
 	private(set) var storeCallCount = 0
-	private(set) var storeLastData: Data?
 	private(set) var storeLastURL: URL?
 
 	private(set) var removeCallCount = 0
@@ -30,13 +28,11 @@ actor ImageDiskCacheMock: ImageDiskCacheContract {
 
 	func image(for url: URL) -> UIImage? {
 		imageCallCount += 1
-		imageLastURL = url
 		return imageToReturn
 	}
 
 	func store(_ data: Data, for url: URL) {
 		storeCallCount += 1
-		storeLastData = data
 		storeLastURL = url
 	}
 
