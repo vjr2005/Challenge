@@ -1,6 +1,6 @@
 import Foundation
 
-enum CharacterEpisodesViewState {
+enum CharacterEpisodesViewState: Equatable {
 	case idle
 	case loading
 	case loaded(EpisodeCharacterWithEpisodes)
