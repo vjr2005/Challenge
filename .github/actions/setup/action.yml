@@ -38,9 +38,9 @@ runs:
       uses: actions/cache@v4
       with:
         path: derived_data
-        key: derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-${{ github.sha }}
+        key: derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved', 'Tuist/ProjectDescriptionHelpers/ModuleKit/Strategy/ActiveStrategy.swift') }}-${{ github.sha }}
         restore-keys: |
-          derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-
+          derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved', 'Tuist/ProjectDescriptionHelpers/ModuleKit/Strategy/ActiveStrategy.swift') }}-
           derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-
 
     - name: Install SPM dependencies
