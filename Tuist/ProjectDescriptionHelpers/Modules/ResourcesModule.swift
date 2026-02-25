@@ -1,4 +1,4 @@
-public let resourcesModule: any ModuleContract = FrameworkModule(
+public let resourcesModule = Module(
 	directory: "Shared/Resources",
 	dependencies: [
 		.module(coreModule),

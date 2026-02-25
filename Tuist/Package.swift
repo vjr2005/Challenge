@@ -22,6 +22,7 @@ let package = PackageDescription.Package(
 #else
 // Hardcoded fallback for `tuist install` which runs pure SPM
 // without access to ProjectDescriptionHelpers.
+// ⚠️ Keep URLs and versions in sync with ExternalPackages.swift.
 let package = Package(
 	name: "ChallengePackages",
 	dependencies: [

@@ -1,4 +1,4 @@
-public let designSystemModule: any ModuleContract = FrameworkModule(
+public let designSystemModule = Module(
 	directory: "Libraries/DesignSystem",
 	dependencies: [
 		.module(coreModule),

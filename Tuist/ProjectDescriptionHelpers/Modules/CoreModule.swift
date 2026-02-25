@@ -1,1 +1,1 @@
-public let coreModule: any ModuleContract = FrameworkModule(directory: "Libraries/Core")
+public let coreModule = Module(directory: "Libraries/Core")

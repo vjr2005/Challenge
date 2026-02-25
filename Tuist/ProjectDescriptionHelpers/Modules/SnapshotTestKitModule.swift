@@ -1,6 +1,6 @@
 import ProjectDescription
 
-public let snapshotTestKitModule: any ModuleContract = FrameworkModule(
+public let snapshotTestKitModule = Module(
 	directory: "Libraries/SnapshotTestKit",
 	dependencies: [
 		.external(snapshotTestingPackage),

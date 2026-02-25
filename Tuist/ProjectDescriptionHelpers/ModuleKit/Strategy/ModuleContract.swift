@@ -3,15 +3,15 @@ import ProjectDescription
 /// Defines how a module integrates into the Tuist project.
 ///
 /// Each concrete implementation represents a different integration strategy:
-/// - `SPMModule`: Modules as SPM local packages (each with its own `Package.swift`).
 /// - `FrameworkModule`: Modules as framework targets in the root project.
+/// - `SPMModule`: Modules as SPM local packages (each with its own `Package.swift`).
 ///
-/// Both strategies can be mixed in the same project. Each module definition
-/// explicitly selects its concrete strategy. New strategies (e.g., `XCFrameworkModule`)
-/// conform to this protocol without modifying existing code (Open/Closed Principle).
+/// **Tuist 4.x limitation:** All modules must use the same strategy — mixing SPM
+/// packages with framework targets in the same build is not supported.
+/// Use the `Module` typealias in `ActiveStrategy.swift` to select the active strategy.
 ///
-/// **Constraint:** SPM modules cannot depend on Framework modules (SPM resolution
-/// cannot see framework targets in the root project). The reverse is valid.
+/// New strategies (e.g., `XCFrameworkModule`) conform to this protocol without
+/// modifying existing code (Open/Closed Principle).
 public protocol ModuleContract: Sendable {
 	// MARK: - Instance Properties
 

@@ -1,4 +1,4 @@
-public let characterModule: any ModuleContract = FrameworkModule(
+public let characterModule = Module(
 	directory: "Features/Character",
 	dependencies: [
 		.module(coreModule),

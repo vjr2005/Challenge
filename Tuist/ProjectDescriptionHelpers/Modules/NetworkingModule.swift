@@ -1,6 +1,6 @@
 import ProjectDescription
 
-public let networkingModule: any ModuleContract = FrameworkModule(
+public let networkingModule = Module(
 	directory: "Libraries/Networking",
 	dependencies: [
 		.module(coreModule),

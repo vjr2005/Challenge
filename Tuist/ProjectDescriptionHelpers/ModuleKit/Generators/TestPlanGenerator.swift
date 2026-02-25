@@ -67,15 +67,26 @@ enum TestPlanGenerator {
 			"version": 1,
 		]
 
-		// swiftlint:disable:next force_try
-		let data = try! JSONSerialization.data(
-			withJSONObject: testPlan,
-			options: [.prettyPrinted, .sortedKeys]
-		)
-		let json = String(data: data, encoding: .utf8)!
+		let data: Data
+		do {
+			data = try JSONSerialization.data(
+				withJSONObject: testPlan,
+				options: [.prettyPrinted, .sortedKeys]
+			)
+		} catch {
+			fatalError("Failed to serialize test plan '\(testPlanName)': \(error)")
+		}
+
+		guard let json = String(data: data, encoding: .utf8) else {
+			fatalError("Failed to encode test plan '\(testPlanName)' as UTF-8")
+		}
+
 		let path = "\(workspaceRoot)/\(testPlanName)"
-		// swiftlint:disable:next force_try
-		try! json.write(toFile: path, atomically: true, encoding: .utf8)
+		do {
+			try json.write(toFile: path, atomically: true, encoding: .utf8)
+		} catch {
+			fatalError("Failed to write test plan at \(path): \(error)")
+		}
 
 		return testPlanName
 	}

@@ -93,8 +93,11 @@ enum PackageSwiftGenerator {
 
 		let content = lines.joined(separator: "\n")
 		let path = "\(workspaceRoot)/\(directory)/Package.swift"
-		// swiftlint:disable:next force_try
-		try! content.write(toFile: path, atomically: true, encoding: .utf8)
+		do {
+			try content.write(toFile: path, atomically: true, encoding: .utf8)
+		} catch {
+			fatalError("Failed to write Package.swift for module '\(name)' at \(path): \(error)")
+		}
 	}
 }
 
