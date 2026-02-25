@@ -89,18 +89,7 @@ let workspace = Workspace(
 
 ### Module Test Scheme
 
-The `Challenge (Dev)` scheme aggregates module tests. The test action adapts based on the active strategy (via `ModuleAggregation`):
-
-**FrameworkModule (current):** Uses `.targets(...)` with explicit testable targets and code coverage.
-
-```bash
-xcodebuild test \
-  -workspace Challenge.xcworkspace \
-  -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
-```
-
-**SPMModule (if switched):** Uses `.testPlans(...)` with an auto-generated `.xctestplan` file. Requires `-testPlan` flag:
+The `Challenge (Dev)` scheme includes a `.xctestplan` file that aggregates all module test targets. `ModuleAggregation` always uses `.testPlans(...)` with an auto-generated test plan, regardless of the active strategy. This means the test command is always the same:
 
 ```bash
 xcodebuild test \
@@ -110,7 +99,7 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 ```
 
-In both cases, use `xcodebuild test` directly (not `tuist test`).
+Tests run via `xcodebuild test` (not `tuist test`) because Tuist can't resolve SPM package test targets when using `.testPlans()`.
 
 ### Why disable synthesizers?
 

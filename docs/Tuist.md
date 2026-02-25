@@ -59,13 +59,13 @@ The project uses a **Strategy Pattern** for module integration. A global `typeal
 
 ```swift
 // ActiveStrategy.swift
-public typealias Module = FrameworkModule  // or SPMModule
+public typealias Module = SPMModule  // or FrameworkModule
 ```
 
 | Strategy | Description |
 |----------|-------------|
-| `FrameworkModule` | Modules as framework targets in the root project (current) |
-| `SPMModule` | Modules as SPM local packages with auto-generated `Package.swift` |
+| `SPMModule` | Modules as SPM local packages with auto-generated `Package.swift` (current) |
+| `FrameworkModule` | Modules as framework targets in the root project |
 
 **Tuist 4.x limitation:** All modules must use the same strategy — mixing is not supported.
 
@@ -103,7 +103,7 @@ Modules declare dependencies using the `ModuleDependency` enum:
 | `.moduleMocks(someModule)` | `testDependencies`, `snapshotTestDependencies` | Mocks target of another module |
 | `.external(somePackage)` | `dependencies` | External SPM package |
 
-### FrameworkModule Strategy (Current)
+### FrameworkModule Strategy (Alternative)
 
 Each `FrameworkModule` generates the following targets in the root project:
 
@@ -112,7 +112,7 @@ Each `FrameworkModule` generates the following targets in the root project:
 3. **Unit Tests** (e.g., `ChallengeCharacterTests`) — unit test bundle (if `Tests/Unit/` exists)
 4. **Snapshot Tests** (e.g., `ChallengeCharacterSnapshotTests`) — unit test bundle (if `Tests/Snapshots/` exists)
 
-### SPMModule Strategy (Alternative)
+### SPMModule Strategy (Current)
 
 Each `SPMModule` auto-generates a `Package.swift` (via `PackageSwiftGenerator`) with:
 - `.library()` products (source + mocks)
@@ -160,8 +160,8 @@ let project = mainApp.project
 - **Targets**: app + UI tests + all module framework targets
 - **Schemes**: per-environment (Dev/Staging/Prod) + UI tests + per-module schemes
 - **Packages**: aggregated from modules (empty for FrameworkModule, populated for SPMModule)
-- **Test action**: `ModuleAggregation` selects `.targets(...)` or `.testPlans(...)` based on strategy
-- **Coverage**: `ModuleAggregation` selects `.targets(...)` or `.relevant` based on strategy
+- **Test action**: `ModuleAggregation` always uses `.testPlans(...)` with an auto-generated test plan
+- **Coverage**: `ModuleAggregation` always uses `.relevant` (test plan drives coverage)
 
 The `mainApp` instance is defined in `MainApp.swift` with all 10 modules and `appKitModule` as entry point.
 
@@ -332,22 +332,10 @@ Both generators execute at manifest-time (`tuist generate`), not build-time.
 
 ## Testing
 
-Module tests use `xcodebuild test` with the `Challenge (Dev)` scheme. The test action adapts based on the active module strategy:
-
-**FrameworkModule (current):** Uses `.targets(...)` directly.
+Module tests use `xcodebuild test` with the `Challenge (Dev)` scheme. `ModuleAggregation` always generates a `.xctestplan` file that aggregates all module test targets, regardless of the active strategy. The test command is always the same:
 
 ```bash
 # Run all module tests (unit + snapshot)
-xcodebuild test \
-  -workspace Challenge.xcworkspace \
-  -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
-```
-
-**SPMModule (if switched):** Uses `.testPlans(...)` with an auto-generated test plan.
-
-```bash
-# Run all module tests (unit + snapshot) — SPM strategy
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
@@ -380,6 +368,7 @@ mise x -- tuist build
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
+  -testPlan Challenge \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 
 # Run UI tests

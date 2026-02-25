@@ -58,7 +58,13 @@ enum TestPlanGenerator {
 		}
 
 		let testPlan: [String: Any] = [
-			"configurations": [Any](),
+			"configurations": [
+				[
+					"id": "E9F7D3A1-4B2C-4F8E-A1D6-3C5E7F9A2B4D",
+					"name": "Test Scheme Action",
+					"options": [String: Any](),
+				] as [String: Any],
+			],
 			"defaultOptions": [
 				"codeCoverage": true,
 				"codeCoverageTargets": coverageTargets,

@@ -6,4 +6,4 @@
 /// To switch strategy, change this typealias:
 /// - `FrameworkModule`: Modules as framework targets in the root project.
 /// - `SPMModule`: Modules as SPM local packages (each with its own `Package.swift`).
-public typealias Module = FrameworkModule
+public typealias Module = SPMModule
