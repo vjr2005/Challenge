@@ -11,10 +11,10 @@ Tuist/
 │   ├── MainApp.swift                         # Global mainApp instance
 │   ├── Environment.swift                     # Environment-specific settings (Dev/Staging/Prod)
 │   ├── ExternalPackages.swift                # External SPM package definitions
+│   ├── TargetScript+BuildPhases.swift        # Build phase scripts (SwiftLint, etc.)
 │   ├── ModuleKit/                            # Core module infrastructure
 │   │   ├── ProjectConfig.swift               # Shared project configuration
 │   │   ├── BuildConfiguration.swift          # Debug/Release configurations
-│   │   ├── SwiftLint.swift                   # SwiftLint build phase integration
 │   │   ├── WorkspaceRoot.swift               # Workspace root path helpers
 │   │   ├── App.swift                         # App project, targets, schemes, coverage
 │   │   ├── Strategy/                         # Module integration strategies

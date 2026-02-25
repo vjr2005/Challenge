@@ -154,7 +154,7 @@ extension FrameworkModule {
 			deploymentTargets: deploymentTargets,
 			sources: ["\(pathPrefix)Sources/**"],
 			resources: resources,
-			scripts: [SwiftLint.script(path: "\(pathPrefix)Sources", workspaceRoot: ".")],
+			scripts: sourceTargetScripts(path: "\(pathPrefix)Sources"),
 			dependencies: dependencies.map(\.targetDependency),
 			settings: settings
 		)

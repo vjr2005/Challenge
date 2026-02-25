@@ -92,7 +92,7 @@ public struct App: @unchecked Sendable {
 			infoPlist: .extendingDefault(with: infoPlist),
 			sources: ["App/Sources/**"],
 			resources: ["App/Sources/Resources/**"],
-			scripts: [SwiftLint.script(path: "App/Sources")],
+			scripts: sourceTargetScripts(path: "App/Sources"),
 			dependencies: [entryModule.targetDependency],
 			settings: .settings(
 				configurations: Environment.appTargetConfigurations,
