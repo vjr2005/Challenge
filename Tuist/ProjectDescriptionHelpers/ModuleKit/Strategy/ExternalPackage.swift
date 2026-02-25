@@ -1,4 +1,5 @@
 import Foundation
+import ProjectDescription
 
 /// Metadata for an external SPM dependency (URL + version).
 ///
@@ -14,6 +15,10 @@ public struct ExternalPackage: Sendable {
 	/// The minimum version requirement (used with `.upToNextMajor`).
 	public let version: String
 
+	/// Tuist product type override (e.g., `.framework`).
+	/// When `nil`, Tuist uses the default product type for the package.
+	public let productType: Product?
+
 	/// Package identity derived from the URL's last path component.
 	///
 	/// Example: `"https://github.com/airbnb/lottie-ios"` → `"lottie-ios"`.
@@ -21,23 +26,24 @@ public struct ExternalPackage: Sendable {
 		URL(string: url)?.lastPathComponent ?? productName
 	}
 
-	public init(productName: String, url: String, version: String) {
+	public init(productName: String, url: String, version: String, productType: Product? = nil) {
 		self.productName = productName
 		self.url = url
 		self.version = version
+		self.productType = productType
 	}
 }
 
-// MARK: - Shared Constants
+// MARK: - Collection Helpers
 
-public let snapshotTestingPackage = ExternalPackage(
-	productName: "SnapshotTesting",
-	url: "https://github.com/pointfreeco/swift-snapshot-testing",
-	version: "1.17.0"
-)
-
-public let lottiePackage = ExternalPackage(
-	productName: "Lottie",
-	url: "https://github.com/airbnb/lottie-ios",
-	version: "4.6.0"
-)
+extension [ExternalPackage] {
+	/// Product type overrides for `PackageSettings`.
+	/// Only includes packages with an explicit `productType`.
+	public var productTypes: [String: Product] {
+		reduce(into: [:]) { result, package in
+			if let productType = package.productType {
+				result[package.productName] = productType
+			}
+		}
+	}
+}

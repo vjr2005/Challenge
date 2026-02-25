@@ -6,9 +6,12 @@ import ProjectDescription
 /// - `SPMModule`: Modules as SPM local packages (each with its own `Package.swift`).
 /// - `FrameworkModule`: Modules as framework targets in the root project.
 ///
-/// The active strategy is selected via the `Module` typealias in `ActiveStrategy.swift`.
-/// New strategies (e.g., `XCFrameworkModule`) conform to this protocol without
-/// modifying existing code (Open/Closed Principle).
+/// Both strategies can be mixed in the same project. Each module definition
+/// explicitly selects its concrete strategy. New strategies (e.g., `XCFrameworkModule`)
+/// conform to this protocol without modifying existing code (Open/Closed Principle).
+///
+/// **Constraint:** SPM modules cannot depend on Framework modules (SPM resolution
+/// cannot see framework targets in the root project). The reverse is valid.
 public protocol ModuleContract: Sendable {
 	// MARK: - Instance Properties
 
@@ -47,4 +50,8 @@ public protocol ModuleContract: Sendable {
 	/// Per-target build settings for `Tuist/Package.swift`.
 	/// SPM: one entry per detected target (source, mocks, tests). Framework: empty.
 	var packageTargetSettings: [String: Settings] { get }
+
+	/// Container path for test plan entries.
+	/// SPM: `"container:{directory}"`. Framework: `"container:"`.
+	var containerPath: String { get }
 }

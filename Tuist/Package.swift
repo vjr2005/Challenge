@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 import PackageDescription
 
 #if TUIST
@@ -6,17 +6,22 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let packageSettings = PackageSettings(
-	productTypes: [
-		"SnapshotTesting": .framework,
-		"SwiftMockServerBinary": .framework,
-	],
+	productTypes: allExternalPackages.productTypes,
 	baseSettings: .settings(
 		configurations: BuildConfiguration.all
 	),
 	targetSettings: mainApp.packageTargetSettings
 )
-#endif
 
+let package = PackageDescription.Package(
+	name: "ChallengePackages",
+	dependencies: allExternalPackages.map {
+		.package(url: $0.url, from: Version(stringLiteral: $0.version))
+	}
+)
+#else
+// Hardcoded fallback for `tuist install` which runs pure SPM
+// without access to ProjectDescriptionHelpers.
 let package = Package(
 	name: "ChallengePackages",
 	dependencies: [
@@ -25,3 +30,4 @@ let package = Package(
 		.package(url: "https://github.com/vjr2005/SwiftMockServer", from: "1.1.1"),
 	]
 )
+#endif

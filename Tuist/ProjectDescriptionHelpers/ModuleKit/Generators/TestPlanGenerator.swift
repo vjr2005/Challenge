@@ -2,9 +2,9 @@ import Foundation
 
 /// Generates an `.xctestplan` JSON file from module definitions.
 ///
-/// Used by the SPM strategy to auto-generate the test plan that aggregates
-/// all module test targets and code coverage targets. The Framework strategy
-/// does not need a test plan — it uses `.targets(...)` directly.
+/// Used by `ModuleAggregation` to auto-generate the test plan that aggregates
+/// all module test targets and code coverage targets. Supports any mix of
+/// SPM and Framework modules via `ModuleContract.containerPath`.
 enum TestPlanGenerator {
 	/// Generates the `.xctestplan` file and returns its filename.
 	///
@@ -26,7 +26,7 @@ enum TestPlanGenerator {
 		for module in modules {
 			if module.includeInCoverage {
 				coverageTargets.append([
-					"containerPath": "container:\(module.directory)",
+					"containerPath": module.containerPath,
 					"identifier": module.name,
 					"name": module.name,
 				])
@@ -36,9 +36,22 @@ enum TestPlanGenerator {
 			if fileSystem.hasUnitTests {
 				testTargets.append([
 					"target": [
-						"containerPath": "container:\(module.directory)",
+						"containerPath": module.containerPath,
 						"identifier": "\(module.name)Tests",
 						"name": "\(module.name)Tests",
+					],
+				])
+			}
+
+			// Framework modules have separate snapshot test targets.
+			// SPM modules merge snapshots into the main test target (already covered above).
+			if fileSystem.hasSnapshotTests, module.packageReference == nil {
+				let snapshotTestsName = "\(module.name)SnapshotTests"
+				testTargets.append([
+					"target": [
+						"containerPath": module.containerPath,
+						"identifier": snapshotTestsName,
+						"name": snapshotTestsName,
 					],
 				])
 			}

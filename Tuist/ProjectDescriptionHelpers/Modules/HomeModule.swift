@@ -1,4 +1,4 @@
-public let homeModule = Module(
+public let homeModule: any ModuleContract = FrameworkModule(
 	directory: "Features/Home",
 	dependencies: [
 		.module(coreModule),

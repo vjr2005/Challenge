@@ -1,4 +1,4 @@
-public let appKitModule = Module(
+public let appKitModule: any ModuleContract = FrameworkModule(
 	directory: "AppKit",
 	dependencies: [
 		.module(coreModule),

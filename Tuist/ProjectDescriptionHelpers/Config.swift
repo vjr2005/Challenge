@@ -1,4 +1,3 @@
-import Foundation
 import ProjectDescription
 
 private let swiftVersion = "6.2"
@@ -19,11 +18,3 @@ public let projectConfig = ProjectConfig(
 		"ENABLE_USER_SCRIPT_SANDBOXING": .string("NO"),
 	]
 )
-
-/// Absolute path to the workspace root directory.
-/// Computed from `#file` (Tuist/ProjectDescriptionHelpers/Config.swift → 3 levels up).
-let workspaceRoot: String = URL(fileURLWithPath: #file)
-	.deletingLastPathComponent() // Config.swift
-	.deletingLastPathComponent() // ProjectDescriptionHelpers
-	.deletingLastPathComponent() // Tuist
-	.path
