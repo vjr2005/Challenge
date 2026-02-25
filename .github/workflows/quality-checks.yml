@@ -44,7 +44,6 @@ jobs:
           xcodebuild test \
             -workspace Challenge.xcworkspace \
             -scheme "Challenge (Dev)" \
-            -testPlan Challenge \
             -destination "platform=iOS Simulator,name=$TUIST_TEST_DEVICE,OS=$TUIST_TEST_OS" \
             -derivedDataPath "$DERIVED_DATA_PATH" \
             -resultBundlePath "$RESULT_BUNDLE_PATH" \
@@ -247,12 +246,13 @@ jobs:
             const report = JSON.parse(fs.readFileSync('coverage.json', 'utf8'));
             const THRESHOLD = parseInt(process.env.THRESHOLD, 10);
 
-            const targets = report.targets.filter(t =>
-              !t.name.includes('Mock') &&
-              !t.name.includes('Test') &&
-              !t.name.includes('SnapshotTestKit') &&
-              t.name !== 'SnapshotTesting'
-            );
+            const targets = report.targets.filter(t => {
+              const name = t.name.replace(/\.(framework|app|o)$/, '');
+              return !name.includes('Mock') &&
+                !name.includes('Test') &&
+                !name.includes('SnapshotTestKit') &&
+                name !== 'SnapshotTesting';
+            });
 
             let totalCovered = 0;
             let totalExecutable = 0;

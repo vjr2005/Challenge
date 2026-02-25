@@ -1,3 +1,1 @@
-import ProjectDescription
-
-public let coreModule = Module.create(directory: "Libraries/Core")
+public let coreModule = Module(directory: "Libraries/Core")
