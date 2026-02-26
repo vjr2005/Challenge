@@ -153,6 +153,10 @@ private actor LoadSignal {
 			return
 		}
 		await withCheckedContinuation { continuation in
+			if isCompleted {
+				continuation.resume()
+				return
+			}
 			self.continuation = continuation
 		}
 	}
