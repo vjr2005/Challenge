@@ -233,20 +233,47 @@ jobs:
           pattern: '*-coverage'
 
       - name: Merge coverage data
+        id: merge
         run: |
           mkdir -p merged-output
-          xcrun xcresulttool merge \
-            unit-snapshot-coverage/UnitSnapshot.xcresult \
-            ui-test-coverage/UITests.xcresult \
-            --output-path merged-output/merged.xcresult
-          xcrun xccov view --report --json merged-output/merged.xcresult > coverage.json
+          if xcrun xcresulttool merge \
+              unit-snapshot-coverage/UnitSnapshot.xcresult \
+              ui-test-coverage/UITests.xcresult \
+              --output-path merged-output/merged.xcresult 2>&1; then
+            echo "merge_ok=true" >> "$GITHUB_OUTPUT"
+            xcrun xccov view --report --json merged-output/merged.xcresult > coverage.json
+          else
+            echo "::warning::xcresulttool merge failed — falling back to independent coverage extraction"
+            echo "merge_ok=false" >> "$GITHUB_OUTPUT"
+            xcrun xccov view --report --json unit-snapshot-coverage/UnitSnapshot.xcresult > unit-coverage.json
+            xcrun xccov view --report --json ui-test-coverage/UITests.xcresult > ui-coverage.json
+          fi
 
       - name: Upload merged xcresult
-        id: upload-xcresult
+        if: steps.merge.outputs.merge_ok == 'true'
+        id: upload-merged
         uses: actions/upload-artifact@v4
         with:
           name: merged-xcresult
           path: merged-output
+          retention-days: 7
+
+      - name: Upload unit xcresult
+        if: steps.merge.outputs.merge_ok != 'true'
+        id: upload-unit
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-snapshot-xcresult
+          path: unit-snapshot-coverage
+          retention-days: 7
+
+      - name: Upload UI xcresult
+        if: steps.merge.outputs.merge_ok != 'true'
+        id: upload-ui
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-xcresult
+          path: ui-test-coverage
           retention-days: 7
 
       - name: Coverage report
@@ -254,14 +281,61 @@ jobs:
         uses: actions/github-script@v7
         env:
           THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
-          XCRESULT_ARTIFACT_ID: ${{ steps.upload-xcresult.outputs.artifact-id }}
+          MERGE_OK: ${{ steps.merge.outputs.merge_ok }}
+          MERGED_ARTIFACT_ID: ${{ steps.upload-merged.outputs.artifact-id }}
+          UNIT_ARTIFACT_ID: ${{ steps.upload-unit.outputs.artifact-id }}
+          UI_ARTIFACT_ID: ${{ steps.upload-ui.outputs.artifact-id }}
         with:
           script: |
             const fs = require('fs');
-            const report = JSON.parse(fs.readFileSync('coverage.json', 'utf8'));
             const THRESHOLD = parseInt(process.env.THRESHOLD, 10);
+            const mergeOk = process.env.MERGE_OK === 'true';
 
-            const targets = report.targets.filter(t => {
+            // --- Load coverage targets ---
+            let targets;
+            if (mergeOk) {
+              const report = JSON.parse(fs.readFileSync('coverage.json', 'utf8'));
+              targets = report.targets;
+            } else {
+              // Merge coverage at file level from both reports
+              const unitReport = JSON.parse(fs.readFileSync('unit-coverage.json', 'utf8'));
+              const uiReport = JSON.parse(fs.readFileSync('ui-coverage.json', 'utf8'));
+
+              const targetMap = new Map();
+              for (const report of [unitReport, uiReport]) {
+                for (const target of report.targets) {
+                  if (!targetMap.has(target.name)) {
+                    targetMap.set(target.name, new Map());
+                  }
+                  const fileMap = targetMap.get(target.name);
+                  for (const file of (target.files || [])) {
+                    const key = file.path || file.name;
+                    const existing = fileMap.get(key);
+                    if (!existing || file.coveredLines > existing.coveredLines) {
+                      fileMap.set(key, {
+                        coveredLines: file.coveredLines,
+                        executableLines: file.executableLines,
+                      });
+                    }
+                  }
+                }
+              }
+
+              targets = [];
+              for (const [name, fileMap] of targetMap) {
+                let coveredLines = 0;
+                let executableLines = 0;
+                for (const f of fileMap.values()) {
+                  coveredLines += f.coveredLines;
+                  executableLines += f.executableLines;
+                }
+                const lineCoverage = executableLines > 0 ? coveredLines / executableLines : 0;
+                targets.push({ name, coveredLines, executableLines, lineCoverage });
+              }
+            }
+
+            // --- Filter targets ---
+            const filtered = targets.filter(t => {
               const name = t.name.replace(/\.(framework|app|o)$/, '');
               return !name.includes('Mock') &&
                 !name.includes('Test') &&
@@ -272,7 +346,7 @@ jobs:
             let totalCovered = 0;
             let totalExecutable = 0;
 
-            const rows = targets
+            const rows = filtered
               .sort((a, b) => a.name.localeCompare(b.name))
               .map(t => {
                 totalCovered += t.coveredLines;
@@ -288,8 +362,20 @@ jobs:
               : 0;
             const totalIcon = totalPct >= THRESHOLD ? ':white_check_mark:' : ':x:';
 
-            const artifactId = process.env.XCRESULT_ARTIFACT_ID;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${artifactId}`;
+            // --- Download links ---
+            const baseUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts`;
+            let downloadSection;
+            if (mergeOk) {
+              const id = process.env.MERGED_ARTIFACT_ID;
+              downloadSection = `:package: [Download xcresult](${baseUrl}/${id})`;
+            } else {
+              const unitId = process.env.UNIT_ARTIFACT_ID;
+              const uiId = process.env.UI_ARTIFACT_ID;
+              downloadSection = [
+                `:package: [Unit+Snapshot xcresult](${baseUrl}/${unitId})`,
+                `:package: [UI Tests xcresult](${baseUrl}/${uiId})`,
+              ].join('\n');
+            }
 
             const body = [
               '## Code Coverage',
@@ -301,7 +387,7 @@ jobs:
               '',
               `Minimum required: ${THRESHOLD}%`,
               '',
-              `:package: [Download xcresult](${runUrl})`
+              downloadSection,
             ].join('\n');
 
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, body + '\n');
