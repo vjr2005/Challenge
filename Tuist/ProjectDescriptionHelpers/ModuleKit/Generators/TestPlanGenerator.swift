@@ -29,70 +29,70 @@ enum TestPlanGenerator {
 		case .framework: "container:\(appName).xcodeproj"
 		}
 
-		var coverageTargets: [[String: String]] = [
-			["containerPath": appContainerPath, "identifier": appName, "name": appName],
+		var coverageTargets: [TestPlanCoverageTarget] = [
+			TestPlanCoverageTarget(containerPath: appContainerPath, identifier: appName, name: appName),
 		]
-		var testTargets: [[String: Any]] = []
+		var testTargets: [TestPlanTestTargetEntry] = []
 
 		for module in modules {
 			if module.includeInCoverage {
-				coverageTargets.append([
-					"containerPath": module.containerPath,
-					"identifier": module.name,
-					"name": module.name,
-				])
+				coverageTargets.append(
+					TestPlanCoverageTarget(
+						containerPath: module.containerPath,
+						identifier: module.name,
+						name: module.name
+					)
+				)
 			}
 
 			let fileSystem = ModuleFileSystem(directory: module.directory, appName: appName)
 			if fileSystem.hasUnitTests {
-				testTargets.append([
-					"target": [
-						"containerPath": module.containerPath,
-						"identifier": "\(module.name)Tests",
-						"name": "\(module.name)Tests",
-					],
-				])
+				testTargets.append(
+					TestPlanTestTargetEntry(
+						target: TestPlanTestTarget(
+							containerPath: module.containerPath,
+							identifier: "\(module.name)Tests",
+							name: "\(module.name)Tests"
+						)
+					)
+				)
 			}
 
 			// Framework modules have separate snapshot test targets.
 			// SPM modules merge snapshots into the main test target (already covered above).
 			if fileSystem.hasSnapshotTests, module.packageReference == nil {
 				let snapshotTestsName = "\(module.name)SnapshotTests"
-				testTargets.append([
-					"target": [
-						"containerPath": module.containerPath,
-						"identifier": snapshotTestsName,
-						"name": snapshotTestsName,
-					],
-				])
+				testTargets.append(
+					TestPlanTestTargetEntry(
+						target: TestPlanTestTarget(
+							containerPath: module.containerPath,
+							identifier: snapshotTestsName,
+							name: snapshotTestsName
+						)
+					)
+				)
 			}
 		}
 
-		let codeCoverage: [String: Any] = ["targets": coverageTargets]
-
-		let testPlan: [String: Any] = [
-			"configurations": [
-				[
-					"id": "E9F7D3A1-4B2C-4F8E-A1D6-3C5E7F9A2B4D",
-					"name": "Test Scheme Action",
-					"options": [String: Any](),
-				] as [String: Any],
+		let testPlan = TestPlan(
+			configurations: [
+				TestPlanConfiguration(name: "Test Scheme Action"),
 			],
-			"defaultOptions": [
-				"codeCoverage": codeCoverage,
-			] as [String: Any],
-			"testTargets": testTargets,
-			"version": 1,
-		]
+			defaultOptions: TestPlanDefaultOptions(
+				codeCoverage: TestPlanCodeCoverage(targets: coverageTargets)
+			),
+			testTargets: testTargets,
+			version: 1
+		)
+
+		let encoder = JSONEncoder()
+		encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
 		let data: Data
 		do {
-			data = try JSONSerialization.data(
-				withJSONObject: testPlan,
-				options: [.prettyPrinted, .sortedKeys]
-			)
+			data = try encoder.encode(testPlan)
 		} catch {
-			fatalError("Failed to serialize test plan '\(testPlanName)': \(error)")
+			fatalError("Failed to encode test plan '\(testPlanName)': \(error)")
 		}
 
 		guard let json = String(data: data, encoding: .utf8) else {
@@ -101,7 +101,7 @@ enum TestPlanGenerator {
 
 		let path = "\(workspaceRoot)/\(testPlanName)"
 		do {
-			try json.write(toFile: path, atomically: true, encoding: .utf8)
+			try (json + "\n").write(toFile: path, atomically: true, encoding: .utf8)
 		} catch {
 			fatalError("Failed to write test plan at \(path): \(error)")
 		}
