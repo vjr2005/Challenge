@@ -20,9 +20,14 @@ build/
 
 # Tuist
 Derived/
+*.xctestplan
 Tuist/Dependencies/
 Tuist/.build/
 Tuist/.cache/
+
+# Auto-generated SPM package manifests (SPM strategy)
+**/Package.swift
+!Tuist/Package.swift
 
 # Swift Package Manager
 .swiftpm/

@@ -9,6 +9,10 @@ inputs:
   derived-data-prefix:
     description: Cache key prefix for DerivedData (e.g., unit, ui)
     required: true
+  module-strategy:
+    description: Module integration strategy (spm or framework)
+    required: false
+    default: spm
 
 runs:
   using: composite
@@ -38,9 +42,9 @@ runs:
       uses: actions/cache@v4
       with:
         path: derived_data
-        key: derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-${{ github.sha }}
+        key: derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-${{ inputs.module-strategy }}-${{ github.sha }}
         restore-keys: |
-          derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-
+          derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-${{ inputs.module-strategy }}-
           derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-
 
     - name: Install SPM dependencies
@@ -49,7 +53,7 @@ runs:
 
     - name: Generate Xcode project
       shell: bash
-      run: mise x -- tuist generate
+      run: TUIST_MODULE_STRATEGY=${{ inputs.module-strategy }} mise x -- tuist generate
 
     # Simulator Readiness Strategy
     #

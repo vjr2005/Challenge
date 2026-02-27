@@ -1,6 +1,7 @@
-import ProjectDescription
-
-public let resourcesModule = Module.create(
+public let resourcesModule = ModuleFactory.create(
 	directory: "Shared/Resources",
+	dependencies: [
+		.module(coreModule),
+	],
 	includeInCoverage: false
 )

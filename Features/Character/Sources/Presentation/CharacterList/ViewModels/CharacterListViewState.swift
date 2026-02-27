@@ -1,6 +1,6 @@
 import Foundation
 
-enum CharacterListViewState {
+enum CharacterListViewState: Equatable {
 	case idle
 	case loading
 	case loaded(CharactersPage)

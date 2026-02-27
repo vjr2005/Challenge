@@ -1,6 +1,12 @@
 import ProjectDescription
 
-public let snapshotTestKitModule = Module.create(
+public let snapshotTestKitModule = ModuleFactory.create(
 	directory: "Libraries/SnapshotTestKit",
-	includeInCoverage: false
+	dependencies: [
+		.external(snapshotTestingPackage),
+	],
+	includeInCoverage: false,
+	settingsOverrides: [
+		"ENABLE_TESTING_SEARCH_PATHS": "YES",
+	]
 )

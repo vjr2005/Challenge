@@ -192,8 +192,7 @@ struct ImageDiskCacheTests {
 		// When
 		await sut.remove(for: testURL)
 
-		// Then
-		#expect(fileSystemMock.files.count == 1)
+		// Then — verify through actor (avoids cross-thread mock access)
 		let removedResult = await sut.image(for: testURL)
 		let otherResult = await sut.image(for: otherURL)
 		#expect(removedResult == nil)
@@ -238,8 +237,11 @@ struct ImageDiskCacheTests {
 		// When
 		await sut.removeAll()
 
-		// Then
-		#expect(fileSystemMock.files.isEmpty)
+		// Then — verify through actor (avoids cross-thread mock access)
+		let result1 = await sut.image(for: url1)
+		let result2 = await sut.image(for: url2)
+		#expect(result1 == nil)
+		#expect(result2 == nil)
 	}
 
 	// MARK: - Empty Data
