@@ -1,4 +1,4 @@
-public let designSystemModule = Module(
+public let designSystemModule = ModuleFactory.create(
 	directory: "Libraries/DesignSystem",
 	dependencies: [
 		.module(coreModule),

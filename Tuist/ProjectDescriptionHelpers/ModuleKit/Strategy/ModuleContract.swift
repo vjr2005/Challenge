@@ -8,7 +8,7 @@ import ProjectDescription
 ///
 /// **Tuist 4.x limitation:** All modules must use the same strategy — mixing SPM
 /// packages with framework targets in the same build is not supported.
-/// Use the `Module` typealias in `ActiveStrategy.swift` to select the active strategy.
+/// Use `ModuleStrategy.active` in `ModuleStrategy.swift` to select the active strategy.
 ///
 /// New strategies (e.g., `XCFrameworkModule`) conform to this protocol without
 /// modifying existing code (Open/Closed Principle).

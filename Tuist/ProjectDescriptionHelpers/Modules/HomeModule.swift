@@ -1,4 +1,4 @@
-public let homeModule = Module(
+public let homeModule = ModuleFactory.create(
 	directory: "Features/Home",
 	dependencies: [
 		.module(coreModule),

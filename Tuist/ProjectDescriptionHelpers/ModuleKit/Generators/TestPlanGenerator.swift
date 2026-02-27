@@ -5,6 +5,12 @@ import Foundation
 /// Used by `ModuleAggregation` to auto-generate the test plan that aggregates
 /// all module test targets and code coverage targets. Supports any mix of
 /// SPM and Framework modules via `ModuleContract.containerPath`.
+///
+/// **Coverage filtering:** Uses `codeCoverage.targets` to tell Xcode to
+/// "Gather coverage for some targets." Only modules with
+/// `includeInCoverage == true` are listed. All targets reference
+/// the xcodeproj container, which works for both framework targets
+/// and SPM local packages resolved through the project.
 enum TestPlanGenerator {
 	/// Generates the `.xctestplan` file and returns its filename.
 	///
@@ -18,8 +24,13 @@ enum TestPlanGenerator {
 	) -> String {
 		let testPlanName = "\(appName).xctestplan"
 
+		let appContainerPath: String = switch ModuleStrategy.active {
+		case .spm: "container:"
+		case .framework: "container:\(appName).xcodeproj"
+		}
+
 		var coverageTargets: [[String: String]] = [
-			["containerPath": "container:", "identifier": appName, "name": appName],
+			["containerPath": appContainerPath, "identifier": appName, "name": appName],
 		]
 		var testTargets: [[String: Any]] = []
 
@@ -57,6 +68,8 @@ enum TestPlanGenerator {
 			}
 		}
 
+		let codeCoverage: [String: Any] = ["targets": coverageTargets]
+
 		let testPlan: [String: Any] = [
 			"configurations": [
 				[
@@ -66,9 +79,8 @@ enum TestPlanGenerator {
 				] as [String: Any],
 			],
 			"defaultOptions": [
-				"codeCoverage": true,
-				"codeCoverageTargets": coverageTargets,
-			],
+				"codeCoverage": codeCoverage,
+			] as [String: Any],
 			"testTargets": testTargets,
 			"version": 1,
 		]

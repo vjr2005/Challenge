@@ -1,4 +1,4 @@
-public let characterModule = Module(
+public let characterModule = ModuleFactory.create(
 	directory: "Features/Character",
 	dependencies: [
 		.module(coreModule),

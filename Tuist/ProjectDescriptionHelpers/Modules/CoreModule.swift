@@ -1,1 +1,1 @@
-public let coreModule = Module(directory: "Libraries/Core")
+public let coreModule = ModuleFactory.create(directory: "Libraries/Core")

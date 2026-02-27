@@ -1,4 +1,4 @@
-public let systemModule = Module(
+public let systemModule = ModuleFactory.create(
 	directory: "Features/System",
 	dependencies: [
 		.module(coreModule),

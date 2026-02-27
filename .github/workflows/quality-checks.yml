@@ -4,6 +4,18 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      module-strategy:
+        description: "Module integration strategy (spm or framework)"
+        required: false
+        default: spm
+        type: choice
+        options:
+          - spm
+          - framework
+
+env:
+  MODULE_STRATEGY: ${{ github.event.inputs.module-strategy || 'spm' }}
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -34,9 +46,10 @@ jobs:
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
           derived-data-prefix: unit
+          module-strategy: ${{ env.MODULE_STRATEGY }}
 
       - name: Generate project
-        run: mise x -- tuist generate --no-open
+        run: TUIST_MODULE_STRATEGY=${{ env.MODULE_STRATEGY }} mise x -- tuist generate --no-open
 
       - name: Run unit and snapshot tests
         timeout-minutes: 35
@@ -166,6 +179,7 @@ jobs:
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
           derived-data-prefix: ui
+          module-strategy: ${{ env.MODULE_STRATEGY }}
 
       - name: Run UI tests
         timeout-minutes: 35

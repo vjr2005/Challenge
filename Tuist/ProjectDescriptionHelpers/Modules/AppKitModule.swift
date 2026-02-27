@@ -1,4 +1,4 @@
-public let appKitModule = Module(
+public let appKitModule = ModuleFactory.create(
 	directory: "AppKit",
 	dependencies: [
 		.module(coreModule),

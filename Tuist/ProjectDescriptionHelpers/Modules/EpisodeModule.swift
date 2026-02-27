@@ -1,4 +1,4 @@
-public let episodeModule = Module(
+public let episodeModule = ModuleFactory.create(
 	directory: "Features/Episode",
 	dependencies: [
 		.module(coreModule),

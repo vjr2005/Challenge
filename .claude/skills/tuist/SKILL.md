@@ -48,7 +48,7 @@ ReadMcpResourceTool(
 
 ## Project Options
 
-The root `Project.swift` delegates to `mainApp.project` (defined in `ModuleKit/App.swift`). The project structure adapts based on the active module strategy set in `ActiveStrategy.swift`.
+The root `Project.swift` delegates to `mainApp.project` (defined in `ModuleKit/App.swift`). The project structure adapts based on the active module strategy set in `ModuleFactory.swift`.
 
 ```swift
 // Project.swift

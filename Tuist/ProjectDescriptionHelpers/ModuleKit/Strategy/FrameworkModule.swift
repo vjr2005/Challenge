@@ -23,7 +23,7 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 	public var mocksTargetDependency: TargetDependency { .target(name: "\(name)Mocks") }
 	public let packageReference: Package? = nil
 	public let packageTargetSettings: [String: Settings] = [:]
-	public var containerPath: String { "container:" }
+	public let containerPath: String
 
 	// MARK: - Init
 
@@ -41,6 +41,7 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 		self.directory = directory
 		self.name = name
 		self.includeInCoverage = includeInCoverage
+		self.containerPath = "container:\(config.appName).xcodeproj"
 
 		let pathPrefix = "\(directory)/"
 		let settings: Settings = .settings(

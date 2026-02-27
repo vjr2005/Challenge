@@ -1,6 +1,6 @@
 import ProjectDescription
 
-public let networkingModule = Module(
+public let networkingModule = ModuleFactory.create(
 	directory: "Libraries/Networking",
 	dependencies: [
 		.module(coreModule),

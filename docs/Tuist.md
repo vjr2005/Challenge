@@ -18,7 +18,8 @@ Tuist/
 │   │   ├── WorkspaceRoot.swift               # Workspace root path helpers
 │   │   ├── App.swift                         # App project, targets, schemes, coverage
 │   │   ├── Strategy/                         # Module integration strategies
-│   │   │   ├── ActiveStrategy.swift          # typealias Module = FrameworkModule or SPMModule
+│   │   │   ├── ModuleStrategy.swift             # Available strategies and active selection
+│   │   │   ├── ModuleFactory.swift             # Factory method to create modules
 │   │   │   ├── ModuleContract.swift          # Protocol defining module behavior
 │   │   │   ├── FrameworkModule.swift          # Framework target strategy
 │   │   │   ├── SPMModule.swift               # SPM local package strategy
@@ -55,25 +56,42 @@ destinations = [.iPhone, .iPad]
 
 ## Module Strategy Pattern
 
-The project uses a **Strategy Pattern** for module integration. A global `typealias Module` in `ActiveStrategy.swift` selects the active strategy for **all** modules:
+The project uses a **Strategy + Factory Method** pattern for module integration. `ModuleStrategy` defines available strategies and `ModuleFactory` creates modules using the active one:
 
 ```swift
-// ActiveStrategy.swift
-public typealias Module = SPMModule  // or FrameworkModule
+// ModuleStrategy.swift — resolves from TUIST_MODULE_STRATEGY env var (default: spm)
+public enum ModuleStrategy: String, CaseIterable {
+    case spm
+    case framework
+
+    public static let active: ModuleStrategy = { /* read from Environment.moduleStrategy */ }()
+}
+
+// ModuleFactory.swift — creates modules using the active strategy
+public enum ModuleFactory {
+    public static func create(directory:dependencies:...) -> any ModuleContract { ... }
+}
+```
+
+Switch strategy at generation time:
+
+```bash
+./generate.sh                          # default: spm
+./generate.sh --strategy framework     # switch to framework
 ```
 
 | Strategy | Description |
 |----------|-------------|
-| `SPMModule` | Modules as SPM local packages with auto-generated `Package.swift` (current) |
-| `FrameworkModule` | Modules as framework targets in the root project |
+| `spm` | Modules as SPM local packages with auto-generated `Package.swift` (default) |
+| `framework` | Modules as framework targets in the root project |
 
 **Tuist 4.x limitation:** All modules must use the same strategy — mixing is not supported.
 
-Each module is a global constant instantiated with `Module(...)`:
+Each module is a global constant created via `ModuleFactory.create(...)`:
 
 ```swift
 // Tuist/ProjectDescriptionHelpers/Modules/CharacterModule.swift
-public let characterModule = Module(
+public let characterModule = ModuleFactory.create(
     directory: "Features/Character",
     dependencies: [
         .module(coreModule),

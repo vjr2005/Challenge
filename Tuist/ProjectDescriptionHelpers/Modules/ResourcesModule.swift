@@ -1,4 +1,4 @@
-public let resourcesModule = Module(
+public let resourcesModule = ModuleFactory.create(
 	directory: "Shared/Resources",
 	dependencies: [
 		.module(coreModule),

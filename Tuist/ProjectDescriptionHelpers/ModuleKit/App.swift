@@ -10,8 +10,8 @@ public struct App: @unchecked Sendable {
 	public let appDeploymentTarget: DeploymentTargets
 	public let baseSettings: SettingsDictionary
 	public let infoPlist: [String: Plist.Value]
-	public let modules: [Module]
-	public let entryModule: Module
+	public let modules: [any ModuleContract]
+	public let entryModule: any ModuleContract
 
 	public init(
 		name: String,
@@ -20,8 +20,8 @@ public struct App: @unchecked Sendable {
 		developmentTarget: DeploymentTargets,
 		baseSettings: SettingsDictionary,
 		infoPlist: [String: Plist.Value],
-		modules: [Module],
-		entryModule: Module
+		modules: [any ModuleContract],
+		entryModule: any ModuleContract
 	) {
 		self.name = name
 		self.bundleId = bundleId

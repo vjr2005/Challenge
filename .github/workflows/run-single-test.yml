@@ -11,6 +11,9 @@ on:
         required: false
         default: "1"
 
+env:
+  MODULE_STRATEGY: spm
+
 concurrency:
   group: single-test-${{ github.ref }}
   cancel-in-progress: true
@@ -38,6 +41,7 @@ jobs:
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
           derived-data-prefix: single-test
+          module-strategy: ${{ env.MODULE_STRATEGY }}
 
       - name: Run test (${{ github.event.inputs.repeat-count }}x)
         run: |
