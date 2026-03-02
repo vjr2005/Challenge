@@ -12,7 +12,7 @@ on:
         default: "1"
 
 env:
-  MODULE_STRATEGY: spm
+  MODULE_STRATEGY: framework
 
 concurrency:
   group: single-test-${{ github.ref }}

@@ -12,7 +12,7 @@ inputs:
   module-strategy:
     description: Module integration strategy (spm or framework)
     required: false
-    default: spm
+    default: framework
 
 runs:
   using: composite

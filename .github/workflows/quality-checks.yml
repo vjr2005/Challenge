@@ -8,14 +8,14 @@ on:
       module-strategy:
         description: "Module integration strategy (spm or framework)"
         required: false
-        default: spm
+        default: framework
         type: choice
         options:
-          - spm
           - framework
+          - spm
 
 env:
-  MODULE_STRATEGY: ${{ github.event.inputs.module-strategy || 'spm' }}
+  MODULE_STRATEGY: ${{ github.event.inputs.module-strategy || 'framework' }}
 
 concurrency:
   group: ci-${{ github.ref }}

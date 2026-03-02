@@ -14,16 +14,16 @@ public enum ModuleStrategy: String {
 	/// The active strategy for the entire project.
 	///
 	/// Resolved from the `TUIST_MODULE_STRATEGY` environment variable at generation time.
-	/// Falls back to `.spm` when the variable is not set.
+	/// Falls back to `.framework` when the variable is not set.
 	///
 	/// Usage:
 	/// ```bash
-	/// TUIST_MODULE_STRATEGY=framework ./generate.sh
+	/// TUIST_MODULE_STRATEGY=spm ./generate.sh
 	/// ```
 	public static let active: ModuleStrategy = {
 		if case let .string(value) = ProjectDescription.Environment.moduleStrategy {
-			return ModuleStrategy(rawValue: value) ?? .spm
+			return ModuleStrategy(rawValue: value) ?? .framework
 		}
-		return .spm
+		return .framework
 	}()
 }

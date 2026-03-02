@@ -59,7 +59,7 @@ destinations = [.iPhone, .iPad]
 The project uses a **Strategy + Factory Method** pattern for module integration. `ModuleStrategy` defines available strategies and `ModuleFactory` creates modules using the active one:
 
 ```swift
-// ModuleStrategy.swift — resolves from TUIST_MODULE_STRATEGY env var (default: spm)
+// ModuleStrategy.swift — resolves from TUIST_MODULE_STRATEGY env var (default: framework)
 public enum ModuleStrategy: String, CaseIterable {
     case spm
     case framework
@@ -76,14 +76,14 @@ public enum ModuleFactory {
 Switch strategy at generation time:
 
 ```bash
-./generate.sh                          # default: spm
-./generate.sh --strategy framework     # switch to framework
+./generate.sh                          # default: framework
+./generate.sh --strategy spm           # switch to spm
 ```
 
 | Strategy | Description |
 |----------|-------------|
-| `spm` | Modules as SPM local packages with auto-generated `Package.swift` (default) |
-| `framework` | Modules as framework targets in the root project |
+| `framework` | Modules as framework targets in the root project (default) |
+| `spm` | Modules as SPM local packages with auto-generated `Package.swift` |
 
 **Tuist 4.x limitation:** All modules must use the same strategy — mixing is not supported.
 
@@ -121,7 +121,7 @@ Modules declare dependencies using the `ModuleDependency` enum:
 | `.moduleMocks(someModule)` | `testDependencies`, `snapshotTestDependencies` | Mocks target of another module |
 | `.external(somePackage)` | `dependencies` | External SPM package |
 
-### FrameworkModule Strategy (Alternative)
+### FrameworkModule Strategy (Current)
 
 Each `FrameworkModule` generates the following targets in the root project:
 
@@ -130,7 +130,7 @@ Each `FrameworkModule` generates the following targets in the root project:
 3. **Unit Tests** (e.g., `ChallengeCharacterTests`) — unit test bundle (if `Tests/Unit/` exists)
 4. **Snapshot Tests** (e.g., `ChallengeCharacterSnapshotTests`) — unit test bundle (if `Tests/Snapshots/` exists)
 
-### SPMModule Strategy (Current)
+### SPMModule Strategy (Alternative)
 
 Each `SPMModule` auto-generates a `Package.swift` (via `PackageSwiftGenerator`) with:
 - `.library()` products (source + mocks)
@@ -344,7 +344,7 @@ Called from `SPMModule.init()` during manifest evaluation. Auto-creates `Package
 
 ### TestPlanGenerator
 
-Called from `ModuleAggregation.aggregateTestAction()` when SPM modules are present. Creates an `.xctestplan` file aggregating all module test targets with code coverage configuration.
+Called from `ModuleAggregation.aggregateTestAction()` regardless of the active strategy. Creates an `.xctestplan` file aggregating all module test targets with code coverage configuration.
 
 Both generators execute at manifest-time (`tuist generate`), not build-time.
 

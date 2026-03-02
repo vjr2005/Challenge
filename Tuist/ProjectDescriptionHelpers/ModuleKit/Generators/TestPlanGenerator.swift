@@ -24,10 +24,7 @@ enum TestPlanGenerator {
 	) -> String {
 		let testPlanName = "\(appName).xctestplan"
 
-		let appContainerPath: String = switch ModuleStrategy.active {
-		case .spm: "container:"
-		case .framework: "container:\(appName).xcodeproj"
-		}
+		let appContainerPath = "container:\(appName).xcodeproj"
 
 		var coverageTargets: [TestPlanCoverageTarget] = [
 			TestPlanCoverageTarget(containerPath: appContainerPath, identifier: appName, name: appName),

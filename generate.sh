@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-DEFAULT_STRATEGY="spm"
+DEFAULT_STRATEGY="framework"
 
 usage() {
     echo "Usage: ./generate.sh [--clean] [--strategy <spm|framework>]"
