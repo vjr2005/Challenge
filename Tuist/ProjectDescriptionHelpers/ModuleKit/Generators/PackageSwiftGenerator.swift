@@ -27,13 +27,13 @@ enum PackageSwiftGenerator {
 
 		let hasTests = fileSystem.hasUnitTests || fileSystem.hasSnapshotTests
 		let testTargetDeps = hasTests
-			? buildTestTargetDependencies(
-				name: name,
-				hasMocks: fileSystem.hasMocks,
-				testDependencies: testDependencies,
-				snapshotTestDependencies: snapshotTestDependencies
-			)
-			: []
+		? buildTestTargetDependencies(
+			name: name,
+			hasMocks: fileSystem.hasMocks,
+			testDependencies: testDependencies,
+			snapshotTestDependencies: snapshotTestDependencies
+		)
+		: []
 
 		var lines: [String] = []
 
@@ -57,9 +57,8 @@ enum PackageSwiftGenerator {
 		// Package-level dependencies
 		if !packageDeps.isEmpty {
 			lines.append("\tdependencies: [")
-			for dep in packageDeps {
-				lines.append("\t\t\(dep),")
-			}
+			let depLines = packageDeps.map { "\t\t\($0)" }
+			lines.append(depLines.joined(separator: ",\n"))
 			lines.append("\t],")
 		}
 
@@ -105,9 +104,7 @@ enum PackageSwiftGenerator {
 
 private extension PackageSwiftGenerator {
 	static func isNonisolatedModule(settingsOverrides: SettingsDictionary) -> Bool {
-		if case let .string(value) = settingsOverrides["SWIFT_DEFAULT_ACTOR_ISOLATION"],
-			value == "nonisolated"
-		{
+		if case let .string(value) = settingsOverrides["SWIFT_DEFAULT_ACTOR_ISOLATION"], value == "nonisolated" {
 			return true
 		}
 		return false
@@ -160,20 +157,20 @@ private extension PackageSwiftGenerator {
 
 		for dep in allDeps {
 			switch dep {
-			case let .module(module):
-				if seen.insert(module.directory).inserted {
-					let path = relativePath(from: sourceDirectory, to: module.directory)
-					result.append(".package(path: \"\(path)\")")
-				}
-			case let .moduleMocks(module):
-				if seen.insert(module.directory).inserted {
-					let path = relativePath(from: sourceDirectory, to: module.directory)
-					result.append(".package(path: \"\(path)\")")
-				}
-			case let .external(package):
-				if seen.insert(package.url).inserted {
-					result.append(".package(url: \"\(package.url)\", from: \"\(package.version)\")")
-				}
+				case let .module(module):
+					if seen.insert(module.directory).inserted {
+						let path = relativePath(from: sourceDirectory, to: module.directory)
+						result.append(".package(path: \"\(path)\")")
+					}
+				case let .moduleMocks(module):
+					if seen.insert(module.directory).inserted {
+						let path = relativePath(from: sourceDirectory, to: module.directory)
+						result.append(".package(path: \"\(path)\")")
+					}
+				case let .external(package):
+					if seen.insert(package.url).inserted {
+						result.append(".package(url: \"\(package.url)\", from: \"\(package.version)\")")
+					}
 			}
 		}
 
@@ -183,14 +180,14 @@ private extension PackageSwiftGenerator {
 	/// Generates a target-level dependency entry string.
 	static func targetDependencyEntry(for dep: ModuleDependency) -> String {
 		switch dep {
-		case let .module(module):
-			let pkgId = packageIdentity(for: module.directory)
-			return ".product(name: \"\(module.name)\", package: \"\(pkgId)\")"
-		case let .moduleMocks(module):
-			let pkgId = packageIdentity(for: module.directory)
-			return ".product(name: \"\(module.name)Mocks\", package: \"\(pkgId)\")"
-		case let .external(package):
-			return ".product(name: \"\(package.productName)\", package: \"\(package.packageIdentity)\")"
+			case let .module(module):
+				let pkgId = packageIdentity(for: module.directory)
+				return ".product(name: \"\(module.name)\", package: \"\(pkgId)\")"
+			case let .moduleMocks(module):
+				let pkgId = packageIdentity(for: module.directory)
+				return ".product(name: \"\(module.name)Mocks\", package: \"\(pkgId)\")"
+			case let .external(package):
+				return ".product(name: \"\(package.productName)\", package: \"\(package.packageIdentity)\")"
 		}
 	}
 
@@ -221,12 +218,12 @@ private extension PackageSwiftGenerator {
 	/// Returns a unique key for deduplication of target-level dependencies.
 	static func targetDependencyProductKey(for dep: ModuleDependency) -> String {
 		switch dep {
-		case let .module(module):
-			module.name
-		case let .moduleMocks(module):
-			"\(module.name)Mocks"
-		case let .external(package):
-			package.productName
+			case let .module(module):
+				module.name
+			case let .moduleMocks(module):
+				"\(module.name)Mocks"
+			case let .external(package):
+				package.productName
 		}
 	}
 }
@@ -237,22 +234,31 @@ private extension PackageSwiftGenerator {
 	static func appendSwiftSettings(to lines: inout [String], isNonisolated: Bool) {
 		if isNonisolated {
 			lines.append("let nonisolatedSettings: [SwiftSetting] = [")
-			lines.append("\t.enableExperimentalFeature(\"ApproachableConcurrency\"),")
+			let settings = [
+				"\t.enableExperimentalFeature(\"ApproachableConcurrency\")"
+			]
+			lines.append(settings.joined(separator: ",\n"))
 			lines.append("]")
 		} else {
 			lines.append("let mainActorSettings: [SwiftSetting] = [")
-			lines.append("\t.defaultIsolation(MainActor.self),")
-			lines.append("\t.enableExperimentalFeature(\"ApproachableConcurrency\"),")
+			let settings = [
+				"\t.defaultIsolation(MainActor.self)",
+				"\t.enableExperimentalFeature(\"ApproachableConcurrency\")"
+			]
+			lines.append(settings.joined(separator: ",\n"))
 			lines.append("]")
 		}
 	}
 
 	static func appendProducts(to lines: inout [String], name: String, hasMocks: Bool) {
 		lines.append("\tproducts: [")
-		lines.append("\t\t.library(name: \"\(name)\", targets: [\"\(name)\"]),")
+		var products = [
+			"\t\t.library(name: \"\(name)\", targets: [\"\(name)\"])"
+		]
 		if hasMocks {
-			lines.append("\t\t.library(name: \"\(name)Mocks\", targets: [\"\(name)Mocks\"]),")
+			products.append("\t\t.library(name: \"\(name)Mocks\", targets: [\"\(name)Mocks\"])")
 		}
+		lines.append(products.joined(separator: ",\n"))
 		lines.append("\t],")
 	}
 
@@ -265,19 +271,25 @@ private extension PackageSwiftGenerator {
 	) {
 		lines.append("\t\t.target(")
 		lines.append("\t\t\tname: \"\(name)\",")
+
 		if !sourceTargetDeps.isEmpty {
 			lines.append("\t\t\tdependencies: [")
-			for dep in sourceTargetDeps {
-				lines.append("\t\t\t\t\(dep),")
-			}
+			let depsLines = sourceTargetDeps.map { "\t\t\t\t\($0)" }
+			lines.append(depsLines.joined(separator: ",\n"))
 			lines.append("\t\t\t],")
 		}
+
 		lines.append("\t\t\tpath: \"Sources\",")
+
 		if hasResources {
 			lines.append("\t\t\tresources: [")
-			lines.append("\t\t\t\t.process(\"Resources\"),")
+			let resources = [
+				"\t\t\t\t.process(\"Resources\")"
+			]
+			lines.append(resources.joined(separator: ",\n"))
 			lines.append("\t\t\t],")
 		}
+
 		lines.append("\t\t\tswiftSettings: \(settingsVarName)")
 		lines.append("\t\t),")
 	}
@@ -301,18 +313,18 @@ private extension PackageSwiftGenerator {
 		lines.append("\t\t.testTarget(")
 		lines.append("\t\t\tname: \"\(name)Tests\",")
 		lines.append("\t\t\tdependencies: [")
-		for dep in testTargetDeps {
-			lines.append("\t\t\t\t\(dep),")
-		}
+
+		let depLines = testTargetDeps.map { "\t\t\t\t\($0)" }
+		lines.append(depLines.joined(separator: ",\n"))
 		lines.append("\t\t\t],")
+
 		lines.append("\t\t\tpath: \"Tests\",")
 
 		let exclusions = fileSystem.snapshotExclusions
 		if !exclusions.isEmpty {
 			lines.append("\t\t\texclude: [")
-			for exclusion in exclusions {
-				lines.append("\t\t\t\t\"\(exclusion)\",")
-			}
+			let exLines = exclusions.map { "\t\t\t\t\"\($0)\"" }
+			lines.append(exLines.joined(separator: ",\n"))
 			lines.append("\t\t\t],")
 		}
 
@@ -325,9 +337,8 @@ private extension PackageSwiftGenerator {
 		}
 		if !testResources.isEmpty {
 			lines.append("\t\t\tresources: [")
-			for resource in testResources {
-				lines.append("\t\t\t\t\(resource),")
-			}
+			let resLines = testResources.map { "\t\t\t\t\($0)" }
+			lines.append(resLines.joined(separator: ",\n"))
 			lines.append("\t\t\t],")
 		}
 
