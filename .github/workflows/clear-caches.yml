@@ -1,0 +1,63 @@
+name: Clear Caches
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: "Which caches to clear"
+        required: true
+        type: choice
+        options:
+          - all
+          - derived-data
+          - tuist
+          - mise
+
+jobs:
+  clear:
+    name: Clear caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clear caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SCOPE: ${{ inputs.scope }}
+        run: |
+          echo "Fetching cache list..."
+          CACHES=$(gh cache list --json id,key --limit 100)
+
+          filter_and_delete() {
+            local prefix="$1"
+            local ids
+            ids=$(echo "$CACHES" | jq -r --arg p "$prefix" '.[] | select(.key | startswith($p)) | .id')
+            local count
+            count=$(echo "$ids" | grep -c . || true)
+            if [ "$count" -eq 0 ]; then
+              echo "No caches found with prefix '$prefix'"
+              return
+            fi
+            echo "Deleting $count caches with prefix '$prefix'..."
+            echo "$ids" | while read -r id; do
+              gh cache delete "$id" && echo "  Deleted $id" || echo "  Failed to delete $id"
+            done
+          }
+
+          case "$SCOPE" in
+            all)
+              filter_and_delete "derived-data-"
+              filter_and_delete "tuist-"
+              filter_and_delete "mise-"
+              ;;
+            derived-data)
+              filter_and_delete "derived-data-"
+              ;;
+            tuist)
+              filter_and_delete "tuist-"
+              ;;
+            mise)
+              filter_and_delete "mise-"
+              ;;
+          esac
+
+          echo "Done."

@@ -5,8 +5,9 @@
 | Script | Description |
 |--------|-------------|
 | `./setup.sh` | Initial setup - installs brew, mise, and project tools |
-| `./generate.sh` | Install dependencies and generate the Xcode project |
+| `./generate.sh` | Install dependencies and generate the Xcode project (framework strategy) |
 | `./generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
+| `./generate.sh --strategy spm` | Generate using the SPM module strategy |
 | `./reset-simulators.sh` | Full simulator reset - fixes corrupted simulator state |
 | `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
 
@@ -35,6 +36,21 @@ Generate the Xcode project and install dependencies:
 ./generate.sh
 ```
 
+### Module Strategy
+
+Switch the module integration strategy at generation time:
+
+```bash
+./generate.sh --strategy framework   # Framework targets (default)
+./generate.sh --strategy spm         # SPM local packages
+```
+
+Options can be combined:
+
+```bash
+./generate.sh --clean --strategy framework
+```
+
 ### Clean Build
 
 To perform a clean build from scratch:
@@ -45,6 +61,7 @@ To perform a clean build from scratch:
 
 This clears the Tuist cache before generating, useful when:
 - Switching branches with different dependencies
+- Switching module strategies
 - Resolving cached state issues
 - Starting fresh after major changes
 

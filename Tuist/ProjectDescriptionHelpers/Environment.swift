@@ -9,9 +9,9 @@ enum Environment: String, CaseIterable {
 	/// Display name for the scheme.
 	var schemeName: String {
 		switch self {
-		case .dev: "\(appName) (Dev)"
-		case .staging: "\(appName) (Staging)"
-		case .prod: "\(appName) (Prod)"
+		case .dev: "\(projectConfig.appName) (Dev)"
+		case .staging: "\(projectConfig.appName) (Staging)"
+		case .prod: "\(projectConfig.appName) (Prod)"
 		}
 	}
 
@@ -26,7 +26,7 @@ enum Environment: String, CaseIterable {
 
 	/// Full bundle identifier for each environment.
 	var bundleId: String {
-		"com.app.\(appName)\(bundleIdSuffix)"
+		"com.app.\(projectConfig.appName)\(bundleIdSuffix)"
 	}
 
 	/// App icon asset name for each environment.
