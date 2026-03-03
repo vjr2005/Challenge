@@ -125,9 +125,9 @@ private extension CharacterDetailView {
 					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: theme.spacing.md) {
-					DSInfoRow(icon: "person.fill", label: "Gender", value: character.gender.localizedName)
+					DSInfoRow(icon: "person.fill", label: LocalizedStrings.gender, value: character.gender.localizedName)
 					Divider()
-					DSInfoRow(icon: "leaf.fill", label: "Species", value: character.species)
+					DSInfoRow(icon: "leaf.fill", label: LocalizedStrings.species, value: character.species)
 				}
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
@@ -142,9 +142,9 @@ private extension CharacterDetailView {
 					.foregroundStyle(theme.colors.textPrimary)
 
 				VStack(spacing: theme.spacing.md) {
-					DSInfoRow(icon: "star.fill", label: "Origin", value: character.origin.name)
+					DSInfoRow(icon: "star.fill", label: LocalizedStrings.origin, value: character.origin.name)
 					Divider()
-					DSInfoRow(icon: "mappin.circle.fill", label: "Last Known", value: character.location.name)
+					DSInfoRow(icon: "mappin.circle.fill", label: LocalizedStrings.lastKnown, value: character.location.name)
 				}
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
@@ -182,7 +182,11 @@ private extension CharacterDetailView {
 private enum LocalizedStrings {
 	static var loading: String { "characterDetail.loading".localized() }
 	static var information: String { "characterDetail.information".localized() }
+	static var gender: String { "characterDetail.gender".localized() }
+	static var species: String { "characterDetail.species".localized() }
 	static var locations: String { "characterDetail.locations".localized() }
+	static var origin: String { "characterDetail.origin".localized() }
+	static var lastKnown: String { "characterDetail.lastKnown".localized() }
 	static var episodes: String { "characterDetail.episodes".localized() }
 	static var viewEpisodes: String { "characterDetail.viewEpisodes".localized() }
 
