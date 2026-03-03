@@ -28,7 +28,7 @@ struct EpisodeContainer {
 	func makeCharacterEpisodesViewModel(
 		characterIdentifier: Int,
 		navigator: any NavigatorContract
-	) -> CharacterEpisodesViewModel {
+	) -> some CharacterEpisodesViewModelContract {
 		CharacterEpisodesViewModel(
 			characterIdentifier: characterIdentifier,
 			getCharacterEpisodesUseCase: GetCharacterEpisodesUseCase(repository: episodeRepository),

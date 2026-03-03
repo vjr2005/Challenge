@@ -16,11 +16,11 @@ struct HomeContainer {
 
     // MARK: - Factories
 
-    func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
+    func makeHomeViewModel(navigator: any NavigatorContract) -> some HomeViewModelContract {
         HomeViewModel(navigator: HomeNavigator(navigator: navigator), tracker: HomeTracker(tracker: tracker))
     }
 
-    func makeAboutViewModel(navigator: any NavigatorContract) -> AboutViewModel {
+    func makeAboutViewModel(navigator: any NavigatorContract) -> some AboutViewModelContract {
         AboutViewModel(
             getAboutInfoUseCase: GetAboutInfoUseCase(),
             navigator: AboutNavigator(navigator: navigator),

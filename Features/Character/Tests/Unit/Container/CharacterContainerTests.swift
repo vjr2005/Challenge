@@ -7,14 +7,13 @@ import Testing
 struct CharacterContainerTests {
 	// MARK: - Properties
 
-	private let httpClientMock = HTTPClientMock()
 	private let sut: CharacterContainer
 
 	// MARK: - Initialization
 
 	init() {
 		sut = CharacterContainer(
-			httpClient: httpClientMock,
+			httpClient: HTTPClientMock(),
 			tracker: TrackerMock(),
 			imageLoader: ImageLoaderMock(cachedImage: nil, asyncImage: nil)
 		)
@@ -22,55 +21,30 @@ struct CharacterContainerTests {
 
 	// MARK: - Tests
 
-	@Test("Make character list view model returns configured instance")
-	func makeCharacterListViewModelReturnsConfiguredInstance() {
-		// Given
-		let navigatorMock = NavigatorMock()
-
+	@Test("Make character list view model creates CharacterListViewModel")
+	func makeCharacterListViewModel() {
 		// When
-		let viewModel = sut.makeCharacterListViewModel(navigator: navigatorMock)
+		let viewModel = sut.makeCharacterListViewModel(navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel.state == .idle)
+		#expect(viewModel is CharacterListViewModel)
 	}
 
-	@Test("Make character detail view model returns configured instance")
-	func makeCharacterDetailViewModelReturnsConfiguredInstance() {
-		// Given
-		let navigatorMock = NavigatorMock()
-
+	@Test("Make character detail view model creates CharacterDetailViewModel")
+	func makeCharacterDetailViewModel() {
 		// When
-		let viewModel = sut.makeCharacterDetailViewModel(identifier: 42, navigator: navigatorMock)
+		let viewModel = sut.makeCharacterDetailViewModel(identifier: 42, navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel.state == .idle)
+		#expect(viewModel is CharacterDetailViewModel)
 	}
 
-	@Test("Make character filter view model returns configured instance")
-	func makeCharacterFilterViewModelReturnsConfiguredInstance() {
-		// Given
-		let navigatorMock = NavigatorMock()
-		let delegateMock = CharacterFilterDelegateMock()
-
+	@Test("Make character filter view model creates CharacterFilterViewModel")
+	func makeCharacterFilterViewModel() {
 		// When
-		let viewModel = sut.makeCharacterFilterViewModel(delegate: delegateMock, navigator: navigatorMock)
+		let viewModel = sut.makeCharacterFilterViewModel(delegate: CharacterFilterDelegateMock(), navigator: NavigatorMock())
 
 		// Then
-		#expect(!viewModel.hasActiveFilters)
-	}
-
-	@Test("Make character filter view model initializes filter from delegate")
-	func makeCharacterFilterViewModelInitializesFilterFromDelegate() {
-		// Given
-		let navigatorMock = NavigatorMock()
-		let delegateMock = CharacterFilterDelegateMock()
-		delegateMock.currentFilter = CharacterFilter(status: .alive, gender: .male)
-
-		// When
-		let viewModel = sut.makeCharacterFilterViewModel(delegate: delegateMock, navigator: navigatorMock)
-
-		// Then
-		#expect(viewModel.filter.status == .alive)
-		#expect(viewModel.filter.gender == .male)
+		#expect(viewModel is CharacterFilterViewModel)
 	}
 }

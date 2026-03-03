@@ -110,7 +110,7 @@ struct {Screen}View: View {
 ## Container Factory
 
 ```swift
-func make{Screen}ViewModel(delegate: any {Name}FilterDelegate) -> {Screen}ViewModel {
+func make{Screen}ViewModel(delegate: any {Name}FilterDelegate) -> some {Screen}ViewModelContract {
     {Screen}ViewModel(
         delegate: delegate,
         navigator: make{Screen}Navigator(),

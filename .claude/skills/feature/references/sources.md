@@ -205,7 +205,7 @@ struct {Feature}Container {
 
 	// MARK: - Factories
 
-	func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
+	func make{Screen}ViewModel(navigator: any NavigatorContract) -> some {Screen}ViewModelContract {
 		{Screen}ViewModel(
 			navigator: {Screen}Navigator(navigator: navigator),
 			tracker: {Screen}Tracker(tracker: tracker)
@@ -245,7 +245,7 @@ struct {Feature}Container {
 
 	// MARK: - Factories
 
-	func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
+	func make{Screen}ViewModel(navigator: any NavigatorContract) -> some {Screen}ViewModelContract {
 		{Screen}ViewModel(
 			navigator: {Screen}Navigator(navigator: navigator),
 			tracker: {Screen}Tracker(tracker: tracker)

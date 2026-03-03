@@ -42,7 +42,7 @@ struct CharacterContainer {
 
     // MARK: - Factories
 
-    func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
+    func makeCharacterListViewModel(navigator: any NavigatorContract) -> some CharacterListViewModelContract {
         CharacterListViewModel(
             getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
             refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
@@ -58,7 +58,7 @@ struct CharacterContainer {
     func makeCharacterDetailViewModel(
         identifier: Int,
         navigator: any NavigatorContract
-    ) -> CharacterDetailViewModel {
+    ) -> some CharacterDetailViewModelContract {
         CharacterDetailViewModel(
             identifier: identifier,
             getCharacterUseCase: GetCharacterUseCase(repository: characterRepository),
@@ -72,7 +72,7 @@ struct CharacterContainer {
     func makeCharacterFilterViewModel(
         delegate: any CharacterFilterDelegate,
         navigator: any NavigatorContract
-    ) -> CharacterFilterViewModel {
+    ) -> some CharacterFilterViewModelContract {
         CharacterFilterViewModel(
             delegate: delegate,
             navigator: CharacterFilterNavigator(navigator: navigator),

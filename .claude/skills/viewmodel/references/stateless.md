@@ -62,7 +62,7 @@ struct {Name}View: View {
 ## Container Factory
 
 ```swift
-func make{Name}ViewModel() -> {Name}ViewModel {
+func make{Name}ViewModel() -> some {Name}ViewModelContract {
     {Name}ViewModel(
         navigator: make{Name}Navigator(),
         tracker: make{Name}Tracker()

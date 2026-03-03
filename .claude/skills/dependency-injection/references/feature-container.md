@@ -30,7 +30,7 @@ struct {Feature}Container {
 
     // MARK: - Factories
 
-    func make{Name}ListViewModel(navigator: any NavigatorContract) -> {Name}ListViewModel {
+    func make{Name}ListViewModel(navigator: any NavigatorContract) -> some {Name}ListViewModelContract {
         {Name}ListViewModel(
             get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
             refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: repository),
@@ -42,7 +42,7 @@ struct {Feature}Container {
     func make{Name}DetailViewModel(
         identifier: Int,
         navigator: any NavigatorContract
-    ) -> {Name}DetailViewModel {
+    ) -> some {Name}DetailViewModelContract {
         {Name}DetailViewModel(
             identifier: identifier,
             get{Name}UseCase: Get{Name}UseCase(repository: repository),
@@ -189,7 +189,7 @@ struct HomeContainer {
 
     // MARK: - Factories
 
-    func makeHomeViewModel(navigator: any NavigatorContract) -> HomeViewModel {
+    func makeHomeViewModel(navigator: any NavigatorContract) -> some HomeViewModelContract {
         HomeViewModel(
             navigator: HomeNavigator(navigator: navigator),
             tracker: HomeTracker(tracker: tracker)

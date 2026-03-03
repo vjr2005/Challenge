@@ -279,7 +279,7 @@ struct {Feature}Container {
         self.tracker = tracker
     }
 
-    func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
+    func make{Screen}ViewModel(navigator: any NavigatorContract) -> some {Screen}ViewModelContract {
         {Screen}ViewModel(
             navigator: {Screen}Navigator(navigator: navigator),
             tracker: {Screen}Tracker(tracker: tracker)
@@ -310,7 +310,7 @@ struct {Feature}Container {
         )
     }
 
-    func make{Screen}ViewModel(navigator: any NavigatorContract) -> {Screen}ViewModel {
+    func make{Screen}ViewModel(navigator: any NavigatorContract) -> some {Screen}ViewModelContract {
         {Screen}ViewModel(
             navigator: {Screen}Navigator(navigator: navigator),
             tracker: {Screen}Tracker(tracker: tracker)

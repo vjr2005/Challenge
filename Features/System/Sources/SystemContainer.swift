@@ -16,7 +16,7 @@ struct SystemContainer {
 
     // MARK: - Factories
 
-    func makeNotFoundViewModel(navigator: any NavigatorContract) -> NotFoundViewModel {
+    func makeNotFoundViewModel(navigator: any NavigatorContract) -> some NotFoundViewModelContract {
         NotFoundViewModel(navigator: NotFoundNavigator(navigator: navigator), tracker: NotFoundTracker(tracker: tracker))
     }
 }

@@ -145,7 +145,7 @@ struct {Screen}View: View {
 ## Container Factory
 
 ```swift
-func make{Screen}ViewModel() -> {Screen}ViewModel {
+func make{Screen}ViewModel() -> some {Screen}ViewModelContract {
     {Screen}ViewModel(
         get{Name}sUseCase: Get{Name}sUseCase(repository: {name}Repository),
         refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: {name}Repository),

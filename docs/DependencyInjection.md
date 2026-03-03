@@ -152,7 +152,7 @@ struct CharacterContainer {
     }
 
     // Factory methods for ViewModels
-    func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
+    func makeCharacterListViewModel(navigator: any NavigatorContract) -> some CharacterListViewModelContract {
         CharacterListViewModel(
             getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
             refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
@@ -168,7 +168,7 @@ struct CharacterContainer {
     func makeCharacterFilterViewModel(
         delegate: any CharacterFilterDelegate,
         navigator: any NavigatorContract
-    ) -> CharacterFilterViewModel {
+    ) -> some CharacterFilterViewModelContract {
         CharacterFilterViewModel(
             delegate: delegate,
             navigator: CharacterFilterNavigator(navigator: navigator),
