@@ -78,9 +78,13 @@ This project follows **MVVM + Clean Architecture** with feature-based modulariza
 ┌─────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                       │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │    View     │  │  ViewModel  │  │     Navigator       │  │
-│  │  (SwiftUI)  │◄─┤ @Observable │──┤ (NavigatorContract) │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│  │    View     │  │  ViewModel  │──│     Navigator       │  │
+│  │  (SwiftUI)  │◄─┤ @Observable │  │ (NavigatorContract) │  │
+│  └─────────────┘  │             │  └─────────────────────┘  │
+│                   │             │  ┌─────────────────────┐  │
+│                   │             │──│      Tracker        │  │
+│                   └─────────────┘  │ (TrackerContract)   │  │
+│                                    └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
