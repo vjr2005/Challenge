@@ -156,6 +156,7 @@ private extension CharacterEpisodesView {
 					.frame(width: theme.dimensions.xxxl)
 			}
 		}
+		.accessibilityLabel(character.name)
 	}
 }
 
