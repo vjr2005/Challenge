@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-extension Location {
+nonisolated extension Location {
 	static func stub(
 		name: String = "Earth (C-137)"
 	) -> Location {

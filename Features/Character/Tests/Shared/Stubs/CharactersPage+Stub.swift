@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeCharacter
 
-extension CharactersPage {
+nonisolated extension CharactersPage {
 	static func stub(
 		characters: [Character] = [.stub()],
 		currentPage: Int = 1,

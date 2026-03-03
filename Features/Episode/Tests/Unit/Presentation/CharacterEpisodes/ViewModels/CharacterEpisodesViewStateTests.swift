@@ -6,13 +6,30 @@ import Testing
 struct CharacterEpisodesViewStateTests {
 	// MARK: - Equatable
 
-	@Test("Different states are not equal")
-	func differentStatesAreNotEqual() {
-		// Given
-		let idle = CharacterEpisodesViewState.idle
-		let loading = CharacterEpisodesViewState.loading
+	@Test("Same states are equal", arguments: [
+		(CharacterEpisodesViewState.idle, CharacterEpisodesViewState.idle),
+		(.loading, .loading),
+		(.loaded(.stub()), .loaded(.stub())),
+		(.error(.loadFailed()), .error(.loadFailed()))
+	])
+	func sameStatesAreEqual(lhs: CharacterEpisodesViewState, rhs: CharacterEpisodesViewState) {
+		#expect(lhs == rhs)
+	}
 
-		// Then
-		#expect((idle == loading) == false)
+	@Test("Loaded states with different values are not equal")
+	func loadedStatesWithDifferentValuesAreNotEqual() {
+		#expect(CharacterEpisodesViewState.loaded(.stub(id: 1)) != .loaded(.stub(id: 2)))
+	}
+
+	@Test("Different states are not equal", arguments: [
+		(CharacterEpisodesViewState.idle, CharacterEpisodesViewState.loading),
+		(.idle, .loaded(.stub())),
+		(.idle, .error(.loadFailed())),
+		(.loading, .loaded(.stub())),
+		(.loading, .error(.loadFailed())),
+		(.loaded(.stub()), .error(.loadFailed()))
+	])
+	func differentStatesAreNotEqual(lhs: CharacterEpisodesViewState, rhs: CharacterEpisodesViewState) {
+		#expect(lhs != rhs)
 	}
 }

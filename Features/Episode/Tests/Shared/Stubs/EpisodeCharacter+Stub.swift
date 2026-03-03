@@ -2,7 +2,7 @@ import Foundation
 
 @testable import ChallengeEpisode
 
-extension EpisodeCharacter {
+nonisolated extension EpisodeCharacter {
 	static func stub(
 		id: Int = 1,
 		name: String = "Rick Sanchez",

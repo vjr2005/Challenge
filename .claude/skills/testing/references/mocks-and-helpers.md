@@ -166,7 +166,7 @@ FeatureName/
 
 ```swift
 // Tests/Shared/Stubs/User+Stub.swift
-extension User {
+nonisolated extension User {
     static func stub(
         id: Int = 1,
         name: String = "John Doe",
@@ -188,6 +188,7 @@ extension User {
 - Defaults should be valid, realistic values
 - Located in `Tests/Shared/Stubs/` (shared between Unit and Snapshot tests)
 - **Only for Domain Models** (not DTOs - use JSON fixtures instead)
+- **`nonisolated extension`** — Domain models are nonisolated; stubs must match
 
 **Usage in tests:**
 
