@@ -9,6 +9,8 @@ This document defines the coding standards, architecture patterns, and developme
 - `SWIFT_APPROACHABLE_CONCURRENCY` = `YES`
 - `SWIFT_DEFAULT_ACTOR_ISOLATION` = `MainActor`
 
+> **Exception:** `ChallengeNetworking` overrides the default to `nonisolated` at the target level. See the Networking module README for details.
+
 > **CRITICAL:** Never create git commits without explicit user permission. Always wait for the user to request a commit.
 >
 > **CRITICAL:** All generated code must compile without errors or warnings. Before writing code, carefully analyze for:
@@ -20,7 +22,7 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards. **After generating code**, use the `/testing` skill to create corresponding tests.
 >
-> **After writing code, always verify compilation** by running module tests via `xcodebuild test -workspace Challenge.xcworkspace -scheme "Challenge (Dev)" -testPlan Challenge -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'`.
+> **After writing code, always verify compilation** by running module tests via `xcodebuild test -workspace Challenge.xcworkspace -scheme "Challenge (Dev)" -testPlan Challenge -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'`.
 >
 > **All code must pass SwiftLint validation.**
 >

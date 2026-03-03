@@ -1,12 +1,12 @@
 protocol CharacterLocalDataSourceContract: Actor {
 	// MARK: - Character Detail
 
-	func getCharacter(identifier: Int) async -> CharacterDTO?
-	func saveCharacter(_ character: CharacterDTO) async
+	func getCharacter(identifier: Int) -> CharacterDTO?
+	func saveCharacter(_ character: CharacterDTO)
 
 	// MARK: - Paginated Results
 
-	func getPage(_ page: Int) async -> CharactersResponseDTO?
-	func savePage(_ response: CharactersResponseDTO, page: Int) async
-	func clearPages() async
+	func getPage(_ page: Int) -> CharactersResponseDTO?
+	func savePage(_ response: CharactersResponseDTO, page: Int)
+	func clearPages()
 }

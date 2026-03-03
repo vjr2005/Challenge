@@ -26,6 +26,7 @@ struct HomeView<ViewModel: HomeViewModelContract>: View {
 			lottieAnimation
 			characterButton
 		}
+		.padding(theme.dimensions.xl)
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				Button {
@@ -53,21 +54,20 @@ private extension HomeView {
 					showButton = true
 				}
 			}
-			.frame(height: 200)
+			.frame(height: 200) // Lottie animation intrinsic height
 			.accessibilityIdentifier(AccessibilityIdentifier.logoAnimation)
 	}
 
 	var characterButton: some View {
-		Button {
+		DSButton(
+			LocalizedStrings.goToCharacters,
+			variant: .primary,
+			accessibilityIdentifier: AccessibilityIdentifier.characterButton
+		) {
 			viewModel.didTapOnCharacterButton()
-		} label: {
-			Text(LocalizedStrings.goToCharacters)
 		}
-		.buttonStyle(.borderedProminent)
-		.tint(theme.colors.accent)
-		.accessibilityIdentifier(AccessibilityIdentifier.characterButton)
 		.opacity(showButton ? 1 : 0)
-		.scaleEffect(showButton ? 1 : 0.8)
+		.scaleEffect(showButton ? 1 : 0.8) // Spring scale for button reveal animation
 	}
 }
 

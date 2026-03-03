@@ -358,7 +358,7 @@ xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 ```
 
 UI tests always use Tuist:
@@ -387,7 +387,7 @@ xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
   -testPlan Challenge \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 
 # Run UI tests
 mise x -- tuist test "ChallengeUITests"
