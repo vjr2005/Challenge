@@ -16,19 +16,6 @@ public extension View {
 		modifier(DSCardModifier(padding: padding, cornerRadius: cornerRadius, shadow: shadow))
 	}
 
-	/// Applies the design system background color.
-	/// - Parameter color: The background color token
-	/// - Returns: A view with the background applied
-	func dsBackground(_ color: Color) -> some View {
-		background(color)
-	}
-
-	/// Applies corner radius from the design system.
-	/// - Parameter radius: The corner radius value (default: theme md corner radius)
-	/// - Returns: A view with the corner radius applied
-	func dsCornerRadius(_ radius: CGFloat? = nil) -> some View {
-		modifier(DSCornerRadiusModifier(radius: radius))
-	}
 }
 
 private struct DSCardModifier: ViewModifier {
@@ -45,16 +32,5 @@ private struct DSCardModifier: ViewModifier {
 			.clipShape(RoundedRectangle(cornerRadius: cornerRadius ?? theme.cornerRadius.lg))
 			.compositingGroup()
 			.shadow(shadow ?? theme.shadow.small)
-	}
-}
-
-private struct DSCornerRadiusModifier: ViewModifier {
-	let radius: CGFloat?
-
-	@Environment(\.dsTheme) private var theme
-
-	func body(content: Content) -> some View {
-		content
-			.clipShape(RoundedRectangle(cornerRadius: radius ?? theme.cornerRadius.md))
 	}
 }
