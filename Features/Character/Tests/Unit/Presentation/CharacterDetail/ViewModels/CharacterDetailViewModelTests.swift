@@ -187,9 +187,9 @@ struct CharacterDetailViewModelTests {
     // MARK: - Image Cache Invalidation
 
     @Test("didPullToRefresh invalidates image from cache on success")
-    func didPullToRefreshInvalidatesImageOnSuccess() async {
+    func didPullToRefreshInvalidatesImageOnSuccess() async throws {
         // Given
-        let imageURL = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")!
+        let imageURL = try #require(URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
         refreshCharacterUseCaseMock.result = .success(.stub(imageURL: imageURL))
 
         // When
@@ -227,9 +227,9 @@ struct CharacterDetailViewModelTests {
     // MARK: - Image Refresh ID
 
     @Test("didPullToRefresh generates new imageRefreshID on success with image URL")
-    func didPullToRefreshGeneratesNewImageRefreshIDOnSuccess() async {
+    func didPullToRefreshGeneratesNewImageRefreshIDOnSuccess() async throws {
         // Given
-        let imageURL = URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")!
+        let imageURL = try #require(URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
         refreshCharacterUseCaseMock.result = .success(.stub(imageURL: imageURL))
         let initialRefreshID = sut.imageRefreshID
 

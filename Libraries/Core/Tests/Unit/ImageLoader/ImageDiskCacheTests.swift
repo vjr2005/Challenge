@@ -10,18 +10,19 @@ struct ImageDiskCacheTests {
 		iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==
 		""")
 
-	private let testURL = URL(string: "https://example.com/image.png")!  // swiftlint:disable:this force_unwrapping
+	private let testURL = URL(string: "https://example.com/image.png")
 
 	// MARK: - Retrieval
 
 	@Test("Returns nil when URL is not in cache")
-	func imageReturnsNilWhenNotCached() async {
+	func imageReturnsNilWhenNotCached() async throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
 			configuration: makeConfiguration(),
 			fileSystem: fileSystemMock
 		)
+		let testURL = try #require(testURL)
 
 		// When
 		let result = await sut.image(for: testURL)
@@ -39,6 +40,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 
 		// When
 		await sut.store(imageData, for: testURL)
@@ -59,6 +61,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 
 		// When
 		await sut.store(imageData, for: testURL)
@@ -78,6 +81,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 
 		// When
 		await sut.store(imageData, for: testURL)
@@ -101,6 +105,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 
 		// When
@@ -122,9 +127,9 @@ struct ImageDiskCacheTests {
 			configuration: makeConfiguration(maxSize: maxSize),
 			fileSystem: fileSystemMock
 		)
-		let url1 = URL(string: "https://example.com/1.png")!  // swiftlint:disable:this force_unwrapping
-		let url2 = URL(string: "https://example.com/2.png")!  // swiftlint:disable:this force_unwrapping
-		let url3 = URL(string: "https://example.com/3.png")!  // swiftlint:disable:this force_unwrapping
+		let url1 = try #require(URL(string: "https://example.com/1.png"))
+		let url2 = try #require(URL(string: "https://example.com/2.png"))
+		let url3 = try #require(URL(string: "https://example.com/3.png"))
 
 		// When
 		await sut.store(imageData, for: url1)
@@ -145,6 +150,7 @@ struct ImageDiskCacheTests {
 			configuration: makeConfiguration(maxSize: imageData.count),
 			fileSystem: fileSystemMock
 		)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 		fileSystemMock.contentsOfDirectoryError = CocoaError(.fileReadNoSuchFile)
 
@@ -166,6 +172,7 @@ struct ImageDiskCacheTests {
 			configuration: makeConfiguration(maxSize: imageData.count * 10),
 			fileSystem: fileSystemMock
 		)
+		let testURL = try #require(testURL)
 
 		// When
 		await sut.store(imageData, for: testURL)
@@ -185,6 +192,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 		let otherURL = try #require(URL(string: "https://example.com/other.png"))
 		await sut.store(imageData, for: testURL)
 		await sut.store(imageData, for: otherURL)
@@ -210,6 +218,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 		fileSystemMock.contentsOfDirectoryError = CocoaError(.fileReadNoSuchFile)
 
@@ -229,8 +238,8 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
-		let url1 = URL(string: "https://example.com/1.png")!  // swiftlint:disable:this force_unwrapping
-		let url2 = URL(string: "https://example.com/2.png")!  // swiftlint:disable:this force_unwrapping
+		let url1 = try #require(URL(string: "https://example.com/1.png"))
+		let url2 = try #require(URL(string: "https://example.com/2.png"))
 		await sut.store(imageData, for: url1)
 		await sut.store(imageData, for: url2)
 
@@ -247,13 +256,14 @@ struct ImageDiskCacheTests {
 	// MARK: - Empty Data
 
 	@Test("Does not store empty data")
-	func doesNotStoreEmptyData() async {
+	func doesNotStoreEmptyData() async throws {
 		// Given
 		let fileSystemMock = FileSystemMock()
 		let sut = ImageDiskCache(
 			configuration: makeConfiguration(),
 			fileSystem: fileSystemMock
 		)
+		let testURL = try #require(testURL)
 
 		// When
 		await sut.store(Data(), for: testURL)
@@ -275,6 +285,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 
 		// When
 		await sut.store(imageData, for: testURL)
@@ -294,6 +305,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 
 		// Simulate creation date in the past (beyond TTL)
@@ -317,6 +329,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 		fileSystemMock.fileAttributesError = CocoaError(.fileReadUnknown)
 
@@ -337,6 +350,7 @@ struct ImageDiskCacheTests {
 			configuration: makeConfiguration(maxSize: imageData.count * 10),
 			fileSystem: fileSystemMock
 		)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 		fileSystemMock.fileAttributesError = CocoaError(.fileReadUnknown)
 		let secondURL = try #require(URL(string: "https://example.com/2.png"))
@@ -357,6 +371,7 @@ struct ImageDiskCacheTests {
 			fileSystem: fileSystemMock
 		)
 		let imageData = try #require(testImageData)
+		let testURL = try #require(testURL)
 		await sut.store(imageData, for: testURL)
 
 		// When
