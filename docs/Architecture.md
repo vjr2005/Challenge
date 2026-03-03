@@ -9,7 +9,7 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
                     │                    Presentation Layer                       │
                     │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
                     │  │    View     │  │  ViewModel  │──│     Navigator       │  │
-                    │  │  (SwiftUI)  │◄─┤ @Observable │  │ (NavigatorContract) │  │
+                    │  │  (SwiftUI)  │◄─┤ @Observable¹│  │ (NavigatorContract) │  │
                     │  └─────────────┘  │             │  └─────────────────────┘  │
                     │                   │             │  ┌─────────────────────┐  │
                     │                   │             │──│      Tracker        │  │
@@ -35,6 +35,8 @@ The project follows **MVVM + Clean Architecture** with feature-based modularizat
                     │  └─────────────────────┘  └─────────────────────────────┘   │
                     └─────────────────────────────────────────────────────────────┘
 ```
+
+¹ Only stateful ViewModels use `@Observable`; stateless ones are plain `final class`.
 
 ## Layer Responsibilities
 
