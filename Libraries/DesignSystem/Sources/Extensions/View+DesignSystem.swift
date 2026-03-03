@@ -15,7 +15,6 @@ public extension View {
 	) -> some View {
 		modifier(DSCardModifier(padding: padding, cornerRadius: cornerRadius, shadow: shadow))
 	}
-
 }
 
 private struct DSCardModifier: ViewModifier {
