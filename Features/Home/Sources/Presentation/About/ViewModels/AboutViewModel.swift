@@ -1,12 +1,12 @@
 final class AboutViewModel: AboutViewModelContract {
 	let info: AboutInfo
-	private let navigator: AboutNavigatorContract
-	private let tracker: AboutTrackerContract
+	private let navigator: any AboutNavigatorContract
+	private let tracker: any AboutTrackerContract
 
 	init(
-		getAboutInfoUseCase: GetAboutInfoUseCaseContract,
-		navigator: AboutNavigatorContract,
-		tracker: AboutTrackerContract
+		getAboutInfoUseCase: any GetAboutInfoUseCaseContract,
+		navigator: any AboutNavigatorContract,
+		tracker: any AboutTrackerContract
 	) {
 		info = getAboutInfoUseCase.execute()
 		self.navigator = navigator

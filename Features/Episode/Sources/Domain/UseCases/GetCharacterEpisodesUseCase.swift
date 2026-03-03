@@ -5,9 +5,9 @@ protocol GetCharacterEpisodesUseCaseContract: Sendable {
 }
 
 struct GetCharacterEpisodesUseCase: GetCharacterEpisodesUseCaseContract {
-	private let repository: EpisodeRepositoryContract
+	private let repository: any EpisodeRepositoryContract
 
-	init(repository: EpisodeRepositoryContract) {
+	init(repository: any EpisodeRepositoryContract) {
 		self.repository = repository
 	}
 

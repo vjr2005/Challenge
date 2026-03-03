@@ -1,8 +1,8 @@
 final class NotFoundViewModel: NotFoundViewModelContract {
-    private let navigator: NotFoundNavigatorContract
-    private let tracker: NotFoundTrackerContract
+    private let navigator: any NotFoundNavigatorContract
+    private let tracker: any NotFoundTrackerContract
 
-    init(navigator: NotFoundNavigatorContract, tracker: NotFoundTrackerContract) {
+    init(navigator: any NotFoundNavigatorContract, tracker: any NotFoundTrackerContract) {
         self.navigator = navigator
         self.tracker = tracker
     }

@@ -2,15 +2,15 @@ import ChallengeCore
 import Foundation
 
 nonisolated struct EpisodeRepository: EpisodeRepositoryContract {
-	private let remoteDataSource: EpisodeRemoteDataSourceContract
-	private let memoryDataSource: EpisodeLocalDataSourceContract
+	private let remoteDataSource: any EpisodeRemoteDataSourceContract
+	private let memoryDataSource: any EpisodeLocalDataSourceContract
 	private let mapper = EpisodeCharacterWithEpisodesMapper()
 	private let errorMapper = EpisodeErrorMapper()
 	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
-		remoteDataSource: EpisodeRemoteDataSourceContract,
-		memoryDataSource: EpisodeLocalDataSourceContract
+		remoteDataSource: any EpisodeRemoteDataSourceContract,
+		memoryDataSource: any EpisodeLocalDataSourceContract
 	) {
 		self.remoteDataSource = remoteDataSource
 		self.memoryDataSource = memoryDataSource

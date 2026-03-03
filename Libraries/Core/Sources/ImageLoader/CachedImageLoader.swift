@@ -2,8 +2,8 @@ import UIKit
 
 /// Image loader with in-memory caching, disk caching, and deduplication of in-flight requests.
 public final class CachedImageLoader: ImageLoaderContract {
-	private let cache: ImageMemoryCacheContract
-	private let diskCache: ImageDiskCacheContract
+	private let cache: any ImageMemoryCacheContract
+	private let diskCache: any ImageDiskCacheContract
 	private let requestCoordinator: ImageRequestCoordinator
 	private let session: URLSession
 
@@ -17,8 +17,8 @@ public final class CachedImageLoader: ImageLoaderContract {
 
 	init(
 		session: URLSession = .shared,
-		memoryCache: ImageMemoryCacheContract = ImageMemoryCache(),
-		diskCache: ImageDiskCacheContract = ImageDiskCache(configuration: .default, fileSystem: FileSystem())
+		memoryCache: any ImageMemoryCacheContract = ImageMemoryCache(),
+		diskCache: any ImageDiskCacheContract = ImageDiskCache(configuration: .default, fileSystem: FileSystem())
 	) {
 		self.session = session
 		self.cache = memoryCache

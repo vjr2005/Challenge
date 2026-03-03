@@ -9,13 +9,13 @@ final class CharacterFilterViewModel: CharacterFilterViewModelContract {
     }
 
     private let delegate: any CharacterFilterDelegate
-    private let navigator: CharacterFilterNavigatorContract
-    private let tracker: CharacterFilterTrackerContract
+    private let navigator: any CharacterFilterNavigatorContract
+    private let tracker: any CharacterFilterTrackerContract
 
     init(
         delegate: any CharacterFilterDelegate,
-        navigator: CharacterFilterNavigatorContract,
-        tracker: CharacterFilterTrackerContract
+        navigator: any CharacterFilterNavigatorContract,
+        tracker: any CharacterFilterTrackerContract
     ) {
         self.filter = delegate.currentFilter
         self.delegate = delegate

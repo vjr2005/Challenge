@@ -11,7 +11,7 @@ Read the official style guide documentation at `docs/StyleGuide.md` for complete
 
 | Rule | Convention |
 |------|------------|
-| Protocols | `Contract` suffix |
+| Protocols | `Contract` suffix, always `any` when used as type |
 | Mocks | `Mock` suffix (never prefix) |
 | Mock variables | Also use `Mock` suffix |
 | Parameters | `identifier` not `id` |
@@ -25,6 +25,7 @@ Read the official style guide documentation at `docs/StyleGuide.md` for complete
 - [ ] Line length ≤ 140 characters
 - [ ] Imports alphabetized
 - [ ] Protocols end with `Contract`
+- [ ] Protocol types use `any` (e.g., `any TrackerContract`)
 - [ ] Mocks end with `Mock` (suffix only, never prefix)
 - [ ] Mock variables also use `Mock` suffix
 - [ ] No force unwrap (`!`)

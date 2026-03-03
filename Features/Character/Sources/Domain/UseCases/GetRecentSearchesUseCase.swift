@@ -5,9 +5,9 @@ protocol GetRecentSearchesUseCaseContract: Sendable {
 }
 
 struct GetRecentSearchesUseCase: GetRecentSearchesUseCaseContract {
-	private let repository: RecentSearchesRepositoryContract
+	private let repository: any RecentSearchesRepositoryContract
 
-	init(repository: RecentSearchesRepositoryContract) {
+	init(repository: any RecentSearchesRepositoryContract) {
 		self.repository = repository
 	}
 

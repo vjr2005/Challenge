@@ -347,14 +347,39 @@ extension MyViewController: UITableViewDelegate {
 }
 ```
 
+## Existential `any`
+
+Always use `any` when a protocol is used as a **type annotation** (properties, parameters, return types). This prepares the codebase for a future Swift version where `ExistentialAny` becomes mandatory:
+
+```swift
+// RIGHT - Explicit any
+private let tracker: any TrackerContract
+private let providers: [any TrackingProviderContract]
+
+init(navigator: any NavigatorContract) { }
+func track(_ event: any TrackingEventContract) { }
+```
+
+```swift
+// WRONG - Bare protocol as type
+private let tracker: TrackerContract
+init(navigator: NavigatorContract) { }
+```
+
+**Do NOT add `any` to:**
+- Protocol conformance: `struct Foo: BarContract`
+- Generic constraints: `<T: Protocol>`, `where T: Protocol`
+
+> **Note:** `ExistentialAny` is not enabled as an upcoming feature flag. The convention is enforced by discipline, not by the compiler.
+
 ## Dependency Injection
 
 ```swift
 // RIGHT - Protocol injection with contract type
 final class UserListViewModel {
-    private let useCase: GetUsersUseCaseContract
+    private let useCase: any GetUsersUseCaseContract
 
-    init(useCase: GetUsersUseCaseContract) {
+    init(useCase: any GetUsersUseCaseContract) {
         self.useCase = useCase
     }
 }

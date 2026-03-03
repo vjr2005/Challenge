@@ -8,7 +8,7 @@ struct EpisodeContainer {
 
 	// MARK: - Repositories
 
-	private let episodeRepository: EpisodeRepositoryContract
+	private let episodeRepository: any EpisodeRepositoryContract
 
 	// MARK: - Init
 

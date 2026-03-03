@@ -21,14 +21,14 @@ final class CharacterListViewModel: CharacterListViewModelContract {
         await fetchCharacters()
     }
 
-    private let getCharactersPageUseCase: GetCharactersPageUseCaseContract
-    private let refreshCharactersPageUseCase: RefreshCharactersPageUseCaseContract
-    private let searchCharactersPageUseCase: SearchCharactersPageUseCaseContract
-    private let getRecentSearchesUseCase: GetRecentSearchesUseCaseContract
-    private let saveRecentSearchUseCase: SaveRecentSearchUseCaseContract
-    private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
-    private let navigator: CharacterListNavigatorContract
-    private let tracker: CharacterListTrackerContract
+    private let getCharactersPageUseCase: any GetCharactersPageUseCaseContract
+    private let refreshCharactersPageUseCase: any RefreshCharactersPageUseCaseContract
+    private let searchCharactersPageUseCase: any SearchCharactersPageUseCaseContract
+    private let getRecentSearchesUseCase: any GetRecentSearchesUseCaseContract
+    private let saveRecentSearchUseCase: any SaveRecentSearchUseCaseContract
+    private let deleteRecentSearchUseCase: any DeleteRecentSearchUseCaseContract
+    private let navigator: any CharacterListNavigatorContract
+    private let tracker: any CharacterListTrackerContract
     private var characterFilter = CharacterFilter.empty
     private let debounceInterval: Duration
     private var currentPage = 1
@@ -36,14 +36,14 @@ final class CharacterListViewModel: CharacterListViewModelContract {
     private(set) var searchTask: Task<Void, Never>?
 
     init(
-        getCharactersPageUseCase: GetCharactersPageUseCaseContract,
-        refreshCharactersPageUseCase: RefreshCharactersPageUseCaseContract,
-        searchCharactersPageUseCase: SearchCharactersPageUseCaseContract,
-        getRecentSearchesUseCase: GetRecentSearchesUseCaseContract,
-        saveRecentSearchUseCase: SaveRecentSearchUseCaseContract,
-        deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract,
-        navigator: CharacterListNavigatorContract,
-        tracker: CharacterListTrackerContract,
+        getCharactersPageUseCase: any GetCharactersPageUseCaseContract,
+        refreshCharactersPageUseCase: any RefreshCharactersPageUseCaseContract,
+        searchCharactersPageUseCase: any SearchCharactersPageUseCaseContract,
+        getRecentSearchesUseCase: any GetRecentSearchesUseCaseContract,
+        saveRecentSearchUseCase: any SaveRecentSearchUseCaseContract,
+        deleteRecentSearchUseCase: any DeleteRecentSearchUseCaseContract,
+        navigator: any CharacterListNavigatorContract,
+        tracker: any CharacterListTrackerContract,
         debounceInterval: Duration = .milliseconds(300)
     ) {
         self.getCharactersPageUseCase = getCharactersPageUseCase

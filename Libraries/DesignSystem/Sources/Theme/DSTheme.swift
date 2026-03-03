@@ -5,28 +5,28 @@
 /// ``DSDimensionsContract``, ``DSBorderWidthContract``, ``DSCornerRadiusContract``, ``DSOpacityContract``, and ``DSShadowContract`` implementations.
 public struct DSTheme {
 	/// The color palette for this theme
-	public let colors: DSColorPaletteContract
+	public let colors: any DSColorPaletteContract
 
 	/// The typography for this theme
-	public let typography: DSTypographyContract
+	public let typography: any DSTypographyContract
 
 	/// The spacing values for this theme
-	public let spacing: DSSpacingContract
+	public let spacing: any DSSpacingContract
 
 	/// The dimension values for this theme
-	public let dimensions: DSDimensionsContract
+	public let dimensions: any DSDimensionsContract
 
 	/// The border width values for this theme
-	public let borderWidth: DSBorderWidthContract
+	public let borderWidth: any DSBorderWidthContract
 
 	/// The corner radius values for this theme
-	public let cornerRadius: DSCornerRadiusContract
+	public let cornerRadius: any DSCornerRadiusContract
 
 	/// The opacity values for this theme
-	public let opacity: DSOpacityContract
+	public let opacity: any DSOpacityContract
 
 	/// The shadow values for this theme
-	public let shadow: DSShadowContract
+	public let shadow: any DSShadowContract
 
 	/// Creates a new theme with the given color palette, typography, spacing, dimensions, border widths, corner radii, opacity, and shadows.
 	/// - Parameters:
@@ -39,14 +39,14 @@ public struct DSTheme {
 	///   - opacity: The opacity values
 	///   - shadow: The shadow values
 	public init(
-		colors: DSColorPaletteContract,
-		typography: DSTypographyContract,
-		spacing: DSSpacingContract,
-		dimensions: DSDimensionsContract,
-		borderWidth: DSBorderWidthContract,
-		cornerRadius: DSCornerRadiusContract,
-		opacity: DSOpacityContract,
-		shadow: DSShadowContract
+		colors: any DSColorPaletteContract,
+		typography: any DSTypographyContract,
+		spacing: any DSSpacingContract,
+		dimensions: any DSDimensionsContract,
+		borderWidth: any DSBorderWidthContract,
+		cornerRadius: any DSCornerRadiusContract,
+		opacity: any DSOpacityContract,
+		shadow: any DSShadowContract
 	) {
 		self.colors = colors
 		self.typography = typography

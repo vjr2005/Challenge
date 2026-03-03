@@ -1,9 +1,9 @@
 import ChallengeCore
 
 struct CharacterListNavigator: CharacterListNavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 

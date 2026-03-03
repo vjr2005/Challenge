@@ -1,9 +1,9 @@
 import ChallengeCore
 
 struct CharacterEpisodesTracker: CharacterEpisodesTrackerContract {
-	private let tracker: TrackerContract
+	private let tracker: any TrackerContract
 
-	init(tracker: TrackerContract) {
+	init(tracker: any TrackerContract) {
 		self.tracker = tracker
 	}
 

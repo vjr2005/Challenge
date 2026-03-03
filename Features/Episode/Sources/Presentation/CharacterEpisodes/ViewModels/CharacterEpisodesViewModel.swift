@@ -9,19 +9,19 @@ final class CharacterEpisodesViewModel: CharacterEpisodesViewModelContract {
 	// MARK: - Dependencies
 
 	private let characterIdentifier: Int
-	private let getCharacterEpisodesUseCase: GetCharacterEpisodesUseCaseContract
-	private let refreshCharacterEpisodesUseCase: RefreshCharacterEpisodesUseCaseContract
-	private let navigator: CharacterEpisodesNavigatorContract
-	private let tracker: CharacterEpisodesTrackerContract
+	private let getCharacterEpisodesUseCase: any GetCharacterEpisodesUseCaseContract
+	private let refreshCharacterEpisodesUseCase: any RefreshCharacterEpisodesUseCaseContract
+	private let navigator: any CharacterEpisodesNavigatorContract
+	private let tracker: any CharacterEpisodesTrackerContract
 
 	// MARK: - Init
 
 	init(
 		characterIdentifier: Int,
-		getCharacterEpisodesUseCase: GetCharacterEpisodesUseCaseContract,
-		refreshCharacterEpisodesUseCase: RefreshCharacterEpisodesUseCaseContract,
-		navigator: CharacterEpisodesNavigatorContract,
-		tracker: CharacterEpisodesTrackerContract
+		getCharacterEpisodesUseCase: any GetCharacterEpisodesUseCaseContract,
+		refreshCharacterEpisodesUseCase: any RefreshCharacterEpisodesUseCaseContract,
+		navigator: any CharacterEpisodesNavigatorContract,
+		tracker: any CharacterEpisodesTrackerContract
 	) {
 		self.characterIdentifier = characterIdentifier
 		self.getCharacterEpisodesUseCase = getCharacterEpisodesUseCase

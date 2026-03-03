@@ -7,19 +7,19 @@ final class CharacterDetailViewModel: CharacterDetailViewModelContract {
     private(set) var imageRefreshID = UUID()
 
     private let identifier: Int
-    private let getCharacterUseCase: GetCharacterUseCaseContract
-    private let refreshCharacterUseCase: RefreshCharacterUseCaseContract
+    private let getCharacterUseCase: any GetCharacterUseCaseContract
+    private let refreshCharacterUseCase: any RefreshCharacterUseCaseContract
     private let imageLoader: any ImageLoaderContract
-    private let navigator: CharacterDetailNavigatorContract
-    private let tracker: CharacterDetailTrackerContract
+    private let navigator: any CharacterDetailNavigatorContract
+    private let tracker: any CharacterDetailTrackerContract
 
     init(
         identifier: Int,
-        getCharacterUseCase: GetCharacterUseCaseContract,
-        refreshCharacterUseCase: RefreshCharacterUseCaseContract,
+        getCharacterUseCase: any GetCharacterUseCaseContract,
+        refreshCharacterUseCase: any RefreshCharacterUseCaseContract,
         imageLoader: any ImageLoaderContract,
-        navigator: CharacterDetailNavigatorContract,
-        tracker: CharacterDetailTrackerContract
+        navigator: any CharacterDetailNavigatorContract,
+        tracker: any CharacterDetailTrackerContract
     ) {
         self.identifier = identifier
         self.getCharacterUseCase = getCharacterUseCase

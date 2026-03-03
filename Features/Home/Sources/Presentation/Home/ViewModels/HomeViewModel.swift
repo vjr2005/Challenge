@@ -1,8 +1,8 @@
 final class HomeViewModel: HomeViewModelContract {
-    private let navigator: HomeNavigatorContract
-    private let tracker: HomeTrackerContract
+    private let navigator: any HomeNavigatorContract
+    private let tracker: any HomeTrackerContract
 
-    init(navigator: HomeNavigatorContract, tracker: HomeTrackerContract) {
+    init(navigator: any HomeNavigatorContract, tracker: any HomeTrackerContract) {
         self.navigator = navigator
         self.tracker = tracker
     }

@@ -1,9 +1,9 @@
 import Foundation
 
 nonisolated struct RecentSearchesRepository: RecentSearchesRepositoryContract {
-	private let localDataSource: RecentSearchesLocalDataSourceContract
+	private let localDataSource: any RecentSearchesLocalDataSourceContract
 
-	init(localDataSource: RecentSearchesLocalDataSourceContract) {
+	init(localDataSource: any RecentSearchesLocalDataSourceContract) {
 		self.localDataSource = localDataSource
 	}
 

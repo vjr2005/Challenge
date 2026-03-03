@@ -5,9 +5,9 @@ import UIKit
 /// Disk-based image cache with TTL expiration and LRU eviction.
 actor ImageDiskCache: ImageDiskCacheContract {
 	private let configuration: DiskCacheConfiguration
-	private let fileSystem: FileSystemContract
+	private let fileSystem: any FileSystemContract
 
-	init(configuration: DiskCacheConfiguration, fileSystem: FileSystemContract) {
+	init(configuration: DiskCacheConfiguration, fileSystem: any FileSystemContract) {
 		self.configuration = configuration
 		self.fileSystem = fileSystem
 	}

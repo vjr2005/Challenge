@@ -2,16 +2,16 @@ import ChallengeCore
 import Foundation
 
 nonisolated struct CharactersPageRepository: CharactersPageRepositoryContract {
-	private let remoteDataSource: CharacterRemoteDataSourceContract
-	private let memoryDataSource: CharacterLocalDataSourceContract
+	private let remoteDataSource: any CharacterRemoteDataSourceContract
+	private let memoryDataSource: any CharacterLocalDataSourceContract
 	private let mapper = CharactersPageMapper()
 	private let filterMapper = CharacterFilterMapper()
 	private let errorMapper = CharactersPageErrorMapper()
 	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
-		remoteDataSource: CharacterRemoteDataSourceContract,
-		memoryDataSource: CharacterLocalDataSourceContract
+		remoteDataSource: any CharacterRemoteDataSourceContract,
+		memoryDataSource: any CharacterLocalDataSourceContract
 	) {
 		self.remoteDataSource = remoteDataSource
 		self.memoryDataSource = memoryDataSource
