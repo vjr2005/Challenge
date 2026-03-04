@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       test-target:
-        description: "Test identifier (e.g., ChallengeUITests/CharacterFlowUITests/testEpisodesShowsErrorAndRetryLoadsThenNavigatesToCharacterDetail)"
+        description: "Test identifier (e.g., ChallengeUITests/HomeUITests/testHomeFlowAboutSheetCharacterListAndBack)"
         required: true
       repeat-count:
         description: "Number of times to run the test"
