@@ -2,26 +2,14 @@
 
 # Generic test helper functions.
 # Compatible with both bash (CI) and zsh (local).
-# xcresult stays in DerivedData so build log references resolve correctly in Xcode.
 #
 # Environment variables:
 #   DESTINATION        — xcodebuild destination (required)
 #   OUTPUT_DIR         — base directory for logs and results (required)
 #   DERIVED_DATA_PATH  — override DerivedData path (optional, defaults to $OUTPUT_DIR/<name>_derived_data)
 
-# Finds the most recent xcresult in a DerivedData directory.
-# Sets XCRESULT_PATH to the result, or empty if not found.
-find_xcresult() {
-    local derived_data="$1"
-    XCRESULT_PATH=$(find "$derived_data/Logs/Test" -name "*.xcresult" -print0 2>/dev/null \
-        | xargs -0 stat -f '%m %N' 2>/dev/null \
-        | sort -rn | head -1 | cut -d' ' -f2-)
-}
-
-# Runs tests and sets XCRESULT_PATH to the result.
+# Runs tests and sets XCRESULT_PATH to the -resultBundlePath value.
 # Returns the xcodebuild exit code.
-# If -resultBundlePath is passed in extra flags, uses that path directly.
-# Otherwise, finds the xcresult in DerivedData.
 # Usage: run_tests <name> <workspace> <scheme> [extra xcodebuild flags...]
 run_tests() {
     local name="$1"
@@ -58,16 +46,7 @@ run_tests() {
         test_exit=${pipestatus[1]}
     fi
 
-    if [[ -n "$result_bundle_path" ]]; then
-        XCRESULT_PATH="$result_bundle_path"
-    else
-        find_xcresult "$derived_data"
-    fi
-
-    if [[ -z "$XCRESULT_PATH" ]]; then
-        echo "Error: xcresult not found"
-        return 1
-    fi
+    XCRESULT_PATH="$result_bundle_path"
 
     return $test_exit
 }
@@ -101,7 +80,7 @@ clean() {
         rm -rf "$OUTPUT_DIR" 2>/dev/null
     fi
     echo "Cleaning default DerivedData..."
-    rm -rf ~/Library/Developer/Xcode/DerivedData/${project_name}-* 2>/dev/null
+    find ~/Library/Developer/Xcode/DerivedData -maxdepth 1 -name "${project_name}-*" -exec rm -rf {} + 2>/dev/null
 }
 
 # Creates or reuses a cloned simulator for parallel test execution.

@@ -15,6 +15,8 @@ WORKSPACE="Challenge.xcworkspace"
 DEVICE="iPhone 17 Pro"
 OS="26.1"
 OUTPUT_DIR="test_output"
+UNIT_XCRESULT="$OUTPUT_DIR/UnitSnapshot.xcresult"
+UI_XCRESULT="$OUTPUT_DIR/UITests.xcresult"
 
 usage() {
     sed -n '/^# Usage/,/^$/p' "$0" | sed 's/^# //'
@@ -60,6 +62,7 @@ if $PARALLEL && $RUN_UNIT && $RUN_UI; then
     (
         run_tests "unit_snapshot" "$WORKSPACE" "Challenge (Dev)" \
             -testPlan Challenge \
+            -resultBundlePath "$UNIT_XCRESULT" \
             -retry-tests-on-failure
     ) > "$OUTPUT_DIR/unit_snapshot_full.log" 2>&1 &
     PID_UNIT=$!
@@ -67,6 +70,7 @@ if $PARALLEL && $RUN_UNIT && $RUN_UI; then
     (
         DESTINATION="$UI_DESTINATION"
         run_tests "ui" "$WORKSPACE" "ChallengeUITests" \
+            -resultBundlePath "$UI_XCRESULT" \
             -retry-tests-on-failure \
             -test-repetition-relaunch-enabled YES
     ) > "$OUTPUT_DIR/ui_tests_full.log" 2>&1 &
@@ -86,6 +90,7 @@ else
     if $RUN_UNIT; then
         run_tests "unit_snapshot" "$WORKSPACE" "Challenge (Dev)" \
             -testPlan Challenge \
+            -resultBundlePath "$UNIT_XCRESULT" \
             -retry-tests-on-failure
         UNIT_EXIT=$?
     fi
@@ -93,6 +98,7 @@ else
     if $RUN_UI; then
         DESTINATION="$UI_DESTINATION"
         run_tests "ui" "$WORKSPACE" "ChallengeUITests" \
+            -resultBundlePath "$UI_XCRESULT" \
             -retry-tests-on-failure \
             -test-repetition-relaunch-enabled YES
         UI_EXIT=$?
@@ -102,32 +108,18 @@ fi
 END_TIME=$(date +%s)
 TOTAL_TIME=$((END_TIME - START_TIME))
 
-# Locate xcresult files from DerivedData
-UNIT_XCRESULT=""
-UI_XCRESULT=""
-
-if $RUN_UNIT; then
-    find_xcresult "$OUTPUT_DIR/unit_snapshot_derived_data"
-    UNIT_XCRESULT="$XCRESULT_PATH"
-fi
-
-if $RUN_UI; then
-    find_xcresult "$OUTPUT_DIR/ui_derived_data"
-    UI_XCRESULT="$XCRESULT_PATH"
-fi
-
 # Merge xcresult bundles if both suites ran
 RESULT_PATH=""
-if $RUN_UNIT && $RUN_UI && [[ -n "$UNIT_XCRESULT" ]] && [[ -n "$UI_XCRESULT" ]]; then
+if $RUN_UNIT && $RUN_UI && [[ -d "$UNIT_XCRESULT" ]] && [[ -d "$UI_XCRESULT" ]]; then
     merge_xcresults "$UNIT_XCRESULT" "$UI_XCRESULT"
     if [[ -n "$MERGED_XCRESULT_PATH" ]]; then
         RESULT_PATH="$MERGED_XCRESULT_PATH"
     else
         RESULT_PATH="$UNIT_XCRESULT"
     fi
-elif $RUN_UNIT && [[ -n "$UNIT_XCRESULT" ]]; then
+elif $RUN_UNIT && [[ -d "$UNIT_XCRESULT" ]]; then
     RESULT_PATH="$UNIT_XCRESULT"
-elif $RUN_UI && [[ -n "$UI_XCRESULT" ]]; then
+elif $RUN_UI && [[ -d "$UI_XCRESULT" ]]; then
     RESULT_PATH="$UI_XCRESULT"
 fi
 
