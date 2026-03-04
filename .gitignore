@@ -30,8 +30,7 @@ Tuist/.cache/
 !Tuist/Package.swift
 
 # Auto-generated Bundle accessors (Framework strategy)
-**/Sources/Generated/Bundle+Module.swift
-**/Tests/Shared/Generated/Bundle+Module.swift
+**/Generated/Bundle+Module.swift
 
 # Swift Package Manager
 .swiftpm/

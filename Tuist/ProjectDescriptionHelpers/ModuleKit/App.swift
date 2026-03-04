@@ -173,7 +173,8 @@ public struct App: @unchecked Sendable {
 
 	/// The main app project.
 	public var project: Project {
-		Project(
+		BundleAccessorGenerator.generateAt(relativePath: "App/Tests/Shared/Generated")
+		return Project(
 			name: name,
 			options: .options(
 				automaticSchemesOptions: .disabled,
