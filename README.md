@@ -26,7 +26,7 @@ iOS application built with **Swift 6**, **SwiftUI**, **Clean Architecture**, and
 Run the setup script to install all required tools:
 
 ```bash
-./setup.sh
+./Scripts/setup.sh
 ```
 
 ### 2. Build the Project
@@ -34,7 +34,7 @@ Run the setup script to install all required tools:
 Generate the Xcode project and install dependencies:
 
 ```bash
-./generate.sh
+./Scripts/generate.sh
 ```
 
 ## Architecture

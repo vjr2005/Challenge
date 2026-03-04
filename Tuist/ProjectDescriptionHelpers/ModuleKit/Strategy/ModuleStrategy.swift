@@ -18,7 +18,7 @@ public enum ModuleStrategy: String {
 	///
 	/// Usage:
 	/// ```bash
-	/// TUIST_MODULE_STRATEGY=spm ./generate.sh
+	/// TUIST_MODULE_STRATEGY=spm ./Scripts/generate.sh
 	/// ```
 	public static let active: ModuleStrategy = {
 		if case let .string(value) = ProjectDescription.Environment.moduleStrategy {

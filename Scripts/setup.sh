@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+cd "$(dirname "$0")/.." || exit 1
+
 # Check if brew is installed
 if command -v brew >/dev/null 2>&1; then
     echo "brew is already installed."

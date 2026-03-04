@@ -48,18 +48,15 @@ jobs:
           derived-data-prefix: unit
           module-strategy: ${{ env.MODULE_STRATEGY }}
 
-      - name: Generate project
-        run: TUIST_MODULE_STRATEGY=${{ env.MODULE_STRATEGY }} mise x -- tuist generate --no-open
-
       - name: Run unit and snapshot tests
         timeout-minutes: 35
+        env:
+          DESTINATION: "platform=iOS Simulator,name=${{ env.TUIST_TEST_DEVICE }},OS=${{ env.TUIST_TEST_OS }}"
+          OUTPUT_DIR: test_output
         run: |
-          xcodebuild test \
-            -workspace Challenge.xcworkspace \
-            -scheme "Challenge (Dev)" \
+          source Scripts/test-helpers.sh
+          run_tests "unit_snapshot" "Challenge.xcworkspace" "Challenge (Dev)" \
             -testPlan Challenge \
-            -destination "platform=iOS Simulator,name=$TUIST_TEST_DEVICE,OS=$TUIST_TEST_OS" \
-            -derivedDataPath "$DERIVED_DATA_PATH" \
             -resultBundlePath "$RESULT_BUNDLE_PATH" \
             -retry-tests-on-failure
 
@@ -98,51 +95,17 @@ jobs:
 
       - name: Periphery summary
         id: periphery-summary
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const raw = process.env.PERIPHERY_OUTPUT || '';
-            const output = raw.replace(/\x1b\[[0-9;]*m/g, '');
-
-            const diagnosticRegex = /^(.+?):(\d+):(\d+):\s+warning:\s+(.+)$/gm;
-            const findings = [];
-            let match;
-            while ((match = diagnosticRegex.exec(output)) !== null) {
-              findings.push({
-                file: match[1],
-                line: match[2],
-                description: match[4]
-              });
-            }
-
-            let body;
-            if (findings.length === 0) {
-              body = [
-                '## Periphery \u2014 Dead code detection',
-                '',
-                ':white_check_mark: No unused code detected.'
-              ].join('\n');
-            } else {
-              const rows = findings.map(f => {
-                const shortFile = f.file.replace(/^.*?(?=Features\/|Sources\/|Tests\/)/, '');
-                return `| :warning: | \`${shortFile}\` | ${f.line} | ${f.description} |`;
-              });
-
-              body = [
-                '## Periphery \u2014 Dead code detection',
-                '',
-                `Found **${findings.length}** unused code occurrence(s):`,
-                '',
-                '| | File | Line | Description |',
-                '|---|------|------|-------------|',
-                ...rows
-              ].join('\n');
-            }
-
-            const fs = require('fs');
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, body + '\n');
-
-            core.setOutput('body', body);
+        shell: bash
+        run: |
+          BODY=$(node Scripts/CI/periphery-summary.js)
+          echo "$BODY" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "body<<PERIPHERY_BODY_EOF"
+            echo "$BODY"
+            echo "PERIPHERY_BODY_EOF"
+          } >> "$GITHUB_OUTPUT"
+        env:
+          PERIPHERY_OUTPUT: ${{ env.PERIPHERY_OUTPUT }}
 
       - name: Comment PR with Periphery results
         if: github.event_name == 'pull_request'
@@ -183,12 +146,13 @@ jobs:
 
       - name: Run UI tests
         timeout-minutes: 35
+        env:
+          DESTINATION: "platform=iOS Simulator,name=${{ env.TUIST_TEST_DEVICE }},OS=${{ env.TUIST_TEST_OS }}"
+          OUTPUT_DIR: test_output
         run: |
-          mise x -- tuist test "ChallengeUITests" \
-            --device "$TUIST_TEST_DEVICE" \
-            --os "$TUIST_TEST_OS" \
-            --result-bundle-path "$RESULT_BUNDLE_PATH" \
-            -- -derivedDataPath "$DERIVED_DATA_PATH" \
+          source Scripts/test-helpers.sh
+          run_tests "ui" "Challenge.xcworkspace" "ChallengeUITests" \
+            -resultBundlePath "$RESULT_BUNDLE_PATH" \
             -retry-tests-on-failure \
             -test-repetition-relaunch-enabled YES
 
@@ -278,123 +242,29 @@ jobs:
 
       - name: Coverage report
         id: coverage
-        uses: actions/github-script@v7
+        shell: bash
         env:
           THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
           MERGE_OK: ${{ steps.merge.outputs.merge_ok }}
-          MERGED_ARTIFACT_ID: ${{ steps.upload-merged.outputs.artifact-id }}
-          UNIT_ARTIFACT_ID: ${{ steps.upload-unit.outputs.artifact-id }}
-          UI_ARTIFACT_ID: ${{ steps.upload-ui.outputs.artifact-id }}
-        with:
-          script: |
-            const fs = require('fs');
-            const THRESHOLD = parseInt(process.env.THRESHOLD, 10);
-            const mergeOk = process.env.MERGE_OK === 'true';
-
-            // --- Load coverage targets ---
-            let targets;
-            if (mergeOk) {
-              const report = JSON.parse(fs.readFileSync('coverage.json', 'utf8'));
-              targets = report.targets;
-            } else {
-              // Merge coverage at file level from both reports
-              const unitReport = JSON.parse(fs.readFileSync('unit-coverage.json', 'utf8'));
-              const uiReport = JSON.parse(fs.readFileSync('ui-coverage.json', 'utf8'));
-
-              const targetMap = new Map();
-              for (const report of [unitReport, uiReport]) {
-                for (const target of report.targets) {
-                  if (!targetMap.has(target.name)) {
-                    targetMap.set(target.name, new Map());
-                  }
-                  const fileMap = targetMap.get(target.name);
-                  for (const file of (target.files || [])) {
-                    const key = file.path || file.name;
-                    const existing = fileMap.get(key);
-                    if (!existing || file.coveredLines > existing.coveredLines) {
-                      fileMap.set(key, {
-                        coveredLines: file.coveredLines,
-                        executableLines: file.executableLines,
-                      });
-                    }
-                  }
-                }
-              }
-
-              targets = [];
-              for (const [name, fileMap] of targetMap) {
-                let coveredLines = 0;
-                let executableLines = 0;
-                for (const f of fileMap.values()) {
-                  coveredLines += f.coveredLines;
-                  executableLines += f.executableLines;
-                }
-                const lineCoverage = executableLines > 0 ? coveredLines / executableLines : 0;
-                targets.push({ name, coveredLines, executableLines, lineCoverage });
-              }
-            }
-
-            // --- Filter targets ---
-            const filtered = targets.filter(t => {
-              const name = t.name.replace(/\.(framework|app|o)$/, '');
-              return !name.includes('Mock') &&
-                !name.includes('Test') &&
-                !name.includes('SnapshotTestKit') &&
-                name !== 'SnapshotTesting';
-            });
-
-            let totalCovered = 0;
-            let totalExecutable = 0;
-
-            const rows = filtered
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(t => {
-                totalCovered += t.coveredLines;
-                totalExecutable += t.executableLines;
-                const pct = (t.lineCoverage * 100).toFixed(1);
-                const icon = parseFloat(pct) >= THRESHOLD ? ':white_check_mark:' : ':x:';
-                const name = t.name.replace(/\.(framework|app|o)$/, '');
-                return `| ${icon} | ${name} | ${t.coveredLines} / ${t.executableLines} | ${pct}% |`;
-              });
-
-            const totalPct = totalExecutable > 0
-              ? (totalCovered / totalExecutable * 100)
-              : 0;
-            const totalIcon = totalPct >= THRESHOLD ? ':white_check_mark:' : ':x:';
-
-            // --- Download links ---
-            const baseUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts`;
-            let downloadSection;
-            if (mergeOk) {
-              const id = process.env.MERGED_ARTIFACT_ID;
-              downloadSection = `:package: [Download xcresult](${baseUrl}/${id})`;
-            } else {
-              const unitId = process.env.UNIT_ARTIFACT_ID;
-              const uiId = process.env.UI_ARTIFACT_ID;
-              downloadSection = [
-                `:package: [Unit+Snapshot xcresult](${baseUrl}/${unitId})`,
-                `:package: [UI Tests xcresult](${baseUrl}/${uiId})`,
-              ].join('\n');
-            }
-
-            const body = [
-              '## Code Coverage',
-              '',
-              '| | Module | Lines | Coverage |',
-              '|---|--------|-------|----------|',
-              ...rows,
-              `| **${totalIcon}** | **Total** | **${totalCovered} / ${totalExecutable}** | **${totalPct.toFixed(1)}%** |`,
-              '',
-              `Minimum required: ${THRESHOLD}%`,
-              '',
-              downloadSection,
-            ].join('\n');
-
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, body + '\n');
-
-            core.setOutput('body', body);
-            core.setOutput('total', totalPct.toFixed(1));
-            core.setOutput('passed', totalPct >= THRESHOLD ? 'true' : 'false');
+          COVERAGE_FILE: coverage.json
+          UNIT_COVERAGE_FILE: unit-coverage.json
+          UI_COVERAGE_FILE: ui-coverage.json
+          DOWNLOAD_URL_MERGED: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-merged.outputs.artifact-id }}
+          DOWNLOAD_URL_UNIT: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-unit.outputs.artifact-id }}
+          DOWNLOAD_URL_UI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-ui.outputs.artifact-id }}
+        run: |
+          RESULT=$(node Scripts/CI/coverage-report.js)
+          BODY=$(echo "$RESULT" | jq -r '.body')
+          TOTAL=$(echo "$RESULT" | jq -r '.total')
+          PASSED=$(echo "$RESULT" | jq -r '.passed')
+          echo "$BODY" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "body<<COVERAGE_BODY_EOF"
+            echo "$BODY"
+            echo "COVERAGE_BODY_EOF"
+            echo "total=$TOTAL"
+            echo "passed=$PASSED"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Comment PR with coverage
         if: github.event_name == 'pull_request'

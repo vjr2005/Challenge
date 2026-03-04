@@ -99,7 +99,7 @@ private enum LocalizedStrings {
    ```swift
    "CFBundleLocalizations": ["en", "es", "NEW_LANG_CODE"],
    ```
-5. Regenerate the project: `./generate.sh`
+5. Regenerate the project: `./Scripts/generate.sh`
 
 ## Project Configuration
 

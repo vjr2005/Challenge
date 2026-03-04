@@ -37,6 +37,7 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 		config: ProjectConfig = projectConfig
 	) {
 		let fileSystem = ModuleFileSystem(directory: directory, appName: config.appName)
+		BundleAccessorGenerator.generate(directory: directory, fileSystem: fileSystem)
 		let name = fileSystem.targetName
 		self.directory = directory
 		self.name = name

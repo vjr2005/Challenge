@@ -1,26 +1,47 @@
 # Scripts
 
+All scripts live in the `Scripts/` directory. Each script uses `cd "$(dirname "$0")/.."` to resolve paths relative to the project root, so they can be invoked from any directory.
+
 ## Available Scripts
 
 | Script | Description |
 |--------|-------------|
-| `./setup.sh` | Initial setup - installs brew, mise, and project tools |
-| `./generate.sh` | Install dependencies and generate the Xcode project (framework strategy) |
-| `./generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
-| `./generate.sh --strategy spm` | Generate using the SPM module strategy |
-| `./reset-simulators.sh` | Full simulator reset - fixes corrupted simulator state |
-| `./run-all-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult |
-| `./run-all-tests.sh --parallel` | Same as above, but runs both suites in parallel (clones simulator) |
-| `./run-all-tests.sh --unit` | Run unit + snapshot tests only |
-| `./run-all-tests.sh --ui` | Run UI tests only |
-| `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
+| `./Scripts/setup.sh` | Initial setup - installs brew, mise, and project tools |
+| `./Scripts/generate.sh` | Install dependencies and generate the Xcode project (framework strategy) |
+| `./Scripts/generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
+| `./Scripts/generate.sh --strategy spm` | Generate using the SPM module strategy |
+| `./Scripts/reset-simulators.sh` | Full simulator reset - fixes corrupted simulator state |
+| `./Scripts/run-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult |
+| `./Scripts/run-tests.sh --parallel` | Same as above, but runs both suites in parallel (clones simulator) |
+| `./Scripts/run-tests.sh --unit` | Run unit + snapshot tests only |
+| `./Scripts/run-tests.sh --ui` | Run UI tests only |
+| `Scripts/BuildPhases/run-swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
+
+### Directory Structure
+
+```
+Scripts/
+├── setup.sh              # Initial setup
+├── generate.sh           # Project generation
+├── reset-simulators.sh   # Simulator reset
+├── run-tests.sh          # Test runner (project-specific)
+├── test-helpers.sh       # Generic test helper functions (shared with CI)
+├── BuildPhases/
+│   └── run-swiftlint.sh  # Xcode build phase
+└── CI/
+    ├── test-results-summary.py  # Test failure/retry markdown report
+    ├── coverage-report.js       # Coverage table + threshold check
+    └── periphery-summary.js     # Periphery dead code markdown report
+```
+
+`test-helpers.sh` is compatible with both bash (CI) and zsh (local). CI workflows source it and call `run_tests` with `-resultBundlePath` for predictable artifact paths. See [CI](CI.md) for details.
 
 ## Setup Script
 
 Run the setup script to install all required tools:
 
 ```bash
-./setup.sh
+./Scripts/setup.sh
 ```
 
 This script will:
@@ -37,7 +58,7 @@ This script will:
 Generate the Xcode project and install dependencies:
 
 ```bash
-./generate.sh
+./Scripts/generate.sh
 ```
 
 ### Module Strategy
@@ -45,14 +66,14 @@ Generate the Xcode project and install dependencies:
 Switch the module integration strategy at generation time:
 
 ```bash
-./generate.sh --strategy framework   # Framework targets (default)
-./generate.sh --strategy spm         # SPM local packages
+./Scripts/generate.sh --strategy framework   # Framework targets (default)
+./Scripts/generate.sh --strategy spm         # SPM local packages
 ```
 
 Options can be combined:
 
 ```bash
-./generate.sh --clean --strategy framework
+./Scripts/generate.sh --clean --strategy framework
 ```
 
 ### Clean Build
@@ -60,7 +81,7 @@ Options can be combined:
 To perform a clean build from scratch:
 
 ```bash
-./generate.sh --clean
+./Scripts/generate.sh --clean
 ```
 
 This clears the Tuist cache before generating, useful when:
@@ -74,7 +95,7 @@ This clears the Tuist cache before generating, useful when:
 Performs a deep reset of all iOS simulators. Use this script when you suspect the simulator has corrupted data (e.g., `LaunchServicesDataMismatch` errors, apps crashing immediately after launch, UI tests timing out unexpectedly):
 
 ```bash
-./reset-simulators.sh
+./Scripts/reset-simulators.sh
 ```
 
 This script will:
@@ -86,13 +107,19 @@ This script will:
 
 > **Important:** After running this script, **restart Xcode** before launching the app or running tests. Xcode holds a connection to the CoreSimulator service that becomes invalid after the reset.
 
-## Run All Tests Script
+## Run Tests Script
 
 Run all test suites (unit, snapshot, and UI) with a merged xcresult:
 
 ```bash
-./run-all-tests.sh
+./Scripts/run-tests.sh
 ```
+
+The script is split into two files:
+- `run-tests.sh` — project-specific orchestration (workspace, schemes, test plans)
+- `test-helpers.sh` — generic reusable functions (`run_tests`, `find_xcresult`, `merge_xcresults`, `clean`)
+
+xcresult bundles stay in DerivedData (via `-derivedDataPath`) so that Xcode build log references (`x-xcode-log://`) resolve correctly when opened in Report Navigator.
 
 ### Options
 
@@ -116,7 +143,19 @@ When both suites run, the script merges the two `.xcresult` bundles into `test_o
 
 ## SwiftLint Script
 
-The `Scripts/run_swiftlint.sh` script is executed as an Xcode build phase. It:
+The `Scripts/BuildPhases/run-swiftlint.sh` script is executed as an Xcode build phase. It:
 - Runs SwiftLint on all Swift files
 - Reports warnings and errors in Xcode
 - Is configured via `.swiftlint.yml`
+
+## CI Scripts
+
+The `Scripts/CI/` directory contains report generation scripts used by GitHub Actions workflows. Each script reads input from environment variables and writes output to stdout, making them testable locally.
+
+| Script | Language | Description |
+|--------|----------|-------------|
+| `test-results-summary.py` | Python | Parses `.xcresult` for test failures and retries, generates markdown summary |
+| `coverage-report.js` | Node.js | Merges coverage data, generates coverage table, checks threshold |
+| `periphery-summary.js` | Node.js | Parses Periphery output, generates markdown table of unused code |
+
+Workflows capture stdout and handle GitHub-specific plumbing (`GITHUB_STEP_SUMMARY`, `GITHUB_OUTPUT`, PR comments) separately. See [CI](CI.md) for details.

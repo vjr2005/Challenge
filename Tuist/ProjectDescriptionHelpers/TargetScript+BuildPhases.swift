@@ -5,7 +5,7 @@ extension TargetScript {
 	static func swiftLint(path: String) -> TargetScript {
 		.post(
 			script: """
-			"${SRCROOT}/Scripts/run_swiftlint.sh" "\(path)"
+			"${SRCROOT}/Scripts/BuildPhases/run-swiftlint.sh" "\(path)"
 			""",
 			name: "SwiftLint",
 			basedOnDependencyAnalysis: false

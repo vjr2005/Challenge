@@ -150,7 +150,7 @@ let appInfoPlist: [String: Plist.Value] = [
    ```swift
    "CFBundleLocalizations": ["en", "es", "NEW_LANG_CODE"],
    ```
-5. Regenerate the project: `./generate.sh`
+5. Regenerate the project: `./Scripts/generate.sh`
 
 ---
 
@@ -167,4 +167,4 @@ let appInfoPlist: [String: Plist.Value] = [
 - [ ] Add language to `Localizable.xcstrings` in Xcode
 - [ ] Translate all existing strings
 - [ ] Add language code to `CFBundleLocalizations` in `Project.swift`
-- [ ] Regenerate project with `./generate.sh`
+- [ ] Regenerate project with `./Scripts/generate.sh`

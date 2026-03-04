@@ -1,9 +1,11 @@
 #!/bin/zsh
 
+cd "$(dirname "$0")/.." || exit 1
+
 DEFAULT_STRATEGY="framework"
 
 usage() {
-    echo "Usage: ./generate.sh [--clean] [--strategy <spm|framework>]"
+    echo "Usage: ./Scripts/generate.sh [--clean] [--strategy <spm|framework>]"
     echo ""
     echo "Generate the Xcode project."
     echo ""
@@ -54,14 +56,15 @@ if [[ "$CLEAN" == true ]]; then
     rm -rf *.xcodeproj *.xcworkspace
 
     echo "Removing Derived Data..."
-    rm -rf ~/Library/Developer/Xcode/DerivedData/Challenge-*
+    PROJECT_NAME=$(basename "$PWD")
+    rm -rf ~/Library/Developer/Xcode/DerivedData/${PROJECT_NAME}-*
 fi
 
 echo "Installing dependencies..."
 mise x -- tuist install
 
 echo "Removing previous generated project..."
-find . -path ./Tuist -prune -o -name "*.xcodeproj" -print -exec rm -rf {} + 2>/dev/null
+find . \( -path ./Tuist -o -path ./.git \) -prune -o -name "*.xcodeproj" -type d -print0 | xargs -0 rm -rf 2>/dev/null
 
 echo "Generating project (strategy: $STRATEGY)..."
 mise x -- tuist generate

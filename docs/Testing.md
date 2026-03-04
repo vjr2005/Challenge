@@ -148,7 +148,7 @@ If UI tests fail with `Simulator device failed to launch` or `LaunchServicesData
 Run the reset script and restart Xcode:
 
 ```bash
-./reset-simulators.sh
+./Scripts/reset-simulators.sh
 ```
 
 See [Scripts](Scripts.md#reset-simulators-script) for details.

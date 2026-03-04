@@ -39,8 +39,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 |------|-------------|
 | Checkout | Clone the repository |
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
-| Generate project | `mise x -- tuist generate --no-open` |
-| Run unit and snapshot tests | `xcodebuild test` with `Challenge (Dev)` scheme and `Challenge` test plan, retry-on-failure (35 min timeout, 1 retry) |
+| Run unit and snapshot tests | Sources `Scripts/test-helpers.sh` and calls `run_tests` with `Challenge (Dev)` scheme, `Challenge` test plan, retry-on-failure (35 min timeout) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
 | Test report | Always: composite action that uploads `.xcresult` artifact (on failure), parses failures and retried tests, writes combined summary to Actions Summary and PR comment |
 | Detect dead code | `mise x -- periphery scan --skip-build` reusing the test build index (informational, never blocks CI) |
@@ -53,7 +52,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 |------|-------------|
 | Checkout | Clone the repository |
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
-| Run UI tests | `mise x -- tuist test "ChallengeUITests"` with retry-on-failure (35 min timeout, 1 retry) |
+| Run UI tests | Sources `Scripts/test-helpers.sh` and calls `run_tests` with `ChallengeUITests` scheme, retry-on-failure and app relaunch (35 min timeout) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
 | Test report | Always: composite action that uploads `.xcresult` artifact (on failure), parses failures and retried tests, writes combined summary to Actions Summary and PR comment |
 
@@ -140,7 +139,8 @@ Manual only: **Actions** > **Run Single Test** > **Run workflow**.
 
 ### Behavior
 
-- Each run uses `--clean` to bypass Tuist cache and force a fresh execution.
+- Each run uses `run_tests` from `Scripts/test-helpers.sh` with `-only-testing:` to target a specific test.
+- The scheme is auto-detected from the test target (`ChallengeUITests` for UI tests, `Challenge (Dev)` otherwise).
 - The workflow logs a pass/fail result per run and prints a summary at the end.
 - If **any** run fails, the workflow fails.
 - All `.xcresult` bundles are uploaded as a single artifact (`test-results`, 7-day retention) for post-mortem inspection.
@@ -197,10 +197,11 @@ After pushing the workflow file, configure the repository:
 - **Manual trigger**: `workflow_dispatch` allows running the full pipeline without creating a PR. PR-specific steps (comments) are skipped automatically.
 - **Test timeout**: Both test jobs have a 35-minute step timeout (40-minute job timeout) to prevent frozen tests from blocking the pipeline. This accounts for ~20 min compilation + ~5 min test execution (up to ~10 min with retries).
 - **Test retry**: Both test jobs use `-retry-tests-on-failure` to automatically retry failed tests once. Only the failed tests are re-executed, not the entire suite. UI tests additionally use `-test-repetition-relaunch-enabled YES` to relaunch the app between retries (necessary when a test crashes). This handles transient failures caused by CI resource pressure (e.g., timeouts, background assertion errors).
+- **Extracted report scripts**: Report generation logic (test results, coverage, Periphery) lives in standalone scripts under `Scripts/CI/`. Workflow YAML is a thin orchestration layer that captures stdout and writes to `GITHUB_STEP_SUMMARY` / `GITHUB_OUTPUT`. This enables local testing, proper IDE support (syntax highlighting, linting), and clean separation between report computation and GitHub Actions plumbing. See [Scripts](Scripts.md#ci-scripts) for details.
 - **Simulator readiness**: Simulator stability on CI requires a two-layer approach because no single mechanism guarantees 100% readiness:
   - **Layer 1 — SpringBoard polling** (setup action): After booting the simulator, the setup action polls `launchctl print system` every 2s (up to 60s) until `com.apple.SpringBoard` appears. SpringBoard is the process that manages app launching — its presence confirms the simulator can actually run apps. This is more reliable than `sleep N` (which is a guess) and `xcrun simctl bootstatus` (which can hang indefinitely on CI runners).
   - **Layer 2 — Test retry** (both jobs): If a test still fails due to a transient simulator issue, xcodebuild retries it once (see above).
-  - If Layer 1 times out (SpringBoard not detected after 60s), the step continues anyway and Layer 2 handles any resulting test failures. For local development, if the simulator becomes corrupted, use `./reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
+  - If Layer 1 times out (SpringBoard not detected after 60s), the step continues anyway and Layer 2 handles any resulting test failures. For local development, if the simulator becomes corrupted, use `./Scripts/reset-simulators.sh` (see [Scripts](Scripts.md#reset-simulators-script)).
 
 ## Production Tooling
 

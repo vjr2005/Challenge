@@ -178,7 +178,7 @@ public struct App: @unchecked Sendable {
 			options: .options(
 				automaticSchemesOptions: .disabled,
 				developmentRegion: "en",
-				disableBundleAccessors: false,
+				disableBundleAccessors: true,
 				disableSynthesizedResourceAccessors: true
 			),
 			packages: packages,

@@ -76,8 +76,8 @@ public enum ModuleFactory {
 Switch strategy at generation time:
 
 ```bash
-./generate.sh                          # default: framework
-./generate.sh --strategy spm           # switch to spm
+./Scripts/generate.sh                          # default: framework
+./Scripts/generate.sh --strategy spm           # switch to spm
 ```
 
 | Strategy | Description |
@@ -459,5 +459,5 @@ public let myModule = Module(
 ### 4. Regenerate the Project
 
 ```bash
-./generate.sh
+./Scripts/generate.sh
 ```
