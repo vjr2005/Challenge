@@ -137,6 +137,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 |--------|---------|---------|
 | `generate.sh` | Project generation (with optional `--clean`) | `./generate.sh [--clean]` |
 | `reset-simulators.sh` | Deep simulator reset when corrupted data is suspected | `./reset-simulators.sh` |
+| `run-all-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult | `./run-all-tests.sh [--parallel] [--unit] [--ui]` |
 
 > **Note:** After running `reset-simulators.sh`, restart Xcode before launching the app or running tests. See [Scripts](docs/Scripts.md) for details.
 

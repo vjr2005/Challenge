@@ -9,6 +9,10 @@
 | `./generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
 | `./generate.sh --strategy spm` | Generate using the SPM module strategy |
 | `./reset-simulators.sh` | Full simulator reset - fixes corrupted simulator state |
+| `./run-all-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult |
+| `./run-all-tests.sh --parallel` | Same as above, but runs both suites in parallel (clones simulator) |
+| `./run-all-tests.sh --unit` | Run unit + snapshot tests only |
+| `./run-all-tests.sh --ui` | Run UI tests only |
 | `Scripts/run_swiftlint.sh` | Runs SwiftLint on the codebase (Xcode build phase) |
 
 ## Setup Script
@@ -81,6 +85,34 @@ This script will:
 - Restart the CoreSimulator service to regenerate the LaunchServices database
 
 > **Important:** After running this script, **restart Xcode** before launching the app or running tests. Xcode holds a connection to the CoreSimulator service that becomes invalid after the reset.
+
+## Run All Tests Script
+
+Run all test suites (unit, snapshot, and UI) with a merged xcresult:
+
+```bash
+./run-all-tests.sh
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--parallel` | Clone the simulator and run unit+snapshot and UI tests in parallel |
+| `--unit` | Run only unit + snapshot tests |
+| `--ui` | Run only UI tests |
+
+### Sequential Mode (default)
+
+Runs unit+snapshot tests first, then UI tests. Output streams to the terminal via `tee` and is also saved to log files in `test_output/`.
+
+### Parallel Mode
+
+Reuses an existing "iPhone 17 Pro (Tests Clone)" simulator if one exists with iOS 26.1; otherwise creates one with English locale and keeps it for future runs. Output is redirected to log files (use `tail -f test_output/unit_snapshot.log` to follow progress).
+
+### Result Merging
+
+When both suites run, the script merges the two `.xcresult` bundles into `test_output/merged/AllTests.xcresult` using `xcresulttool merge` (same tool the CI uses). The merged result is opened automatically in Xcode, showing unified test results and coverage.
 
 ## SwiftLint Script
 
