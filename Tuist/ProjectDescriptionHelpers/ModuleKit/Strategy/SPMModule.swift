@@ -65,6 +65,8 @@ public struct SPMModule: ModuleContract, @unchecked Sendable {
 
 		self.packageTargetSettings = targetSettings
 
+		BundleAccessorGenerator.clean(directory: directory, fileSystem: fileSystem)
+
 		PackageSwiftGenerator.generate(
 			directory: directory,
 			name: name,

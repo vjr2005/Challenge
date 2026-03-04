@@ -145,7 +145,8 @@ public struct App: @unchecked Sendable {
 	}
 
 	private var uiTestsScheme: Scheme {
-		.scheme(
+		let moduleCoverageTargets = modules.flatMap(\.codeCoverageTargets)
+		return .scheme(
 			name: "\(name)UITests",
 			buildAction: .buildAction(targets: [targetReference, uiTestsTargetReference]),
 			testAction: .targets(
@@ -157,7 +158,7 @@ public struct App: @unchecked Sendable {
 				options: .options(
 					preferredScreenCaptureFormat: .screenRecording,
 					coverage: true,
-					codeCoverageTargets: [targetReference]
+					codeCoverageTargets: [targetReference] + moduleCoverageTargets
 				)
 			)
 		)
