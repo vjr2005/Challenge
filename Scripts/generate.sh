@@ -116,7 +116,7 @@ if [[ -n "$FOCUS" ]]; then
       [range(0; $deps | length; 2)] |
       map({
         src: $deps[.].target.name,
-        deps: [$deps[. + 1][].target.name]
+        deps: [$deps[. + 1][] | .target.name? // empty]
       }) |
       map(select(
         (.src | startswith($app)) and

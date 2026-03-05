@@ -60,7 +60,7 @@ Project(
     options: .options(
         automaticSchemesOptions: .disabled,        // Manual scheme generation
         developmentRegion: "en",
-        disableBundleAccessors: false,
+        disableBundleAccessors: true,              // BundleAccessorGenerator handles this
         disableSynthesizedResourceAccessors: true   // No TuistAssets+*.swift
     ),
     packages: packages,                             // Aggregated from modules (empty for FrameworkModule)
@@ -111,6 +111,7 @@ Tests run via `xcodebuild test` (not `tuist test`) because Tuist can't resolve S
 
 | Option | Effect | Reason |
 |--------|--------|--------|
+| `disableBundleAccessors` | No Tuist `Bundle+*.swift` | `BundleAccessorGenerator` creates custom `Bundle.module` accessors |
 | `disableSynthesizedResourceAccessors` | No `TuistAssets+*.swift` | Not using generated asset accessors |
 
 ---

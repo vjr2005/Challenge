@@ -1,9 +1,11 @@
 import ProjectDescription
 
+private let appBundleId = "com.app.\(projectConfig.appName)"
+
 /// The app instance shared across all manifest files.
 public let mainApp = App(
 	name: projectConfig.appName,
-	bundleId: "com.app.\(projectConfig.appName)",
+	bundleId: appBundleId,
 	destinations: projectConfig.destinations,
 	developmentTarget: projectConfig.developmentTarget,
 	baseSettings: projectConfig.baseSettings,
@@ -25,7 +27,7 @@ public let mainApp = App(
 		"CFBundleURLTypes": [
 			[
 				"CFBundleURLSchemes": ["challenge"],
-				"CFBundleURLName": "com.app.Challenge",
+				"CFBundleURLName": .string(appBundleId),
 			],
 		],
 	],
