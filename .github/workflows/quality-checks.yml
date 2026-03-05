@@ -56,7 +56,6 @@ jobs:
         run: |
           source Scripts/test-helpers.sh
           run_tests "unit_snapshot" "Challenge.xcworkspace" "Challenge (Dev)" \
-            -testPlan Challenge \
             -resultBundlePath "$RESULT_BUNDLE_PATH" \
             -retry-tests-on-failure
 

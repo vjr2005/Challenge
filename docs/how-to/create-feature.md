@@ -86,7 +86,7 @@ import ProjectDescription
 public let {feature}Module = Module.create(directory: "Features/{Feature}")
 ```
 
-Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's package in the root project and its test target in the `Challenge.xctestplan`.
+Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's package in the root project and its test target in the Dev scheme (Framework: via `testableTargets`, SPM: via `Challenge.xctestplan`).
 
 > **Note:** Each module is an SPM local package with its own `Package.swift`. Dependencies (source, mocks, tests) are defined there. The `Mocks/` folder produces the `Challenge{Feature}Mocks` product and the `Tests/` folder produces the `Challenge{Feature}Tests` test target. `Tests/Shared/` contents are included in the test target automatically.
 
@@ -711,7 +711,6 @@ Increment features count assertion.
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -testPlan Challenge \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 ```
 

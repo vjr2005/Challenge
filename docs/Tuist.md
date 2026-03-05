@@ -29,7 +29,7 @@ Tuist/
 │   │   │   └── ExternalPackage.swift         # External package wrapper
 │   │   └── Generators/                       # Manifest-time code generation
 │   │       ├── PackageSwiftGenerator.swift   # Auto-generates Package.swift for SPM modules
-│   │       └── TestPlanGenerator.swift       # Auto-generates test plans for SPM modules
+│   │       └── TestPlanGenerator.swift       # Auto-generates test plans (SPM strategy only)
 │   └── Modules/                              # Individual module instantiations
 │       ├── CoreModule.swift
 │       ├── NetworkingModule.swift
@@ -178,8 +178,8 @@ let project = mainApp.project
 - **Targets**: app + UI tests + all module framework targets
 - **Schemes**: per-environment (Dev/Staging/Prod) + UI tests + per-module schemes
 - **Packages**: aggregated from modules (empty for FrameworkModule, populated for SPMModule)
-- **Test action**: `ModuleAggregation` always uses `.testPlans(...)` with an auto-generated test plan
-- **Coverage**: `ModuleAggregation` always uses `.relevant` (test plan drives coverage)
+- **Test action**: `ModuleAggregation` dispatches on strategy — `.targets(...)` for Framework, `.testPlans(...)` for SPM
+- **Coverage**: `ModuleAggregation` always uses `.relevant` (scheme drives coverage)
 
 The `mainApp` instance is defined in `MainApp.swift` with all 10 modules and `appKitModule` as entry point.
 
@@ -344,20 +344,19 @@ Called from `SPMModule.init()` during manifest evaluation. Auto-creates `Package
 
 ### TestPlanGenerator
 
-Called from `ModuleAggregation.aggregateTestAction()` regardless of the active strategy. Creates an `.xctestplan` file aggregating all module test targets with code coverage configuration.
+Called from `ModuleAggregation.aggregateTestAction()` only when the SPM strategy is active. Creates an `.xctestplan` file aggregating all module test targets with code coverage configuration. Framework strategy uses `.targets(...)` directly, so no test plan is generated.
 
 Both generators execute at manifest-time (`tuist generate`), not build-time.
 
 ## Testing
 
-Module tests use `xcodebuild test` with the `Challenge (Dev)` scheme. `ModuleAggregation` always generates a `.xctestplan` file that aggregates all module test targets, regardless of the active strategy. The test command is always the same:
+Module tests use `xcodebuild test` with the `Challenge (Dev)` scheme. `ModuleAggregation` dispatches on the active strategy: Framework uses `.targets(...)` with aggregated testable targets, SPM generates a `.xctestplan` via `TestPlanGenerator`. The test command is the same for both:
 
 ```bash
 # Run all module tests (unit + snapshot)
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -testPlan Challenge \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 ```
 
@@ -386,7 +385,6 @@ mise x -- tuist build
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -testPlan Challenge \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 
 # Run UI tests

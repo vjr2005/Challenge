@@ -61,7 +61,6 @@ if $PARALLEL && $RUN_UNIT && $RUN_UI; then
 
     (
         run_tests "unit_snapshot" "$WORKSPACE" "Challenge (Dev)" \
-            -testPlan Challenge \
             -resultBundlePath "$UNIT_XCRESULT" \
             -retry-tests-on-failure
     ) > "$OUTPUT_DIR/unit_snapshot_full.log" 2>&1 &
@@ -89,7 +88,6 @@ else
     # Sequential mode
     if $RUN_UNIT; then
         run_tests "unit_snapshot" "$WORKSPACE" "Challenge (Dev)" \
-            -testPlan Challenge \
             -resultBundlePath "$UNIT_XCRESULT" \
             -retry-tests-on-failure
         UNIT_EXIT=$?

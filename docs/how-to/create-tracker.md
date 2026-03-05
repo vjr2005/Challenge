@@ -332,7 +332,6 @@ func didAppearTracksScreenViewed() async {
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -testPlan Challenge \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 ```
 

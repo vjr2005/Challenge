@@ -89,13 +89,17 @@ let workspace = Workspace(
 
 ### Module Test Scheme
 
-The `Challenge (Dev)` scheme includes a `.xctestplan` file that aggregates all module test targets. `ModuleAggregation` always uses `.testPlans(...)` with an auto-generated test plan, regardless of the active strategy. This means the test command is always the same:
+The `Challenge (Dev)` scheme aggregates all module test targets via `ModuleAggregation`, which dispatches on the active strategy:
+
+- **Framework**: Uses `.targets(...)` with aggregated `testableTargets` and `codeCoverageTargets` from each module — no test plan file is generated.
+- **SPM**: Generates a `.xctestplan` via `TestPlanGenerator` and uses `.testPlans(...)`, which is the only mechanism to aggregate test targets across SPM local packages.
+
+The test command is the same for both:
 
 ```bash
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -testPlan Challenge \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
 ```
 

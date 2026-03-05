@@ -68,7 +68,7 @@ Challenge/
 ├── docs/
 ├── Project.swift                    # Root project (app + UI tests + module packages)
 ├── Workspace.swift                  # Workspace configuration (code coverage)
-├── Challenge.xctestplan            # Test plan aggregating all module test targets
+├── Challenge.xctestplan            # Test plan aggregating all module test targets (SPM strategy only)
 ├── Tuist.swift
 └── .mise.toml
 ```

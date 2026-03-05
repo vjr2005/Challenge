@@ -67,7 +67,7 @@ Guide for project organization and directory structure.
 │   └── Package.swift               # External SPM dependencies + target settings
 ├── Project.swift                    # Root project (app + UI tests + module packages)
 ├── Workspace.swift                  # Workspace configuration (code coverage)
-├── {AppName}.xctestplan            # Test plan aggregating all module test targets
+├── {AppName}.xctestplan            # Test plan aggregating all module test targets (SPM strategy only)
 ├── Tuist.swift
 └── CLAUDE.md
 ```
@@ -568,5 +568,5 @@ AppKit/
 - [ ] JSON fixtures in `Tests/Shared/Fixtures/`
 - [ ] Test resources in `Tests/Shared/Resources/`
 - [ ] Module has its own `Package.swift` with source, mocks, and test targets
-- [ ] Module's test target is listed in `Challenge.xctestplan`
+- [ ] Module's test target is included in the Dev scheme (Framework: via `testableTargets`, SPM: via `Challenge.xctestplan`)
 - [ ] Module's target settings are configured in `Tuist/Package.swift`

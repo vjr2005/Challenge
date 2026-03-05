@@ -182,7 +182,7 @@ Run all test suites (unit, snapshot, and UI) with a merged xcresult:
 ```
 
 The script is split into two files:
-- `run-tests.sh` — project-specific orchestration (workspace, schemes, test plans)
+- `run-tests.sh` — project-specific orchestration (workspace, schemes)
 - `test-helpers.sh` — generic reusable functions (`run_tests`, `merge_xcresults`, `clean`)
 
 xcresult bundles stay in DerivedData (via `-derivedDataPath`) so that Xcode build log references (`x-xcode-log://`) resolve correctly when opened in Report Navigator.
