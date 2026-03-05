@@ -62,9 +62,9 @@ struct EpisodeCharacterWithEpisodesMapperTests {
 	}
 
 	@Test("Maps non-numeric character id to zero")
-	func mapsNonNumericCharacterIdToZero() {
+	func mapsNonNumericCharacterIdToZero() throws {
 		// Given
-		let dto = EpisodeCharacterWithEpisodesDTO(id: "invalid", name: "", image: "", episodes: [])
+		let dto: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes_invalid_id")
 
 		// When
 		let result = sut.map(dto)

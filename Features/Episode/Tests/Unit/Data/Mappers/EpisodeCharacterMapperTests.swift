@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import Foundation
 import Testing
 
@@ -12,13 +13,9 @@ struct EpisodeCharacterMapperTests {
 	// MARK: - Standard Mapping
 
 	@Test("Maps character from DTO to domain model")
-	func mapsCharacter() {
+	func mapsCharacter() throws {
 		// Given
-		let dto = EpisodeCharacterDTO(
-			id: "1",
-			name: "Rick Sanchez",
-			image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"
-		)
+		let dto: EpisodeCharacterDTO = try loadJSON("episode_character")
 		let expected = EpisodeCharacter.stub()
 
 		// When
@@ -29,13 +26,9 @@ struct EpisodeCharacterMapperTests {
 	}
 
 	@Test("Maps character id from string to integer")
-	func mapsCharacterId() {
+	func mapsCharacterId() throws {
 		// Given
-		let dto = EpisodeCharacterDTO(
-			id: "42",
-			name: "Test",
-			image: "https://example.com/image.jpeg"
-		)
+		let dto: EpisodeCharacterDTO = try loadJSON("episode_character_id_42")
 
 		// When
 		let result = sut.map(dto)
@@ -45,13 +38,9 @@ struct EpisodeCharacterMapperTests {
 	}
 
 	@Test("Maps invalid id to zero")
-	func mapsInvalidIdToZero() {
+	func mapsInvalidIdToZero() throws {
 		// Given
-		let dto = EpisodeCharacterDTO(
-			id: "invalid",
-			name: "Test",
-			image: "https://example.com/image.jpeg"
-		)
+		let dto: EpisodeCharacterDTO = try loadJSON("episode_character_invalid_id")
 
 		// When
 		let result = sut.map(dto)
@@ -61,18 +50,22 @@ struct EpisodeCharacterMapperTests {
 	}
 
 	@Test("Maps valid image URL")
-	func mapsValidImageURL() {
+	func mapsValidImageURL() throws {
 		// Given
-		let dto = EpisodeCharacterDTO(
-			id: "1",
-			name: "Test",
-			image: "https://example.com/image.jpeg"
-		)
+		let dto: EpisodeCharacterDTO = try loadJSON("episode_character")
 
 		// When
 		let result = sut.map(dto)
 
 		// Then
-		#expect(result.imageURL == URL(string: "https://example.com/image.jpeg"))
+		#expect(result.imageURL == URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
+	}
+}
+
+// MARK: - Private
+
+private extension EpisodeCharacterMapperTests {
+	func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+		try Bundle.module.loadJSON(filename)
 	}
 }

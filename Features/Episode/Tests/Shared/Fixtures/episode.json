@@ -1,0 +1,13 @@
+{
+    "id": "1",
+    "name": "Pilot",
+    "air_date": "December 2, 2013",
+    "episode": "S01E01",
+    "characters": [
+        {
+            "id": "1",
+            "name": "Rick Sanchez",
+            "image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg"
+        }
+    ]
+}

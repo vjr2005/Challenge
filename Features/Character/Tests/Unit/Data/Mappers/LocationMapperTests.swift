@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import Foundation
 import Testing
 
@@ -12,13 +13,10 @@ struct LocationMapperTests {
 	// MARK: - Tests
 
 	@Test("Maps name from LocationDTO to Location")
-	func mapsName() {
+	func mapsName() throws {
 		// Given
-		let dto = LocationDTO(
-			name: "Earth (C-137)",
-			url: "https://rickandmortyapi.com/api/location/1"
-		)
-		let expected = Location(name: "Earth (C-137)")
+		let dto: LocationDTO = try loadJSON("location")
+		let expected = Location.stub()
 
 		// When
 		let result = sut.map(dto)
@@ -28,18 +26,23 @@ struct LocationMapperTests {
 	}
 
 	@Test("Maps name from LocationDTO with empty URL")
-	func mapsNameWithEmptyURL() {
+	func mapsNameWithEmptyURL() throws {
 		// Given
-		let dto = LocationDTO(
-			name: "unknown",
-			url: ""
-		)
-		let expected = Location(name: "unknown")
+		let dto: LocationDTO = try loadJSON("location_unknown")
+		let expected = Location.stub(name: "unknown")
 
 		// When
 		let result = sut.map(dto)
 
 		// Then
 		#expect(result == expected)
+	}
+}
+
+// MARK: - Private
+
+private extension LocationMapperTests {
+	func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+		try Bundle.module.loadJSON(filename)
 	}
 }

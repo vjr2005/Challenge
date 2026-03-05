@@ -27,58 +27,15 @@ struct EpisodeErrorMapperTests {
 		#expect(result == .notFound(identifier: 42))
 	}
 
-	@Test("Maps APIError.serverError to loadFailed error")
-	func mapsServerErrorToLoadFailed() {
+	@Test("Maps non-notFound APIError to loadFailed error", arguments: [
+		APIError.serverError(statusCode: 500),
+		APIError.invalidRequest,
+		APIError.invalidResponse,
+		APIError.decodingFailed(description: "test")
+	])
+	func mapsAPIErrorToLoadFailed(error: APIError) {
 		// Given
-		let input = EpisodeErrorMapperInput(
-			error: APIError.serverError(statusCode: 500),
-			characterIdentifier: 1
-		)
-
-		// When
-		let result = sut.map(input)
-
-		// Then
-		#expect(result == .loadFailed())
-	}
-
-	@Test("Maps APIError.invalidRequest to loadFailed error")
-	func mapsInvalidRequestToLoadFailed() {
-		// Given
-		let input = EpisodeErrorMapperInput(
-			error: APIError.invalidRequest,
-			characterIdentifier: 1
-		)
-
-		// When
-		let result = sut.map(input)
-
-		// Then
-		#expect(result == .loadFailed())
-	}
-
-	@Test("Maps APIError.invalidResponse to loadFailed error")
-	func mapsInvalidResponseToLoadFailed() {
-		// Given
-		let input = EpisodeErrorMapperInput(
-			error: APIError.invalidResponse,
-			characterIdentifier: 1
-		)
-
-		// When
-		let result = sut.map(input)
-
-		// Then
-		#expect(result == .loadFailed())
-	}
-
-	@Test("Maps APIError.decodingFailed to loadFailed error")
-	func mapsDecodingFailedToLoadFailed() {
-		// Given
-		let input = EpisodeErrorMapperInput(
-			error: APIError.decodingFailed(description: "test"),
-			characterIdentifier: 1
-		)
+		let input = EpisodeErrorMapperInput(error: error, characterIdentifier: 1)
 
 		// When
 		let result = sut.map(input)

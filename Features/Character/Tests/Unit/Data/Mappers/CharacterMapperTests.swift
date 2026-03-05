@@ -27,24 +27,14 @@ struct CharacterMapperTests {
 
 	// MARK: - Status Mapping
 
-	@Test("Maps dead status from DTO to domain model")
-	func mapsDeadStatus() throws {
+	@Test("Maps status from DTO to domain model", arguments: [
+		("character_dead", CharacterStatus.dead),
+		("character_unknown_status", CharacterStatus.unknown)
+	])
+	func mapsStatus(fixture: String, expectedStatus: CharacterStatus) throws {
 		// Given
-		let dto: CharacterDTO = try loadJSON("character_dead")
-		let expected = Character.stub(status: .dead)
-
-		// When
-		let result = sut.map(dto)
-
-		// Then
-		#expect(result == expected)
-	}
-
-	@Test("Maps unknown status from DTO to domain model")
-	func mapsUnknownStatus() throws {
-		// Given
-		let dto: CharacterDTO = try loadJSON("character_unknown_status")
-		let expected = Character.stub(status: .unknown)
+		let dto: CharacterDTO = try loadJSON(fixture)
+		let expected = Character.stub(status: expectedStatus)
 
 		// When
 		let result = sut.map(dto)
@@ -55,37 +45,15 @@ struct CharacterMapperTests {
 
 	// MARK: - Gender Mapping
 
-	@Test("Maps female gender from DTO to domain model")
-	func mapsFemaleGender() throws {
+	@Test("Maps gender from DTO to domain model", arguments: [
+		("character_female", CharacterGender.female),
+		("character_genderless", CharacterGender.genderless),
+		("character_unknown_gender", CharacterGender.unknown)
+	])
+	func mapsGender(fixture: String, expectedGender: CharacterGender) throws {
 		// Given
-		let dto: CharacterDTO = try loadJSON("character_female")
-		let expected = Character.stub(gender: .female)
-
-		// When
-		let result = sut.map(dto)
-
-		// Then
-		#expect(result == expected)
-	}
-
-	@Test("Maps genderless gender from DTO to domain model")
-	func mapsGenderlessGender() throws {
-		// Given
-		let dto: CharacterDTO = try loadJSON("character_genderless")
-		let expected = Character.stub(gender: .genderless)
-
-		// When
-		let result = sut.map(dto)
-
-		// Then
-		#expect(result == expected)
-	}
-
-	@Test("Maps unknown gender from DTO to domain model")
-	func mapsUnknownGender() throws {
-		// Given
-		let dto: CharacterDTO = try loadJSON("character_unknown_gender")
-		let expected = Character.stub(gender: .unknown)
+		let dto: CharacterDTO = try loadJSON(fixture)
+		let expected = Character.stub(gender: expectedGender)
 
 		// When
 		let result = sut.map(dto)

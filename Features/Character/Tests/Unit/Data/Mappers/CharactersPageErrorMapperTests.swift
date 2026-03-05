@@ -27,58 +27,15 @@ struct CharactersPageErrorMapperTests {
 		#expect(result == .invalidPage(page: 5))
 	}
 
-	@Test("Maps APIError.serverError to loadFailed error")
-	func mapsServerErrorToLoadFailed() {
+	@Test("Maps non-notFound APIError to loadFailed error", arguments: [
+		APIError.serverError(statusCode: 500),
+		APIError.invalidRequest,
+		APIError.invalidResponse,
+		APIError.decodingFailed(description: "test")
+	])
+	func mapsAPIErrorToLoadFailed(error: APIError) {
 		// Given
-		let input = CharactersPageErrorMapperInput(
-			error: APIError.serverError(statusCode: 500),
-			page: 1
-		)
-
-		// When
-		let result = sut.map(input)
-
-		// Then
-		#expect(result == .loadFailed())
-	}
-
-	@Test("Maps APIError.invalidRequest to loadFailed error")
-	func mapsInvalidRequestToLoadFailed() {
-		// Given
-		let input = CharactersPageErrorMapperInput(
-			error: APIError.invalidRequest,
-			page: 1
-		)
-
-		// When
-		let result = sut.map(input)
-
-		// Then
-		#expect(result == .loadFailed())
-	}
-
-	@Test("Maps APIError.invalidResponse to loadFailed error")
-	func mapsInvalidResponseToLoadFailed() {
-		// Given
-		let input = CharactersPageErrorMapperInput(
-			error: APIError.invalidResponse,
-			page: 1
-		)
-
-		// When
-		let result = sut.map(input)
-
-		// Then
-		#expect(result == .loadFailed())
-	}
-
-	@Test("Maps APIError.decodingFailed to loadFailed error")
-	func mapsDecodingFailedToLoadFailed() {
-		// Given
-		let input = CharactersPageErrorMapperInput(
-			error: APIError.decodingFailed(description: "test"),
-			page: 1
-		)
+		let input = CharactersPageErrorMapperInput(error: error, page: 1)
 
 		// When
 		let result = sut.map(input)

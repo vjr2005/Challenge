@@ -1,3 +1,4 @@
+import ChallengeCoreMocks
 import Foundation
 import Testing
 
@@ -12,17 +13,9 @@ struct EpisodeMapperTests {
 	// MARK: - Standard Mapping
 
 	@Test("Maps episode from DTO to domain model")
-	func mapsEpisode() {
+	func mapsEpisode() throws {
 		// Given
-		let dto = EpisodeDTO(
-			id: "1",
-			name: "Pilot",
-			airDate: "December 2, 2013",
-			episode: "S01E01",
-			characters: [
-				EpisodeCharacterDTO(id: "1", name: "Rick Sanchez", image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg")
-			]
-		)
+		let dto: EpisodeDTO = try loadJSON("episode")
 		let expected = Episode.stub(
 			characters: [.stub()]
 		)
@@ -35,15 +28,9 @@ struct EpisodeMapperTests {
 	}
 
 	@Test("Maps episode id from string to integer")
-	func mapsEpisodeId() {
+	func mapsEpisodeId() throws {
 		// Given
-		let dto = EpisodeDTO(
-			id: "42",
-			name: "Test",
-			airDate: "January 1, 2020",
-			episode: "S01E01",
-			characters: []
-		)
+		let dto: EpisodeDTO = try loadJSON("episode_id_42")
 
 		// When
 		let result = sut.map(dto)
@@ -53,15 +40,9 @@ struct EpisodeMapperTests {
 	}
 
 	@Test("Maps invalid id to zero")
-	func mapsInvalidIdToZero() {
+	func mapsInvalidIdToZero() throws {
 		// Given
-		let dto = EpisodeDTO(
-			id: "invalid",
-			name: "Test",
-			airDate: "January 1, 2020",
-			episode: "S01E01",
-			characters: []
-		)
+		let dto: EpisodeDTO = try loadJSON("episode_invalid_id")
 
 		// When
 		let result = sut.map(dto)
@@ -71,18 +52,9 @@ struct EpisodeMapperTests {
 	}
 
 	@Test("Maps episode characters")
-	func mapsEpisodeCharacters() {
+	func mapsEpisodeCharacters() throws {
 		// Given
-		let dto = EpisodeDTO(
-			id: "1",
-			name: "Pilot",
-			airDate: "December 2, 2013",
-			episode: "S01E01",
-			characters: [
-				EpisodeCharacterDTO(id: "1", name: "Rick Sanchez", image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"),
-				EpisodeCharacterDTO(id: "2", name: "Morty Smith", image: "https://rickandmortyapi.com/api/character/avatar/2.jpeg")
-			]
-		)
+		let dto: EpisodeDTO = try loadJSON("episode_two_characters")
 
 		// When
 		let result = sut.map(dto)
@@ -91,5 +63,13 @@ struct EpisodeMapperTests {
 		#expect(result.characters.count == 2)
 		#expect(result.characters[0].name == "Rick Sanchez")
 		#expect(result.characters[1].name == "Morty Smith")
+	}
+}
+
+// MARK: - Private
+
+private extension EpisodeMapperTests {
+	func loadJSON<T: Decodable>(_ filename: String) throws -> T {
+		try Bundle.module.loadJSON(filename)
 	}
 }
