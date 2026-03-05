@@ -176,10 +176,12 @@ let project = mainApp.project
 
 `App.swift` aggregates all module data into a single `Project`:
 - **Targets**: app + UI tests + all module framework targets
-- **Schemes**: per-environment (Dev/Staging/Prod) + UI tests + per-module schemes
+- **Schemes**: per-environment (Dev/Staging/Prod) + UI tests + per-module schemes (filtered by focus)
 - **Packages**: aggregated from modules (empty for FrameworkModule, populated for SPMModule)
-- **Test action**: `ModuleAggregation` dispatches on strategy — `.targets(...)` for Framework, `.testPlans(...)` for SPM
+- **Test action**: `ModuleAggregation` dispatches on strategy — `.targets(...)` for Framework, `.testPlans(...)` for SPM. When `TUIST_FOCUS_MODULES` is set, only focused modules and their transitive dependents contribute testable and coverage targets
 - **Coverage**: `ModuleAggregation` always uses `.relevant` (scheme drives coverage)
+
+Each `FrameworkModule` target is tagged with `metadata: .metadata(tags: ["module:<ShortName>"])` for Tuist's tag-based focused generation. Focus mode automatically expands to include transitive dependents (see [Scripts](Scripts.md) for usage).
 
 The `mainApp` instance is defined in `MainApp.swift` with all 10 modules and `appKitModule` as entry point.
 
@@ -344,7 +346,7 @@ Called from `SPMModule.init()` during manifest evaluation. Auto-creates `Package
 
 ### TestPlanGenerator
 
-Called from `ModuleAggregation.aggregateTestAction()` only when the SPM strategy is active. Creates an `.xctestplan` file aggregating all module test targets with code coverage configuration. Framework strategy uses `.targets(...)` directly, so no test plan is generated.
+Called from `ModuleAggregation.aggregateTestAction()` only when the SPM strategy is active. Creates an `.xctestplan` file aggregating all module test targets with code coverage configuration. Framework strategy uses `.targets(...)` directly, so no test plan is generated. Both strategies respect `TUIST_FOCUS_MODULES` filtering when focus mode is active.
 
 Both generators execute at manifest-time (`tuist generate`), not build-time.
 

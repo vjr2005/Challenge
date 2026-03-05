@@ -46,8 +46,10 @@ public struct App: @unchecked Sendable {
 	}
 
 	/// Per-module schemes. SPM: empty. Framework: one scheme per module.
+	///
+	/// When focus mode is active, only schemes for focused modules are included.
 	var moduleSchemes: [Scheme] {
-		modules.flatMap(\.schemes)
+		ModuleAggregation.filteredModules(from: modules).flatMap(\.schemes)
 	}
 
 	/// Test action for the Dev scheme. Uses a test plan that supports mixed module strategies.

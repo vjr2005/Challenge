@@ -94,6 +94,8 @@ The `Challenge (Dev)` scheme aggregates all module test targets via `ModuleAggre
 - **Framework**: Uses `.targets(...)` with aggregated `testableTargets` and `codeCoverageTargets` from each module — no test plan file is generated.
 - **SPM**: Generates a `.xctestplan` via `TestPlanGenerator` and uses `.testPlans(...)`, which is the only mechanism to aggregate test targets across SPM local packages.
 
+**Focus mode:** When `TUIST_FOCUS_MODULES` env var is set (via `generate.sh --focus`), `ModuleAggregation` filters testable and coverage targets to only include focused modules and their transitive dependents. Each `FrameworkModule` target is tagged with `metadata: .metadata(tags: ["module:<ShortName>"])` for Tuist's tag-based generation filtering. The expansion is computed in `generate.sh` using `tuist graph --format json` to build the reverse dependency graph.
+
 The test command is the same for both:
 
 ```bash

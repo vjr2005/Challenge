@@ -2,6 +2,7 @@
 
 cd "$(dirname "$0")/.." || exit 1
 
+APP_NAME=$(basename "$PWD")
 DEFAULT_STRATEGY="framework"
 MODULES_DIR="Tuist/ProjectDescriptionHelpers/Modules"
 VALID_MODULES=($(ls "$MODULES_DIR"/*Module.swift 2>/dev/null | sed 's|.*/||;s|Module\.swift||'))
@@ -87,6 +88,79 @@ if [[ -n "$FOCUS" ]]; then
     done
 fi
 
+# Expand focus to include transitive dependents using the Tuist project graph.
+# If Character is focused, AppKit (which depends on Character) is also included.
+# This ensures tests for all source-code modules are available in the Dev scheme.
+if [[ -n "$FOCUS" ]]; then
+    echo "Computing dependency graph..."
+    GRAPH_DIR=$(mktemp -d)
+    mise x -- tuist graph --format json --output-path "$GRAPH_DIR" 2>/dev/null
+    GRAPH_FILE="$GRAPH_DIR/graph.json"
+
+    # Build comma-separated target names for jq input
+    FOCUSED_TARGETS=""
+    for module in "${FOCUS_MODULES[@]}"; do
+        if [[ -n "$FOCUSED_TARGETS" ]]; then
+            FOCUSED_TARGETS="${FOCUSED_TARGETS},${APP_NAME}${module}"
+        else
+            FOCUSED_TARGETS="${APP_NAME}${module}"
+        fi
+    done
+
+    # Compute transitive dependents from the graph:
+    # 1. Parse dependency pairs into a forward map (module -> [dependencies])
+    # 2. Filter to Challenge source modules (no Tests, Mocks, or app target)
+    # 3. Starting from focused targets, iteratively find modules that depend on them
+    EXPANDED_TARGETS=($(jq -r --arg focused "$FOCUSED_TARGETS" --arg app "$APP_NAME" '
+      .dependencies as $deps |
+      [range(0; $deps | length; 2)] |
+      map({
+        src: $deps[.].target.name,
+        deps: [$deps[. + 1][].target.name]
+      }) |
+      map(select(
+        (.src | startswith($app)) and
+        (.src | test("Tests|Mocks") | not) and
+        (.src == $app | not)
+      )) |
+      reduce .[] as $e ({}; . + {($e.src): $e.deps}) |
+      . as $fwd |
+      ($focused | split(",")) |
+      {expanded: ., changed: true} |
+      until(.changed == false;
+        .changed = false |
+        .expanded as $exp |
+        reduce ($fwd | keys[]) as $mod (.;
+          if ($exp | index($mod)) then .
+          else
+            if ($fwd[$mod] | any(. as $d | $exp | index($d))) then
+              .expanded += [$mod] | .changed = true
+            else . end
+          end
+        )
+      ) |
+      .expanded[]
+    ' "$GRAPH_FILE"))
+    rm -rf "$GRAPH_DIR"
+
+    # Convert target names back to short names
+    EXPANDED_MODULES=()
+    for target in "${EXPANDED_TARGETS[@]}"; do
+        EXPANDED_MODULES+=("${target#${APP_NAME}}")
+    done
+
+    # Report expansion
+    DEPENDENTS=()
+    for mod in "${EXPANDED_MODULES[@]}"; do
+        if ! printf '%s\n' "${FOCUS_MODULES[@]}" | grep -qx "$mod"; then
+            DEPENDENTS+=("$mod")
+        fi
+    done
+    if [[ ${#DEPENDENTS[@]} -gt 0 ]]; then
+        echo "Focus: ${FOCUS_MODULES[*]} (+ dependents: ${DEPENDENTS[*]})"
+    fi
+fi
+
 export TUIST_MODULE_STRATEGY="$STRATEGY"
 
 if [[ "$CLEAN" == true ]]; then
@@ -97,62 +171,41 @@ if [[ "$CLEAN" == true ]]; then
     rm -rf *.xcodeproj *.xcworkspace
 
     echo "Removing Derived Data..."
-    PROJECT_NAME=$(basename "$PWD")
-    rm -rf ~/Library/Developer/Xcode/DerivedData/${PROJECT_NAME}-*
+    rm -rf ~/Library/Developer/Xcode/DerivedData/${APP_NAME}-*
 fi
 
 echo "Installing dependencies..."
 mise x -- tuist install
 
-# Focus mode: warm cache and remove focused modules
+# Focus mode: warm cache for non-focused dependencies
 if [[ -n "$FOCUS" ]]; then
-    CACHE_DIR="$HOME/.cache/tuist/Binaries"
+    echo "Warming cache for non-focused dependencies..."
+    mise x -- tuist cache
 
-    echo "Computing module hashes..."
-    HASH_OUTPUT=$(mise x -- tuist hash cache 2>&1 | grep -E " - [a-f0-9]{32}$")
-
-    # Check cache warmth
-    TOTAL_HASHES=$(echo "$HASH_OUTPUT" | wc -l | tr -d ' ')
-    CACHED_COUNT=0
-    while IFS= read -r line; do
-        hash=$(echo "$line" | awk '{print $NF}')
-        if [[ -d "$CACHE_DIR/$hash" ]]; then
-            CACHED_COUNT=$((CACHED_COUNT + 1))
-        fi
-    done <<< "$HASH_OUTPUT"
-
-    if [[ "$CACHED_COUNT" -lt "$TOTAL_HASHES" ]]; then
-        echo "Warming cache ($CACHED_COUNT/$TOTAL_HASHES modules cached)..."
-        mise x -- tuist cache
-    else
-        echo "Cache is warm ($CACHED_COUNT/$TOTAL_HASHES modules cached). Skipping cache step."
-    fi
-
-    # Remove focused modules from cache so they stay as source
-    echo "Removing focused modules from cache..."
-    for module in "${FOCUS_MODULES[@]}"; do
-        TARGET_NAME="Challenge${module}"
-
-        HASH=$(echo "$HASH_OUTPUT" | grep "^${TARGET_NAME} " | awk '{print $NF}')
-        if [[ -n "$HASH" && -d "$CACHE_DIR/$HASH" ]]; then
-            echo "  $TARGET_NAME -> source"
-            rm -rf "$CACHE_DIR/$HASH"
-        fi
-
-        MOCKS_HASH=$(echo "$HASH_OUTPUT" | grep "^${TARGET_NAME}Mocks " | awk '{print $NF}')
-        if [[ -n "$MOCKS_HASH" && -d "$CACHE_DIR/$MOCKS_HASH" ]]; then
-            echo "  ${TARGET_NAME}Mocks -> source"
-            rm -rf "$CACHE_DIR/$MOCKS_HASH"
+    # Export expanded modules as target names for manifest filtering
+    FOCUS_TARGET_NAMES=""
+    for module in "${EXPANDED_MODULES[@]}"; do
+        if [[ -n "$FOCUS_TARGET_NAMES" ]]; then
+            FOCUS_TARGET_NAMES="${FOCUS_TARGET_NAMES},${APP_NAME}${module}"
+        else
+            FOCUS_TARGET_NAMES="${APP_NAME}${module}"
         fi
     done
+    export TUIST_FOCUS_MODULES="$FOCUS_TARGET_NAMES"
 fi
 
 echo "Removing previous generated project..."
 find . \( -path ./Tuist -o -path ./.git \) -prune -o -name "*.xcodeproj" -type d -print0 | xargs -0 rm -rf 2>/dev/null
 
 if [[ -n "$FOCUS" ]]; then
+    # Build tag queries for expanded modules (focused + dependents)
+    TAG_QUERIES=()
+    for module in "${EXPANDED_MODULES[@]}"; do
+        TAG_QUERIES+=("tag:module:${module}")
+    done
+
     echo "Generating project with focus on: $FOCUS (strategy: $STRATEGY)..."
-    mise x -- tuist generate --cache-profile all-possible
+    mise x -- tuist generate "$APP_NAME" "${APP_NAME}UITests" "${TAG_QUERIES[@]}" --cache-profile all-possible
 else
     echo "Generating project (strategy: $STRATEGY)..."
     mise x -- tuist generate

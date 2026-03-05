@@ -10,6 +10,12 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 	public let name: String
 	public let includeInCoverage: Bool
 
+	/// Tag applied to all targets of this module for focused generation.
+	///
+	/// Derived from the last directory component (e.g., `"Features/Character"` → `"module:Character"`).
+	/// Used with `tuist generate tag:module:Character` to filter targets.
+	public let moduleTag: String
+
 	// MARK: - Framework: Stored
 
 	public let targets: [Target]
@@ -44,6 +50,10 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 		self.includeInCoverage = includeInCoverage
 		self.containerPath = "container:\(config.appName).xcodeproj"
 
+		let shortName = String(directory.split(separator: "/").last ?? Substring(name))
+		self.moduleTag = "module:\(shortName)"
+		let targetMetadata: TargetMetadata = .metadata(tags: [moduleTag])
+
 		let pathPrefix = "\(directory)/"
 		let settings: Settings = .settings(
 			base: config.baseSettings.merging(settingsOverrides) { _, new in new }
@@ -57,7 +67,8 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 				dependencies: dependencies,
 				settings: settings,
 				destinations: config.destinations,
-				deploymentTargets: config.developmentTarget
+				deploymentTargets: config.developmentTarget,
+				metadata: targetMetadata
 			),
 		]
 		var testsDependencies: [TargetDependency] = [.target(name: name)]
@@ -71,7 +82,8 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 					pathPrefix: pathPrefix,
 					settings: settings,
 					destinations: config.destinations,
-					deploymentTargets: config.developmentTarget
+					deploymentTargets: config.developmentTarget,
+					metadata: targetMetadata
 				)
 			)
 			testsDependencies.append(.target(name: "\(name)Mocks"))
@@ -89,7 +101,8 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 					testDependencies: testDependencies,
 					settings: settings,
 					destinations: config.destinations,
-					deploymentTargets: config.developmentTarget
+					deploymentTargets: config.developmentTarget,
+					metadata: targetMetadata
 				)
 			)
 			testableTargets.append(
@@ -113,7 +126,8 @@ public struct FrameworkModule: ModuleContract, @unchecked Sendable {
 					snapshotTestDependencies: snapshotTestDependencies,
 					settings: settings,
 					destinations: config.destinations,
-					deploymentTargets: config.developmentTarget
+					deploymentTargets: config.developmentTarget,
+					metadata: targetMetadata
 				)
 			)
 			testableTargets.append(
@@ -142,7 +156,8 @@ extension FrameworkModule {
 		dependencies: [ModuleDependency],
 		settings: Settings,
 		destinations: ProjectDescription.Destinations,
-		deploymentTargets: DeploymentTargets
+		deploymentTargets: DeploymentTargets,
+		metadata: TargetMetadata
 	) -> Target {
 		let resources: ResourceFileElements? = fileSystem.hasResources ? [
 			.glob(pattern: "\(pathPrefix)Sources/Resources/**", excluding: []),
@@ -158,7 +173,8 @@ extension FrameworkModule {
 			resources: resources,
 			scripts: sourceTargetScripts(path: "\(pathPrefix)Sources"),
 			dependencies: dependencies.map(\.targetDependency),
-			settings: settings
+			settings: settings,
+			metadata: metadata
 		)
 	}
 
@@ -167,7 +183,8 @@ extension FrameworkModule {
 		pathPrefix: String,
 		settings: Settings,
 		destinations: ProjectDescription.Destinations,
-		deploymentTargets: DeploymentTargets
+		deploymentTargets: DeploymentTargets,
+		metadata: TargetMetadata
 	) -> Target {
 		.target(
 			name: "\(name)Mocks",
@@ -177,7 +194,8 @@ extension FrameworkModule {
 			deploymentTargets: deploymentTargets,
 			sources: ["\(pathPrefix)Mocks/**"],
 			dependencies: [.target(name: name)],
-			settings: settings
+			settings: settings,
+			metadata: metadata
 		)
 	}
 
@@ -190,7 +208,8 @@ extension FrameworkModule {
 		testDependencies: [ModuleDependency],
 		settings: Settings,
 		destinations: ProjectDescription.Destinations,
-		deploymentTargets: DeploymentTargets
+		deploymentTargets: DeploymentTargets,
+		metadata: TargetMetadata
 	) -> Target {
 		let unitSources: SourceFilesList = fileSystem.hasSharedTests
 			? ["\(pathPrefix)Tests/Unit/**", "\(pathPrefix)Tests/Shared/**"]
@@ -210,7 +229,8 @@ extension FrameworkModule {
 			sources: unitSources,
 			resources: unitResources,
 			dependencies: testsDependencies + testDependencies.map(\.targetDependency),
-			settings: settings
+			settings: settings,
+			metadata: metadata
 		)
 	}
 
@@ -223,7 +243,8 @@ extension FrameworkModule {
 		snapshotTestDependencies: [ModuleDependency],
 		settings: Settings,
 		destinations: ProjectDescription.Destinations,
-		deploymentTargets: DeploymentTargets
+		deploymentTargets: DeploymentTargets,
+		metadata: TargetMetadata
 	) -> Target {
 		let snapshotSources: SourceFilesList = fileSystem.hasSharedTests
 			? ["\(pathPrefix)Tests/Snapshots/**", "\(pathPrefix)Tests/Shared/**"]
@@ -245,7 +266,8 @@ extension FrameworkModule {
 			sources: snapshotSources,
 			resources: snapshotResources,
 			dependencies: snapshotDeps,
-			settings: settings
+			settings: settings,
+			metadata: metadata
 		)
 	}
 
