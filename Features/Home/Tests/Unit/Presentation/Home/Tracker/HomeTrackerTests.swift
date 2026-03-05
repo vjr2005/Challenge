@@ -19,31 +19,37 @@ struct HomeTrackerTests {
 
     @Test("Track screen viewed dispatches home viewed event")
     func trackScreenViewedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "home_viewed", properties: [:])
+
         // When
         sut.trackScreenViewed()
 
         // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "home_viewed", properties: [:]))
+        #expect(trackerMock.trackedEvents == [expectedEvent])
     }
 
     @Test("Track character button tapped dispatches correct event")
     func trackCharacterButtonTappedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "home_character_button_tapped", properties: [:])
+
         // When
         sut.trackCharacterButtonTapped()
 
         // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "home_character_button_tapped", properties: [:]))
+        #expect(trackerMock.trackedEvents == [expectedEvent])
     }
 
     @Test("Track info button tapped dispatches correct event")
     func trackInfoButtonTappedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "home_info_button_tapped", properties: [:])
+
         // When
         sut.trackInfoButtonTapped()
 
         // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "home_info_button_tapped", properties: [:]))
+        #expect(trackerMock.trackedEvents == [expectedEvent])
     }
 }

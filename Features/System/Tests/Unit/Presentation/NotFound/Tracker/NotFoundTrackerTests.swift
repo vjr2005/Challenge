@@ -19,21 +19,25 @@ struct NotFoundTrackerTests {
 
     @Test("Track screen viewed dispatches not found viewed event")
     func trackScreenViewedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "not_found_viewed", properties: [:])
+
         // When
         sut.trackScreenViewed()
 
         // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "not_found_viewed", properties: [:]))
+        #expect(trackerMock.trackedEvents == [expectedEvent])
     }
 
     @Test("Track go back button tapped dispatches correct event")
     func trackGoBackButtonTappedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "not_found_go_back_tapped", properties: [:])
+
         // When
         sut.trackGoBackButtonTapped()
 
         // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "not_found_go_back_tapped", properties: [:]))
+        #expect(trackerMock.trackedEvents == [expectedEvent])
     }
 }

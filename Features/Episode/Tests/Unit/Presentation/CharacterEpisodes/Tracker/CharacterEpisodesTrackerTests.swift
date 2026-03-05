@@ -4,86 +4,88 @@ import Testing
 @testable import ChallengeEpisode
 
 struct CharacterEpisodesTrackerTests {
-	// MARK: - Properties
+    // MARK: - Properties
 
-	private let trackerMock = TrackerMock()
-	private let sut: CharacterEpisodesTracker
+    private let trackerMock = TrackerMock()
+    private let sut: CharacterEpisodesTracker
 
-	// MARK: - Init
+    // MARK: - Init
 
-	init() {
-		sut = CharacterEpisodesTracker(tracker: trackerMock)
-	}
+    init() {
+        sut = CharacterEpisodesTracker(tracker: trackerMock)
+    }
 
-	// MARK: - Track Screen Viewed
+    // MARK: - Tests
 
-	@Test("Track screen viewed dispatches correct event")
-	func trackScreenViewedDispatchesCorrectEvent() {
-		// When
-		sut.trackScreenViewed(characterIdentifier: 42)
+    @Test("Track screen viewed dispatches correct event")
+    func trackScreenViewedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "character_episodes_viewed", properties: ["character_id": "42"])
 
-		// Then
-		#expect(trackerMock.trackedEvents.count == 1)
-		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_viewed", properties: ["character_id": "42"]))
-	}
+        // When
+        sut.trackScreenViewed(characterIdentifier: 42)
 
-	// MARK: - Track Retry Button Tapped
+        // Then
+        #expect(trackerMock.trackedEvents == [expectedEvent])
+    }
 
-	@Test("Track retry button tapped dispatches correct event")
-	func trackRetryButtonTappedDispatchesCorrectEvent() {
-		// When
-		sut.trackRetryButtonTapped()
+    @Test("Track retry button tapped dispatches correct event")
+    func trackRetryButtonTappedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "character_episodes_retry_tapped", properties: [:])
 
-		// Then
-		#expect(trackerMock.trackedEvents.count == 1)
-		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_retry_tapped", properties: [:]))
-	}
+        // When
+        sut.trackRetryButtonTapped()
 
-	// MARK: - Track Pull To Refresh Triggered
+        // Then
+        #expect(trackerMock.trackedEvents == [expectedEvent])
+    }
 
-	@Test("Track pull to refresh triggered dispatches correct event")
-	func trackPullToRefreshTriggeredDispatchesCorrectEvent() {
-		// When
-		sut.trackPullToRefreshTriggered()
+    @Test("Track pull to refresh triggered dispatches correct event")
+    func trackPullToRefreshTriggeredDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "character_episodes_pull_to_refresh", properties: [:])
 
-		// Then
-		#expect(trackerMock.trackedEvents.count == 1)
-		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_pull_to_refresh", properties: [:]))
-	}
+        // When
+        sut.trackPullToRefreshTriggered()
 
-	// MARK: - Track Character Avatar Tapped
+        // Then
+        #expect(trackerMock.trackedEvents == [expectedEvent])
+    }
 
-	@Test("Track character avatar tapped dispatches correct event")
-	func trackCharacterAvatarTappedDispatchesCorrectEvent() {
-		// When
-		sut.trackCharacterAvatarTapped(identifier: 42)
+    @Test("Track character avatar tapped dispatches correct event")
+    func trackCharacterAvatarTappedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "character_episodes_character_avatar_tapped", properties: ["character_id": "42"])
 
-		// Then
-		#expect(trackerMock.trackedEvents.count == 1)
-		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_character_avatar_tapped", properties: ["character_id": "42"]))
-	}
+        // When
+        sut.trackCharacterAvatarTapped(identifier: 42)
 
-	// MARK: - Track Load Error
+        // Then
+        #expect(trackerMock.trackedEvents == [expectedEvent])
+    }
 
-	@Test("Track load error dispatches correct event")
-	func trackLoadErrorDispatchesCorrectEvent() {
-		// When
-		sut.trackLoadError(description: "network error")
+    @Test("Track load error dispatches correct event")
+    func trackLoadErrorDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "character_episodes_load_error", properties: ["description": "network error"])
 
-		// Then
-		#expect(trackerMock.trackedEvents.count == 1)
-		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_load_error", properties: ["description": "network error"]))
-	}
+        // When
+        sut.trackLoadError(description: "network error")
 
-	// MARK: - Track Refresh Error
+        // Then
+        #expect(trackerMock.trackedEvents == [expectedEvent])
+    }
 
-	@Test("Track refresh error dispatches correct event")
-	func trackRefreshErrorDispatchesCorrectEvent() {
-		// When
-		sut.trackRefreshError(description: "timeout")
+    @Test("Track refresh error dispatches correct event")
+    func trackRefreshErrorDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "character_episodes_refresh_error", properties: ["description": "timeout"])
 
-		// Then
-		#expect(trackerMock.trackedEvents.count == 1)
-		#expect(trackerMock.trackedEvents.first == TrackedEvent(name: "character_episodes_refresh_error", properties: ["description": "timeout"]))
-	}
+        // When
+        sut.trackRefreshError(description: "timeout")
+
+        // Then
+        #expect(trackerMock.trackedEvents == [expectedEvent])
+    }
 }

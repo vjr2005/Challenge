@@ -19,11 +19,13 @@ struct AboutTrackerTests {
 
     @Test("Track screen viewed dispatches about viewed event")
     func trackScreenViewedDispatchesCorrectEvent() {
+        // Given
+        let expectedEvent = TrackedEvent(name: "about_viewed", properties: [:])
+
         // When
         sut.trackScreenViewed()
 
         // Then
-        #expect(trackerMock.trackedEvents.count == 1)
-        #expect(trackerMock.trackedEvents.first == TrackedEvent(name: "about_viewed", properties: [:]))
+        #expect(trackerMock.trackedEvents == [expectedEvent])
     }
 }
