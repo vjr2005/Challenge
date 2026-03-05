@@ -19,8 +19,8 @@ struct GetAboutInfoUseCaseTests {
 
 	// MARK: - Features
 
-	@Test("Features section contains seven items with correct identifiers")
-	func featuresSectionItems() {
+	@Test("Features section contains seven items with correct identifiers and icons")
+	func featuresSection() {
 		// When
 		let section = sut.execute().sections[0]
 
@@ -35,14 +35,6 @@ struct GetAboutInfoUseCaseTests {
 			"about.feature.navigation",
 			"about.feature.localization",
 		])
-	}
-
-	@Test("Features section items have correct icons")
-	func featuresSectionIcons() {
-		// When
-		let section = sut.execute().sections[0]
-
-		// Then
 		#expect(section.items.map(\.icon) == [
 			"person.2",
 			"magnifyingglass",
@@ -56,8 +48,8 @@ struct GetAboutInfoUseCaseTests {
 
 	// MARK: - Dependencies
 
-	@Test("Dependencies section contains three items with correct identifiers")
-	func dependenciesSectionItems() {
+	@Test("Dependencies section contains three items with correct identifiers and icons")
+	func dependenciesSection() {
 		// When
 		let section = sut.execute().sections[1]
 
@@ -68,14 +60,6 @@ struct GetAboutInfoUseCaseTests {
 			"about.dep.snapshot",
 			"about.dep.mockServer",
 		])
-	}
-
-	@Test("Dependencies section items have correct icons")
-	func dependenciesSectionIcons() {
-		// When
-		let section = sut.execute().sections[1]
-
-		// Then
 		#expect(section.items.map(\.icon) == [
 			"play.rectangle",
 			"camera.viewfinder",
@@ -85,8 +69,8 @@ struct GetAboutInfoUseCaseTests {
 
 	// MARK: - Credits
 
-	@Test("Credits section contains three items with correct identifiers")
-	func creditsSectionItems() {
+	@Test("Credits section contains three items with correct identifiers and icons")
+	func creditsSection() {
 		// When
 		let section = sut.execute().sections[2]
 
@@ -97,14 +81,6 @@ struct GetAboutInfoUseCaseTests {
 			"about.developer",
 			"about.builtWith",
 		])
-	}
-
-	@Test("Credits section items have correct icons")
-	func creditsSectionIcons() {
-		// When
-		let section = sut.execute().sections[2]
-
-		// Then
 		#expect(section.items.map(\.icon) == [
 			"network",
 			"person",

@@ -18,21 +18,13 @@ struct SaveRecentSearchUseCaseTests {
 
 	// MARK: - Execute
 
-	@Test("Execute calls repository with correct query")
-	func executeCallsRepositoryWithCorrectQuery() async {
+	@Test("Execute saves the given query to repository")
+	func executeSavesQuery() async {
 		// When
 		await sut.execute(query: "Rick")
 
 		// Then
-		#expect(repositoryMock.lastSavedQuery == "Rick")
-	}
-
-	@Test("Execute calls repository exactly once")
-	func executeCallsRepositoryOnce() async {
-		// When
-		await sut.execute(query: "Morty")
-
-		// Then
 		#expect(repositoryMock.saveSearchCallCount == 1)
+		#expect(repositoryMock.lastSavedQuery == "Rick")
 	}
 }

@@ -19,28 +19,17 @@ struct GetCharacterEpisodesUseCaseTests {
 
 	// MARK: - Execute
 
-	@Test("Execute returns episodes from repository")
+	@Test("Execute returns episodes with correct identifier and localFirst cache policy")
 	func executeReturnsEpisodes() async throws {
 		// Given
 		let expected = EpisodeCharacterWithEpisodes.stub()
 		repositoryMock.result = .success(expected)
 
 		// When
-		let value = try await sut.execute(characterIdentifier: 1)
+		let value = try await sut.execute(characterIdentifier: 42)
 
 		// Then
 		#expect(value == expected)
-	}
-
-	@Test("Execute calls repository with correct character identifier and localFirst cache policy")
-	func executeCallsRepositoryWithCorrectIdentifierAndLocalFirstCachePolicy() async throws {
-		// Given
-		repositoryMock.result = .success(.stub())
-
-		// When
-		_ = try await sut.execute(characterIdentifier: 42)
-
-		// Then
 		#expect(repositoryMock.getEpisodesCallCount == 1)
 		#expect(repositoryMock.lastRequestedCharacterIdentifier == 42)
 		#expect(repositoryMock.lastCachePolicy == .localFirst)

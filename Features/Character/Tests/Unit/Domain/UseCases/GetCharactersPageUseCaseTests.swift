@@ -19,28 +19,17 @@ struct GetCharactersPageUseCaseTests {
 
     // MARK: - Execute
 
-    @Test("Execute returns characters page from repository")
+    @Test("Execute returns characters page with correct page and localFirst cache policy")
     func executeReturnsCharactersPage() async throws {
         // Given
         let expected = CharactersPage.stub()
         repositoryMock.charactersResult = .success(expected)
 
         // When
-        let value = try await sut.execute(page: 1)
+        let value = try await sut.execute(page: 5)
 
         // Then
         #expect(value == expected)
-    }
-
-    @Test("Execute calls repository with correct page and localFirst cache policy")
-    func executeCallsRepositoryWithCorrectPageAndLocalFirstCachePolicy() async throws {
-        // Given
-        repositoryMock.charactersResult = .success(.stub())
-
-        // When
-        _ = try await sut.execute(page: 5)
-
-        // Then
         #expect(repositoryMock.getCharactersPageCallCount == 1)
         #expect(repositoryMock.lastRequestedPage == 5)
         #expect(repositoryMock.lastCharactersCachePolicy == .localFirst)

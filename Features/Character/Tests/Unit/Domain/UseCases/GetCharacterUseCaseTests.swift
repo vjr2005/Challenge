@@ -19,28 +19,17 @@ struct GetCharacterUseCaseTests {
 
     // MARK: - Execute
 
-    @Test("Execute returns character from repository")
+    @Test("Execute returns character with correct identifier and localFirst cache policy")
     func executeReturnsCharacter() async throws {
         // Given
         let expected = Character.stub()
         repositoryMock.result = .success(expected)
 
         // When
-        let value = try await sut.execute(identifier: 1)
+        let value = try await sut.execute(identifier: 42)
 
         // Then
         #expect(value == expected)
-    }
-
-    @Test("Execute calls repository with correct identifier and localFirst cache policy")
-    func executeCallsRepositoryWithCorrectIdentifierAndLocalFirstCachePolicy() async throws {
-        // Given
-        repositoryMock.result = .success(.stub())
-
-        // When
-        _ = try await sut.execute(identifier: 42)
-
-        // Then
         #expect(repositoryMock.getCharacterCallCount == 1)
         #expect(repositoryMock.lastRequestedIdentifier == 42)
         #expect(repositoryMock.lastCharacterCachePolicy == .localFirst)

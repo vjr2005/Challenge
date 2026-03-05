@@ -19,43 +19,21 @@ struct RefreshCharactersPageUseCaseTests {
 
     // MARK: - Execute
 
-    @Test("Execute returns characters page from repository")
+    @Test("Execute clears cache and returns characters page with remoteFirst cache policy")
     func executeReturnsCharactersPage() async throws {
         // Given
         let expected = CharactersPage.stub()
         repositoryMock.charactersResult = .success(expected)
 
         // When
-        let value = try await sut.execute(page: 1)
+        let value = try await sut.execute(page: 5)
 
         // Then
         #expect(value == expected)
-    }
-
-    @Test("Execute calls repository with correct page and remoteFirst cache policy")
-    func executeCallsRepositoryWithCorrectPageAndRemoteFirstCachePolicy() async throws {
-        // Given
-        repositoryMock.charactersResult = .success(.stub())
-
-        // When
-        _ = try await sut.execute(page: 5)
-
-        // Then
+        #expect(repositoryMock.clearPagesCacheCallCount == 1)
         #expect(repositoryMock.getCharactersPageCallCount == 1)
         #expect(repositoryMock.lastRequestedPage == 5)
         #expect(repositoryMock.lastCharactersCachePolicy == .remoteFirst)
-    }
-
-    @Test("Execute clears pages cache before fetching")
-    func executeClearsPagesCacheBeforeFetching() async throws {
-        // Given
-        repositoryMock.charactersResult = .success(.stub())
-
-        // When
-        _ = try await sut.execute(page: 1)
-
-        // Then
-        #expect(repositoryMock.clearPagesCacheCallCount == 1)
     }
 
     @Test("Execute propagates repository error")
