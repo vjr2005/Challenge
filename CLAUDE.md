@@ -135,7 +135,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 | Script | Purpose | Command |
 |--------|---------|---------|
-| `generate.sh` | Project generation (with optional `--clean`) | `./Scripts/generate.sh [--clean]` |
+| `generate.sh` | Project generation (with optional `--clean`, `--focus`) | `./Scripts/generate.sh [--clean] [--focus <modules>]` |
 | `reset-simulators.sh` | Deep simulator reset when corrupted data is suspected | `./Scripts/reset-simulators.sh` |
 | `run-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult | `./Scripts/run-tests.sh [--parallel] [--unit] [--ui]` |
 

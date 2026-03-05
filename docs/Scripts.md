@@ -10,6 +10,8 @@ All scripts live in the `Scripts/` directory. Each script uses `cd "$(dirname "$
 | `./Scripts/generate.sh` | Install dependencies and generate the Xcode project (framework strategy) |
 | `./Scripts/generate.sh --clean` | Clean Tuist cache, then install dependencies and generate |
 | `./Scripts/generate.sh --strategy spm` | Generate using the SPM module strategy |
+| `./Scripts/generate.sh --focus Character` | Focus on Character module, cache everything else as XCFrameworks |
+| `./Scripts/generate.sh --focus Character,Episode` | Focus on multiple modules |
 | `./Scripts/reset-simulators.sh` | Full simulator reset - fixes corrupted simulator state |
 | `./Scripts/run-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult |
 | `./Scripts/run-tests.sh --parallel` | Same as above, but runs both suites in parallel (clones simulator) |
@@ -75,6 +77,70 @@ Options can be combined:
 ```bash
 ./Scripts/generate.sh --clean --strategy framework
 ```
+
+### Focused Generation
+
+Focus on specific modules while caching everything else as XCFrameworks:
+
+```bash
+./Scripts/generate.sh --focus Character
+./Scripts/generate.sh --focus Character,Episode
+```
+
+Focused modules stay as editable source code with full test support. Non-focused modules are substituted with pre-built XCFrameworks from the Tuist binary cache, reducing compilation targets and build times.
+
+> **Note:** `--focus` requires the framework strategy (default). It is not compatible with `--strategy spm`.
+
+#### What stays as source
+
+- **Focused module** — e.g., `ChallengeCharacter` (editable source code)
+- **Focused module's Mocks** — e.g., `ChallengeCoreMocks` (if the module has a `Mocks/` directory)
+- **All test targets** — unit and snapshot tests are never cacheable (they depend on XCTest)
+- **App target** — `Challenge` is always compiled from source
+
+Everything else (non-focused modules and their Mocks) is substituted with pre-built XCFrameworks. This applies regardless of where the focused module sits in the dependency graph — modules above and below the focused module are cached independently.
+
+#### How it works
+
+1. **Hash computation** — Runs `tuist hash cache` to get deterministic hashes for all modules
+2. **Cache warm** — Runs `tuist cache` to pre-build all modules as XCFrameworks (skipped if cache is already warm)
+3. **Remove focused hashes** — Deletes focused module and its Mocks binaries from the cache so they stay as source
+4. **Generate** — Runs `tuist generate --cache-profile all-possible` to substitute cached modules
+
+#### Performance
+
+Benchmarked focusing on Character with all other modules cached (cold DerivedData):
+
+| Metric | Without cache | With cache | Improvement |
+|---|---|---|---|
+| App build | 21.4s | 10.9s | **-49%** |
+| Character tests | 44.1s | 37.4s | **-15%** |
+| Targets compiled (Character tests) | 11 | 5 | **-55%** |
+| Compilation steps (Character tests) | 136 | 68 | **-50%** |
+| Cache warm time | 53.5s | — | One-time cost |
+
+#### Available modules
+
+| Short name | Target name |
+|---|---|
+| AppKit | ChallengeAppKit |
+| Character | ChallengeCharacter |
+| Core | ChallengeCore |
+| DesignSystem | ChallengeDesignSystem |
+| Episode | ChallengeEpisode |
+| Home | ChallengeHome |
+| Networking | ChallengeNetworking |
+| Resources | ChallengeResources |
+| SnapshotTestKit | ChallengeSnapshotTestKit |
+| System | ChallengeSystem |
+
+Options can be combined:
+
+```bash
+./Scripts/generate.sh --clean --focus Character
+```
+
+> **Note:** The cache is invalidated when module source code changes. If you see stale behavior, run `--clean --focus` to rebuild the cache from scratch.
 
 ### Clean Build
 
