@@ -6,4 +6,10 @@ final class NotFoundNavigatorMock: NotFoundNavigatorContract, @unchecked Sendabl
     func goBack() {
         goBackCallCount += 1
     }
+
+    // MARK: - Reset
+
+    func reset() {
+        goBackCallCount = 0
+    }
 }

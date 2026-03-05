@@ -10,4 +10,11 @@ final class DeleteRecentSearchUseCaseMock: DeleteRecentSearchUseCaseContract, @u
 		executeCallCount += 1
 		deletedQueries.append(query)
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		executeCallCount = 0
+		deletedQueries = []
+	}
 }

@@ -15,4 +15,12 @@ nonisolated final class EpisodeRepositoryMock: EpisodeRepositoryContract, @unche
 		lastCachePolicy = cachePolicy
 		return try result.get()
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		getEpisodesCallCount = 0
+		lastRequestedCharacterIdentifier = nil
+		lastCachePolicy = nil
+	}
 }

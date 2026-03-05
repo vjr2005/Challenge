@@ -39,4 +39,12 @@ public final class ImageLoaderMock: ImageLoaderContract, @unchecked Sendable {
 	public func clearCache() async {
 		clearCacheCallCount += 1
 	}
+
+	// MARK: - Reset
+
+	public func reset() {
+		removeCachedImageCallCount = 0
+		removeCachedImageLastURL = nil
+		clearCacheCallCount = 0
+	}
 }

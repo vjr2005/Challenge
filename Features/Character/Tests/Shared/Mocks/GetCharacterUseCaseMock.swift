@@ -12,4 +12,11 @@ final class GetCharacterUseCaseMock: GetCharacterUseCaseContract, @unchecked Sen
 		lastRequestedIdentifier = identifier
 		return try result.get()
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		executeCallCount = 0
+		lastRequestedIdentifier = nil
+	}
 }

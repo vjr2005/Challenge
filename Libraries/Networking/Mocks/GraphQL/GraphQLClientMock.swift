@@ -18,4 +18,10 @@ public final class GraphQLClientMock: GraphQLClientContract, @unchecked Sendable
 		let data = try result.get()
 		return try JSONDecoder().decode(T.self, from: data)
 	}
+
+	// MARK: - Reset
+
+	public func reset() {
+		executedOperations = []
+	}
 }

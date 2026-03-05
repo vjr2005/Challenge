@@ -8,4 +8,11 @@ final class CharacterEpisodesNavigatorMock: CharacterEpisodesNavigatorContract {
 		navigateToCharacterDetailCallCount += 1
 		lastNavigateToCharacterDetailIdentifier = identifier
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		navigateToCharacterDetailCallCount = 0
+		lastNavigateToCharacterDetailIdentifier = nil
+	}
 }

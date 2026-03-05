@@ -11,4 +11,11 @@ final class NotFoundTrackerMock: NotFoundTrackerContract {
     func trackGoBackButtonTapped() {
         goBackButtonTappedCallCount += 1
     }
+
+    // MARK: - Reset
+
+    func reset() {
+        screenViewedCallCount = 0
+        goBackButtonTappedCallCount = 0
+    }
 }

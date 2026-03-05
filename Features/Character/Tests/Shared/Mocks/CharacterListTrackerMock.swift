@@ -51,4 +51,19 @@ final class CharacterListTrackerMock: CharacterListTrackerContract {
     func trackLoadMoreError(description: String) {
         loadMoreErrorDescriptions.append(description)
     }
+
+    // MARK: - Reset
+
+    func reset() {
+        screenViewedCallCount = 0
+        selectedIdentifiers = []
+        searchedQueries = []
+        retryButtonTappedCallCount = 0
+        pullToRefreshTriggeredCallCount = 0
+        loadMoreButtonTappedCallCount = 0
+        characterFilterButtonTappedCallCount = 0
+        fetchErrorDescriptions = []
+        refreshErrorDescriptions = []
+        loadMoreErrorDescriptions = []
+    }
 }

@@ -35,4 +35,14 @@ actor RecentSearchesLocalDataSourceMock: RecentSearchesLocalDataSourceContract {
 		deleteSearchCallCount += 1
 		lastDeletedQuery = query
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		getRecentSearchesCallCount = 0
+		saveSearchCallCount = 0
+		lastSavedQuery = nil
+		deleteSearchCallCount = 0
+		lastDeletedQuery = nil
+	}
 }

@@ -11,4 +11,11 @@ final class HomeNavigatorMock: HomeNavigatorContract, @unchecked Sendable {
     func presentAbout() {
         presentAboutCallCount += 1
     }
+
+    // MARK: - Reset
+
+    func reset() {
+        navigateToCharactersCallCount = 0
+        presentAboutCallCount = 0
+    }
 }

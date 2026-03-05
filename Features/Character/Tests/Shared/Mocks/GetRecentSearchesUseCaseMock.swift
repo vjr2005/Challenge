@@ -10,4 +10,10 @@ final class GetRecentSearchesUseCaseMock: GetRecentSearchesUseCaseContract, @unc
 		executeCallCount += 1
 		return searches
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		executeCallCount = 0
+	}
 }

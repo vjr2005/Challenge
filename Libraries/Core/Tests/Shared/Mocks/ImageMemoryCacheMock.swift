@@ -35,4 +35,13 @@ final class ImageMemoryCacheMock: ImageMemoryCacheContract {
 		removeAllCallCount += 1
 		images.removeAll()
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		imageCallCount = 0
+		setImageCallCount = 0
+		removeCachedImageCallCount = 0
+		removeAllCallCount = 0
+	}
 }

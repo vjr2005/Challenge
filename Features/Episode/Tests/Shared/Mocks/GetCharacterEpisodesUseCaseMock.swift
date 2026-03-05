@@ -12,4 +12,11 @@ final class GetCharacterEpisodesUseCaseMock: GetCharacterEpisodesUseCaseContract
 		lastRequestedCharacterIdentifier = characterIdentifier
 		return try result.get()
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		executeCallCount = 0
+		lastRequestedCharacterIdentifier = nil
+	}
 }

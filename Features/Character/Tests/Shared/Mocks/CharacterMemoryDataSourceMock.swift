@@ -50,4 +50,16 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     func clearPages() {
         clearPagesCallCount += 1
     }
+
+    // MARK: - Reset
+
+    func reset() {
+        getCharacterCallCount = 0
+        saveCharacterCallCount = 0
+        saveCharacterLastValue = nil
+        savePageCallCount = 0
+        savePageLastResponse = nil
+        savePageLastPage = nil
+        clearPagesCallCount = 0
+    }
 }

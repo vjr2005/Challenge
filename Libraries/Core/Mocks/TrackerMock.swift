@@ -31,4 +31,10 @@ public final class TrackerMock: TrackerContract, @unchecked Sendable {
     public func track(_ event: any TrackingEventContract) {
         trackedEvents.append(TrackedEvent(name: event.name, properties: event.properties))
     }
+
+    // MARK: - Reset
+
+    public func reset() {
+        trackedEvents = []
+    }
 }

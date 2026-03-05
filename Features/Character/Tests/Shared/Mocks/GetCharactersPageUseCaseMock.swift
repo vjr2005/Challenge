@@ -12,4 +12,11 @@ final class GetCharactersPageUseCaseMock: GetCharactersPageUseCaseContract, @unc
 		lastRequestedPage = page
 		return try result.get()
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		executeCallCount = 0
+		lastRequestedPage = nil
+	}
 }

@@ -24,4 +24,10 @@ public final class HTTPClientMock: HTTPClientContract, @unchecked Sendable {
         requestedEndpoints.append(endpoint)
         return try result.get()
     }
+
+    // MARK: - Reset
+
+    public func reset() {
+        requestedEndpoints = []
+    }
 }

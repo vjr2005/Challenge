@@ -44,4 +44,15 @@ actor ImageDiskCacheMock: ImageDiskCacheContract {
 	func removeAll() {
 		removeAllCallCount += 1
 	}
+
+	// MARK: - Reset
+
+	func reset() {
+		imageCallCount = 0
+		storeCallCount = 0
+		storeLastURL = nil
+		removeCallCount = 0
+		removeLastURL = nil
+		removeAllCallCount = 0
+	}
 }

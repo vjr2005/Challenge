@@ -31,4 +31,15 @@ final class CharacterDetailTrackerMock: CharacterDetailTrackerContract {
     func trackRefreshError(description: String) {
         refreshErrorDescriptions.append(description)
     }
+
+    // MARK: - Reset
+
+    func reset() {
+        screenViewedIdentifiers = []
+        retryButtonTappedCallCount = 0
+        pullToRefreshTriggeredCallCount = 0
+        episodesButtonTappedIdentifiers = []
+        loadErrorDescriptions = []
+        refreshErrorDescriptions = []
+    }
 }

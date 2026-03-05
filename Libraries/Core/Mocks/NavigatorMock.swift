@@ -37,4 +37,13 @@ public final class NavigatorMock: NavigatorContract {
     public func goBack() {
         goBackCallCount += 1
     }
+
+    // MARK: - Reset
+
+    public func reset() {
+        navigatedDestinations = []
+        presentedModals = []
+        dismissCallCount = 0
+        goBackCallCount = 0
+    }
 }
