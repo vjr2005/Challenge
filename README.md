@@ -37,6 +37,12 @@ Generate the Xcode project and install dependencies:
 ./Scripts/generate.sh
 ```
 
+> **Tip:** For daily development, use focused generation to cut build times by ~50%:
+> ```bash
+> ./Scripts/generate.sh --focus Character
+> ```
+> See [Generation Modes](docs/Scripts.md#generation-modes) for when to use each mode.
+
 ## Architecture
 
 The project follows **MVVM + Clean Architecture** with feature-based modularization. See [Architecture Documentation](docs/Architecture.md) for details.

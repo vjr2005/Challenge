@@ -63,9 +63,46 @@ Generate the Xcode project and install dependencies:
 ./Scripts/generate.sh
 ```
 
-### Module Strategy
+### Generation Modes
 
-Switch the module integration strategy at generation time:
+The project supports three generation modes. Choose the one that fits your scenario:
+
+| Scenario | Recommended mode |
+|----------|-----------------|
+| Daily development on 1-2 features | `--focus Module` |
+| TDD / fast iteration on a module | `--focus Module` |
+| Refactoring across multiple modules | Standard (no flags) |
+| CI / full validation | Standard (no flags) |
+| Verifying everything compiles after pull | Standard (no flags) |
+| Evaluating SPM as architecture | `--strategy spm` |
+
+#### Standard Generation
+
+Generates all modules as framework targets. All test targets are available:
+
+```bash
+./Scripts/generate.sh
+```
+
+Use this for full builds, cross-module refactors, and CI.
+
+#### Focused Generation (Recommended for daily use)
+
+Focus on specific modules while caching everything else as pre-built XCFrameworks. Reduces build times by ~50%:
+
+```bash
+./Scripts/generate.sh --focus Character
+./Scripts/generate.sh --focus Character,Episode
+./Scripts/generate.sh --clean --focus Character
+```
+
+Focus automatically expands to include **transitive dependents** — for example, `--focus Character` also includes `AppKit` because it depends on Character. This ensures you catch breakages in dependent modules without compiling the entire project.
+
+For details on how focus works, available modules, and performance benchmarks, see [Tuist - Focused Generation](Tuist.md#focused-generation).
+
+#### Module Strategy (SPM)
+
+Switch to SPM local packages instead of framework targets:
 
 ```bash
 ./Scripts/generate.sh --strategy framework   # Framework targets (default)
@@ -78,19 +115,18 @@ Options can be combined:
 ./Scripts/generate.sh --clean --strategy framework
 ```
 
-### Focused Generation
+> **Warning — SPM isolated usage:** You could open a single module's `Package.swift` in Xcode to work in isolation, but this is risky:
+>
+> | | `--focus Module` | SPM isolated |
+> |---|---|---|
+> | Compiles fast | Yes (~50% less) | Yes (single module) |
+> | Includes dependent tests | Yes (automatic) | No |
+> | Detects breakages in other modules | Yes | No |
+> | Needs full project generation | Yes (with cache) | No |
+>
+> With SPM isolated, you could change a public API and have it compile locally, but break every module that depends on it — without knowing until CI or a full build. **Prefer `--focus` for fast iteration with safety.**
 
-Focus on specific modules while caching everything else as XCFrameworks:
-
-```bash
-./Scripts/generate.sh --focus Character
-./Scripts/generate.sh --focus Character,Episode
-./Scripts/generate.sh --clean --focus Character
-```
-
-For details on how focus works, available modules, and performance benchmarks, see [Tuist - Focused Generation](Tuist.md#focused-generation).
-
-### Clean Build
+#### Clean Build
 
 To perform a clean build from scratch:
 
