@@ -22,15 +22,6 @@ nonisolated final class CharacterRemoteDataSourceMock: CharacterRemoteDataSource
 		lastFetchedFilter = filter
 		return try charactersResult.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		fetchCharacterCallCount = 0
-		fetchCharactersCallCount = 0
-		lastFetchedPage = nil
-		lastFetchedFilter = nil
-	}
 }
 
 private enum NotConfiguredError: Error {

@@ -27,13 +27,4 @@ actor EpisodeMemoryDataSourceMock: EpisodeLocalDataSourceContract {
 		lastSavedEpisodes = episodes
 		lastSavedCharacterIdentifier = characterIdentifier
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		getEpisodesCallCount = 0
-		saveEpisodesCallCount = 0
-		lastSavedEpisodes = nil
-		lastSavedCharacterIdentifier = nil
-	}
 }

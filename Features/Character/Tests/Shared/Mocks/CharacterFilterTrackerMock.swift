@@ -23,14 +23,4 @@ final class CharacterFilterTrackerMock: CharacterFilterTrackerContract {
     func trackCloseTapped() {
         closeTappedCallCount += 1
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        screenViewedCallCount = 0
-        applyFiltersCallCount = 0
-        lastAppliedFilterCount = nil
-        resetFiltersCallCount = 0
-        closeTappedCallCount = 0
-    }
 }

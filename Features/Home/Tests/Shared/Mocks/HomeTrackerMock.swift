@@ -16,12 +16,4 @@ final class HomeTrackerMock: HomeTrackerContract {
     func trackInfoButtonTapped() {
         infoButtonTappedCallCount += 1
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        screenViewedCallCount = 0
-        characterButtonTappedCallCount = 0
-        infoButtonTappedCallCount = 0
-    }
 }

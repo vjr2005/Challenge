@@ -161,7 +161,7 @@ final class {Screen}NavigatorMock: {Screen}NavigatorContract {
 
 ### Mock `reset()` Method
 
-All mocks should provide a `reset()` method to clear call counts and captured parameters. Used by helper methods to isolate test preconditions:
+Only add a `reset()` method to mocks that are actually used in test helper methods (`givenErrorState()`, `givenLoadedState()`) to clear call counts and captured parameters for clean test preconditions. Do NOT add `reset()` by default to all mocks:
 
 ```swift
 final class Get{Name}UseCaseMock: Get{Name}UseCaseContract {

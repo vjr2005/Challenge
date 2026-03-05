@@ -13,12 +13,4 @@ final class CharacterListNavigatorMock: CharacterListNavigatorContract {
         presentCharacterFilterCallCount += 1
         lastPresentCharacterFilterDelegate = delegate
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        navigateToDetailIdentifiers = []
-        presentCharacterFilterCallCount = 0
-        lastPresentCharacterFilterDelegate = nil
-    }
 }

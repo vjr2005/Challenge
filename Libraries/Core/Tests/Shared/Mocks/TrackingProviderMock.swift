@@ -15,11 +15,4 @@ final class TrackingProviderMock: TrackingProviderContract, @unchecked Sendable 
     func track(_ event: any TrackingEventContract) {
         trackedEvents.append((name: event.name, properties: event.properties))
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        configureCallCount = 0
-        trackedEvents = []
-    }
 }

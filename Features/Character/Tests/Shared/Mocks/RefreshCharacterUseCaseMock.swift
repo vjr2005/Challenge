@@ -14,11 +14,4 @@ final class RefreshCharacterUseCaseMock: RefreshCharacterUseCaseContract, @unche
 		onExecute?()
 		return try result.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		executeCallCount = 0
-		lastRequestedIdentifier = nil
-	}
 }

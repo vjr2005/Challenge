@@ -6,10 +6,4 @@ final class NotFoundNavigatorMock: NotFoundNavigatorContract {
     func goBack() {
         goBackCallCount += 1
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        goBackCallCount = 0
-    }
 }

@@ -14,11 +14,4 @@ final class RefreshCharactersPageUseCaseMock: RefreshCharactersPageUseCaseContra
 		onExecute?()
 		return try result.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		executeCallCount = 0
-		lastRequestedPage = nil
-	}
 }

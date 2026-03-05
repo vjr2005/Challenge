@@ -8,10 +8,4 @@ final class GetAboutInfoUseCaseMock: GetAboutInfoUseCaseContract, @unchecked Sen
 		executeCallCount += 1
 		return result
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		executeCallCount = 0
-	}
 }

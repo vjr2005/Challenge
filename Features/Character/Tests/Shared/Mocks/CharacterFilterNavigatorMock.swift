@@ -6,10 +6,4 @@ final class CharacterFilterNavigatorMock: CharacterFilterNavigatorContract {
     func dismiss() {
         dismissCallCount += 1
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        dismissCallCount = 0
-    }
 }

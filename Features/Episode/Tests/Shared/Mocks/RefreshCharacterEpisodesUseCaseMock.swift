@@ -14,11 +14,4 @@ final class RefreshCharacterEpisodesUseCaseMock: RefreshCharacterEpisodesUseCase
 		onExecute?()
 		return try result.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		executeCallCount = 0
-		lastRequestedCharacterIdentifier = nil
-	}
 }

@@ -15,12 +15,4 @@ nonisolated final class CharacterRepositoryMock: CharacterRepositoryContract, @u
 		lastCharacterCachePolicy = cachePolicy
 		return try result.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		getCharacterCallCount = 0
-		lastRequestedIdentifier = nil
-		lastCharacterCachePolicy = nil
-	}
 }

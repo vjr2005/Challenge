@@ -31,16 +31,4 @@ nonisolated final class CharactersPageRepositoryMock: CharactersPageRepositoryCo
 		lastSearchedFilter = filter
 		return try searchResult.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		getCharactersPageCallCount = 0
-		searchCharactersPageCallCount = 0
-		lastRequestedPage = nil
-		lastSearchedPage = nil
-		lastSearchedFilter = nil
-		lastCharactersCachePolicy = nil
-		clearPagesCacheCallCount = 0
-	}
 }

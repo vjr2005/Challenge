@@ -11,11 +11,4 @@ final class CharacterFilterDelegateMock: CharacterFilterDelegate, @unchecked Sen
         didApplyFilterCallCount += 1
         lastAppliedFilter = filter
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        didApplyFilterCallCount = 0
-        lastAppliedFilter = nil
-    }
 }

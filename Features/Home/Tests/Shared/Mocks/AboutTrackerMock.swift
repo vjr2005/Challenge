@@ -6,10 +6,4 @@ final class AboutTrackerMock: AboutTrackerContract {
     func trackScreenViewed() {
         screenViewedCallCount += 1
     }
-
-    // MARK: - Reset
-
-    func reset() {
-        screenViewedCallCount = 0
-    }
 }

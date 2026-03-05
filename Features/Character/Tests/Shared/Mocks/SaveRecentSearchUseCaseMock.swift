@@ -10,11 +10,4 @@ final class SaveRecentSearchUseCaseMock: SaveRecentSearchUseCaseContract, @unche
 		executeCallCount += 1
 		savedQueries.append(query)
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		executeCallCount = 0
-		savedQueries = []
-	}
 }

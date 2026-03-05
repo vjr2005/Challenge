@@ -12,13 +12,6 @@ nonisolated final class EpisodeRemoteDataSourceMock: EpisodeRemoteDataSourceCont
 		lastFetchedCharacterIdentifier = characterIdentifier
 		return try episodesResult.get()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		fetchEpisodesCallCount = 0
-		lastFetchedCharacterIdentifier = nil
-	}
 }
 
 private enum NotConfiguredError: Error {

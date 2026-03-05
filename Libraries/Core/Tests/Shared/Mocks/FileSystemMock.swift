@@ -84,16 +84,4 @@ nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable 
 		updateModificationDateCallCount += 1
 		fileModificationDates[url] = Date()
 	}
-
-	// MARK: - Reset
-
-	func reset() {
-		contentsCallCount = 0
-		writeCallCount = 0
-		removeItemCallCount = 0
-		createDirectoryCallCount = 0
-		contentsOfDirectoryCallCount = 0
-		fileAttributesCallCount = 0
-		updateModificationDateCallCount = 0
-	}
 }
