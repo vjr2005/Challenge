@@ -1,7 +1,5 @@
 import ChallengeCore
-import ChallengeCoreMocks
 import ChallengeNetworking
-import Foundation
 import Testing
 
 @testable import ChallengeCharacter
@@ -28,7 +26,7 @@ struct CharacterRepositoryTests {
     @Test("Fetches from remote and maps to domain model")
     func fetchesFromRemoteAndMapsToDomainModel() async throws {
         // Given
-        let characterDTO: CharacterDTO = try loadJSON("character")
+        let characterDTO = CharacterDTO.stub()
         let expected = Character.stub()
         remoteDataSourceMock.result = .success(characterDTO)
 
@@ -45,7 +43,7 @@ struct CharacterRepositoryTests {
     @Test("Saves to cache after successful remote fetch")
     func savesToCacheAfterRemoteFetch() async throws {
         // Given
-        let characterDTO: CharacterDTO = try loadJSON("character")
+        let characterDTO = CharacterDTO.stub()
         remoteDataSourceMock.result = .success(characterDTO)
 
         // When
@@ -79,13 +77,5 @@ struct CharacterRepositoryTests {
         await #expect(throws: CharacterError.notFound(identifier: 1)) {
             _ = try await sut.getCharacter(identifier: 1, cachePolicy: .noCache)
         }
-    }
-}
-
-// MARK: - Private
-
-private extension CharacterRepositoryTests {
-    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
-        try Bundle.module.loadJSON(filename)
     }
 }

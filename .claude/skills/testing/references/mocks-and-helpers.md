@@ -153,8 +153,9 @@ FeatureName/
     ├── Unit/
     ├── Snapshots/
     └── Shared/
-        ├── Stubs/                # Test data factories for Domain Models
+        ├── Stubs/                # Test data factories for Domain Models and DTOs
         │   ├── Character+Stub.swift
+        │   ├── CharacterDTO+Stub.swift
         │   └── Location+Stub.swift
         ├── Mocks/
         ├── Fixtures/
@@ -187,8 +188,8 @@ nonisolated extension User {
 - All parameters must have default values
 - Defaults should be valid, realistic values
 - Located in `Tests/Shared/Stubs/` (shared between Unit and Snapshot tests)
-- **Only for Domain Models** (not DTOs - use JSON fixtures instead)
-- **`nonisolated extension`** — Domain models are nonisolated; stubs must match
+- **For Domain Models and DTOs** (JSON fixtures are only for Mapper and DataSource tests)
+- **`nonisolated extension`** — Domain models and DTOs are nonisolated; stubs must match
 
 **Usage in tests:**
 
@@ -208,9 +209,9 @@ func processesUserCorrectly() {
 
 ---
 
-## JSON Fixtures (for DTOs)
+## JSON Fixtures (for Mapper and DataSource tests)
 
-**DTOs use JSON files** instead of stubs. See `/datasource` skill for JSON fixtures documentation.
+**JSON fixtures are used only in Mapper and DataSource tests** — where JSON deserialization is being tested. Repository tests and above use DTO stubs instead. See `/datasource` skill for JSON fixtures documentation.
 
 ---
 

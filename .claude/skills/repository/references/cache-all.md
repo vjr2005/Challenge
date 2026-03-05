@@ -93,7 +93,7 @@ struct {Name}RepositoryTests {
     @Test("Fetches from remote and maps to domain model")
     func fetchesFromRemoteAndMapsToDomainModel() async throws {
         // Given
-        let remoteDTO: {Name}DTO = try loadJSON("{name}")
+        let remoteDTO = {Name}DTO.stub()
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .success(remoteDTO)
@@ -116,7 +116,7 @@ struct {Name}RepositoryTests {
     @Test("Saves to cache after successful remote fetch")
     func savesToCacheAfterRemoteFetch() async throws {
         // Given
-        let remoteDTO: {Name}DTO = try loadJSON("{name}")
+        let remoteDTO = {Name}DTO.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
         remoteDataSourceMock.result = .success(remoteDTO)
         let memoryDataSourceMock = {Name}LocalDataSourceMock()

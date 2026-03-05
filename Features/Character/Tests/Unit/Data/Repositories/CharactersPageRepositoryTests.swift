@@ -1,7 +1,5 @@
 import ChallengeCore
-import ChallengeCoreMocks
 import ChallengeNetworking
-import Foundation
 import Testing
 
 @testable import ChallengeCharacter
@@ -28,7 +26,7 @@ struct CharactersPageRepositoryTests {
     @Test("Fetches from remote and maps to domain model")
     func fetchesFromRemoteAndMapsToDomainModel() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         let expected = CharactersPage.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
@@ -43,7 +41,7 @@ struct CharactersPageRepositoryTests {
     @Test("Passes correct page number to remote data source")
     func passesCorrectPageToRemote() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
@@ -58,7 +56,7 @@ struct CharactersPageRepositoryTests {
     @Test("Saves page to cache after successful remote fetch")
     func savesPageToCacheAfterRemoteFetch() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
@@ -100,7 +98,7 @@ struct CharactersPageRepositoryTests {
     @Test("Search characters always calls remote data source")
     func searchCharactersPageAlwaysCallsRemote() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
         await memoryDataSourceMock.setPageToReturn(responseDTO)
 
@@ -114,7 +112,7 @@ struct CharactersPageRepositoryTests {
     @Test("Search characters does not save results to cache")
     func searchCharactersPageDoesNotSaveToCache() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
@@ -127,7 +125,7 @@ struct CharactersPageRepositoryTests {
     @Test("Search characters passes query to remote data source")
     func searchCharactersPagePassesQueryToRemoteDataSource() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
@@ -140,7 +138,7 @@ struct CharactersPageRepositoryTests {
     @Test("Search characters passes page number to remote data source")
     func searchCharactersPagePassesPageToRemoteDataSource() async throws {
         // Given
-        let responseDTO: CharactersResponseDTO = try loadJSON("characters_response")
+        let responseDTO = CharactersResponseDTO.stub()
         remoteDataSourceMock.charactersResult = .success(responseDTO)
 
         // When
@@ -179,13 +177,5 @@ struct CharactersPageRepositoryTests {
         await #expect(throws: CharactersPageError.loadFailed()) {
             _ = try await sut.searchCharactersPage(page: 1, filter: CharacterFilter(name: "Rick"))
         }
-    }
-}
-
-// MARK: - Private
-
-private extension CharactersPageRepositoryTests {
-    func loadJSON<T: Decodable>(_ filename: String) throws -> T {
-        try Bundle.module.loadJSON(filename)
     }
 }

@@ -218,8 +218,8 @@ Tests/
 - [ ] No `test` prefix in method names
 - [ ] Full object comparison (not individual properties)
 - [ ] Parameterized tests for multiple cases
-- [ ] Stubs created for Domain Models in `Tests/Shared/Stubs/`
+- [ ] Stubs created for Domain Models and DTOs in `Tests/Shared/Stubs/`
 - [ ] Mocks placed in appropriate location (`Tests/Shared/Mocks/` or `Mocks/`)
 - [ ] Equatable extensions in `Tests/Shared/Extensions/` for types with `Error`
-- [ ] JSON fixtures in `Tests/Shared/Fixtures/`
+- [ ] JSON fixtures in `Tests/Shared/Fixtures/` (Mapper and DataSource tests only)
 - [ ] Test resources (images) in `Tests/Shared/Resources/`

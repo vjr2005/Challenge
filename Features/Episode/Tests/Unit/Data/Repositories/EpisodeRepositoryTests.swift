@@ -1,7 +1,5 @@
 import ChallengeCore
-import ChallengeCoreMocks
 import ChallengeNetworking
-import Foundation
 import Testing
 
 @testable import ChallengeEpisode
@@ -28,7 +26,7 @@ struct EpisodeRepositoryTests {
 	@Test("Fetches from remote and maps to domain model")
 	func fetchesFromRemoteAndMapsToDomainModel() async throws {
 		// Given
-		let remoteDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
+		let remoteDTO = EpisodeCharacterWithEpisodesDTO.stub()
 		let expected = EpisodeCharacterWithEpisodes.stub()
 		remoteDataSourceMock.episodesResult = .success(remoteDTO)
 
@@ -43,7 +41,7 @@ struct EpisodeRepositoryTests {
 	@Test("Passes correct character identifier to remote data source")
 	func passesCorrectCharacterIdentifier() async throws {
 		// Given
-		let remoteDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
+		let remoteDTO = EpisodeCharacterWithEpisodesDTO.stub()
 		remoteDataSourceMock.episodesResult = .success(remoteDTO)
 
 		// When
@@ -58,7 +56,7 @@ struct EpisodeRepositoryTests {
 	@Test("Saves to cache after successful remote fetch")
 	func savesToCacheAfterRemoteFetch() async throws {
 		// Given
-		let remoteDTO: EpisodeCharacterWithEpisodesDTO = try loadJSON("episode_character_with_episodes")
+		let remoteDTO = EpisodeCharacterWithEpisodesDTO.stub()
 		remoteDataSourceMock.episodesResult = .success(remoteDTO)
 
 		// When
@@ -97,12 +95,6 @@ struct EpisodeRepositoryTests {
 }
 
 // MARK: - Private
-
-private extension EpisodeRepositoryTests {
-	func loadJSON<T: Decodable>(_ filename: String) throws -> T {
-		try Bundle.module.loadJSON(filename)
-	}
-}
 
 private enum GenericTestError: Error {
 	case unknown

@@ -81,7 +81,7 @@ struct {Name}RepositoryTests {
         // Given
         let expected = {Name}.stub()
         let memoryDataSourceMock = {Name}LocalDataSourceMock()
-        await memoryDataSourceMock.setItemToReturn(try loadJSON("{name}"))
+        await memoryDataSourceMock.setItemToReturn({Name}DTO.stub())
         let sut = {Name}Repository(memoryDataSource: memoryDataSourceMock)
 
         // When

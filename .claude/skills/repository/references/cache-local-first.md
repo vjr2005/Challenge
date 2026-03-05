@@ -67,7 +67,7 @@ struct {Name}RepositoryTests {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(try loadJSON("{name}"))
+        remoteDataSourceMock.result = .success({Name}DTO.stub())
         let memoryDataSourceMock = {Name}LocalDataSourceMock()
         let sut = {Name}Repository(
             remoteDataSource: remoteDataSourceMock,

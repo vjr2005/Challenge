@@ -173,8 +173,8 @@ Module/Tests/
 | Assertions | Use `#expect`, `#require` for unwrapping |
 | Comparison | Compare full objects, not individual properties |
 | Mocks location | `Tests/Shared/Mocks/` (internal) or `Mocks/` (public) |
-| Stubs location | `Tests/Shared/Stubs/` for Domain models |
-| Fixtures location | `Tests/Shared/Fixtures/` for JSON (DTOs) |
+| Stubs location | `Tests/Shared/Stubs/` for Domain models and DTOs |
+| Fixtures location | `Tests/Shared/Fixtures/` for JSON (Mapper and DataSource tests only) |
 | Coverage scope | Only source targets (never mocks or external libraries) |
 | Unit tests | Use Swift Testing (`@Test("description")`, `#expect`) |
 | Snapshot tests | Import `ChallengeSnapshotTestKit` |

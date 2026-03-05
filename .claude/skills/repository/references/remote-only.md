@@ -69,7 +69,7 @@ struct {Name}RepositoryTests {
         // Given
         let expected = {Name}.stub()
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(try loadJSON("{name}"))
+        remoteDataSourceMock.result = .success({Name}DTO.stub())
         let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When
@@ -83,7 +83,7 @@ struct {Name}RepositoryTests {
     func callsRemoteDataSourceWithCorrectIdentifier() async throws {
         // Given
         let remoteDataSourceMock = {Name}RemoteDataSourceMock()
-        remoteDataSourceMock.result = .success(try loadJSON("{name}"))
+        remoteDataSourceMock.result = .success({Name}DTO.stub())
         let sut = {Name}Repository(remoteDataSource: remoteDataSourceMock)
 
         // When
