@@ -145,7 +145,8 @@ Features/{Feature}/
 └── Tests/
     ├── Unit/
     │   ├── Data/
-    │   │   ├── {Name}RepositoryTests.swift
+    │   │   ├── Repositories/
+    │   │   │   └── {Name}RepositoryTests.swift
     │   │   └── Mappers/
     │   │       └── {Name}ErrorMapperTests.swift
     │   └── Domain/

@@ -121,7 +121,7 @@ private enum NotConfiguredError: Error {
 
 Match the exact structure returned by the API. Use realistic data.
 
-### {Name}RESTDataSourceTests.swift — `Tests/Unit/Data/`
+### {Name}RESTDataSourceTests.swift — `Tests/Unit/Data/DataSources/Remote/`
 
 ```swift
 import ChallengeCoreMocks

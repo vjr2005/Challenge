@@ -37,6 +37,11 @@ Features/{Feature}/
 |           +-- {Name}DTO.swift
 +-- Tests/
     +-- Unit/Data/
+    |   +-- DataSources/
+    |       +-- Remote/
+    |       |   +-- {Name}RESTDataSourceTests.swift (or {Name}GraphQLDataSourceTests.swift)
+    |       +-- Local/
+    |           +-- {Name}MemoryDataSourceTests.swift (or {Name}UserDefaultsDataSourceTests.swift)
     +-- Shared/Fixtures/
     |   +-- {name}.json
     |   +-- {name}s_response.json
@@ -183,7 +188,7 @@ private enum NotConfiguredError: Error {
 
 ### 6. Create Tests
 
-Create `Tests/Unit/Data/{Name}RESTDataSourceTests.swift`:
+Create `Tests/Unit/Data/DataSources/Remote/{Name}RESTDataSourceTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -488,7 +493,7 @@ private enum NotConfiguredError: Error {
 
 ### 7. Create Tests
 
-Create `Tests/Unit/Data/{Name}GraphQLDataSourceTests.swift`:
+Create `Tests/Unit/Data/DataSources/Remote/{Name}GraphQLDataSourceTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -732,7 +737,7 @@ Actor mock: `private(set)` on configurable returns with setter methods. Tests us
 
 ### 4. Create Tests
 
-Create `Tests/Unit/Data/{Name}MemoryDataSourceTests.swift`:
+Create `Tests/Unit/Data/DataSources/Local/{Name}MemoryDataSourceTests.swift`:
 
 ```swift
 import ChallengeCoreMocks
@@ -926,7 +931,7 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 
 ### 4. Create Tests
 
-Create `Tests/Unit/Data/{Name}UserDefaultsDataSourceTests.swift`:
+Create `Tests/Unit/Data/DataSources/Local/{Name}UserDefaultsDataSourceTests.swift`:
 
 ```swift
 import Foundation

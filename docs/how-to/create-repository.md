@@ -42,7 +42,8 @@ Features/{Feature}/
 │           └── {Name}Repository.swift            # Implementation
 └── Tests/
     ├── Unit/Data/
-    │   ├── {Name}RepositoryTests.swift
+    │   ├── Repositories/
+    │   │   └── {Name}RepositoryTests.swift
     │   └── Mappers/
     │       └── {Name}ErrorMapperTests.swift
     ├── Unit/Domain/Errors/
@@ -264,7 +265,7 @@ nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @uncheck
 
 ### Tests
 
-Create `Tests/Unit/Data/{Name}RepositoryTests.swift`:
+Create `Tests/Unit/Data/Repositories/{Name}RepositoryTests.swift`:
 
 ```swift
 import ChallengeCore
@@ -435,7 +436,7 @@ nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @uncheck
 
 ### Tests
 
-Create `Tests/Unit/Data/{Name}RepositoryTests.swift`:
+Create `Tests/Unit/Data/Repositories/{Name}RepositoryTests.swift`:
 
 ```swift
 import Foundation
@@ -601,7 +602,7 @@ nonisolated final class {Name}RepositoryMock: {Name}RepositoryContract, @uncheck
 
 ### Tests (All configurable)
 
-Create `Tests/Unit/Data/{Name}RepositoryTests.swift`:
+Create `Tests/Unit/Data/Repositories/{Name}RepositoryTests.swift`:
 
 ```swift
 import ChallengeCore

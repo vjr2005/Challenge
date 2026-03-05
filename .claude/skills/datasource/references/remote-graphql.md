@@ -246,7 +246,7 @@ GraphQL fixtures contain the **response wrapper** structure (what `GraphQLClient
 }
 ```
 
-### {Name}GraphQLDataSourceTests.swift — `Tests/Unit/Data/`
+### {Name}GraphQLDataSourceTests.swift — `Tests/Unit/Data/DataSources/Remote/`
 
 ```swift
 import ChallengeCoreMocks

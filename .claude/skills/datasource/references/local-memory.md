@@ -132,6 +132,6 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 
 Actor mock: `private(set)` on configurable returns with setter methods. Tests use `await` for all property reads and setter calls.
 
-### {Name}MemoryDataSourceTests.swift — `Tests/Unit/Data/`
+### {Name}MemoryDataSourceTests.swift — `Tests/Unit/Data/DataSources/Local/`
 
 No changes — tests already use `await` for actor method calls. The MemoryDataSource is tested directly (not via mock).

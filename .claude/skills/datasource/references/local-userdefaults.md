@@ -100,7 +100,7 @@ actor {Name}LocalDataSourceMock: {Name}LocalDataSourceContract {
 }
 ```
 
-### {Name}UserDefaultsDataSourceTests.swift — `Tests/Unit/Data/`
+### {Name}UserDefaultsDataSourceTests.swift — `Tests/Unit/Data/DataSources/Local/`
 
 ```swift
 import Foundation

@@ -195,7 +195,7 @@ struct CharacterStatusTests { }
 Tests/
 ├── Unit/
 │   ├── Domain/UseCases/{Name}UseCaseTests.swift
-│   ├── Data/{Name}RepositoryTests.swift
+│   ├── Data/Repositories/{Name}RepositoryTests.swift
 │   ├── Presentation/{Screen}/ViewModels/{Screen}ViewModelTests.swift
 │   └── Feature/{Feature}FeatureTests.swift
 ├── Snapshots/Presentation/{Screen}/{Screen}ViewSnapshotTests.swift

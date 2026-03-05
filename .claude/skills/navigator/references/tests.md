@@ -25,7 +25,7 @@ final class {Screen}NavigatorMock: {Screen}NavigatorContract {
 ## Navigator Tests
 
 ```swift
-// Features/{Feature}/Tests/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift
+// Features/{Feature}/Tests/Unit/Presentation/{Screen}/Navigator/{Screen}NavigatorTests.swift
 import ChallengeCoreMocks
 import Testing
 

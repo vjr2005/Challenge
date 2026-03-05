@@ -54,6 +54,11 @@ Features/{Feature}/
 │           └── {Name}DTO.swift
 └── Tests/
     ├── Unit/Data/
+    │   └── DataSources/
+    │       ├── Remote/
+    │       │   └── {Name}RESTDataSourceTests.swift (or {Name}GraphQLDataSourceTests.swift)
+    │       └── Local/
+    │           └── {Name}MemoryDataSourceTests.swift (or {Name}UserDefaultsDataSourceTests.swift)
     ├── Shared/Fixtures/
     │   ├── {name}.json
     │   └── {name}s_response.json

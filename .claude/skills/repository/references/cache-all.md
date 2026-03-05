@@ -181,4 +181,4 @@ Real-world example with typed throws, ISP-separated contracts, and full cache st
 See the Character feature in the codebase:
 - Contract: `Features/Character/Sources/Domain/Repositories/CharacterRepositoryContract.swift`
 - Implementation: `Features/Character/Sources/Data/Repositories/CharacterRepository.swift`
-- Tests: `Features/Character/Tests/Unit/Data/CharacterRepositoryTests.swift`
+- Tests: `Features/Character/Tests/Unit/Data/Repositories/CharacterRepositoryTests.swift`

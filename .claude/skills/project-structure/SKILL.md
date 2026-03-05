@@ -163,7 +163,8 @@ FeatureName/
 │   │   │   └── UseCases/
 │   │   │       └── Get{Name}UseCaseTests.swift
 │   │   ├── Data/
-│   │   │   └── {Name}RepositoryTests.swift
+│   │   │   ├── Repositories/
+│   │   │   │   └── {Name}RepositoryTests.swift
 │   │   ├── Presentation/
 │   │   │   ├── Navigation/
 │   │   │   │   └── {Feature}DeepLinkHandlerTests.swift
@@ -294,8 +295,13 @@ Tests/
 │   │   └── UseCases/
 │   │       └── Get{Name}UseCaseTests.swift
 │   ├── Data/
-│   │   ├── {Name}RepositoryTests.swift
-│   │   └── {Name}RemoteDataSourceTests.swift
+│   │   ├── Repositories/
+│   │   │   └── {Name}RepositoryTests.swift
+│   │   └── DataSources/
+│   │       ├── Remote/
+│   │       │   └── {Name}RemoteDataSourceTests.swift
+│   │       └── Local/
+│   │           └── {Name}MemoryDataSourceTests.swift
 │   ├── Presentation/
 │   │   └── {ScreenName}/
 │   │       └── ViewModels/
