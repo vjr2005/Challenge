@@ -158,6 +158,27 @@ func endpointSupportsHTTPMethod(_ method: HTTPMethod) {
 }
 ```
 
+### Scenario-Based Parameterized Tests
+
+For ViewModel actions with multiple outcomes (success/failure/edge cases), use **scenario structs** with `@Test(arguments:)`. Each scenario defines its `Given` inputs and `Expected` outputs:
+
+```swift
+@Test("didAppear produces expected outcome per scenario", arguments: DidAppearScenario.all)
+func didAppear(scenario: DidAppearScenario) async {
+    // Given
+    getUseCaseMock.result = scenario.given.result
+
+    // When
+    await sut.didAppear()
+
+    // Then
+    #expect(sut.state == scenario.expected.state)
+    #expect(trackerMock.loadErrorDescriptions == scenario.expected.loadErrorDescriptions)
+}
+```
+
+See [references/test-patterns.md](references/test-patterns.md) for scenario struct pattern and helper methods.
+
 ---
 
 ## Test Naming
@@ -170,6 +191,47 @@ func returnsCorrectValue() { }
 // WRONG - "test" prefix
 @Test("Returns correct value")
 func testReturnsCorrectValue() { }
+```
+
+---
+
+## MARK Organization
+
+Organize tests by **method name** using `// MARK: -` sections:
+
+```swift
+// MARK: - Initial State
+// MARK: - didAppear
+// MARK: - didTapOnRetryButton
+// MARK: - didPullToRefresh
+// MARK: - didTapOnEpisodes
+// MARK: - Helpers
+```
+
+---
+
+## Consolidated Assertions
+
+Each test verifies **all side effects** of an action together (state, navigation, tracking) — do not split into separate tests:
+
+```swift
+// RIGHT — One test per action verifying all side effects
+@Test("didTapOnCharacterButton navigates to characters and tracks event")
+func didTapOnCharacterButton() {
+    // When
+    sut.didTapOnCharacterButton()
+
+    // Then
+    #expect(navigatorMock.navigateToCharactersCallCount == 1)
+    #expect(trackerMock.characterButtonTappedCallCount == 1)
+}
+
+// WRONG — Separate tests for each side effect of the same action
+@Test("didTapOnCharacterButton navigates to characters")
+func didTapOnCharacterButtonNavigates() { ... }
+
+@Test("didTapOnCharacterButton tracks event")
+func didTapOnCharacterButtonTracks() { ... }
 ```
 
 ---

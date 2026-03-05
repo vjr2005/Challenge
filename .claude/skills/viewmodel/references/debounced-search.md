@@ -9,8 +9,6 @@ Placeholders: `{Name}` (PascalCase entity), `{Screen}` (PascalCase screen), `{Fe
 ## Contract
 
 ```swift
-import Foundation
-
 protocol {Screen}ViewModelContract: AnyObject {
     var state: {Screen}ViewState { get }
     var searchQuery: String { get set }
@@ -155,7 +153,6 @@ private extension {Screen}ViewModel {
 ## Testing Debounced Search
 
 ```swift
-import Foundation
 import Testing
 
 @testable import {AppName}{Feature}

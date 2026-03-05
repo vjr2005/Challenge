@@ -9,27 +9,12 @@ Placeholders: `{Name}` (PascalCase entity), `{Screen}` (PascalCase screen), `{Fe
 ## ViewState
 
 ```swift
-import Foundation
-
 enum {Screen}ViewState {
     case idle
     case loading
     case loaded([{Name}])
     case empty
     case error({Feature}Error)
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-        case (.idle, .idle), (.loading, .loading), (.empty, .empty):
-            true
-        case let (.loaded(lhsData), .loaded(rhsData)):
-            lhsData == rhsData
-        case let (.error(lhsError), .error(rhsError)):
-            lhsError.localizedDescription == rhsError.localizedDescription
-        default:
-            false
-        }
-    }
 }
 ```
 
@@ -38,8 +23,6 @@ enum {Screen}ViewState {
 ## Contract
 
 ```swift
-import Foundation
-
 protocol {Screen}ViewModelContract: AnyObject {
     var state: {Screen}ViewState { get }
     func didAppear() async
@@ -160,14 +143,12 @@ func make{Screen}ViewModel() -> some {Screen}ViewModelContract {
 ```swift
 @testable import {AppName}{Feature}
 
-final class {Screen}ViewModelMock: {Screen}ViewModelContract, @unchecked Sendable {
+final class {Screen}ViewModelMock: {Screen}ViewModelContract {
     var state: {Screen}ViewState = .idle
     private(set) var didAppearCallCount = 0
     private(set) var didTapOnRetryButtonCallCount = 0
     private(set) var didPullToRefreshCallCount = 0
     private(set) var lastSelectedItem: {Name}?
-
-    @MainActor init() {}
 
     func didAppear() async {
         didAppearCallCount += 1
@@ -189,18 +170,23 @@ final class {Screen}ViewModelMock: {Screen}ViewModelContract, @unchecked Sendabl
 
 ## Tests
 
+Uses scenario-based parameterized tests. See `/testing` skill for the full scenario struct pattern.
+
 ```swift
-import Foundation
 import Testing
 
 @testable import {AppName}{Feature}
 
 struct {Screen}ViewModelTests {
+    // MARK: - Properties
+
     private let getUseCaseMock = Get{Name}sUseCaseMock()
     private let refreshUseCaseMock = Refresh{Name}sUseCaseMock()
     private let navigatorMock = {Screen}NavigatorMock()
     private let trackerMock = {Screen}TrackerMock()
     private let sut: {Screen}ViewModel
+
+    // MARK: - Initialization
 
     init() {
         sut = {Screen}ViewModel(
@@ -211,108 +197,137 @@ struct {Screen}ViewModelTests {
         )
     }
 
-    @Test("Initial state is idle")
+    // MARK: - Initial State
+
+    @Test("Initial state is idle before loading")
     func initialStateIsIdle() {
         #expect(sut.state == .idle)
     }
 
-    @Test("didAppear sets loaded state on success")
-    func didAppearSetsLoadedOnSuccess() async {
+    // MARK: - didAppear
+
+    @Test("didAppear produces expected outcome per scenario", arguments: DidAppearScenario.all)
+    func didAppear(scenario: DidAppearScenario) async {
         // Given
-        let expected: [{Name}] = [.stub()]
-        getUseCaseMock.result = .success(expected)
+        getUseCaseMock.result = scenario.given.result
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(sut.state == .loaded(expected))
-    }
-
-    @Test("didAppear sets empty state when no items")
-    func didAppearSetsEmptyWhenNoItems() async {
-        // Given
-        getUseCaseMock.result = .success([])
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .empty)
-    }
-
-    @Test("didAppear sets error state on failure")
-    func didAppearSetsErrorOnFailure() async {
-        // Given
-        getUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .error(.loadFailed()))
-    }
-
-    @Test("didAppear tracks screen viewed")
-    func didAppearTracksScreenViewed() async {
-        // Given
-        getUseCaseMock.result = .success([.stub()])
-
-        // When
-        await sut.didAppear()
-
-        // Then
+        #expect(getUseCaseMock.executeCallCount == 1)
         #expect(trackerMock.screenViewedCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.fetchErrorDescriptions == scenario.expected.fetchErrorDescriptions)
     }
 
-    @Test("didTapOnRetryButton retries loading")
-    func didTapOnRetryButtonRetriesLoading() async {
+    // MARK: - didTapOnRetryButton
+
+    @Test("didTapOnRetryButton produces expected outcome per scenario", arguments: DidTapOnRetryButtonScenario.all)
+    func didTapOnRetryButton(scenario: DidTapOnRetryButtonScenario) async {
         // Given
-        getUseCaseMock.result = .failure(.loadFailed())
-        await sut.didAppear()
+        await givenErrorState()
+        getUseCaseMock.result = scenario.given.result
 
         // When
-        getUseCaseMock.result = .success([.stub()])
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getUseCaseMock.executeCallCount == 2)
+        #expect(getUseCaseMock.executeCallCount == 1)
+        #expect(trackerMock.retryButtonTappedCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.fetchErrorDescriptions == scenario.expected.fetchErrorDescriptions)
     }
 
-    @Test("didPullToRefresh calls refresh use case")
-    func didPullToRefreshCallsRefreshUseCase() async {
+    // MARK: - didPullToRefresh
+
+    @Test("didPullToRefresh produces expected outcome per scenario", arguments: DidPullToRefreshScenario.all)
+    func didPullToRefresh(scenario: DidPullToRefreshScenario) async {
         // Given
-        refreshUseCaseMock.result = .success([.stub()])
+        await givenLoadedState()
+        refreshUseCaseMock.result = scenario.given.result
 
         // When
         await sut.didPullToRefresh()
 
         // Then
         #expect(refreshUseCaseMock.executeCallCount == 1)
+        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.refreshErrorDescriptions == scenario.expected.refreshErrorDescriptions)
     }
 
-    @Test("didSelect navigates to detail")
-    func didSelectNavigatesToDetail() {
+    // MARK: - didSelect
+
+    @Test("Selecting item navigates to detail and tracks selection")
+    func didSelectNavigatesToDetailAndTracksSelection() {
         // Given
-        let item = {Name}.stub()
+        let item = {Name}.stub(id: 42)
 
         // When
         sut.didSelect(item)
 
         // Then
-        #expect(navigatorMock.navigateToDetailIdentifiers == [item.id])
+        #expect(navigatorMock.navigateToDetailIdentifiers == [42])
+        #expect(trackerMock.selectedIdentifiers == [42])
     }
 
-    @Test("didSelect tracks item selected")
-    func didSelectTracksItemSelected() {
-        // Given
-        let item = {Name}.stub()
+    // MARK: - Helpers
 
-        // When
-        sut.didSelect(item)
-
-        // Then
-        #expect(trackerMock.{name}SelectedCallCount == 1)
+    private func givenErrorState() async {
+        getUseCaseMock.result = .failure(.loadFailed())
+        await sut.didAppear()
+        getUseCaseMock.reset()
+        trackerMock.reset()
     }
+
+    private func givenLoadedState() async {
+        getUseCaseMock.result = .success([.stub()])
+        await sut.didAppear()
+        getUseCaseMock.reset()
+        trackerMock.reset()
+    }
+}
+
+// MARK: - Test Helpers
+
+extension {Screen}ViewModelTests {
+    nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let result: Result<[{Name}], {Feature}Error>
+        }
+
+        struct Expected: Sendable {
+            let state: {Screen}ViewState
+            let fetchErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidAppearScenario] = [
+            DidAppearScenario(
+                testDescription: "On success sets loaded state",
+                given: Given(result: .success([.stub()])),
+                expected: Expected(state: .loaded([.stub()]), fetchErrorDescriptions: [])
+            ),
+            DidAppearScenario(
+                testDescription: "On empty result sets empty state",
+                given: Given(result: .success([])),
+                expected: Expected(state: .empty, fetchErrorDescriptions: [])
+            ),
+            DidAppearScenario(
+                testDescription: "On failure sets error state and tracks error",
+                given: Given(result: .failure(.loadFailed())),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    fetchErrorDescriptions: [{Feature}Error.loadFailed().debugDescription]
+                )
+            ),
+        ]
+    }
+
+    // DidTapOnRetryButtonScenario and DidPullToRefreshScenario follow the same pattern
 }
 ```

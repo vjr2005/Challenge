@@ -116,7 +116,7 @@ Features/{Feature}/
 
 ## Checklist
 
-- [ ] Create ViewModelContract (`AnyObject` for stateful, plain protocol for stateless)
+- [ ] Create ViewModelContract (always `AnyObject`)
 - [ ] Create ViewState enum with `==` operator (stateful only)
 - [ ] Create ViewModel (`@Observable` for stateful, plain `final class` for stateless)
 - [ ] Inject UseCases via protocol (contract)

@@ -39,35 +39,10 @@ struct CharacterDetailViewModelTests {
 
     // MARK: - didAppear
 
-    @Test("didAppear sets loaded state with character on success")
-    func didAppearSetsLoadedStateOnSuccess() async {
+    @Test("didAppear produces expected outcome per scenario", arguments: DidAppearScenario.all)
+    func didAppear(scenario: DidAppearScenario) async {
         // Given
-        let expected = Character.stub()
-        getCharacterUseCaseMock.result = .success(expected)
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .loaded(expected))
-    }
-
-    @Test("didAppear sets error state on failure")
-    func didAppearSetsErrorStateOnFailure() async {
-        // Given
-        getCharacterUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .error(.loadFailed()))
-    }
-
-    @Test("didAppear calls use case with correct character identifier")
-    func didAppearCallsUseCaseWithCorrectIdentifier() async {
-        // Given
-        getCharacterUseCaseMock.result = .success(.stub())
+        getCharacterUseCaseMock.result = scenario.given.characterResult
 
         // When
         await sut.didAppear()
@@ -75,91 +50,63 @@ struct CharacterDetailViewModelTests {
         // Then
         #expect(getCharacterUseCaseMock.executeCallCount == 1)
         #expect(getCharacterUseCaseMock.lastRequestedIdentifier == identifier)
+        #expect(trackerMock.screenViewedIdentifiers == [identifier])
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.loadErrorDescriptions == scenario.expected.loadErrorDescriptions)
     }
 
     // MARK: - didTapOnRetryButton
 
-    @Test("didTapOnRetryButton retries loading when in error state")
-    func didTapOnRetryButtonRetriesWhenError() async {
+    @Test("didTapOnRetryButton produces expected outcome per scenario", arguments: DidTapOnRetryButtonScenario.all)
+    func didTapOnRetryButton(scenario: DidTapOnRetryButtonScenario) async {
         // Given
-        getCharacterUseCaseMock.result = .failure(.loadFailed())
-        await sut.didAppear()
+        await givenErrorState()
+        getCharacterUseCaseMock.result = scenario.given.characterResult
 
         // When
-        getCharacterUseCaseMock.result = .success(.stub())
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getCharacterUseCaseMock.executeCallCount == 2)
-    }
-
-    @Test("didTapOnRetryButton always loads regardless of current state")
-    func didTapOnRetryButtonAlwaysLoads() async {
-        // Given
-        getCharacterUseCaseMock.result = .success(.stub())
-        await sut.didAppear()
         #expect(getCharacterUseCaseMock.executeCallCount == 1)
-
-        // When
-        await sut.didTapOnRetryButton()
-
-        // Then
-        #expect(getCharacterUseCaseMock.executeCallCount == 2)
+        #expect(getCharacterUseCaseMock.lastRequestedIdentifier == identifier)
+        #expect(trackerMock.retryButtonTappedCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.loadErrorDescriptions == scenario.expected.loadErrorDescriptions)
     }
 
-    // MARK: - Navigation
+    // MARK: - didTapOnEpisodes
 
-    @Test("Tap on episodes navigates to episodes with correct identifier")
-    func didTapOnEpisodesNavigatesToEpisodes() {
+    @Test("didTapOnEpisodes navigates to episodes and tracks event")
+    func didTapOnEpisodes() {
         // When
         sut.didTapOnEpisodes()
 
         // Then
         #expect(navigatorMock.navigateToEpisodesCallCount == 1)
         #expect(navigatorMock.lastNavigateToEpisodesCharacterIdentifier == identifier)
+        #expect(trackerMock.episodesButtonTappedIdentifiers == [identifier])
     }
 
     // MARK: - didPullToRefresh
 
-    @Test("didPullToRefresh updates character with fresh data from API")
-    func didPullToRefreshUpdatesCharacterFromAPI() async {
+    @Test("didPullToRefresh produces expected outcome per scenario", arguments: DidPullToRefreshScenario.all)
+    func didPullToRefresh(scenario: DidPullToRefreshScenario) async {
         // Given
-        let initialCharacter = Character.stub(name: "Initial")
-        let refreshedCharacter = Character.stub(name: "Refreshed")
-        getCharacterUseCaseMock.result = .success(initialCharacter)
-        await sut.didAppear()
-        refreshCharacterUseCaseMock.result = .success(refreshedCharacter)
+        await givenLoadedState()
+        refreshCharacterUseCaseMock.result = scenario.given.characterResult
+        let initialRefreshID = sut.imageRefreshID
 
         // When
         await sut.didPullToRefresh()
 
         // Then
         #expect(refreshCharacterUseCaseMock.executeCallCount == 1)
-        #expect(sut.state == .loaded(refreshedCharacter))
-    }
-
-    @Test("didPullToRefresh calls use case with correct character identifier")
-    func didPullToRefreshCallsUseCaseWithCorrectIdentifier() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
         #expect(refreshCharacterUseCaseMock.lastRequestedIdentifier == identifier)
-    }
-
-    @Test("didPullToRefresh sets error state on failure")
-    func didPullToRefreshSetsErrorStateOnFailure() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(sut.state == .error(.loadFailed()))
+        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(imageLoaderMock.removeCachedImageCallCount == scenario.expected.removeCachedImageCallCount)
+        #expect((sut.imageRefreshID != initialRefreshID) == scenario.expected.imageRefreshIDChanged)
+        #expect(trackerMock.refreshErrorDescriptions == scenario.expected.refreshErrorDescriptions)
     }
 
     @Test("didPullToRefresh keeps loaded state visible during network request")
@@ -184,184 +131,135 @@ struct CharacterDetailViewModelTests {
         #expect(statesDuringRefresh.first == .loaded(loadedCharacter))
     }
 
-    // MARK: - Image Cache Invalidation
+    // MARK: - Helpers
 
-    @Test("didPullToRefresh invalidates image from cache on success")
-    func didPullToRefreshInvalidatesImageOnSuccess() async throws {
-        // Given
-        let imageURL = try #require(URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
-        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: imageURL))
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(imageLoaderMock.removeCachedImageCallCount == 1)
-        #expect(imageLoaderMock.removeCachedImageLastURL == imageURL)
-    }
-
-    @Test("didPullToRefresh does not invalidate image on failure")
-    func didPullToRefreshDoesNotInvalidateImageOnFailure() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(imageLoaderMock.removeCachedImageCallCount == 0)
-    }
-
-    @Test("didPullToRefresh does not invalidate when character has no image URL")
-    func didPullToRefreshDoesNotInvalidateWhenNoImageURL() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: nil))
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(imageLoaderMock.removeCachedImageCallCount == 0)
-    }
-
-    // MARK: - Image Refresh ID
-
-    @Test("didPullToRefresh generates new imageRefreshID on success with image URL")
-    func didPullToRefreshGeneratesNewImageRefreshIDOnSuccess() async throws {
-        // Given
-        let imageURL = try #require(URL(string: "https://rickandmortyapi.com/api/character/avatar/1.jpeg"))
-        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: imageURL))
-        let initialRefreshID = sut.imageRefreshID
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(sut.imageRefreshID != initialRefreshID)
-    }
-
-    @Test("didPullToRefresh does not change imageRefreshID on failure")
-    func didPullToRefreshDoesNotChangeImageRefreshIDOnFailure() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
-        let initialRefreshID = sut.imageRefreshID
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(sut.imageRefreshID == initialRefreshID)
-    }
-
-    @Test("didPullToRefresh does not change imageRefreshID when character has no image URL")
-    func didPullToRefreshDoesNotChangeImageRefreshIDWhenNoImageURL() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .success(.stub(imageURL: nil))
-        let initialRefreshID = sut.imageRefreshID
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(sut.imageRefreshID == initialRefreshID)
-    }
-
-    // MARK: - Tracking
-
-    @Test("didAppear tracks screen viewed with identifier")
-    func didAppearTracksScreenViewed() async {
-        // Given
-        getCharacterUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(trackerMock.screenViewedIdentifiers == [identifier])
-    }
-
-    @Test("didTapOnRetryButton tracks retry button tapped")
-    func didTapOnRetryButtonTracksRetryButtonTapped() async {
-        // Given
-        getCharacterUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didTapOnRetryButton()
-
-        // Then
-        #expect(trackerMock.retryButtonTappedCallCount == 1)
-    }
-
-    @Test("didPullToRefresh tracks pull to refresh triggered")
-    func didPullToRefreshTracksPullToRefreshTriggered() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
-    }
-
-    @Test("didTapOnEpisodes tracks episodes button tapped with identifier")
-    func didTapOnEpisodesTracksEpisodesButtonTapped() {
-        // When
-        sut.didTapOnEpisodes()
-
-        // Then
-        #expect(trackerMock.episodesButtonTappedIdentifiers == [identifier])
-    }
-
-    // MARK: - Error Tracking
-
-    @Test("didAppear tracks load error on failure")
-    func didAppearTracksLoadErrorOnFailure() async {
-        // Given
+    private func givenErrorState() async {
         getCharacterUseCaseMock.result = .failure(.loadFailed())
-
-        // When
         await sut.didAppear()
-
-        // Then
-        #expect(trackerMock.loadErrorDescriptions.count == 1)
-        #expect(trackerMock.loadErrorDescriptions.first == CharacterError.loadFailed().debugDescription)
+        getCharacterUseCaseMock.reset()
+        trackerMock.reset()
     }
 
-    @Test("didAppear does not track load error on success")
-    func didAppearDoesNotTrackLoadErrorOnSuccess() async {
-        // Given
+    private func givenLoadedState() async {
         getCharacterUseCaseMock.result = .success(.stub())
-
-        // When
         await sut.didAppear()
+        getCharacterUseCaseMock.reset()
+        trackerMock.reset()
+    }
+}
 
-        // Then
-        #expect(trackerMock.loadErrorDescriptions.isEmpty)
+// MARK: - Test Helpers
+
+extension CharacterDetailViewModelTests {
+    nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let characterResult: Result<Character, CharacterError>
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterDetailViewState
+            let loadErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidAppearScenario] = [
+            DidAppearScenario(
+                testDescription: "On success sets loaded state without tracking error",
+                given: Given(characterResult: .success(.stub())),
+                expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
+            ),
+            DidAppearScenario(
+                testDescription: "On failure sets error state and tracks load error",
+                given: Given(characterResult: .failure(.loadFailed())),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    loadErrorDescriptions: [CharacterError.loadFailed().debugDescription]
+                )
+            )
+        ]
     }
 
-    @Test("didPullToRefresh tracks refresh error on failure")
-    func didPullToRefreshTracksRefreshErrorOnFailure() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .failure(.loadFailed())
+    nonisolated struct DidTapOnRetryButtonScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let characterResult: Result<Character, CharacterError>
+        }
 
-        // When
-        await sut.didPullToRefresh()
+        struct Expected: Sendable {
+            let state: CharacterDetailViewState
+            let loadErrorDescriptions: [String]
+        }
 
-        // Then
-        #expect(trackerMock.refreshErrorDescriptions.count == 1)
-        #expect(trackerMock.refreshErrorDescriptions.first == CharacterError.loadFailed().debugDescription)
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidTapOnRetryButtonScenario] = [
+            DidTapOnRetryButtonScenario(
+                testDescription: "On success sets loaded state without tracking error",
+                given: Given(characterResult: .success(.stub())),
+                expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
+            ),
+            DidTapOnRetryButtonScenario(
+                testDescription: "On failure sets error state and tracks load error",
+                given: Given(characterResult: .failure(.loadFailed())),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    loadErrorDescriptions: [CharacterError.loadFailed().debugDescription]
+                )
+            )
+        ]
     }
 
-    @Test("didPullToRefresh does not track refresh error on success")
-    func didPullToRefreshDoesNotTrackRefreshErrorOnSuccess() async {
-        // Given
-        refreshCharacterUseCaseMock.result = .success(.stub())
+    nonisolated struct DidPullToRefreshScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let characterResult: Result<Character, CharacterError>
+        }
 
-        // When
-        await sut.didPullToRefresh()
+        struct Expected: Sendable {
+            let state: CharacterDetailViewState
+            let removeCachedImageCallCount: Int
+            let imageRefreshIDChanged: Bool
+            let refreshErrorDescriptions: [String]
+        }
 
-        // Then
-        #expect(trackerMock.refreshErrorDescriptions.isEmpty)
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidPullToRefreshScenario] = [
+            DidPullToRefreshScenario(
+                testDescription: "On success with image URL invalidates cache and updates refresh ID",
+                given: Given(characterResult: .success(.stub(imageURL: URL(string: "https://example.com/avatar.jpeg")))),
+                expected: Expected(
+                    state: .loaded(.stub(imageURL: URL(string: "https://example.com/avatar.jpeg"))),
+                    removeCachedImageCallCount: 1,
+                    imageRefreshIDChanged: true,
+                    refreshErrorDescriptions: []
+                )
+            ),
+            DidPullToRefreshScenario(
+                testDescription: "On success without image URL skips cache invalidation",
+                given: Given(characterResult: .success(.stub(imageURL: nil))),
+                expected: Expected(
+                    state: .loaded(.stub(imageURL: nil)),
+                    removeCachedImageCallCount: 0,
+                    imageRefreshIDChanged: false,
+                    refreshErrorDescriptions: []
+                )
+            ),
+            DidPullToRefreshScenario(
+                testDescription: "On failure sets error state and tracks refresh error",
+                given: Given(characterResult: .failure(.loadFailed())),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    removeCachedImageCallCount: 0,
+                    imageRefreshIDChanged: false,
+                    refreshErrorDescriptions: [CharacterError.loadFailed().debugDescription]
+                )
+            )
+        ]
     }
 }

@@ -1,6 +1,6 @@
 @testable import ChallengeHome
 
-final class HomeNavigatorMock: HomeNavigatorContract, @unchecked Sendable {
+final class HomeNavigatorMock: HomeNavigatorContract {
     private(set) var navigateToCharactersCallCount = 0
     private(set) var presentAboutCallCount = 0
 

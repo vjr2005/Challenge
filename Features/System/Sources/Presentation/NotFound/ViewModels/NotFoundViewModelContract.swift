@@ -1,4 +1,4 @@
-protocol NotFoundViewModelContract {
+protocol NotFoundViewModelContract: AnyObject {
     func didAppear()
     func didTapGoBack()
 }

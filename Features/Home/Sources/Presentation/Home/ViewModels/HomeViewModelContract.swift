@@ -1,6 +1,4 @@
-import Foundation
-
-protocol HomeViewModelContract {
+protocol HomeViewModelContract: AnyObject {
     func didAppear()
     func didTapOnCharacterButton()
     func didTapOnInfoButton()

@@ -131,10 +131,103 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 
 **Why this is safe:** The actor that owns the mock serializes all calls. Tests configure the mock on MainActor (setup) and verify on MainActor (assertions) — no concurrent access. No `await` needed for mock property reads/writes.
 
-**When to use which pattern:**
+### Mock Pattern for MainActor-Isolated Contracts (Navigator, Tracker, Delegate, ViewModel)
+
+When mocking contracts that are MainActor-isolated by default (no `nonisolated` or `Sendable`), use plain `final class` — no `@unchecked Sendable` or `@MainActor init()` needed:
+
+```swift
+// Contract — MainActor-isolated by default (project default isolation)
+protocol {Screen}NavigatorContract {
+    func navigateToDetail(identifier: Int)
+    func goBack()
+}
+
+// Mock — plain final class, no Sendable annotations needed
+final class {Screen}NavigatorMock: {Screen}NavigatorContract {
+    private(set) var navigateToDetailIdentifiers: [Int] = []
+    private(set) var goBackCallCount = 0
+
+    func navigateToDetail(identifier: Int) {
+        navigateToDetailIdentifiers.append(identifier)
+    }
+
+    func goBack() {
+        goBackCallCount += 1
+    }
+}
+```
+
+**Why no `@unchecked Sendable`:** With `SWIFT_APPROACHABLE_CONCURRENCY = YES`, MainActor-isolated types are implicitly Sendable.
+
+### Mock `reset()` Method
+
+All mocks should provide a `reset()` method to clear call counts and captured parameters. Used by helper methods to isolate test preconditions:
+
+```swift
+final class Get{Name}UseCaseMock: Get{Name}UseCaseContract {
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
+    private(set) var executeCallCount = 0
+    private(set) var lastRequestedIdentifier: Int?
+
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+        executeCallCount += 1
+        lastRequestedIdentifier = identifier
+        return try result.get()
+    }
+
+    func reset() {
+        executeCallCount = 0
+        lastRequestedIdentifier = nil
+    }
+}
+```
+
+### Mock `onExecute` Closure
+
+For testing intermediate state during async operations (e.g., verifying state while an async method is executing), add an `onExecute` closure:
+
+```swift
+final class Refresh{Name}UseCaseMock: Refresh{Name}UseCaseContract, @unchecked Sendable {
+    var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
+    var onExecute: (() -> Void)?
+    private(set) var executeCallCount = 0
+
+    func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
+        executeCallCount += 1
+        onExecute?()
+        return try result.get()
+    }
+}
+```
+
+Usage in tests:
+
+```swift
+@Test("didPullToRefresh keeps loaded state visible during network request")
+func didPullToRefreshKeepsLoadedStateDuringRequest() async {
+    // Given
+    await givenLoadedState()
+    refreshUseCaseMock.result = .success(.stub())
+
+    var statesDuringRefresh: [{Screen}ViewState] = []
+    refreshUseCaseMock.onExecute = { [weak sut] in
+        guard let sut else { return }
+        statesDuringRefresh.append(sut.state)
+    }
+
+    // When
+    await sut.didPullToRefresh()
+
+    // Then
+    #expect(statesDuringRefresh.first == .loaded(loadedData))
+}
+```
+
+### When to use which pattern
 
 | Protocol type | Mock type | Properties | Methods | `await` in tests |
 |--------------|-----------|------------|---------|-----------------|
+| MainActor-isolated (default) | `final class` | Direct `var`/`private(set)` | Default-isolated | No |
 | `: Actor` | `actor` | `private(set)` + setter methods | Actor-isolated | Yes, for all access |
 | `nonisolated protocol` + `@concurrent` | `nonisolated final class @unchecked Sendable` | Direct `var`/`private(set)` | `@concurrent` | No |
 | `: Sendable` + `nonisolated` methods | `final class @unchecked Sendable` | `nonisolated(unsafe)` | `nonisolated` | No |

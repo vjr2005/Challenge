@@ -9,13 +9,13 @@ Placeholders: `{Name}` (PascalCase screen), `{Feature}` (PascalCase module), `{A
 ## Contract
 
 ```swift
-protocol {Name}ViewModelContract {
+protocol {Name}ViewModelContract: AnyObject {
     func didAppear()
     func didTapOn{Action}()
 }
 ```
 
-No `AnyObject` needed unless View uses `@State`. No `async` — stateless ViewModels are synchronous.
+No `async` — stateless ViewModels are synchronous.
 
 ## ViewModel
 
@@ -75,11 +75,9 @@ func make{Name}ViewModel() -> some {Name}ViewModelContract {
 ```swift
 @testable import {AppName}{Feature}
 
-final class {Name}ViewModelMock: {Name}ViewModelContract, @unchecked Sendable {
+final class {Name}ViewModelMock: {Name}ViewModelContract {
     private(set) var didAppearCallCount = 0
     private(set) var didTapOn{Action}CallCount = 0
-
-    @MainActor init() {}
 
     func didAppear() {
         didAppearCallCount += 1
@@ -94,19 +92,24 @@ final class {Name}ViewModelMock: {Name}ViewModelContract, @unchecked Sendable {
 ## Tests
 
 ```swift
-import Foundation
 import Testing
 
 @testable import {AppName}{Feature}
 
 struct {Name}ViewModelTests {
+    // MARK: - Properties
+
     private let navigatorMock = {Name}NavigatorMock()
     private let trackerMock = {Name}TrackerMock()
     private let sut: {Name}ViewModel
 
+    // MARK: - Initialization
+
     init() {
         sut = {Name}ViewModel(navigator: navigatorMock, tracker: trackerMock)
     }
+
+    // MARK: - didAppear
 
     @Test("didAppear tracks screen viewed")
     func didAppearTracksScreenViewed() {
@@ -117,21 +120,15 @@ struct {Name}ViewModelTests {
         #expect(trackerMock.screenViewedCallCount == 1)
     }
 
-    @Test("didTapOn{Action} navigates to {Destination}")
-    func didTapOn{Action}NavigatesToDestination() {
+    // MARK: - didTapOn{Action}
+
+    @Test("didTapOn{Action} navigates to {Destination} and tracks event")
+    func didTapOn{Action}() {
         // When
         sut.didTapOn{Action}()
 
         // Then
         #expect(navigatorMock.navigateTo{Destination}CallCount == 1)
-    }
-
-    @Test("didTapOn{Action} tracks button tapped")
-    func didTapOn{Action}TracksButtonTapped() {
-        // When
-        sut.didTapOn{Action}()
-
-        // Then
         #expect(trackerMock.{action}ButtonTappedCallCount == 1)
     }
 }

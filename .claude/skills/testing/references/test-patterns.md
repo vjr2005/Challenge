@@ -5,7 +5,6 @@
 For tests without shared dependencies, use inline setup:
 
 ```swift
-import Foundation
 import Testing
 
 @testable import {AppName}Character
@@ -35,17 +34,16 @@ struct GetCharacterUseCaseTests {
 For tests that share mocks and SUT across multiple tests, use instance variables with `init()`:
 
 ```swift
-import Foundation
 import Testing
 
 @testable import {AppName}Character
 
-@Suite(.timeLimit(.minutes(1)))
 struct CharacterListViewModelTests {
     // MARK: - Properties
 
     private let useCaseMock = GetCharactersPageUseCaseMock()
     private let navigatorMock = CharacterListNavigatorMock()
+    private let trackerMock = CharacterListTrackerMock()
     private let sut: CharacterListViewModel
 
     // MARK: - Initialization
@@ -53,33 +51,22 @@ struct CharacterListViewModelTests {
     init() {
         sut = CharacterListViewModel(
             getCharactersPageUseCase: useCaseMock,
-            navigator: navigatorMock
+            navigator: navigatorMock,
+            tracker: trackerMock
         )
     }
 
-    // MARK: - Tests
+    // MARK: - Initial State
 
-    @Test("Initial state is idle")
+    @Test("Initial state is idle before loading")
     func initialStateIsIdle() {
-        // Then
         #expect(sut.state == .idle)
     }
 
-    @Test("Load sets loaded state on success")
-    func loadSetsLoadedStateOnSuccess() async {
-        // Given
-        let expected = CharactersPage.stub()
-        useCaseMock.result = .success(expected)
+    // MARK: - didSelect
 
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .loaded(expected))
-    }
-
-    @Test("Did select navigates to character detail")
-    func didSelectNavigatesToCharacterDetail() {
+    @Test("Selecting character navigates to detail and tracks selection")
+    func didSelectNavigatesToCharacterDetailAndTracksSelection() {
         // Given
         let character = Character.stub(id: 42)
 
@@ -87,7 +74,8 @@ struct CharacterListViewModelTests {
         sut.didSelect(character)
 
         // Then
-        #expect(navigatorMock.navigateToDetailIds == [42])
+        #expect(navigatorMock.navigateToDetailIdentifiers == [42])
+        #expect(trackerMock.selectedIdentifiers == [42])
     }
 }
 ```
@@ -97,6 +85,132 @@ struct CharacterListViewModelTests {
 - `// Given` section only contains test-specific configuration
 - Mocks configured on the instance, SUT created in `init()`
 - Each test method gets a fresh instance (Swift Testing creates new struct per test)
+- **MARK sections organized by method name** (`// MARK: - didAppear`, `// MARK: - didSelect`)
+- **Consolidated assertions**: Each test verifies all side effects of an action (state, navigation, tracking)
+
+---
+
+## Scenario-Based Parameterized Tests (for Stateful ViewModels)
+
+For ViewModel actions with multiple outcomes (success/failure/edge cases), use **scenario structs** with `@Test(arguments:)`. This replaces individual tests per outcome with a single parameterized test:
+
+### Scenario Struct Pattern
+
+```swift
+// MARK: - Test Helpers
+
+extension {Screen}ViewModelTests {
+    nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let result: Result<{Name}, {Feature}Error>
+        }
+
+        struct Expected: Sendable {
+            let state: {Screen}ViewState
+            let loadErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidAppearScenario] = [
+            DidAppearScenario(
+                testDescription: "On success sets loaded state without tracking error",
+                given: Given(result: .success(.stub())),
+                expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
+            ),
+            DidAppearScenario(
+                testDescription: "On failure sets error state and tracks load error",
+                given: Given(result: .failure(.loadFailed())),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    loadErrorDescriptions: [{Feature}Error.loadFailed().debugDescription]
+                )
+            ),
+        ]
+    }
+}
+```
+
+**Rules:**
+- `nonisolated struct` + `Sendable` + `CustomTestStringConvertible` — required for Swift Testing arguments
+- Inner `Given` and `Expected` structs for clear input/output separation
+- `testDescription` provides readable test names in output
+- `static let all` defines all scenarios in one place
+- Place in `// MARK: - Test Helpers` extension at the end of the test file
+
+### Using Scenarios in Tests
+
+```swift
+// MARK: - didAppear
+
+@Test("didAppear produces expected outcome per scenario", arguments: DidAppearScenario.all)
+func didAppear(scenario: DidAppearScenario) async {
+    // Given
+    getUseCaseMock.result = scenario.given.result
+
+    // When
+    await sut.didAppear()
+
+    // Then
+    #expect(getUseCaseMock.executeCallCount == 1)
+    #expect(trackerMock.screenViewedCallCount == 1)
+    #expect(sut.state == scenario.expected.state)
+    #expect(trackerMock.loadErrorDescriptions == scenario.expected.loadErrorDescriptions)
+}
+```
+
+### Helper Methods for Test Preconditions
+
+Use `givenXxx()` helper methods to set up common preconditions. Call `reset()` on mocks to clear state from setup:
+
+```swift
+// MARK: - Helpers
+
+private func givenErrorState() async {
+    getUseCaseMock.result = .failure(.loadFailed())
+    await sut.didAppear()
+    getUseCaseMock.reset()
+    trackerMock.reset()
+}
+
+private func givenLoadedState() async {
+    getUseCaseMock.result = .success(.stub())
+    await sut.didAppear()
+    getUseCaseMock.reset()
+    trackerMock.reset()
+}
+```
+
+**Then use in tests:**
+
+```swift
+// MARK: - didTapOnRetryButton
+
+@Test("didTapOnRetryButton produces expected outcome per scenario", arguments: DidTapOnRetryButtonScenario.all)
+func didTapOnRetryButton(scenario: DidTapOnRetryButtonScenario) async {
+    // Given
+    await givenErrorState()
+    getUseCaseMock.result = scenario.given.result
+
+    // When
+    await sut.didTapOnRetryButton()
+
+    // Then
+    #expect(getUseCaseMock.executeCallCount == 1)
+    #expect(trackerMock.retryButtonTappedCallCount == 1)
+    #expect(sut.state == scenario.expected.state)
+}
+```
+
+**When to use scenarios vs. simple tests:**
+
+| Pattern | When |
+|---------|------|
+| Scenario-based | Stateful ViewModel actions with success/failure outcomes |
+| Consolidated assertion | Synchronous actions with single outcome (navigation + tracking) |
+| Simple test | Non-ViewModel tests, single-case behaviors |
 
 ---
 

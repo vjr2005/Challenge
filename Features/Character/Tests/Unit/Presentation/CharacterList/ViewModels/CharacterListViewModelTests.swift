@@ -43,162 +43,124 @@ struct CharacterListViewModelTests {
 
     // MARK: - didAppear
 
-    @Test("didAppear sets loaded state with characters on success")
-    func didAppearSetsLoadedStateOnSuccess() async {
+    @Test("didAppear produces expected outcome per scenario", arguments: DidAppearScenario.all)
+    func didAppear(scenario: DidAppearScenario) async {
         // Given
-        let expected = CharactersPage.stub()
-        getCharactersPageUseCaseMock.result = .success(expected)
+        getCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
+        searchCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
+        getRecentSearchesUseCaseMock.searches = scenario.given.recentSearches
+        if !scenario.given.searchQuery.isEmpty {
+            await givenActiveSearchQuery(scenario.given.searchQuery)
+        }
 
         // When
         await sut.didAppear()
 
         // Then
-        #expect(sut.state == .loaded(expected))
-    }
-
-    @Test("didAppear sets empty state when no characters returned")
-    func didAppearSetsEmptyStateWhenNoCharacters() async {
-        // Given
-        let emptyPage = CharactersPage.stub(characters: [])
-        getCharactersPageUseCaseMock.result = .success(emptyPage)
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .empty)
-    }
-
-    @Test("didAppear sets error state on failure")
-    func didAppearSetsErrorStateOnFailure() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.state == .error(.loadFailed()))
-    }
-
-    @Test("didAppear calls use case requesting page one")
-    func didAppearCallsUseCaseWithPageOne() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
-        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 1)
+        #expect(trackerMock.screenViewedCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == scenario.expected.getCharactersPageExecuteCallCount)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == scenario.expected.lastRequestedPage)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == scenario.expected.searchCharactersPageExecuteCallCount)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == scenario.expected.searchFilterName)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.fetchErrorDescriptions == scenario.expected.fetchErrorDescriptions)
+        #expect(sut.recentSearches == scenario.expected.recentSearches)
     }
 
     // MARK: - didTapOnRetryButton
 
-    @Test("didTapOnRetryButton retries loading when in error state")
-    func didTapOnRetryButtonRetriesWhenError() async {
+    @Test("didTapOnRetryButton produces expected outcome per scenario", arguments: DidTapOnRetryButtonScenario.all)
+    func didTapOnRetryButton(scenario: DidTapOnRetryButtonScenario) async {
         // Given
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
-        await sut.didAppear()
+        await givenErrorState()
+        getCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
 
         // When
-        getCharactersPageUseCaseMock.result = .success(.stub())
         await sut.didTapOnRetryButton()
 
         // Then
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 2)
-    }
-
-    @Test("didTapOnRetryButton always loads regardless of current state")
-    func didTapOnRetryButtonAlwaysLoads() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-        await sut.didAppear()
         #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
-
-        // When
-        await sut.didTapOnRetryButton()
-
-        // Then
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 2)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 1)
+        #expect(trackerMock.retryButtonTappedCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.fetchErrorDescriptions == scenario.expected.fetchErrorDescriptions)
     }
 
     // MARK: - didTapOnLoadMoreButton
 
-    @Test("didTapOnLoadMoreButton appends new characters to existing list")
-    func didTapOnLoadMoreButtonAppendsCharactersToExistingPage() async {
+    @Test("didTapOnLoadMoreButton produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonScenario.all)
+    func didTapOnLoadMoreButton(scenario: DidTapOnLoadMoreButtonScenario) async {
         // Given
-        let firstPageCharacters = [Character.stub(id: 1)]
-        let secondPageCharacters = [Character.stub(id: 2)]
-        let firstPage = CharactersPage.stub(characters: firstPageCharacters, currentPage: 1, hasNextPage: true)
-        let secondPage = CharactersPage.stub(characters: secondPageCharacters, currentPage: 2, hasNextPage: false)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .success(secondPage)
+        await givenLoadedStateWithNextPage()
+        getCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        let expected = CharactersPage.stub(
-            characters: [Character.stub(id: 1), Character.stub(id: 2)],
-            currentPage: 2,
-            hasNextPage: false,
-            hasPreviousPage: false
-        )
-        #expect(sut.state == .loaded(expected))
+        #expect(trackerMock.loadMoreButtonTappedCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 2)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 0)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
     }
 
-    @Test("didTapOnLoadMoreButton increments page number")
-    func didTapOnLoadMoreButtonIncrementsPage() async {
+    @Test("didTapOnLoadMoreButton with search query produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonWithSearchQueryScenario.all)
+    func didTapOnLoadMoreButtonWithSearchQuery(scenario: DidTapOnLoadMoreButtonWithSearchQueryScenario) async {
         // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
+        await givenLoadedStateWithNextPageAndSearchQuery(scenario.given.searchQuery)
+        searchCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        #expect(getCharactersPageUseCaseMock.lastRequestedPage == 2)
+        #expect(trackerMock.loadMoreButtonTappedCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 2)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == scenario.given.searchQuery)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
+    }
+
+    @Test("didTapOnLoadMoreButton with character filter produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonWithCharacterFilterScenario.all)
+    func didTapOnLoadMoreButtonWithCharacterFilter(scenario: DidTapOnLoadMoreButtonWithCharacterFilterScenario) async {
+        // Given
+        await givenLoadedStateWithNextPageAndCharacterFilter(scenario.given.characterFilter)
+        searchCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
+
+        // When
+        await sut.didTapOnLoadMoreButton()
+
+        // Then
+        #expect(trackerMock.loadMoreButtonTappedCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 2)
+        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == scenario.given.characterFilter.status)
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
     }
 
     @Test("didTapOnLoadMoreButton does nothing when no next page available")
     func didTapOnLoadMoreButtonDoesNothingWhenNoNextPage() async {
         // Given
-        let lastPage = CharactersPage.stub(hasNextPage: false)
-        getCharactersPageUseCaseMock.result = .success(lastPage)
-        await sut.didAppear()
+        await givenLoadedStateWithoutNextPage()
 
         // When
         await sut.didTapOnLoadMoreButton()
 
         // Then
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
-    }
-
-    @Test("didTapOnLoadMoreButton keeps existing data on error")
-    func didTapOnLoadMoreButtonKeepsExistingDataOnError() async {
-        // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(sut.state == .loaded(firstPage))
+        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
+        #expect(trackerMock.loadMoreButtonTappedCallCount == 0)
     }
 
     @Test("didTapOnLoadMoreButton reverts page number on error for retry")
     func didTapOnLoadMoreButtonRevertsPageOnError() async {
         // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
+        await givenLoadedStateWithNextPage()
         getCharactersPageUseCaseMock.result = .failure(.loadFailed())
         await sut.didTapOnLoadMoreButton()
 
@@ -212,8 +174,8 @@ struct CharacterListViewModelTests {
 
     // MARK: - Navigation
 
-    @Test("Selecting character navigates to detail screen")
-    func didSelectNavigatesToCharacterDetail() {
+    @Test("Selecting character navigates to detail and tracks selection")
+    func didSelectNavigatesToCharacterDetailAndTracksSelection() {
         // Given
         let character = Character.stub(id: 42)
 
@@ -222,15 +184,10 @@ struct CharacterListViewModelTests {
 
         // Then
         #expect(navigatorMock.navigateToDetailIdentifiers == [42])
+        #expect(trackerMock.selectedIdentifiers == [42])
     }
 
     // MARK: - Search
-
-    @Test("Initial searchQuery is empty string")
-    func initialSearchQueryIsEmpty() {
-        // Then
-        #expect(sut.searchQuery == "")
-    }
 
     @Test("Search query change triggers search use case after debounce delay")
     func searchQueryChangeTriggersSearchAfterDebounce() async {
@@ -261,50 +218,6 @@ struct CharacterListViewModelTests {
         #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Rick")
     }
 
-    @Test("didAppear uses search use case when query is set")
-    func didAppearUsesSearchUseCaseWhenQueryIsSet() async {
-        // Given
-        searchCharactersPageUseCaseMock.result = .success(.stub())
-        sut.searchQuery = "Morty"
-        await sut.searchTask?.value
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Morty")
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 0)
-    }
-
-    @Test("didTapOnLoadMoreButton uses search use case when query is set")
-    func didTapOnLoadMoreButtonUsesSearchUseCaseWhenQueryIsSet() async {
-        // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        searchCharactersPageUseCaseMock.result = .success(firstPage)
-        sut.searchQuery = "Summer"
-        await sut.searchTask?.value
-        await sut.didAppear()
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Summer")
-    }
-
-    @Test("Empty search query uses get characters use case")
-    func emptySearchQueryUsesGetCharactersPageUseCase() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(getCharactersPageUseCaseMock.executeCallCount == 1)
-        #expect(searchCharactersPageUseCaseMock.executeCallCount == 0)
-    }
-
     @Test("Whitespace-only search query uses get characters use case")
     func whitespaceOnlySearchQueryUsesGetCharactersPageUseCase() async {
         // Given
@@ -322,12 +235,7 @@ struct CharacterListViewModelTests {
     @Test("Search query change resets to page one")
     func searchQueryChangeResetsToPageOne() async {
         // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        let secondPage = CharactersPage.stub(currentPage: 2, hasNextPage: false)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .success(secondPage)
-        await sut.didTapOnLoadMoreButton()
+        await givenLoadedStateOnPage2()
 
         // When
         searchCharactersPageUseCaseMock.result = .success(.stub())
@@ -369,42 +277,31 @@ struct CharacterListViewModelTests {
 
     // MARK: - didPullToRefresh
 
-    @Test("didPullToRefresh calls refresh use case")
-    func didPullToRefreshCallsRefreshUseCase() async {
+    @Test("didPullToRefresh produces expected outcome per scenario", arguments: DidPullToRefreshScenario.all)
+    func didPullToRefresh(scenario: DidPullToRefreshScenario) async {
         // Given
-        refreshCharactersPageUseCaseMock.result = .success(.stub())
+        if scenario.given.loadMoreBeforeRefresh {
+            await givenLoadedStateOnPage2()
+        } else {
+            await givenLoadedState()
+        }
+        refreshCharactersPageUseCaseMock.result = scenario.given.charactersPageResult
 
         // When
         await sut.didPullToRefresh()
 
         // Then
         #expect(refreshCharactersPageUseCaseMock.executeCallCount == 1)
-    }
-
-    @Test("didPullToRefresh resets to page one")
-    func didPullToRefreshResetsToPageOne() async {
-        // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        let secondPage = CharactersPage.stub(currentPage: 2, hasNextPage: false)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .success(secondPage)
-        await sut.didTapOnLoadMoreButton()
-        refreshCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
         #expect(refreshCharactersPageUseCaseMock.lastRequestedPage == 1)
+        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
+        #expect(sut.state == scenario.expected.state)
+        #expect(trackerMock.refreshErrorDescriptions == scenario.expected.refreshErrorDescriptions)
     }
 
     @Test("didPullToRefresh keeps loaded state visible during network request")
     func didPullToRefreshKeepsLoadedStateDuringRequest() async {
         // Given
-        let loadedPage = CharactersPage.stub()
-        getCharactersPageUseCaseMock.result = .success(loadedPage)
-        await sut.didAppear()
+        await givenLoadedState()
         refreshCharactersPageUseCaseMock.result = .success(.stub())
 
         var statesDuringRefresh: [CharacterListViewState] = []
@@ -418,25 +315,18 @@ struct CharacterListViewModelTests {
 
         // Then
         #expect(statesDuringRefresh.count == 1)
-        #expect(statesDuringRefresh.first == .loaded(loadedPage))
+        #expect(statesDuringRefresh.first == .loaded(.stub()))
     }
 
     @Test("didPullToRefresh followed by load more fetches next page from use case")
     func didPullToRefreshFollowedByLoadMoreFetchesNextPage() async {
         // Given
-        let firstPage = CharactersPage.stub(
-            characters: [Character.stub(id: 1)],
-            currentPage: 1,
-            hasNextPage: true
-        )
-        let secondPage = CharactersPage.stub(
+        await givenLoadedStateWithNextPage()
+        getCharactersPageUseCaseMock.result = .success(CharactersPage.stub(
             characters: [Character.stub(id: 2)],
             currentPage: 2,
             hasNextPage: true
-        )
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .success(secondPage)
+        ))
         await sut.didTapOnLoadMoreButton()
 
         // When - pull to refresh resets to page 1
@@ -462,56 +352,7 @@ struct CharacterListViewModelTests {
         #expect(getCharactersPageUseCaseMock.lastRequestedPage == 2)
     }
 
-    @Test("didPullToRefresh sets empty state when no characters returned")
-    func didPullToRefreshSetsEmptyStateWhenNoCharacters() async {
-        // Given
-        let emptyPage = CharactersPage.stub(characters: [])
-        refreshCharactersPageUseCaseMock.result = .success(emptyPage)
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(sut.state == .empty)
-    }
-
-    @Test("didPullToRefresh sets error state on failure")
-    func didPullToRefreshSetsErrorStateOnFailure() async {
-        // Given
-        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(sut.state == .error(.loadFailed()))
-    }
-
     // MARK: - Tracking
-
-    @Test("didAppear tracks screen viewed")
-    func didAppearTracksScreenViewed() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(trackerMock.screenViewedCallCount == 1)
-    }
-
-    @Test("Selecting character tracks character selected with identifier")
-    func didSelectTracksCharacterSelected() {
-        // Given
-        let character = Character.stub(id: 42)
-
-        // When
-        sut.didSelect(character)
-
-        // Then
-        #expect(trackerMock.selectedIdentifiers == [42])
-    }
 
     @Test("Search query change tracks search performed after debounce")
     func searchQueryChangeTracksSearchPerformed() async {
@@ -540,160 +381,7 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.searchedQueries.isEmpty)
     }
 
-    @Test("didTapOnRetryButton tracks retry button tapped")
-    func didTapOnRetryButtonTracksRetryButtonTapped() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didTapOnRetryButton()
-
-        // Then
-        #expect(trackerMock.retryButtonTappedCallCount == 1)
-    }
-
-    @Test("didPullToRefresh tracks pull to refresh triggered")
-    func didPullToRefreshTracksPullToRefreshTriggered() async {
-        // Given
-        refreshCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(trackerMock.pullToRefreshTriggeredCallCount == 1)
-    }
-
-    @Test("didTapOnLoadMoreButton tracks load more button tapped")
-    func didTapOnLoadMoreButtonTracksLoadMoreButtonTapped() async {
-        // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(trackerMock.loadMoreButtonTappedCallCount == 1)
-    }
-
-    @Test("didTapOnLoadMoreButton does not track when no next page")
-    func didTapOnLoadMoreButtonDoesNotTrackWhenNoNextPage() async {
-        // Given
-        let lastPage = CharactersPage.stub(hasNextPage: false)
-        getCharactersPageUseCaseMock.result = .success(lastPage)
-        await sut.didAppear()
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(trackerMock.loadMoreButtonTappedCallCount == 0)
-    }
-
-    // MARK: - Error Tracking
-
-    @Test("didAppear tracks fetch error on failure")
-    func didAppearTracksFetchErrorOnFailure() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(trackerMock.fetchErrorDescriptions.count == 1)
-        #expect(trackerMock.fetchErrorDescriptions.first == CharactersPageError.loadFailed().debugDescription)
-    }
-
-    @Test("didAppear does not track fetch error on success")
-    func didAppearDoesNotTrackFetchErrorOnSuccess() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(trackerMock.fetchErrorDescriptions.isEmpty)
-    }
-
-    @Test("didPullToRefresh tracks refresh error on failure")
-    func didPullToRefreshTracksRefreshErrorOnFailure() async {
-        // Given
-        refreshCharactersPageUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(trackerMock.refreshErrorDescriptions.count == 1)
-        #expect(trackerMock.refreshErrorDescriptions.first == CharactersPageError.loadFailed().debugDescription)
-    }
-
-    @Test("didPullToRefresh does not track refresh error on success")
-    func didPullToRefreshDoesNotTrackRefreshErrorOnSuccess() async {
-        // Given
-        refreshCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didPullToRefresh()
-
-        // Then
-        #expect(trackerMock.refreshErrorDescriptions.isEmpty)
-    }
-
-    @Test("didTapOnLoadMoreButton tracks load more error on failure")
-    func didTapOnLoadMoreButtonTracksLoadMoreErrorOnFailure() async {
-        // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(trackerMock.loadMoreErrorDescriptions.count == 1)
-        #expect(trackerMock.loadMoreErrorDescriptions.first == CharactersPageError.loadFailed().debugDescription)
-    }
-
-    @Test("didTapOnLoadMoreButton does not track load more error on success")
-    func didTapOnLoadMoreButtonDoesNotTrackLoadMoreErrorOnSuccess() async {
-        // Given
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        getCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.didAppear()
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(trackerMock.loadMoreErrorDescriptions.isEmpty)
-    }
-
     // MARK: - Recent Searches
-
-    @Test("Initial recentSearches is empty array")
-    func initialRecentSearchesIsEmpty() {
-        // Then
-        #expect(sut.recentSearches == [])
-    }
-
-    @Test("didAppear loads recent searches")
-    func didAppearLoadsRecentSearches() async {
-        // Given
-        getCharactersPageUseCaseMock.result = .success(.stub())
-        getRecentSearchesUseCaseMock.searches = ["Rick", "Morty"]
-
-        // When
-        await sut.didAppear()
-
-        // Then
-        #expect(sut.recentSearches == ["Rick", "Morty"])
-    }
 
     @Test("Search saves to recent searches after debounce")
     func searchSavesToRecentSearchesAfterDebounce() async {
@@ -749,8 +437,8 @@ struct CharacterListViewModelTests {
         #expect(getRecentSearchesUseCaseMock.executeCallCount >= 1)
     }
 
-    @Test("didSelectRecentSearch sets searchQuery")
-    func didSelectRecentSearchSetsSearchQuery() async {
+    @Test("didSelectRecentSearch sets query, searches, saves, and tracks")
+    func didSelectRecentSearch() async {
         // Given
         searchCharactersPageUseCaseMock.result = .success(.stub())
 
@@ -759,56 +447,14 @@ struct CharacterListViewModelTests {
 
         // Then
         #expect(sut.searchQuery == "Rick")
-    }
-
-    @Test("didSelectRecentSearch triggers immediate search")
-    func didSelectRecentSearchTriggersImmediateSearch() async {
-        // Given
-        searchCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didSelectRecentSearch("Rick")
-
-        // Then
         #expect(searchCharactersPageUseCaseMock.executeCallCount == 1)
         #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.name == "Rick")
+        #expect(saveRecentSearchUseCaseMock.savedQueries == ["Rick"])
+        #expect(trackerMock.searchedQueries == ["Rick"])
     }
 
-    @Test("didSelectRecentSearch saves the query")
-    func didSelectRecentSearchSavesQuery() async {
-        // Given
-        searchCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didSelectRecentSearch("Morty")
-
-        // Then
-        #expect(saveRecentSearchUseCaseMock.savedQueries == ["Morty"])
-    }
-
-    @Test("didSelectRecentSearch tracks search performed")
-    func didSelectRecentSearchTracksSearchPerformed() async {
-        // Given
-        searchCharactersPageUseCaseMock.result = .success(.stub())
-
-        // When
-        await sut.didSelectRecentSearch("Summer")
-
-        // Then
-        #expect(trackerMock.searchedQueries == ["Summer"])
-    }
-
-    @Test("didDeleteRecentSearch calls delete use case with correct query")
-    func didDeleteRecentSearchCallsDeleteUseCase() async {
-        // When
-        await sut.didDeleteRecentSearch("Rick")
-
-        // Then
-        #expect(deleteRecentSearchUseCaseMock.deletedQueries == ["Rick"])
-    }
-
-    @Test("didDeleteRecentSearch refreshes recent searches list")
-    func didDeleteRecentSearchRefreshesList() async {
+    @Test("didDeleteRecentSearch deletes query and refreshes list")
+    func didDeleteRecentSearch() async {
         // Given
         getRecentSearchesUseCaseMock.searches = ["Morty"]
 
@@ -816,29 +462,22 @@ struct CharacterListViewModelTests {
         await sut.didDeleteRecentSearch("Rick")
 
         // Then
+        #expect(deleteRecentSearchUseCaseMock.deletedQueries == ["Rick"])
         #expect(sut.recentSearches == ["Morty"])
         #expect(getRecentSearchesUseCaseMock.executeCallCount >= 1)
     }
 
     // MARK: - Character Filter
 
-    @Test("didTapCharacterFilterButton tracks event")
-    func didTapCharacterFilterButtonTracksEvent() {
-        // When
-        sut.didTapCharacterFilterButton()
-
-        // Then
-        #expect(trackerMock.characterFilterButtonTappedCallCount == 1)
-    }
-
-    @Test("didTapCharacterFilterButton calls navigator with self as delegate")
-    func didTapCharacterFilterButtonCallsNavigator() {
+    @Test("didTapCharacterFilterButton navigates to filter and tracks event")
+    func didTapCharacterFilterButton() {
         // When
         sut.didTapCharacterFilterButton()
 
         // Then
         #expect(navigatorMock.presentCharacterFilterCallCount == 1)
         #expect(navigatorMock.lastPresentCharacterFilterDelegate === sut)
+        #expect(trackerMock.characterFilterButtonTappedCallCount == 1)
     }
 
     @Test("applyCharacterFilters triggers fetch characters")
@@ -882,22 +521,6 @@ struct CharacterListViewModelTests {
         #expect(sut.activeFilterCount == 2)
     }
 
-    @Test("fetchMoreCharacters uses search use case when character filters are active")
-    func fetchMoreCharactersUsesSearchUseCaseWhenCharacterFiltersAreActive() async {
-        // Given
-        let filter = CharacterFilter(status: .dead)
-        let firstPage = CharactersPage.stub(currentPage: 1, hasNextPage: true)
-        searchCharactersPageUseCaseMock.result = .success(firstPage)
-        await sut.applyCharacterFilters(filter)
-
-        // When
-        await sut.didTapOnLoadMoreButton()
-
-        // Then
-        #expect(searchCharactersPageUseCaseMock.lastRequestedFilter?.status == .dead)
-        #expect(searchCharactersPageUseCaseMock.lastRequestedPage == 2)
-    }
-
     @Test("applyCharacterFilters combines name and filter state")
     func applyCharacterFiltersCombinesNameAndFilterState() async {
         // Given
@@ -915,33 +538,10 @@ struct CharacterListViewModelTests {
         #expect(requestedFilter?.status == .alive)
     }
 
-    @Test("searchQuery reflects updated value")
-    func searchQueryReflectsUpdatedValue() {
-        // When
-        sut.searchQuery = "Morty"
-
-        // Then
-        #expect(sut.searchQuery == "Morty")
-    }
-
-    @Test("searchQuery reflects cleared value")
-    func searchQueryReflectsClearedValue() {
-        // Given
-        sut.searchQuery = "Morty"
-
-        // When
-        sut.searchQuery = ""
-
-        // Then
-        #expect(sut.searchQuery == "")
-    }
-
     @Test("fetchCharacters ignores error when search task is cancelled during network request")
     func fetchCharactersIgnoresErrorDuringCancelledSearch() async {
         // Given
-        let page = CharactersPage.stub()
-        getCharactersPageUseCaseMock.result = .success(page)
-        await sut.didAppear()
+        await givenLoadedState()
         searchCharactersPageUseCaseMock.result = .failure(.loadFailed())
 
         // When
@@ -956,7 +556,7 @@ struct CharacterListViewModelTests {
         await sut.searchTask?.value
 
         // Then
-        #expect(sut.state == .loaded(page))
+        #expect(sut.state == .loaded(.stub()))
     }
 
     @Test("currentFilter reflects applied filter")
@@ -972,5 +572,409 @@ struct CharacterListViewModelTests {
         #expect(sut.currentFilter == filter)
     }
 
+    // MARK: - Helpers
 
+    private func givenLoadedState() async {
+        getCharactersPageUseCaseMock.result = .success(.stub())
+        await sut.didAppear()
+        getCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenErrorState() async {
+        getCharactersPageUseCaseMock.result = .failure(.loadFailed())
+        await sut.didAppear()
+        getCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenLoadedStateWithNextPage() async {
+        let firstPage = CharactersPage.stub(
+            characters: [Character.stub(id: 1)],
+            currentPage: 1,
+            hasNextPage: true
+        )
+        getCharactersPageUseCaseMock.result = .success(firstPage)
+        await sut.didAppear()
+        getCharactersPageUseCaseMock.reset()
+        searchCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenLoadedStateWithNextPageAndSearchQuery(_ query: String) async {
+        let firstPage = CharactersPage.stub(
+            characters: [Character.stub(id: 1)],
+            currentPage: 1,
+            hasNextPage: true
+        )
+        searchCharactersPageUseCaseMock.result = .success(firstPage)
+        sut.searchQuery = query
+        await sut.searchTask?.value
+        await sut.didAppear()
+        searchCharactersPageUseCaseMock.reset()
+        getCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenLoadedStateWithNextPageAndCharacterFilter(_ filter: CharacterFilter) async {
+        let firstPage = CharactersPage.stub(
+            characters: [Character.stub(id: 1)],
+            currentPage: 1,
+            hasNextPage: true
+        )
+        searchCharactersPageUseCaseMock.result = .success(firstPage)
+        await sut.applyCharacterFilters(filter)
+        searchCharactersPageUseCaseMock.reset()
+        getCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenLoadedStateWithoutNextPage() async {
+        getCharactersPageUseCaseMock.result = .success(.stub(hasNextPage: false))
+        await sut.didAppear()
+        getCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenLoadedStateOnPage2() async {
+        await givenLoadedStateWithNextPage()
+        getCharactersPageUseCaseMock.result = .success(CharactersPage.stub(currentPage: 2))
+        await sut.didTapOnLoadMoreButton()
+        getCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+    private func givenActiveSearchQuery(_ query: String) async {
+        sut.searchQuery = query
+        await sut.searchTask?.value
+        searchCharactersPageUseCaseMock.reset()
+        trackerMock.reset()
+    }
+
+}
+
+// MARK: - Test Helpers
+
+extension CharacterListViewModelTests {
+    nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let charactersPageResult: Result<CharactersPage, CharactersPageError>
+            let recentSearches: [String]
+            let searchQuery: String
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterListViewState
+            let fetchErrorDescriptions: [String]
+            let recentSearches: [String]
+            let getCharactersPageExecuteCallCount: Int
+            let lastRequestedPage: Int?
+            let searchCharactersPageExecuteCallCount: Int
+            let searchFilterName: String?
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidAppearScenario] = [
+            DidAppearScenario(
+                testDescription: "On success sets loaded state without tracking error",
+                given: Given(charactersPageResult: .success(.stub()), recentSearches: [], searchQuery: ""),
+                expected: Expected(
+                    state: .loaded(.stub()),
+                    fetchErrorDescriptions: [],
+                    recentSearches: [],
+                    getCharactersPageExecuteCallCount: 1,
+                    lastRequestedPage: 1,
+                    searchCharactersPageExecuteCallCount: 0,
+                    searchFilterName: nil
+                )
+            ),
+            DidAppearScenario(
+                testDescription: "On success with empty characters sets empty state",
+                given: Given(charactersPageResult: .success(.stub(characters: [])), recentSearches: [], searchQuery: ""),
+                expected: Expected(
+                    state: .empty,
+                    fetchErrorDescriptions: [],
+                    recentSearches: [],
+                    getCharactersPageExecuteCallCount: 1,
+                    lastRequestedPage: 1,
+                    searchCharactersPageExecuteCallCount: 0,
+                    searchFilterName: nil
+                )
+            ),
+            DidAppearScenario(
+                testDescription: "On failure sets error state and tracks fetch error",
+                given: Given(charactersPageResult: .failure(.loadFailed()), recentSearches: [], searchQuery: ""),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    fetchErrorDescriptions: [CharactersPageError.loadFailed().debugDescription],
+                    recentSearches: [],
+                    getCharactersPageExecuteCallCount: 1,
+                    lastRequestedPage: 1,
+                    searchCharactersPageExecuteCallCount: 0,
+                    searchFilterName: nil
+                )
+            ),
+            DidAppearScenario(
+                testDescription: "On success loads recent searches",
+                given: Given(charactersPageResult: .success(.stub()), recentSearches: ["Rick", "Morty"], searchQuery: ""),
+                expected: Expected(
+                    state: .loaded(.stub()),
+                    fetchErrorDescriptions: [],
+                    recentSearches: ["Rick", "Morty"],
+                    getCharactersPageExecuteCallCount: 1,
+                    lastRequestedPage: 1,
+                    searchCharactersPageExecuteCallCount: 0,
+                    searchFilterName: nil
+                )
+            ),
+            DidAppearScenario(
+                testDescription: "With search query uses search use case instead of get characters",
+                given: Given(charactersPageResult: .success(.stub()), recentSearches: [], searchQuery: "Morty"),
+                expected: Expected(
+                    state: .loaded(.stub()),
+                    fetchErrorDescriptions: [],
+                    recentSearches: [],
+                    getCharactersPageExecuteCallCount: 0,
+                    lastRequestedPage: nil,
+                    searchCharactersPageExecuteCallCount: 1,
+                    searchFilterName: "Morty"
+                )
+            ),
+        ]
+    }
+
+    nonisolated struct DidTapOnRetryButtonScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let charactersPageResult: Result<CharactersPage, CharactersPageError>
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterListViewState
+            let fetchErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidTapOnRetryButtonScenario] = [
+            DidTapOnRetryButtonScenario(
+                testDescription: "On success sets loaded state without tracking error",
+                given: Given(charactersPageResult: .success(.stub())),
+                expected: Expected(state: .loaded(.stub()), fetchErrorDescriptions: [])
+            ),
+            DidTapOnRetryButtonScenario(
+                testDescription: "On failure sets error state and tracks fetch error",
+                given: Given(charactersPageResult: .failure(.loadFailed())),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    fetchErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
+                )
+            ),
+        ]
+    }
+
+    nonisolated struct DidTapOnLoadMoreButtonScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let charactersPageResult: Result<CharactersPage, CharactersPageError>
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterListViewState
+            let loadMoreErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidTapOnLoadMoreButtonScenario] = [
+            DidTapOnLoadMoreButtonScenario(
+                testDescription: "On success appends characters and updates state",
+                given: Given(
+                    charactersPageResult: .success(.stub(
+                        characters: [Character.stub(id: 2)],
+                        currentPage: 2,
+                        hasNextPage: false
+                    ))
+                ),
+                expected: Expected(
+                    state: .loaded(.stub(
+                        characters: [Character.stub(id: 1), Character.stub(id: 2)],
+                        currentPage: 2,
+                        hasNextPage: false,
+                        hasPreviousPage: false
+                    )),
+                    loadMoreErrorDescriptions: []
+                )
+            ),
+            DidTapOnLoadMoreButtonScenario(
+                testDescription: "On failure keeps existing data and tracks load more error",
+                given: Given(
+                    charactersPageResult: .failure(.loadFailed())
+                ),
+                expected: Expected(
+                    state: .loaded(.stub(
+                        characters: [Character.stub(id: 1)],
+                        currentPage: 1,
+                        hasNextPage: true
+                    )),
+                    loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
+                )
+            ),
+        ]
+    }
+
+    nonisolated struct DidTapOnLoadMoreButtonWithSearchQueryScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let charactersPageResult: Result<CharactersPage, CharactersPageError>
+            let searchQuery: String
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterListViewState
+            let loadMoreErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidTapOnLoadMoreButtonWithSearchQueryScenario] = [
+            DidTapOnLoadMoreButtonWithSearchQueryScenario(
+                testDescription: "On success appends characters and updates state",
+                given: Given(
+                    charactersPageResult: .success(.stub(
+                        characters: [Character.stub(id: 2)],
+                        currentPage: 2,
+                        hasNextPage: false
+                    )),
+                    searchQuery: "Summer"
+                ),
+                expected: Expected(
+                    state: .loaded(.stub(
+                        characters: [Character.stub(id: 1), Character.stub(id: 2)],
+                        currentPage: 2,
+                        hasNextPage: false,
+                        hasPreviousPage: false
+                    )),
+                    loadMoreErrorDescriptions: []
+                )
+            ),
+            DidTapOnLoadMoreButtonWithSearchQueryScenario(
+                testDescription: "On failure keeps existing data and tracks load more error",
+                given: Given(
+                    charactersPageResult: .failure(.loadFailed()),
+                    searchQuery: "Summer"
+                ),
+                expected: Expected(
+                    state: .loaded(.stub(
+                        characters: [Character.stub(id: 1)],
+                        currentPage: 1,
+                        hasNextPage: true
+                    )),
+                    loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
+                )
+            ),
+        ]
+    }
+
+    nonisolated struct DidTapOnLoadMoreButtonWithCharacterFilterScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let charactersPageResult: Result<CharactersPage, CharactersPageError>
+            let characterFilter: CharacterFilter
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterListViewState
+            let loadMoreErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidTapOnLoadMoreButtonWithCharacterFilterScenario] = [
+            DidTapOnLoadMoreButtonWithCharacterFilterScenario(
+                testDescription: "On success appends characters and updates state",
+                given: Given(
+                    charactersPageResult: .success(.stub(
+                        characters: [Character.stub(id: 2)],
+                        currentPage: 2,
+                        hasNextPage: false
+                    )),
+                    characterFilter: CharacterFilter(status: .dead)
+                ),
+                expected: Expected(
+                    state: .loaded(.stub(
+                        characters: [Character.stub(id: 1), Character.stub(id: 2)],
+                        currentPage: 2,
+                        hasNextPage: false,
+                        hasPreviousPage: false
+                    )),
+                    loadMoreErrorDescriptions: []
+                )
+            ),
+            DidTapOnLoadMoreButtonWithCharacterFilterScenario(
+                testDescription: "On failure keeps existing data and tracks load more error",
+                given: Given(
+                    charactersPageResult: .failure(.loadFailed()),
+                    characterFilter: CharacterFilter(status: .dead)
+                ),
+                expected: Expected(
+                    state: .loaded(.stub(
+                        characters: [Character.stub(id: 1)],
+                        currentPage: 1,
+                        hasNextPage: true
+                    )),
+                    loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
+                )
+            ),
+        ]
+    }
+
+    nonisolated struct DidPullToRefreshScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let charactersPageResult: Result<CharactersPage, CharactersPageError>
+            let loadMoreBeforeRefresh: Bool
+        }
+
+        struct Expected: Sendable {
+            let state: CharacterListViewState
+            let refreshErrorDescriptions: [String]
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidPullToRefreshScenario] = [
+            DidPullToRefreshScenario(
+                testDescription: "On success sets loaded state without tracking error",
+                given: Given(charactersPageResult: .success(.stub()), loadMoreBeforeRefresh: false),
+                expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
+            ),
+            DidPullToRefreshScenario(
+                testDescription: "On success with empty characters sets empty state",
+                given: Given(charactersPageResult: .success(.stub(characters: [])), loadMoreBeforeRefresh: false),
+                expected: Expected(state: .empty, refreshErrorDescriptions: [])
+            ),
+            DidPullToRefreshScenario(
+                testDescription: "On failure sets error state and tracks refresh error",
+                given: Given(charactersPageResult: .failure(.loadFailed()), loadMoreBeforeRefresh: false),
+                expected: Expected(
+                    state: .error(.loadFailed()),
+                    refreshErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
+                )
+            ),
+            DidPullToRefreshScenario(
+                testDescription: "After loading more pages resets to page one on success",
+                given: Given(charactersPageResult: .success(.stub()), loadMoreBeforeRefresh: true),
+                expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
+            ),
+        ]
+    }
 }

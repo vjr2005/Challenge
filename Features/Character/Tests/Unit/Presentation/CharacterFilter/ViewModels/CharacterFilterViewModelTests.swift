@@ -1,9 +1,7 @@
-import Foundation
 import Testing
 
 @testable import ChallengeCharacter
 
-@Suite(.timeLimit(.minutes(1)))
 struct CharacterFilterViewModelTests {
     // MARK: - Properties
 
@@ -59,46 +57,13 @@ struct CharacterFilterViewModelTests {
 
     // MARK: - hasActiveFilters
 
-    @Test("hasActiveFilters returns true when status is set")
-    func hasActiveFiltersReturnsTrueWhenStatusIsSet() {
-        // When
-        sut.filter.status = .alive
+    @Test("hasActiveFilters produces expected result per scenario", arguments: HasActiveFiltersScenario.all)
+    func hasActiveFilters(scenario: HasActiveFiltersScenario) {
+        // Given
+        sut.filter = scenario.given.filter
 
         // Then
-        #expect(sut.hasActiveFilters)
-    }
-
-    @Test("hasActiveFilters returns true when species is set")
-    func hasActiveFiltersReturnsTrueWhenSpeciesIsSet() {
-        // When
-        sut.filter.species = "Human"
-
-        // Then
-        #expect(sut.hasActiveFilters)
-    }
-
-    @Test("hasActiveFilters returns true when type is set")
-    func hasActiveFiltersReturnsTrueWhenTypeIsSet() {
-        // When
-        sut.filter.type = "Parasite"
-
-        // Then
-        #expect(sut.hasActiveFilters)
-    }
-
-    @Test("hasActiveFilters returns true when gender is set")
-    func hasActiveFiltersReturnsTrueWhenGenderIsSet() {
-        // When
-        sut.filter.gender = .female
-
-        // Then
-        #expect(sut.hasActiveFilters)
-    }
-
-    @Test("hasActiveFilters returns false when all fields are empty")
-    func hasActiveFiltersReturnsFalseWhenAllFieldsAreEmpty() {
-        // Then
-        #expect(!sut.hasActiveFilters)
+        #expect(sut.hasActiveFilters == scenario.expected.hasActiveFilters)
     }
 
     // MARK: - didAppear
@@ -114,117 +79,42 @@ struct CharacterFilterViewModelTests {
 
     // MARK: - didTapApply
 
-    @Test("didTapApply calls delegate didApplyFilter with correct filter")
-    func didTapApplyCallsDelegateDidApplyFilter() {
+    @Test("didTapApply produces expected outcome per scenario", arguments: DidTapApplyScenario.all)
+    func didTapApply(scenario: DidTapApplyScenario) {
         // Given
-        sut.filter.status = .dead
-        sut.filter.species = "Alien"
-        sut.filter.type = "Robot"
-        sut.filter.gender = .genderless
+        sut.filter = scenario.given.filter
 
         // When
         sut.didTapApply()
 
         // Then
-        let expected = CharacterFilter(
-            status: .dead,
-            species: "Alien",
-            type: "Robot",
-            gender: .genderless
-        )
         #expect(delegateMock.didApplyFilterCallCount == 1)
-        #expect(delegateMock.lastAppliedFilter == expected)
-    }
-
-    @Test("didTapApply calls navigator dismiss")
-    func didTapApplyCallsNavigatorDismiss() {
-        // When
-        sut.didTapApply()
-
-        // Then
         #expect(navigatorMock.dismissCallCount == 1)
-    }
-
-    @Test("didTapApply tracks apply filters with correct count")
-    func didTapApplyTracksApplyFilters() {
-        // Given
-        sut.filter.status = .alive
-        sut.filter.gender = .male
-
-        // When
-        sut.didTapApply()
-
-        // Then
         #expect(trackerMock.applyFiltersCallCount == 1)
-        #expect(trackerMock.lastAppliedFilterCount == 2)
+        #expect(delegateMock.lastAppliedFilter == scenario.expected.appliedFilter)
+        #expect(trackerMock.lastAppliedFilterCount == scenario.expected.filterCount)
     }
 
     // MARK: - didTapReset
 
-    @Test("didTapReset clears all filter values")
-    func didTapResetClearsAllFilterValues() {
+    @Test("didTapReset produces expected outcome per scenario", arguments: DidTapResetScenario.all)
+    func didTapReset(scenario: DidTapResetScenario) {
         // Given
-        sut.filter.status = .alive
-        sut.filter.species = "Human"
-        sut.filter.type = "Parasite"
-        sut.filter.gender = .male
+        sut.filter = scenario.given.filter
 
         // When
         sut.didTapReset()
 
         // Then
         #expect(sut.filter == .empty)
-    }
-
-    @Test("didTapReset does not call delegate didApplyFilter")
-    func didTapResetDoesNotCallDelegateDidApplyFilter() {
-        // Given
-        let delegateMock = CharacterFilterDelegateMock()
-        delegateMock.currentFilter = CharacterFilter(status: .alive)
-        let viewModel = CharacterFilterViewModel(
-            delegate: delegateMock,
-            navigator: navigatorMock,
-            tracker: trackerMock
-        )
-
-        // When
-        viewModel.didTapReset()
-
-        // Then
-        #expect(delegateMock.didApplyFilterCallCount == 0)
-    }
-
-    @Test("didTapReset tracks reset filters")
-    func didTapResetTracksResetFilters() {
-        // When
-        sut.didTapReset()
-
-        // Then
         #expect(trackerMock.resetFiltersCallCount == 1)
+        #expect(delegateMock.didApplyFilterCallCount == 0)
     }
 
     // MARK: - didTapClose
 
-    @Test("didTapClose calls navigator dismiss")
-    func didTapCloseCallsNavigatorDismiss() {
-        // When
-        sut.didTapClose()
-
-        // Then
-        #expect(navigatorMock.dismissCallCount == 1)
-    }
-
-    @Test("didTapClose tracks close tapped")
-    func didTapCloseTracksCloseTapped() {
-        // When
-        sut.didTapClose()
-
-        // Then
-        #expect(trackerMock.closeTappedCallCount == 1)
-    }
-
-    @Test("didTapClose does not call delegate didApplyFilter")
-    func didTapCloseDoesNotCallDelegateDidApplyFilter() {
+    @Test("didTapClose dismisses and tracks without applying filter")
+    func didTapCloseDismissesAndTracksWithoutApplyingFilter() {
         // Given
         sut.filter.status = .dead
 
@@ -232,6 +122,120 @@ struct CharacterFilterViewModelTests {
         sut.didTapClose()
 
         // Then
+        #expect(navigatorMock.dismissCallCount == 1)
+        #expect(trackerMock.closeTappedCallCount == 1)
         #expect(delegateMock.didApplyFilterCallCount == 0)
+    }
+}
+
+// MARK: - Test Helpers
+
+extension CharacterFilterViewModelTests {
+    nonisolated struct DidTapResetScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let filter: CharacterFilter
+        }
+
+        let testDescription: String
+        let given: Given
+
+        static let all: [DidTapResetScenario] = [
+            DidTapResetScenario(
+                testDescription: "With all filters set clears to empty",
+                given: Given(filter: CharacterFilter(status: .alive, species: "Human", type: "Parasite", gender: .male))
+            ),
+            DidTapResetScenario(
+                testDescription: "With single filter set clears to empty",
+                given: Given(filter: CharacterFilter(status: .alive))
+            ),
+            DidTapResetScenario(
+                testDescription: "With empty filter remains empty",
+                given: Given(filter: .empty)
+            ),
+        ]
+    }
+
+    nonisolated struct DidTapApplyScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let filter: CharacterFilter
+        }
+
+        struct Expected: Sendable {
+            let appliedFilter: CharacterFilter
+            let filterCount: Int
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [DidTapApplyScenario] = [
+            DidTapApplyScenario(
+                testDescription: "With all filters applies full filter and tracks count 4",
+                given: Given(filter: CharacterFilter(status: .dead, species: "Alien", type: "Robot", gender: .genderless)),
+                expected: Expected(
+                    appliedFilter: CharacterFilter(status: .dead, species: "Alien", type: "Robot", gender: .genderless),
+                    filterCount: 4
+                )
+            ),
+            DidTapApplyScenario(
+                testDescription: "With partial filters applies partial filter and tracks count 2",
+                given: Given(filter: CharacterFilter(status: .alive, gender: .male)),
+                expected: Expected(
+                    appliedFilter: CharacterFilter(status: .alive, gender: .male),
+                    filterCount: 2
+                )
+            ),
+            DidTapApplyScenario(
+                testDescription: "With empty filter applies empty filter and tracks count 0",
+                given: Given(filter: .empty),
+                expected: Expected(
+                    appliedFilter: .empty,
+                    filterCount: 0
+                )
+            ),
+        ]
+    }
+
+    nonisolated struct HasActiveFiltersScenario: Sendable, CustomTestStringConvertible {
+        struct Given: Sendable {
+            let filter: CharacterFilter
+        }
+
+        struct Expected: Sendable {
+            let hasActiveFilters: Bool
+        }
+
+        let testDescription: String
+        let given: Given
+        let expected: Expected
+
+        static let all: [HasActiveFiltersScenario] = [
+            HasActiveFiltersScenario(
+                testDescription: "Returns true when status is set",
+                given: Given(filter: CharacterFilter(status: .alive)),
+                expected: Expected(hasActiveFilters: true)
+            ),
+            HasActiveFiltersScenario(
+                testDescription: "Returns true when species is set",
+                given: Given(filter: CharacterFilter(species: "Human")),
+                expected: Expected(hasActiveFilters: true)
+            ),
+            HasActiveFiltersScenario(
+                testDescription: "Returns true when type is set",
+                given: Given(filter: CharacterFilter(type: "Parasite")),
+                expected: Expected(hasActiveFilters: true)
+            ),
+            HasActiveFiltersScenario(
+                testDescription: "Returns true when gender is set",
+                given: Given(filter: CharacterFilter(gender: .female)),
+                expected: Expected(hasActiveFilters: true)
+            ),
+            HasActiveFiltersScenario(
+                testDescription: "Returns false when all fields are empty",
+                given: Given(filter: .empty),
+                expected: Expected(hasActiveFilters: false)
+            ),
+        ]
     }
 }

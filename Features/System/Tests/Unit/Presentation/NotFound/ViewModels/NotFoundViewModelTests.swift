@@ -15,18 +15,7 @@ struct NotFoundViewModelTests {
         sut = NotFoundViewModel(navigator: navigatorMock, tracker: trackerMock)
     }
 
-    // MARK: - Tests
-
-    @Test("Tap go back delegates to navigator")
-    func didTapGoBackCallsNavigator() {
-        // When
-        sut.didTapGoBack()
-
-        // Then
-        #expect(navigatorMock.goBackCallCount == 1)
-    }
-
-    // MARK: - Tracking
+    // MARK: - didAppear
 
     @Test("didAppear tracks screen viewed")
     func didAppearTracksScreenViewed() {
@@ -37,12 +26,15 @@ struct NotFoundViewModelTests {
         #expect(trackerMock.screenViewedCallCount == 1)
     }
 
-    @Test("didTapGoBack tracks go back button tapped")
-    func didTapGoBackTracksGoBackButtonTapped() {
+    // MARK: - didTapGoBack
+
+    @Test("didTapGoBack navigates back and tracks event")
+    func didTapGoBack() {
         // When
         sut.didTapGoBack()
 
         // Then
+        #expect(navigatorMock.goBackCallCount == 1)
         #expect(trackerMock.goBackButtonTappedCallCount == 1)
     }
 }

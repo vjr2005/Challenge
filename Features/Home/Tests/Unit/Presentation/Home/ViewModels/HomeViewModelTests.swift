@@ -15,18 +15,7 @@ struct HomeViewModelTests {
         sut = HomeViewModel(navigator: navigatorMock, tracker: trackerMock)
     }
 
-    // MARK: - Tests
-
-    @Test("Tap on character button navigates to characters")
-    func didTapOnCharacterButtonCallsNavigator() {
-        // When
-        sut.didTapOnCharacterButton()
-
-        // Then
-        #expect(navigatorMock.navigateToCharactersCallCount == 1)
-    }
-
-    // MARK: - Tracking
+    // MARK: - didAppear
 
     @Test("didAppear tracks screen viewed")
     func didAppearTracksScreenViewed() {
@@ -37,32 +26,27 @@ struct HomeViewModelTests {
         #expect(trackerMock.screenViewedCallCount == 1)
     }
 
-    @Test("didTapOnCharacterButton tracks character button tapped")
-    func didTapOnCharacterButtonTracksCharacterButtonTapped() {
+    // MARK: - didTapOnCharacterButton
+
+    @Test("didTapOnCharacterButton navigates to characters and tracks event")
+    func didTapOnCharacterButton() {
         // When
         sut.didTapOnCharacterButton()
 
         // Then
+        #expect(navigatorMock.navigateToCharactersCallCount == 1)
         #expect(trackerMock.characterButtonTappedCallCount == 1)
     }
 
-    // MARK: - Info Button
+    // MARK: - didTapOnInfoButton
 
-    @Test("Tap on info button presents about")
-    func didTapOnInfoButtonCallsNavigator() {
+    @Test("didTapOnInfoButton presents about and tracks event")
+    func didTapOnInfoButton() {
         // When
         sut.didTapOnInfoButton()
 
         // Then
         #expect(navigatorMock.presentAboutCallCount == 1)
-    }
-
-    @Test("didTapOnInfoButton tracks info button tapped")
-    func didTapOnInfoButtonTracksInfoButtonTapped() {
-        // When
-        sut.didTapOnInfoButton()
-
-        // Then
         #expect(trackerMock.infoButtonTappedCallCount == 1)
     }
 }
