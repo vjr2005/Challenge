@@ -243,14 +243,16 @@ import Testing
 @testable import Challenge{Feature}
 
 struct {ScreenName}EventTests {
-    @Test("Screen viewed has correct name")
-    func screenViewedHasCorrectName() {
-        #expect({ScreenName}Event.screenViewed.name == "{screen_name}_viewed")
-    }
+    // MARK: - screenViewed
 
-    @Test("Screen viewed has empty properties")
-    func screenViewedHasEmptyProperties() {
-        #expect({ScreenName}Event.screenViewed.properties == [:])
+    @Test("Screen viewed event has correct name and empty properties")
+    func screenViewedEvent() {
+        // Given
+        let sut = {ScreenName}Event.screenViewed
+
+        // Then
+        #expect(sut.name == "{screen_name}_viewed")
+        #expect(sut.properties == [:])
     }
 }
 ```
@@ -258,16 +260,14 @@ struct {ScreenName}EventTests {
 For events with properties:
 
 ```swift
-@Test("{Action} has correct name")
-func {action}HasCorrectName() {
-    let event = {ScreenName}Event.{action}({param}: {value})
-    #expect(event.name == "{action_name}")
-}
+@Test("{Action} event has correct name and properties")
+func {action}Event() {
+    // Given
+    let sut = {ScreenName}Event.{action}({param}: {value})
 
-@Test("{Action} has correct properties")
-func {action}HasCorrectProperties() {
-    let event = {ScreenName}Event.{action}({param}: {value})
-    #expect(event.properties == ["{key}": "{expected}"])
+    // Then
+    #expect(sut.name == "{action_name}")
+    #expect(sut.properties == ["{key}": "{expected}"])
 }
 ```
 

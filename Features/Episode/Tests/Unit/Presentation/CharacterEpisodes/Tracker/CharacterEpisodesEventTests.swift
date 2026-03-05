@@ -3,75 +3,51 @@ import Testing
 @testable import ChallengeEpisode
 
 struct CharacterEpisodesEventTests {
-	// MARK: - Screen Viewed
+    // MARK: - screenViewed
 
-	@Test("Screen viewed has correct name")
-	func screenViewedHasCorrectName() {
-		#expect(CharacterEpisodesEvent.screenViewed(characterIdentifier: 1).name == "character_episodes_viewed")
-	}
+    @Test("Screen viewed event has correct name and properties")
+    func screenViewedEvent() {
+        #expect(CharacterEpisodesEvent.screenViewed(characterIdentifier: 42).name == "character_episodes_viewed")
+        #expect(CharacterEpisodesEvent.screenViewed(characterIdentifier: 42).properties == ["character_id": "42"])
+    }
 
-	@Test("Screen viewed has character id property")
-	func screenViewedHasCharacterIdProperty() {
-		#expect(CharacterEpisodesEvent.screenViewed(characterIdentifier: 42).properties == ["character_id": "42"])
-	}
+    // MARK: - retryButtonTapped
 
-	// MARK: - Retry Button Tapped
+    @Test("Retry button tapped event has correct name and empty properties")
+    func retryButtonTappedEvent() {
+        #expect(CharacterEpisodesEvent.retryButtonTapped.name == "character_episodes_retry_tapped")
+        #expect(CharacterEpisodesEvent.retryButtonTapped.properties == [:])
+    }
 
-	@Test("Retry button tapped has correct name")
-	func retryButtonTappedHasCorrectName() {
-		#expect(CharacterEpisodesEvent.retryButtonTapped.name == "character_episodes_retry_tapped")
-	}
+    // MARK: - pullToRefreshTriggered
 
-	@Test("Retry button tapped has empty properties")
-	func retryButtonTappedHasEmptyProperties() {
-		#expect(CharacterEpisodesEvent.retryButtonTapped.properties == [:])
-	}
+    @Test("Pull to refresh triggered event has correct name and empty properties")
+    func pullToRefreshTriggeredEvent() {
+        #expect(CharacterEpisodesEvent.pullToRefreshTriggered.name == "character_episodes_pull_to_refresh")
+        #expect(CharacterEpisodesEvent.pullToRefreshTriggered.properties == [:])
+    }
 
-	// MARK: - Pull To Refresh Triggered
+    // MARK: - characterAvatarTapped
 
-	@Test("Pull to refresh triggered has correct name")
-	func pullToRefreshTriggeredHasCorrectName() {
-		#expect(CharacterEpisodesEvent.pullToRefreshTriggered.name == "character_episodes_pull_to_refresh")
-	}
+    @Test("Character avatar tapped event has correct name and properties")
+    func characterAvatarTappedEvent() {
+        #expect(CharacterEpisodesEvent.characterAvatarTapped(identifier: 42).name == "character_episodes_character_avatar_tapped")
+        #expect(CharacterEpisodesEvent.characterAvatarTapped(identifier: 42).properties == ["character_id": "42"])
+    }
 
-	@Test("Pull to refresh triggered has empty properties")
-	func pullToRefreshTriggeredHasEmptyProperties() {
-		#expect(CharacterEpisodesEvent.pullToRefreshTriggered.properties == [:])
-	}
+    // MARK: - loadError
 
-	// MARK: - Character Avatar Tapped
+    @Test("Load error event has correct name and properties")
+    func loadErrorEvent() {
+        #expect(CharacterEpisodesEvent.loadError(description: "network error").name == "character_episodes_load_error")
+        #expect(CharacterEpisodesEvent.loadError(description: "network error").properties == ["description": "network error"])
+    }
 
-	@Test("Character avatar tapped has correct name")
-	func characterAvatarTappedHasCorrectName() {
-		#expect(CharacterEpisodesEvent.characterAvatarTapped(identifier: 1).name == "character_episodes_character_avatar_tapped")
-	}
+    // MARK: - refreshError
 
-	@Test("Character avatar tapped has character id property")
-	func characterAvatarTappedHasCharacterIdProperty() {
-		#expect(CharacterEpisodesEvent.characterAvatarTapped(identifier: 42).properties == ["character_id": "42"])
-	}
-
-	// MARK: - Load Error
-
-	@Test("Load error has correct name")
-	func loadErrorHasCorrectName() {
-		#expect(CharacterEpisodesEvent.loadError(description: "error").name == "character_episodes_load_error")
-	}
-
-	@Test("Load error has description property")
-	func loadErrorHasDescriptionProperty() {
-		#expect(CharacterEpisodesEvent.loadError(description: "network error").properties == ["description": "network error"])
-	}
-
-	// MARK: - Refresh Error
-
-	@Test("Refresh error has correct name")
-	func refreshErrorHasCorrectName() {
-		#expect(CharacterEpisodesEvent.refreshError(description: "error").name == "character_episodes_refresh_error")
-	}
-
-	@Test("Refresh error has description property")
-	func refreshErrorHasDescriptionProperty() {
-		#expect(CharacterEpisodesEvent.refreshError(description: "timeout").properties == ["description": "timeout"])
-	}
+    @Test("Refresh error event has correct name and properties")
+    func refreshErrorEvent() {
+        #expect(CharacterEpisodesEvent.refreshError(description: "timeout").name == "character_episodes_refresh_error")
+        #expect(CharacterEpisodesEvent.refreshError(description: "timeout").properties == ["description": "timeout"])
+    }
 }

@@ -276,16 +276,16 @@ import Testing
 @testable import Challenge{Feature}
 
 struct {Screen}EventTests {
-	// MARK: - Screen Viewed
+	// MARK: - screenViewed
 
-	@Test("Screen viewed has correct name")
-	func screenViewedHasCorrectName() {
-		#expect({Screen}Event.screenViewed.name == "{eventPrefix}_viewed")
-	}
+	@Test("Screen viewed event has correct name and empty properties")
+	func screenViewedEvent() {
+		// Given
+		let sut = {Screen}Event.screenViewed
 
-	@Test("Screen viewed has empty properties")
-	func screenViewedHasEmptyProperties() {
-		#expect({Screen}Event.screenViewed.properties == [:])
+		// Then
+		#expect(sut.name == "{eventPrefix}_viewed")
+		#expect(sut.properties == [:])
 	}
 }
 ```

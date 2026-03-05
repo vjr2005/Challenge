@@ -353,18 +353,27 @@ struct CharacterListTrackerTests {
 
 ### Event Tests
 
-Verify `name` and `properties` for each event case:
+Verify `name` and `properties` together in a single test per event case:
 
 ```swift
-@Test("Screen viewed has correct name")
-func screenViewedHasCorrectName() {
-    #expect(CharacterListEvent.screenViewed.name == "character_list_viewed")
+@Test("Screen viewed event has correct name and empty properties")
+func screenViewedEvent() {
+    // Given
+    let sut = CharacterListEvent.screenViewed
+
+    // Then
+    #expect(sut.name == "character_list_viewed")
+    #expect(sut.properties == [:])
 }
 
-@Test("Character selected has correct properties")
-func characterSelectedHasCorrectProperties() {
-    let event = CharacterListEvent.characterSelected(identifier: 42)
-    #expect(event.properties == ["id": "42"])
+@Test("Character selected event has correct name and properties")
+func characterSelectedEvent() {
+    // Given
+    let sut = CharacterListEvent.characterSelected(identifier: 42)
+
+    // Then
+    #expect(sut.name == "character_selected")
+    #expect(sut.properties == ["id": "42"])
 }
 ```
 

@@ -5,21 +5,13 @@ import Testing
 struct AboutEventTests {
     // MARK: - screenViewed
 
-    @Test("Screen viewed event has correct name")
-    func screenViewedEventHasCorrectName() {
+    @Test("Screen viewed event has correct name and empty properties")
+    func screenViewedEvent() {
         // Given
         let sut = AboutEvent.screenViewed
 
         // Then
         #expect(sut.name == "about_viewed")
-    }
-
-    @Test("Screen viewed event has empty properties")
-    func screenViewedEventHasEmptyProperties() {
-        // Given
-        let sut = AboutEvent.screenViewed
-
-        // Then
         #expect(sut.properties == [:])
     }
 }
