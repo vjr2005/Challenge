@@ -85,69 +85,10 @@ Focus on specific modules while caching everything else as XCFrameworks:
 ```bash
 ./Scripts/generate.sh --focus Character
 ./Scripts/generate.sh --focus Character,Episode
-```
-
-Focused modules stay as editable source code with full test support. Non-focused modules are substituted with pre-built XCFrameworks from the Tuist binary cache, reducing compilation targets and build times.
-
-Focus automatically expands to include **transitive dependents** — modules that depend on the focused module. For example, `--focus Character` also includes `AppKit` (which depends on Character), since changes to Character could affect AppKit.
-
-> **Note:** `--focus` requires the framework strategy (default). It is not compatible with `--strategy spm`.
-
-#### What stays as source
-
-- **Focused module** — e.g., `ChallengeCharacter` (editable source code)
-- **Transitive dependents** — e.g., `ChallengeAppKit` (depends on Character, stays as source with tests)
-- **Mocks** — for focused modules and their dependents
-- **Test targets** — unit and snapshot tests for all source modules
-- **App target** — `Challenge` is always compiled from source
-
-Everything else (non-dependent modules, their Mocks, and their test targets) is either substituted with pre-built XCFrameworks or excluded from the project entirely. The Dev scheme's test action only includes tests for source modules.
-
-#### How it works
-
-Each `FrameworkModule` target is tagged with `metadata: .metadata(tags: ["module:<ShortName>"])` (e.g., `module:Character`). Focus mode uses Tuist's tag-based filtering combined with binary caching:
-
-1. **Expand dependents** — Runs `tuist graph --format json` and computes the reverse dependency graph to find all modules that transitively depend on the focused module (e.g., Character → AppKit)
-2. **Cache warm** — Runs `tuist cache` to pre-build all modules as XCFrameworks (skipped if cache is already warm)
-3. **Export env var** — Sets `TUIST_FOCUS_MODULES` with expanded target names (e.g., `ChallengeCharacter,ChallengeAppKit`) so the manifest filters test and coverage targets
-4. **Generate with tags** — Runs `tuist generate Challenge ChallengeUITests tag:module:Character tag:module:AppKit --cache-profile all-possible` — Tuist natively keeps tagged targets as source and links non-tagged targets as binaries from cache. `ChallengeUITests` is always included so App tests remain available in every focus configuration
-
-`ModuleAggregation` reads `TUIST_FOCUS_MODULES` to filter the Dev scheme's test action and coverage targets. Per-module schemes are also filtered to only include expanded modules.
-
-#### Performance
-
-Benchmarked focusing on Character with all other modules cached (cold DerivedData):
-
-| Metric | Without cache | With cache | Improvement |
-|---|---|---|---|
-| App build | 21.4s | 10.9s | **-49%** |
-| Character tests | 44.1s | 37.4s | **-15%** |
-| Targets compiled (Character tests) | 11 | 5 | **-55%** |
-| Compilation steps (Character tests) | 136 | 68 | **-50%** |
-| Cache warm time | 53.5s | — | One-time cost |
-
-#### Available modules
-
-| Short name | Target name |
-|---|---|
-| AppKit | ChallengeAppKit |
-| Character | ChallengeCharacter |
-| Core | ChallengeCore |
-| DesignSystem | ChallengeDesignSystem |
-| Episode | ChallengeEpisode |
-| Home | ChallengeHome |
-| Networking | ChallengeNetworking |
-| Resources | ChallengeResources |
-| SnapshotTestKit | ChallengeSnapshotTestKit |
-| System | ChallengeSystem |
-
-Options can be combined:
-
-```bash
 ./Scripts/generate.sh --clean --focus Character
 ```
 
-> **Note:** The cache is invalidated when module source code changes. If you see stale behavior, run `--clean --focus` to rebuild the cache from scratch.
+For details on how focus works, available modules, and performance benchmarks, see [Tuist - Focused Generation](Tuist.md#focused-generation).
 
 ### Clean Build
 
