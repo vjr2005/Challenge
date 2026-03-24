@@ -6,6 +6,7 @@
 // Features/{Feature}/Sources/{Feature}Container.swift
 import ChallengeCore
 import ChallengeNetworking
+import SwiftUI
 
 struct {Feature}Container {
     // MARK: - Dependencies
@@ -30,25 +31,29 @@ struct {Feature}Container {
 
     // MARK: - Factories
 
-    func make{Name}ListViewModel(navigator: any NavigatorContract) -> some {Name}ListViewModelContract {
-        {Name}ListViewModel(
-            get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
-            refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: repository),
-            navigator: {Name}ListNavigator(navigator: navigator),
-            tracker: {Name}ListTracker(tracker: tracker)
+    func make{Name}ListView(navigator: any NavigatorContract) -> some View {
+        {Name}ListView(
+            viewModel: {Name}ListViewModel(
+                get{Name}sUseCase: Get{Name}sUseCase(repository: repository),
+                refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: repository),
+                navigator: {Name}ListNavigator(navigator: navigator),
+                tracker: {Name}ListTracker(tracker: tracker)
+            )
         )
     }
 
-    func make{Name}DetailViewModel(
+    func make{Name}DetailView(
         identifier: Int,
         navigator: any NavigatorContract
-    ) -> some {Name}DetailViewModelContract {
-        {Name}DetailViewModel(
-            identifier: identifier,
-            get{Name}UseCase: Get{Name}UseCase(repository: repository),
-            refresh{Name}UseCase: Refresh{Name}UseCase(repository: repository),
-            navigator: {Name}DetailNavigator(navigator: navigator),
-            tracker: {Name}DetailTracker(tracker: tracker)
+    ) -> some View {
+        {Name}DetailView(
+            viewModel: {Name}DetailViewModel(
+                identifier: identifier,
+                get{Name}UseCase: Get{Name}UseCase(repository: repository),
+                refresh{Name}UseCase: Refresh{Name}UseCase(repository: repository),
+                navigator: {Name}DetailNavigator(navigator: navigator),
+                tracker: {Name}DetailTracker(tracker: tracker)
+            )
         )
     }
 }
@@ -60,8 +65,9 @@ struct {Feature}Container {
 - Only stores what factory methods need after `init` (`tracker`, repositories)
 - DataSources are **local variables in `init`** — only needed to build repositories
 - Repositories are **stored properties** (`private let`) built in `init`
-- Contains all **factory methods** for ViewModels
-- Factory methods receive `navigator: any NavigatorContract`
+- Contains all **factory methods** for Views (`make{Name}View`)
+- Factory methods receive `navigator: any NavigatorContract` and return `some View`
+- Factory methods create ViewModel AND wrap it in the View internally
 - Factory methods create screen-specific trackers: `{Name}ListTracker(tracker: tracker)`
 
 ---
@@ -92,9 +98,7 @@ public struct {Feature}Feature: FeatureContract {
     }
 
     public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView({Name}ListView(
-            viewModel: container.make{Name}ListViewModel(navigator: navigator)
-        ))
+        AnyView(container.make{Name}ListView(navigator: navigator))
     }
 
     public func resolve(
@@ -108,11 +112,9 @@ public struct {Feature}Feature: FeatureContract {
         case .list:
             return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            return AnyView({Name}DetailView(
-                viewModel: container.make{Name}DetailViewModel(
-                    identifier: identifier,
-                    navigator: navigator
-                )
+            return AnyView(container.make{Name}DetailView(
+                identifier: identifier,
+                navigator: navigator
             ))
         }
     }
@@ -154,7 +156,7 @@ public struct HomeFeature: FeatureContract {
     }
 
     public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView(HomeView(viewModel: container.makeHomeViewModel(navigator: navigator)))
+        AnyView(container.makeHomeView(navigator: navigator))
     }
 
     public func resolve(
@@ -175,6 +177,7 @@ public struct HomeFeature: FeatureContract {
 ```swift
 // Sources/HomeContainer.swift
 import ChallengeCore
+import SwiftUI
 
 struct HomeContainer {
     // MARK: - Dependencies
@@ -189,10 +192,12 @@ struct HomeContainer {
 
     // MARK: - Factories
 
-    func makeHomeViewModel(navigator: any NavigatorContract) -> some HomeViewModelContract {
-        HomeViewModel(
-            navigator: HomeNavigator(navigator: navigator),
-            tracker: HomeTracker(tracker: tracker)
+    func makeHomeView(navigator: any NavigatorContract) -> some View {
+        HomeView(
+            viewModel: HomeViewModel(
+                navigator: HomeNavigator(navigator: navigator),
+                tracker: HomeTracker(tracker: tracker)
+            )
         )
     }
 }

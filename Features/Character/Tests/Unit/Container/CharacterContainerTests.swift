@@ -21,30 +21,33 @@ struct CharacterContainerTests {
 
 	// MARK: - Tests
 
-	@Test("Make character list view model creates CharacterListViewModel")
-	func makeCharacterListViewModel() {
+	@Test("Make character list view creates CharacterListView")
+	func makeCharacterListView() {
 		// When
-		let viewModel = sut.makeCharacterListViewModel(navigator: NavigatorMock())
+		let view = sut.makeCharacterListView(navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is CharacterListViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("CharacterListView"))
 	}
 
-	@Test("Make character detail view model creates CharacterDetailViewModel")
-	func makeCharacterDetailViewModel() {
+	@Test("Make character detail view creates CharacterDetailView")
+	func makeCharacterDetailView() {
 		// When
-		let viewModel = sut.makeCharacterDetailViewModel(identifier: 42, navigator: NavigatorMock())
+		let view = sut.makeCharacterDetailView(identifier: 42, navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is CharacterDetailViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("CharacterDetailView"))
 	}
 
-	@Test("Make character filter view model creates CharacterFilterViewModel")
-	func makeCharacterFilterViewModel() {
+	@Test("Make character filter view creates CharacterFilterView")
+	func makeCharacterFilterView() {
 		// When
-		let viewModel = sut.makeCharacterFilterViewModel(delegate: CharacterFilterDelegateMock(), navigator: NavigatorMock())
+		let view = sut.makeCharacterFilterView(delegate: CharacterFilterDelegateMock(), navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is CharacterFilterViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("CharacterFilterView"))
 	}
 }

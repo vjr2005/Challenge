@@ -70,6 +70,7 @@ Features/{Feature}/
 ## Conventions
 
 - **No `@Observable`** on minimal ViewModels (no observable state). Only add when ViewModel has `private(set) var`.
+- **Container factory methods return `some View`** (not `some ViewModelContract`). The Container creates both the ViewModel and wraps it in the View. Features call `container.make{Screen}View(navigator:)` and wrap in `AnyView`.
 - **No `any` keyword** on internal protocol types. Only on public protocols from other modules (e.g., `any TrackerContract` in Container).
 - **No imports** in ViewModel when all types are internal to the module.
 - **Deep link paths** are scoped per host — `/list` under `episode` host is independent from `/list` under `character` host.

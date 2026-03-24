@@ -301,9 +301,7 @@ public struct {Feature}Feature: FeatureContract {
     }
 
     public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView({Name}ListView(
-            viewModel: container.make{Name}ListViewModel(navigator: navigator)
-        ))
+        AnyView(container.make{Name}ListView(navigator: navigator))
     }
 
     public func resolve(
@@ -317,11 +315,9 @@ public struct {Feature}Feature: FeatureContract {
         case .list:
             return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            return AnyView({Name}DetailView(
-                viewModel: container.make{Name}DetailViewModel(
-                    identifier: identifier,
-                    navigator: navigator
-                )
+            return AnyView(container.make{Name}DetailView(
+                identifier: identifier,
+                navigator: navigator
             ))
         }
     }

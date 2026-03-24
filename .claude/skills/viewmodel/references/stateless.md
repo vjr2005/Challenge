@@ -62,10 +62,12 @@ struct {Name}View: View {
 ## Container Factory
 
 ```swift
-func make{Name}ViewModel() -> some {Name}ViewModelContract {
-    {Name}ViewModel(
-        navigator: make{Name}Navigator(),
-        tracker: make{Name}Tracker()
+func make{Name}View(navigator: any NavigatorContract) -> some View {
+    {Name}View(
+        viewModel: {Name}ViewModel(
+            navigator: {Name}Navigator(navigator: navigator),
+            tracker: make{Name}Tracker()
+        )
     )
 }
 ```

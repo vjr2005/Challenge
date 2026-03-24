@@ -128,12 +128,14 @@ struct {Screen}View: View {
 ## Container Factory
 
 ```swift
-func make{Screen}ViewModel() -> some {Screen}ViewModelContract {
-    {Screen}ViewModel(
-        get{Name}sUseCase: Get{Name}sUseCase(repository: {name}Repository),
-        refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: {name}Repository),
-        navigator: make{Screen}Navigator(),
-        tracker: make{Screen}Tracker()
+func make{Screen}View(navigator: any NavigatorContract) -> some View {
+    {Screen}View(
+        viewModel: {Screen}ViewModel(
+            get{Name}sUseCase: Get{Name}sUseCase(repository: {name}Repository),
+            refresh{Name}sUseCase: Refresh{Name}sUseCase(repository: {name}Repository),
+            navigator: {Screen}Navigator(navigator: navigator),
+            tracker: make{Screen}Tracker()
+        )
     )
 }
 ```

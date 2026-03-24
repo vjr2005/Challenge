@@ -1,4 +1,5 @@
 import ChallengeCore
+import SwiftUI
 
 /// Dependency container for the System feature.
 struct SystemContainer {
@@ -16,7 +17,12 @@ struct SystemContainer {
 
     // MARK: - Factories
 
-    func makeNotFoundViewModel(navigator: any NavigatorContract) -> some NotFoundViewModelContract {
-        NotFoundViewModel(navigator: NotFoundNavigator(navigator: navigator), tracker: NotFoundTracker(tracker: tracker))
+    func makeNotFoundView(navigator: any NavigatorContract) -> some View {
+        NotFoundView(
+            viewModel: NotFoundViewModel(
+                navigator: NotFoundNavigator(navigator: navigator),
+                tracker: NotFoundTracker(tracker: tracker)
+            )
+        )
     }
 }

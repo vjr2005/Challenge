@@ -1,5 +1,6 @@
 import ChallengeCore
 import ChallengeNetworking
+import SwiftUI
 
 struct EpisodeContainer {
 	// MARK: - Dependencies
@@ -25,16 +26,18 @@ struct EpisodeContainer {
 
 	// MARK: - Factories
 
-	func makeCharacterEpisodesViewModel(
+	func makeCharacterEpisodesView(
 		characterIdentifier: Int,
 		navigator: any NavigatorContract
-	) -> some CharacterEpisodesViewModelContract {
-		CharacterEpisodesViewModel(
-			characterIdentifier: characterIdentifier,
-			getCharacterEpisodesUseCase: GetCharacterEpisodesUseCase(repository: episodeRepository),
-			refreshCharacterEpisodesUseCase: RefreshCharacterEpisodesUseCase(repository: episodeRepository),
-			navigator: CharacterEpisodesNavigator(navigator: navigator),
-			tracker: CharacterEpisodesTracker(tracker: tracker)
+	) -> some View {
+		CharacterEpisodesView(
+			viewModel: CharacterEpisodesViewModel(
+				characterIdentifier: characterIdentifier,
+				getCharacterEpisodesUseCase: GetCharacterEpisodesUseCase(repository: episodeRepository),
+				refreshCharacterEpisodesUseCase: RefreshCharacterEpisodesUseCase(repository: episodeRepository),
+				navigator: CharacterEpisodesNavigator(navigator: navigator),
+				tracker: CharacterEpisodesTracker(tracker: tracker)
+			)
 		)
 	}
 }

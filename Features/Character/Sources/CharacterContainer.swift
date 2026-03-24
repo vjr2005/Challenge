@@ -1,5 +1,6 @@
 import ChallengeCore
 import ChallengeNetworking
+import SwiftUI
 
 /// Dependency container for the Character feature.
 struct CharacterContainer {
@@ -42,41 +43,47 @@ struct CharacterContainer {
 
     // MARK: - Factories
 
-    func makeCharacterListViewModel(navigator: any NavigatorContract) -> some CharacterListViewModelContract {
-        CharacterListViewModel(
-            getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
-            refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
-            searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
-            getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
-            saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
-            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
-            navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker)
+    func makeCharacterListView(navigator: any NavigatorContract) -> some View {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
+                refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
+                searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
+                getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
+                saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
+                deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
+                navigator: CharacterListNavigator(navigator: navigator),
+                tracker: CharacterListTracker(tracker: tracker)
+            )
         )
     }
 
-    func makeCharacterDetailViewModel(
+    func makeCharacterDetailView(
         identifier: Int,
         navigator: any NavigatorContract
-    ) -> some CharacterDetailViewModelContract {
-        CharacterDetailViewModel(
-            identifier: identifier,
-            getCharacterUseCase: GetCharacterUseCase(repository: characterRepository),
-            refreshCharacterUseCase: RefreshCharacterUseCase(repository: characterRepository),
-            imageLoader: imageLoader,
-            navigator: CharacterDetailNavigator(navigator: navigator),
-            tracker: CharacterDetailTracker(tracker: tracker)
+    ) -> some View {
+        CharacterDetailView(
+            viewModel: CharacterDetailViewModel(
+                identifier: identifier,
+                getCharacterUseCase: GetCharacterUseCase(repository: characterRepository),
+                refreshCharacterUseCase: RefreshCharacterUseCase(repository: characterRepository),
+                imageLoader: imageLoader,
+                navigator: CharacterDetailNavigator(navigator: navigator),
+                tracker: CharacterDetailTracker(tracker: tracker)
+            )
         )
     }
 
-    func makeCharacterFilterViewModel(
+    func makeCharacterFilterView(
         delegate: any CharacterFilterDelegate,
         navigator: any NavigatorContract
-    ) -> some CharacterFilterViewModelContract {
-        CharacterFilterViewModel(
-            delegate: delegate,
-            navigator: CharacterFilterNavigator(navigator: navigator),
-            tracker: CharacterFilterTracker(tracker: tracker)
+    ) -> some View {
+        CharacterFilterView(
+            viewModel: CharacterFilterViewModel(
+                delegate: delegate,
+                navigator: CharacterFilterNavigator(navigator: navigator),
+                tracker: CharacterFilterTracker(tracker: tracker)
+            )
         )
     }
 }

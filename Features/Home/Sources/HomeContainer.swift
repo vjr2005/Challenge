@@ -1,4 +1,5 @@
 import ChallengeCore
+import SwiftUI
 
 /// Dependency container for the Home feature.
 struct HomeContainer {
@@ -16,15 +17,22 @@ struct HomeContainer {
 
     // MARK: - Factories
 
-    func makeHomeViewModel(navigator: any NavigatorContract) -> some HomeViewModelContract {
-        HomeViewModel(navigator: HomeNavigator(navigator: navigator), tracker: HomeTracker(tracker: tracker))
+    func makeHomeView(navigator: any NavigatorContract) -> some View {
+        HomeView(
+            viewModel: HomeViewModel(
+                navigator: HomeNavigator(navigator: navigator),
+                tracker: HomeTracker(tracker: tracker)
+            )
+        )
     }
 
-    func makeAboutViewModel(navigator: any NavigatorContract) -> some AboutViewModelContract {
-        AboutViewModel(
-            getAboutInfoUseCase: GetAboutInfoUseCase(),
-            navigator: AboutNavigator(navigator: navigator),
-            tracker: AboutTracker(tracker: tracker)
+    func makeAboutView(navigator: any NavigatorContract) -> some View {
+        AboutView(
+            viewModel: AboutViewModel(
+                getAboutInfoUseCase: GetAboutInfoUseCase(),
+                navigator: AboutNavigator(navigator: navigator),
+                tracker: AboutTracker(tracker: tracker)
+            )
         )
     }
 }

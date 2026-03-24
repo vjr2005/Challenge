@@ -19,7 +19,7 @@ public struct SystemFeature: FeatureContract {
     // MARK: - Feature Protocol
 
     public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView(NotFoundView(viewModel: container.makeNotFoundViewModel(navigator: navigator)))
+        AnyView(container.makeNotFoundView(navigator: navigator))
     }
 
     public func resolve(

@@ -20,7 +20,7 @@ The Composition Root is the **single location** where the entire object graph is
 │            ▼                    ▼                    ▼                      │
 │   ┌─────────────────────────────────────────────────────────────────┐       │
 │   │                    Factory Methods                              │       │
-│   │         Creates ViewModels with all dependencies wired          │       │
+│   │         Creates Views with ViewModels and dependencies wired    │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -124,6 +124,8 @@ public struct AppContainer {
 Each feature has its own container that manages its internal dependencies:
 
 ```swift
+import SwiftUI
+
 struct CharacterContainer {
     private let tracker: any TrackerContract
     private let imageLoader: any ImageLoaderContract
@@ -151,28 +153,32 @@ struct CharacterContainer {
         )
     }
 
-    // Factory methods for ViewModels
-    func makeCharacterListViewModel(navigator: any NavigatorContract) -> some CharacterListViewModelContract {
-        CharacterListViewModel(
-            getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
-            refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
-            searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
-            getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
-            saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
-            deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
-            navigator: CharacterListNavigator(navigator: navigator),
-            tracker: CharacterListTracker(tracker: tracker)
+    // Factory methods create Views with ViewModels wired internally
+    func makeCharacterListView(navigator: any NavigatorContract) -> some View {
+        CharacterListView(
+            viewModel: CharacterListViewModel(
+                getCharactersPageUseCase: GetCharactersPageUseCase(repository: charactersPageRepository),
+                refreshCharactersPageUseCase: RefreshCharactersPageUseCase(repository: charactersPageRepository),
+                searchCharactersPageUseCase: SearchCharactersPageUseCase(repository: charactersPageRepository),
+                getRecentSearchesUseCase: GetRecentSearchesUseCase(repository: recentSearchesRepository),
+                saveRecentSearchUseCase: SaveRecentSearchUseCase(repository: recentSearchesRepository),
+                deleteRecentSearchUseCase: DeleteRecentSearchUseCase(repository: recentSearchesRepository),
+                navigator: CharacterListNavigator(navigator: navigator),
+                tracker: CharacterListTracker(tracker: tracker)
+            )
         )
     }
 
-    func makeCharacterFilterViewModel(
+    func makeCharacterFilterView(
         delegate: any CharacterFilterDelegate,
         navigator: any NavigatorContract
-    ) -> some CharacterFilterViewModelContract {
-        CharacterFilterViewModel(
-            delegate: delegate,
-            navigator: CharacterFilterNavigator(navigator: navigator),
-            tracker: CharacterFilterTracker(tracker: tracker)
+    ) -> some View {
+        CharacterFilterView(
+            viewModel: CharacterFilterViewModel(
+                delegate: delegate,
+                navigator: CharacterFilterNavigator(navigator: navigator),
+                tracker: CharacterFilterTracker(tracker: tracker)
+            )
         )
     }
 }

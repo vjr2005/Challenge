@@ -21,9 +21,7 @@ public struct EpisodeFeature: FeatureContract {
 
 	public func makeMainView(navigator: any NavigatorContract) -> AnyView {
 		AnyView(
-			CharacterEpisodesView(
-				viewModel: container.makeCharacterEpisodesViewModel(characterIdentifier: 1, navigator: navigator)
-			)
+			container.makeCharacterEpisodesView(characterIdentifier: 1, navigator: navigator)
 		)
 	}
 
@@ -37,11 +35,9 @@ public struct EpisodeFeature: FeatureContract {
 		switch navigation {
 		case .characterEpisodes(let characterIdentifier):
 			return AnyView(
-				CharacterEpisodesView(
-					viewModel: container.makeCharacterEpisodesViewModel(
-						characterIdentifier: characterIdentifier,
-						navigator: navigator
-					)
+				container.makeCharacterEpisodesView(
+					characterIdentifier: characterIdentifier,
+					navigator: navigator
 				)
 			)
 		}

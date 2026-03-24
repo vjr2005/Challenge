@@ -261,12 +261,14 @@ public struct AppContainer {
 Creates screen-specific trackers, same pattern as navigators:
 
 ```swift
-func makeCharacterListViewModel(navigator: any NavigatorContract) -> CharacterListViewModel {
-    CharacterListViewModel(
-        getCharactersPageUseCase: makeGetCharactersPageUseCase(),
-        searchCharactersPageUseCase: makeSearchCharactersPageUseCase(),
-        navigator: CharacterListNavigator(navigator: navigator),
-        tracker: CharacterListTracker(tracker: tracker)
+func makeCharacterListView(navigator: any NavigatorContract) -> some View {
+    CharacterListView(
+        viewModel: CharacterListViewModel(
+            getCharactersPageUseCase: makeGetCharactersPageUseCase(),
+            searchCharactersPageUseCase: makeSearchCharactersPageUseCase(),
+            navigator: CharacterListNavigator(navigator: navigator),
+            tracker: CharacterListTracker(tracker: tracker)
+        )
     )
 }
 ```

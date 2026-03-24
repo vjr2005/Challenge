@@ -16,12 +16,13 @@ struct SystemContainerTests {
 
 	// MARK: - Tests
 
-	@Test("Make not found view model creates NotFoundViewModel")
-	func makeNotFoundViewModel() {
+	@Test("Make not found view creates NotFoundView")
+	func makeNotFoundView() {
 		// When
-		let viewModel = sut.makeNotFoundViewModel(navigator: NavigatorMock())
+		let view = sut.makeNotFoundView(navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is NotFoundViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("NotFoundView"))
 	}
 }

@@ -30,12 +30,12 @@ ChallengeApp
             ├── CharacterFeature (navigation + deep links)
             │   └── CharacterContainer (DI composition)
             │       ├── repository
-            │       ├── makeCharacterListViewModel()
-            │       └── makeCharacterDetailViewModel()
+            │       ├── makeCharacterListView()
+            │       └── makeCharacterDetailView()
             │
             └── HomeFeature (navigation)
                 └── HomeContainer (DI composition)
-                    └── makeHomeViewModel()
+                    └── makeHomeView()
 ```
 
 ---
@@ -45,7 +45,7 @@ ChallengeApp
 - **AppContainer**: Composition Root — creates shared dependencies (HTTPClient, Tracker) and all features
 - **{Feature}Container**: Handles dependency composition (repositories, factories)
 - **{Feature}Feature**: Handles navigation and deep links, delegates DI to Container
-- Views receive **only ViewModel** via init
+- Container factory methods create both ViewModel and View — callers receive a ready-to-use `some View`
 - Navigation is handled by App using `NavigationCoordinator`
 
 ---
@@ -99,9 +99,10 @@ Features/{Feature}/
 | Container | Created in Feature init | Owns dependency composition |
 | DataSource | Local variable in Container `init` | Only needed to build repositories |
 | Repository | Stored property in Container (`let`) | Built in `init`, used by factory methods |
-| Navigator | Factory method (inline) | New instance per ViewModel |
-| Screen Tracker | Factory method (inline) | New instance per ViewModel |
-| ViewModel | Factory method | New instance per navigation |
+| Navigator | Created inline inside Container factory method | New instance per View |
+| Screen Tracker | Created inline inside Container factory method | New instance per View |
+| ViewModel | Created inline inside Container factory method | New instance per View |
+| View | Container factory method (`make{Name}View`) | Wraps ViewModel; returned as `some View` |
 | UseCase | Created inline | Stateless |
 
 ---
@@ -117,7 +118,7 @@ Features/{Feature}/
 | Feature.resolve() | **public** | Returns view for navigation or nil |
 | AppContainer.init | **public** | Only public member, created by ChallengeApp |
 | AppContainer methods | **internal/private** | `resolveView`, `handle`, `makeRootView` are internal; rest private |
-| Container factory methods | **internal** | Called by Feature |
+| Container factory methods (`make{Name}View`) | **internal** | Called by Feature; return `some View` |
 | {Feature}IncomingNavigation | **public** | Used by AppNavigationRedirect |
 | {Feature}OutgoingNavigation | **public** | Used by AppNavigationRedirect |
 | {Feature}DeepLinkHandler | internal | Accessed via Feature.deepLinkHandler |
@@ -136,7 +137,7 @@ Features/{Feature}/
 - [ ] Feature creates Container in init, passing `tracker`
 - [ ] Container builds DataSources as local variables in `init`
 - [ ] Container has stored `repository` properties (`private let`)
-- [ ] Container has factory methods receiving `navigator: any NavigatorContract`
+- [ ] Container has factory methods (`make{Name}View`) receiving `navigator: any NavigatorContract`, returning `some View`
 - [ ] Create `{Feature}IncomingNavigation.swift`
 - [ ] Create `{Feature}OutgoingNavigation.swift` for cross-feature navigation (if needed)
 - [ ] Create `{Feature}DeepLinkHandler.swift` (only if feature handles deep links)

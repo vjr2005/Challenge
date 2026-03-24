@@ -136,6 +136,79 @@ struct {Feature}FeatureTests {
 }
 ```
 
+### {Feature}ContainerTests.swift — `Tests/Unit/Feature/`
+
+Without networking:
+
+```swift
+import ChallengeCore
+import ChallengeCoreMocks
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {Feature}ContainerTests {
+	// MARK: - Properties
+
+	private let navigatorMock = NavigatorMock()
+	private let sut: {Feature}Container
+
+	// MARK: - Init
+
+	init() {
+		sut = {Feature}Container(tracker: TrackerMock())
+	}
+
+	// MARK: - Make {Screen} View
+
+	@Test("Make {screen} view creates {Screen}View")
+	func make{Screen}View() {
+		// When
+		let view = sut.make{Screen}View(navigator: navigatorMock)
+
+		// Then
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("{Screen}View"))
+	}
+}
+```
+
+With networking:
+
+```swift
+import ChallengeCore
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {Feature}ContainerTests {
+	// MARK: - Properties
+
+	private let navigatorMock = NavigatorMock()
+	private let sut: {Feature}Container
+
+	// MARK: - Init
+
+	init() {
+		sut = {Feature}Container(httpClient: HTTPClientMock(), tracker: TrackerMock())
+	}
+
+	// MARK: - Make {Screen} View
+
+	@Test("Make {screen} view creates {Screen}View")
+	func make{Screen}View() {
+		// When
+		let view = sut.make{Screen}View(navigator: navigatorMock)
+
+		// Then
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("{Screen}View"))
+	}
+}
+```
+
 ### {Feature}DeepLinkHandlerTests.swift — `Tests/Unit/Presentation/Navigation/`
 
 ```swift

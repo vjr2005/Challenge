@@ -22,7 +22,7 @@ public struct HomeFeature: FeatureContract {
     }
 
     public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView(HomeView(viewModel: container.makeHomeViewModel(navigator: navigator)))
+        AnyView(container.makeHomeView(navigator: navigator))
     }
 
     public func resolve(
@@ -36,9 +36,7 @@ public struct HomeFeature: FeatureContract {
         case .main:
             return makeMainView(navigator: navigator)
         case .about:
-            return AnyView(AboutView(
-                viewModel: container.makeAboutViewModel(navigator: navigator)
-            ))
+            return AnyView(container.makeAboutView(navigator: navigator))
         }
     }
 }

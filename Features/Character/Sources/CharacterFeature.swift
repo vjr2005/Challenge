@@ -26,9 +26,7 @@ public struct CharacterFeature: FeatureContract {
     }
 
     public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-        AnyView(CharacterListView(
-            viewModel: container.makeCharacterListViewModel(navigator: navigator)
-        ))
+        AnyView(container.makeCharacterListView(navigator: navigator))
     }
 
     public func resolve(
@@ -42,18 +40,14 @@ public struct CharacterFeature: FeatureContract {
         case .list:
             return makeMainView(navigator: navigator)
         case .detail(let identifier):
-            return AnyView(CharacterDetailView(
-                viewModel: container.makeCharacterDetailViewModel(
-                    identifier: identifier,
-                    navigator: navigator
-                )
+            return AnyView(container.makeCharacterDetailView(
+                identifier: identifier,
+                navigator: navigator
             ))
         case .characterFilter(let delegate):
-            return AnyView(CharacterFilterView(
-                viewModel: container.makeCharacterFilterViewModel(
-                    delegate: delegate,
-                    navigator: navigator
-                )
+            return AnyView(container.makeCharacterFilterView(
+                delegate: delegate,
+                navigator: navigator
             ))
         }
     }

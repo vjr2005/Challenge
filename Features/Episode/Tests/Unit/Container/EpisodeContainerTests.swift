@@ -17,12 +17,13 @@ struct EpisodeContainerTests {
 
 	// MARK: - Tests
 
-	@Test("Make character episodes view model creates CharacterEpisodesViewModel")
-	func makeCharacterEpisodesViewModel() {
+	@Test("Make character episodes view creates CharacterEpisodesView")
+	func makeCharacterEpisodesView() {
 		// When
-		let viewModel = sut.makeCharacterEpisodesViewModel(characterIdentifier: 1, navigator: NavigatorMock())
+		let view = sut.makeCharacterEpisodesView(characterIdentifier: 1, navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is CharacterEpisodesViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("CharacterEpisodesView"))
 	}
 }

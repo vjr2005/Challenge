@@ -217,6 +217,58 @@ struct {Feature}FeatureTests {
 
 ---
 
+## Container Tests Pattern
+
+Container factory methods are `internal` — test them via `@testable import` to verify the correct view type is produced.
+
+```swift
+import ChallengeCore
+import ChallengeCoreMocks
+import ChallengeNetworkingMocks
+import Testing
+
+@testable import Challenge{Feature}
+
+struct {Feature}ContainerTests {
+    // MARK: - Properties
+
+    private let navigatorMock = NavigatorMock()
+    private let sut: {Feature}Container
+
+    // MARK: - Initialization
+
+    init() {
+        sut = {Feature}Container(httpClient: HTTPClientMock(), tracker: TrackerMock())
+    }
+
+    // MARK: - Make {Name} List View
+
+    @Test("Make {name} list view creates {Name}ListView")
+    func make{Name}ListView() {
+        // When
+        let view = sut.make{Name}ListView(navigator: navigatorMock)
+
+        // Then
+        let viewName = String(describing: type(of: view))
+        #expect(viewName.contains("{Name}ListView"))
+    }
+
+    // MARK: - Make {Name} Detail View
+
+    @Test("Make {name} detail view creates {Name}DetailView")
+    func make{Name}DetailView() {
+        // When
+        let view = sut.make{Name}DetailView(identifier: 1, navigator: navigatorMock)
+
+        // Then
+        let viewName = String(describing: type(of: view))
+        #expect(viewName.contains("{Name}DetailView"))
+    }
+}
+```
+
+---
+
 ## What to Test
 
 | Test | Purpose |
@@ -225,5 +277,6 @@ struct {Feature}FeatureTests {
 | makeMainView() | Verify default entry point view is created |
 | resolve() with valid navigation | Verify correct view is returned for each navigation case |
 | resolve() with unknown navigation | Verify nil is returned for unhandled navigation |
+| Container `make{Name}View()` | Verify correct View type is produced (via `String(describing: type(of: view))`) |
 
-**Note:** Factory methods are internal to Container. Test them indirectly through ViewModel tests, Repository tests, and DeepLinkHandler tests.
+**Note:** Container factory methods return `some View`. Verify the concrete View type by inspecting `String(describing: type(of: view))` rather than casting.

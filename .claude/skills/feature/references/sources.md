@@ -191,6 +191,7 @@ Without networking (default for minimal features):
 
 ```swift
 import ChallengeCore
+import SwiftUI
 
 struct {Feature}Container {
 	// MARK: - Dependencies
@@ -205,10 +206,12 @@ struct {Feature}Container {
 
 	// MARK: - Factories
 
-	func make{Screen}ViewModel(navigator: any NavigatorContract) -> some {Screen}ViewModelContract {
-		{Screen}ViewModel(
-			navigator: {Screen}Navigator(navigator: navigator),
-			tracker: {Screen}Tracker(tracker: tracker)
+	func make{Screen}View(navigator: any NavigatorContract) -> some View {
+		{Screen}View(
+			viewModel: {Screen}ViewModel(
+				navigator: {Screen}Navigator(navigator: navigator),
+				tracker: {Screen}Tracker(tracker: tracker)
+			)
 		)
 	}
 }
@@ -219,6 +222,7 @@ With networking (when DataSources/Repositories are added later):
 ```swift
 import ChallengeCore
 import ChallengeNetworking
+import SwiftUI
 
 struct {Feature}Container {
 	// MARK: - Dependencies
@@ -245,16 +249,18 @@ struct {Feature}Container {
 
 	// MARK: - Factories
 
-	func make{Screen}ViewModel(navigator: any NavigatorContract) -> some {Screen}ViewModelContract {
-		{Screen}ViewModel(
-			navigator: {Screen}Navigator(navigator: navigator),
-			tracker: {Screen}Tracker(tracker: tracker)
+	func make{Screen}View(navigator: any NavigatorContract) -> some View {
+		{Screen}View(
+			viewModel: {Screen}ViewModel(
+				navigator: {Screen}Navigator(navigator: navigator),
+				tracker: {Screen}Tracker(tracker: tracker)
+			)
 		)
 	}
 }
 ```
 
-> **Important:** Features always receive `HTTPClientContract` — never specific clients like `GraphQLClientContract`. The Container is responsible for creating transport-specific clients (e.g., `GraphQLClient`, `HTTPClient`) from the `HTTPClientContract`.
+> **Important:** Features always receive `HTTPClientContract` — never specific clients like `GraphQLClientContract`. The Container is responsible for creating transport-specific clients (e.g., `GraphQLClient`, `HTTPClient`) from the `HTTPClientContract`. Container factory methods create both the ViewModel and wrap it in the View — callers receive a ready-to-use `some View`.
 
 ### {Feature}Feature.swift — `Sources/`
 
@@ -282,7 +288,7 @@ public struct {Feature}Feature: FeatureContract {
 	}
 
 	public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-		AnyView({Screen}View(viewModel: container.make{Screen}ViewModel(navigator: navigator)))
+		AnyView(container.make{Screen}View(navigator: navigator))
 	}
 
 	public func resolve(
@@ -325,7 +331,7 @@ public struct {Feature}Feature: FeatureContract {
 	}
 
 	public func makeMainView(navigator: any NavigatorContract) -> AnyView {
-		AnyView({Screen}View(viewModel: container.make{Screen}ViewModel(navigator: navigator)))
+		AnyView(container.make{Screen}View(navigator: navigator))
 	}
 
 	public func resolve(

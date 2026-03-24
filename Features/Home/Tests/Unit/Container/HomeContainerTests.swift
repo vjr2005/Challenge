@@ -16,21 +16,23 @@ struct HomeContainerTests {
 
 	// MARK: - Tests
 
-	@Test("Make home view model creates HomeViewModel")
-	func makeHomeViewModel() {
+	@Test("Make home view creates HomeView")
+	func makeHomeView() {
 		// When
-		let viewModel = sut.makeHomeViewModel(navigator: NavigatorMock())
+		let view = sut.makeHomeView(navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is HomeViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("HomeView"))
 	}
 
-	@Test("Make about view model creates AboutViewModel")
-	func makeAboutViewModel() {
+	@Test("Make about view creates AboutView")
+	func makeAboutView() {
 		// When
-		let viewModel = sut.makeAboutViewModel(navigator: NavigatorMock())
+		let view = sut.makeAboutView(navigator: NavigatorMock())
 
 		// Then
-		#expect(viewModel is AboutViewModel)
+		let viewName = String(describing: type(of: view))
+		#expect(viewName.contains("AboutView"))
 	}
 }
