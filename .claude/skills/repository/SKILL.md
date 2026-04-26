@@ -113,7 +113,7 @@ Checklist (for All configurable — adapt for single-policy variants):
 - [ ] Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Error Mapper in `Data/Mappers/` (`MapperContract`)
 - [ ] Implementation in `Data/Repositories/` (injects both DataSources, uses Mapper + Error Mapper)
-- [ ] Delegate to `CachePolicyExecutor` for cache strategy execution (with `errorMapper` closure)
+- [ ] Delegate to `cachePolicy.fetch(...)` for cache strategy execution (do-catch with mapping)
 - [ ] Mock in `Tests/Shared/Mocks/` (tracks `cachePolicy`)
 - [ ] Mapper tests, Error Mapper tests
 - [ ] Tests for each cache strategy
@@ -276,38 +276,46 @@ nonisolated extension {Feature}Error: CustomDebugStringConvertible {
 
 ---
 
-## CachePolicy & CachePolicyExecutor
+## CachePolicy (Strategy Pattern)
 
-Defined in `ChallengeCore`, shared across features:
+Defined in `ChallengeCore`, shared across features. The enum carries its own fetch behavior — no separate executor type:
 
 ```swift
 nonisolated public enum CachePolicy {
     case localFirst   // Cache → Remote (if miss) → Save to cache
     case remoteFirst  // Remote → Save to cache → Cache (if error)
     case noCache      // Remote only, no cache interaction
+
+    public func fetch<Value>(
+        fromRemote: sending () async throws -> Value,
+        fromCache: sending () async -> Value?,
+        saveToCache: sending (Value) async -> Void
+    ) async throws -> Value
 }
 ```
 
-`CachePolicyExecutor` is a `nonisolated public struct: Sendable` that centralizes cache strategy execution. All closure parameters use the `sending` modifier for region-based isolation. Repositories delegate to it via generic closures, including an `errorMapper` that maps transport errors to domain errors:
+`fetch` returns the raw `Value` and propagates the original transport error untyped. Repositories wrap the call in a `do-catch` and handle mapping (DTO → Domain) and error mapping themselves:
 
 ```swift
-private let cacheExecutor = CachePolicyExecutor()
-
-try await cacheExecutor.execute(
-    policy: cachePolicy,
-    fetchFromRemote: { try await remoteDataSource.fetch{Name}(...) },
-    getFromCache: { await memoryDataSource.get{Name}(...) },
-    saveToCache: { await memoryDataSource.save{Name}($0) },
-    mapper: { mapper.map($0) },
-    errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, ...)) }
-)
+@concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
+    do {
+        let dto = try await cachePolicy.fetch(
+            fromRemote: { try await remoteDataSource.fetch{Name}(...) },
+            fromCache: { await memoryDataSource.get{Name}(...) },
+            saveToCache: { await memoryDataSource.save{Name}($0) }
+        )
+        return mapper.map(dto)
+    } catch {
+        throw errorMapper.map({Name}ErrorMapperInput(error: error, ...))
+    }
+}
 ```
 
-The `errorMapper` closure receives `any Error` (raw transport error) and returns the typed domain error. This eliminates the need for a separate `fetchFromRemote` wrapper method in each repository — error mapping is handled entirely by the executor.
+This separation respects SRP: `CachePolicy` only coordinates cache, mapping is the Repository's responsibility.
 
-> **Note:** `nonisolated` on `CachePolicyExecutor` does NOT propagate to its `private extension` — the extension must also be marked `nonisolated`.
+> **Note:** Private helpers in the `CachePolicy` extension are `static` (not instance methods) — passing `self` along with `sending` closures triggers a region-based isolation error. The extension must be `nonisolated` (does NOT propagate from the type).
 
-Cache strategy logic is tested once in `CachePolicyExecutorTests` (15 tests). Repository tests only verify wiring, cache wiring, and error mapping.
+Cache strategy logic is tested in `CachePolicyTests` calling `CachePolicy.localFirst.fetch(...)` directly. Repository tests only verify wiring, cache wiring, and error mapping.
 
 ---
 

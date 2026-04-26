@@ -7,7 +7,6 @@ nonisolated struct CharactersPageRepository: CharactersPageRepositoryContract {
 	private let mapper = CharactersPageMapper()
 	private let filterMapper = CharacterFilterMapper()
 	private let errorMapper = CharactersPageErrorMapper()
-	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
 		remoteDataSource: any CharacterRemoteDataSourceContract,
@@ -18,14 +17,16 @@ nonisolated struct CharactersPageRepository: CharactersPageRepositoryContract {
 	}
 
 	@concurrent func getCharactersPage(page: Int, cachePolicy: CachePolicy) async throws(CharactersPageError) -> CharactersPage {
-		try await cacheExecutor.execute(
-			policy: cachePolicy,
-			fetchFromRemote: { try await remoteDataSource.fetchCharacters(page: page, filter: .empty) },
-			getFromCache: { await memoryDataSource.getPage(page) },
-			saveToCache: { await memoryDataSource.savePage($0, page: page) },
-			mapper: { mapper.map(CharactersPageMapperInput(response: $0, currentPage: page)) },
-			errorMapper: { errorMapper.map(CharactersPageErrorMapperInput(error: $0, page: page)) }
-		)
+		do {
+			let dto = try await cachePolicy.fetch(
+				fromRemote: { try await remoteDataSource.fetchCharacters(page: page, filter: .empty) },
+				fromCache: { await memoryDataSource.getPage(page) },
+				saveToCache: { await memoryDataSource.savePage($0, page: page) }
+			)
+			return mapper.map(CharactersPageMapperInput(response: dto, currentPage: page))
+		} catch {
+			throw errorMapper.map(CharactersPageErrorMapperInput(error: error, page: page))
+		}
 	}
 
 	@concurrent func clearPagesCache() async {

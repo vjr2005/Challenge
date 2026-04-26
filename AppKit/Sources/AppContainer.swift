@@ -111,7 +111,7 @@ private extension AppContainer {
 extension AppContainer {
 	static func makeURLSession() -> URLSession {
 		let configuration = URLSessionConfiguration.default
-		// The app manages its own cache layer (CachePolicyExecutor + memory/persistent DataSources).
+		// The app manages its own cache layer (CachePolicy + memory/persistent DataSources).
 		// Disabling URLCache avoids a hidden second cache that would serve stale responses
 		// even when the app explicitly requests fresh data (e.g. pull-to-refresh).
 		configuration.urlCache = nil

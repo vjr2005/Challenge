@@ -26,7 +26,6 @@ nonisolated struct {Name}Repository: {Name}RepositoryContract {
     private let memoryDataSource: {Name}LocalDataSourceContract
     private let mapper = {Name}Mapper()
     private let errorMapper = {Name}ErrorMapper()
-    private let cacheExecutor = CachePolicyExecutor()
 
     init(
         remoteDataSource: {Name}RemoteDataSourceContract,
@@ -37,21 +36,23 @@ nonisolated struct {Name}Repository: {Name}RepositoryContract {
     }
 
     @concurrent func get{Name}(identifier: Int) async throws({Feature}Error) -> {Name} {
-        try await cacheExecutor.execute(
-            policy: .localFirst,
-            fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
-            getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
-            saveToCache: { await memoryDataSource.save{Name}($0) },
-            mapper: { mapper.map($0) },
-            errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
-        )
+        do {
+            let dto = try await CachePolicy.localFirst.fetch(
+                fromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
+                fromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
+                saveToCache: { await memoryDataSource.save{Name}($0) }
+            )
+            return mapper.map(dto)
+        } catch {
+            throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
+        }
     }
 }
 ```
 
 ## Tests
 
-Cache strategy logic is tested centrally in `CachePolicyExecutorTests`. Repository tests focus on **wiring** and **error mapping**.
+Cache strategy logic is tested centrally in `CachePolicyTests`. Repository tests focus on **wiring** and **error mapping**.
 
 ```swift
 import ChallengeCore

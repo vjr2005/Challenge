@@ -6,7 +6,6 @@ nonisolated struct CharacterRepository: CharacterRepositoryContract {
 	private let memoryDataSource: any CharacterLocalDataSourceContract
 	private let mapper = CharacterMapper()
 	private let errorMapper = CharacterErrorMapper()
-	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
 		remoteDataSource: any CharacterRemoteDataSourceContract,
@@ -17,13 +16,15 @@ nonisolated struct CharacterRepository: CharacterRepositoryContract {
 	}
 
 	@concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-		try await cacheExecutor.execute(
-			policy: cachePolicy,
-			fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
-			getFromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
-			saveToCache: { await memoryDataSource.saveCharacter($0) },
-			mapper: { mapper.map($0) },
-			errorMapper: { errorMapper.map(CharacterErrorMapperInput(error: $0, identifier: identifier)) }
-		)
+		do {
+			let dto = try await cachePolicy.fetch(
+				fromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
+				fromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
+				saveToCache: { await memoryDataSource.saveCharacter($0) }
+			)
+			return mapper.map(dto)
+		} catch {
+			throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
+		}
 	}
 }

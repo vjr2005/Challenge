@@ -135,17 +135,18 @@ nonisolated struct CharacterRepository: CharacterRepositoryContract {
     private let memoryDataSource: CharacterLocalDataSourceContract
     private let mapper = CharacterMapper()
     private let errorMapper = CharacterErrorMapper()
-    private let cacheExecutor = CachePolicyExecutor()
 
     @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-        try await cacheExecutor.execute(
-            policy: cachePolicy,
-            fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
-            getFromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
-            saveToCache: { await memoryDataSource.saveCharacter($0) },
-            mapper: { mapper.map($0) },
-            errorMapper: { errorMapper.map(CharacterErrorMapperInput(error: $0, identifier: identifier)) }
-        )
+        do {
+            let dto = try await cachePolicy.fetch(
+                fromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
+                fromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
+                saveToCache: { await memoryDataSource.saveCharacter($0) }
+            )
+            return mapper.map(dto)
+        } catch {
+            throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
+        }
     }
 }
 ```
@@ -171,7 +172,7 @@ public enum CachePolicy {
 
 ### Why URLCache Is Disabled
 
-`URLSession`'s built-in `URLCache` is disabled globally (`urlCache = nil` on the session configuration). The app manages its own cache layer through `CachePolicyExecutor` + memory DataSources, which provides concrete advantages over URLCache:
+`URLSession`'s built-in `URLCache` is disabled globally (`urlCache = nil` on the session configuration). The app manages its own cache layer through `CachePolicy` + memory DataSources, which provides concrete advantages over URLCache:
 
 | Concern | App Cache | URLCache |
 |---------|-----------|----------|
@@ -242,7 +243,7 @@ nonisolated struct CharacterErrorMapper: MapperContract {
 }
 ```
 
-The repository delegates error mapping to `CachePolicyExecutor` via the `errorMapper` closure — no need for a separate `fetchFromRemote` helper.
+The repository wraps `cachePolicy.fetch(...)` in a `do-catch` and maps transport errors to domain errors itself — `CachePolicy` only handles caching, not error mapping.
 
 ### Repository Benefits
 

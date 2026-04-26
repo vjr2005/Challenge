@@ -539,7 +539,7 @@ nonisolated protocol {Name}RepositoryContract: Sendable {
 
 Create `Sources/Data/Repositories/{Name}Repository.swift`:
 
-The implementation delegates cache strategy logic to `CachePolicyExecutor` (from `ChallengeCore`), which centralizes `localFirst`/`remoteFirst`/`noCache` behavior:
+The implementation delegates cache strategy logic to `CachePolicy.fetch(...)` (from `ChallengeCore`), which centralizes `localFirst`/`remoteFirst`/`noCache` behavior via the Strategy pattern:
 
 ```swift
 import ChallengeCore
@@ -550,7 +550,6 @@ nonisolated struct {Name}Repository: {Name}RepositoryContract {
 	private let memoryDataSource: {Name}LocalDataSourceContract
 	private let mapper = {Name}Mapper()
 	private let errorMapper = {Name}ErrorMapper()
-	private let cacheExecutor = CachePolicyExecutor()
 
 	init(
 		remoteDataSource: {Name}RemoteDataSourceContract,
@@ -561,19 +560,21 @@ nonisolated struct {Name}Repository: {Name}RepositoryContract {
 	}
 
 	@concurrent func get{Name}(identifier: Int, cachePolicy: CachePolicy) async throws({Feature}Error) -> {Name} {
-		try await cacheExecutor.execute(
-			policy: cachePolicy,
-			fetchFromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
-			getFromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
-			saveToCache: { await memoryDataSource.save{Name}($0) },
-			mapper: { mapper.map($0) },
-			errorMapper: { errorMapper.map({Name}ErrorMapperInput(error: $0, identifier: identifier)) }
-		)
+		do {
+			let dto = try await cachePolicy.fetch(
+				fromRemote: { try await remoteDataSource.fetch{Name}(identifier: identifier) },
+				fromCache: { await memoryDataSource.get{Name}(identifier: identifier) },
+				saveToCache: { await memoryDataSource.save{Name}($0) }
+			)
+			return mapper.map(dto)
+		} catch {
+			throw errorMapper.map({Name}ErrorMapperInput(error: error, identifier: identifier))
+		}
 	}
 }
 ```
 
-> **Note:** `CachePolicyExecutor.execute()` handles all cache strategy logic (`localFirst`, `remoteFirst`, `noCache`) internally. The repository only provides closures for remote fetch, cache read/write, mapping, and error mapping. `fetchFromRemote` uses untyped `throws` — the executor handles error mapping via the `errorMapper` closure.
+> **Note:** `CachePolicy.fetch()` handles all cache strategy logic (`localFirst`, `remoteFirst`, `noCache`) internally. The repository wraps the call in a `do-catch` to map DTO→Domain on success and transport errors to domain errors on failure.
 
 ### Mock (All configurable)
 
@@ -768,13 +769,13 @@ private enum GenericTestError: Error {
 
 ### Checklist (All configurable)
 
-- [ ] Import `ChallengeCore` (provides `CachePolicy`, `CachePolicyExecutor`, and `MapperContract`)
+- [ ] Import `ChallengeCore` (provides `CachePolicy` and `MapperContract`)
 - [ ] Domain model (`nonisolated struct`, `Equatable`, `let` properties, in `Domain/Models/`)
 - [ ] Domain error enum in `Domain/Errors/` (`nonisolated public enum`, typed throws, `LocalizedError`, custom `Equatable`, `CustomDebugStringConvertible`)
 - [ ] Contract in `Domain/Repositories/` (`nonisolated protocol: Sendable`, `@concurrent`, `cachePolicy: CachePolicy` parameter)
 - [ ] Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
 - [ ] Error Mapper in `Data/Mappers/` (`nonisolated struct`, `MapperContract`)
-- [ ] Implementation in `Data/Repositories/` (`nonisolated struct`, `@concurrent` methods, uses `CachePolicyExecutor`)
+- [ ] Implementation in `Data/Repositories/` (`nonisolated struct`, `@concurrent` methods, calls `cachePolicy.fetch(...)`)
 - [ ] Mock in `Tests/Shared/Mocks/` (`nonisolated final class`, `@concurrent` methods, tracks `cachePolicy`)
 - [ ] Mapper tests, Error Mapper tests
 - [ ] Tests for each cache strategy

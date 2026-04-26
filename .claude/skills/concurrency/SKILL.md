@@ -163,17 +163,18 @@ nonisolated struct CharacterRepository: CharacterRepositoryContract {
     private let memoryDataSource: CharacterLocalDataSourceContract
     private let mapper = CharacterMapper()
     private let errorMapper = CharacterErrorMapper()
-    private let cacheExecutor = CachePolicyExecutor()
 
     @concurrent func getCharacter(identifier: Int, cachePolicy: CachePolicy) async throws(CharacterError) -> Character {
-        try await cacheExecutor.execute(
-            policy: cachePolicy,
-            fetchFromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
-            getFromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
-            saveToCache: { await memoryDataSource.saveCharacter($0) },
-            mapper: { mapper.map($0) },
-            errorMapper: { errorMapper.map(CharacterErrorMapperInput(error: $0, identifier: identifier)) }
-        )
+        do {
+            let dto = try await cachePolicy.fetch(
+                fromRemote: { try await remoteDataSource.fetchCharacter(identifier: identifier) },
+                fromCache: { await memoryDataSource.getCharacter(identifier: identifier) },
+                saveToCache: { await memoryDataSource.saveCharacter($0) }
+            )
+            return mapper.map(dto)
+        } catch {
+            throw errorMapper.map(CharacterErrorMapperInput(error: error, identifier: identifier))
+        }
     }
 }
 
@@ -222,7 +223,7 @@ public protocol GraphQLClientContract: Sendable {
 **When NOT to use:**
 - Actors — `@concurrent` cannot be used with actor isolation (SE-0461)
 - UseCases — trivial coordination, stay MainActor
-- CachePolicyExecutor — nonisolated struct, delegates to @concurrent repos/datasources
+- CachePolicy.fetch — nonisolated method on enum, delegates to @concurrent repos/datasources
 
 **Implementation notes:**
 - In modules with MainActor default: private helpers called from `@concurrent` methods must be `nonisolated`
@@ -348,8 +349,7 @@ actor DataStore {
 | Mapper | `nonisolated struct` | Stateless, `MapperContract` |
 | Domain Model | `nonisolated struct` | Pure data with behavior |
 | Domain Error | `nonisolated enum` | `nonisolated` on extensions too |
-| CachePolicy | `nonisolated enum` | Shared across features |
-| CachePolicyExecutor | `nonisolated struct: Sendable` | `sending` closures |
+| CachePolicy | `nonisolated enum` | Shared across features; carries fetch behavior via `sending` closures |
 | HTTPClient / GraphQLClient | nonisolated (module default) | `@concurrent` on public methods |
 | Endpoint / HTTPMethod | nonisolated (module default) | Pure data types, keep explicit `Sendable` for cross-module use |
 | GraphQLResponse | nonisolated (module default) | Pure data envelope |
@@ -493,7 +493,7 @@ This is safe in practice because the actor serializes all calls to the mock. Tes
 - [ ] Data/Domain layer types use `nonisolated` keyword (DTOs, Mappers, Models, Errors, Repos, Remote DS)
 - [ ] Repository and Remote DataSource contract methods use `@concurrent`
 - [ ] `nonisolated` extensions have their own `nonisolated` keyword (not inherited from type)
-- [ ] `CachePolicyExecutor` closures use `sending` modifier
+- [ ] `CachePolicy.fetch` closures use `sending` modifier
 - [ ] Actor methods with multiple `await` calls reviewed for reentrancy risks
 - [ ] Stateless wrappers around thread-safe APIs use `: Sendable` + `nonisolated` (not `: Actor`)
 - [ ] Transport client methods use `@concurrent` for off-MainActor execution

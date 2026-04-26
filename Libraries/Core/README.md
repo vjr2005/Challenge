@@ -24,7 +24,6 @@ Core/
 │   │   └── AppEnvironment.swift
 │   ├── Data/
 │   │   ├── CachePolicy.swift
-│   │   ├── CachePolicyExecutor.swift
 │   │   └── MapperContract.swift
 │   ├── Feature/
 │   │   └── FeatureContract.swift
@@ -182,8 +181,7 @@ Disk-based image cache with TTL expiration and LRU eviction:
 Shared abstractions for the data layer. All types in this section are `nonisolated` (opt out of MainActor default) since they are used from `@concurrent` repository methods:
 
 - **`MapperContract`** — `nonisolated` generic protocol for mapping between DTOs and domain models.
-- **`CachePolicy`** — `nonisolated` enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`.
-- **`CachePolicyExecutor`** — `nonisolated struct: Sendable` that executes data fetch operations using a `CachePolicy`. Repositories delegate cache strategy logic to this executor, eliminating duplicated cache implementations. Accepts generic `sending` closures for remote fetch, cache read/write, DTO-to-domain mapping, and error mapping (transport errors to domain errors).
+- **`CachePolicy`** — `nonisolated` enum controlling cache behavior: `.localFirst`, `.remoteFirst`, `.noCache`. Implements the **Strategy pattern**: each case carries its own fetch behavior via `fetch(fromRemote:fromCache:saveToCache:)`, accepting generic `sending` closures. Repositories call `cachePolicy.fetch(...)` directly, then map DTO→Domain and transport errors themselves.
 
 ### FeatureContract Protocol
 
