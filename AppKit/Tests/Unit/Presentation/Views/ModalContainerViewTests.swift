@@ -13,7 +13,7 @@ struct ModalContainerViewTests {
 		let modal = ModalNavigation(navigation: TestNavigation.test, style: .sheet())
 
 		// When
-		let sut = ModalContainerView(modal: modal, appContainer: appContainer, onDismiss: {})
+		let sut = ModalContainerView(modal: modal, appContainer: appContainer) {}
 
 		// Then
 		#expect(sut.modal.id == modal.id)

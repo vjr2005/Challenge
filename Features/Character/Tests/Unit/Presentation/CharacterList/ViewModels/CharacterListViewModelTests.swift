@@ -650,7 +650,6 @@ struct CharacterListViewModelTests {
         searchCharactersPageUseCaseMock.reset()
         trackerMock.reset()
     }
-
 }
 
 // MARK: - Test Helpers
@@ -677,8 +676,8 @@ extension CharacterListViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidAppearScenario] = [
-            DidAppearScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(charactersPageResult: .success(.stub()), recentSearches: [], searchQuery: ""),
                 expected: Expected(
@@ -691,7 +690,7 @@ extension CharacterListViewModelTests {
                     searchFilterName: nil
                 )
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "On success with empty characters sets empty state",
                 given: Given(charactersPageResult: .success(.stub(characters: [])), recentSearches: [], searchQuery: ""),
                 expected: Expected(
@@ -704,7 +703,7 @@ extension CharacterListViewModelTests {
                     searchFilterName: nil
                 )
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks fetch error",
                 given: Given(charactersPageResult: .failure(.loadFailed()), recentSearches: [], searchQuery: ""),
                 expected: Expected(
@@ -717,7 +716,7 @@ extension CharacterListViewModelTests {
                     searchFilterName: nil
                 )
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "On success loads recent searches",
                 given: Given(charactersPageResult: .success(.stub()), recentSearches: ["Rick", "Morty"], searchQuery: ""),
                 expected: Expected(
@@ -730,7 +729,7 @@ extension CharacterListViewModelTests {
                     searchFilterName: nil
                 )
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "With search query uses search use case instead of get characters",
                 given: Given(charactersPageResult: .success(.stub()), recentSearches: [], searchQuery: "Morty"),
                 expected: Expected(
@@ -742,7 +741,7 @@ extension CharacterListViewModelTests {
                     searchCharactersPageExecuteCallCount: 1,
                     searchFilterName: "Morty"
                 )
-            ),
+            )
         ]
     }
 
@@ -760,20 +759,20 @@ extension CharacterListViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidTapOnRetryButtonScenario] = [
-            DidTapOnRetryButtonScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(charactersPageResult: .success(.stub())),
                 expected: Expected(state: .loaded(.stub()), fetchErrorDescriptions: [])
             ),
-            DidTapOnRetryButtonScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks fetch error",
                 given: Given(charactersPageResult: .failure(.loadFailed())),
                 expected: Expected(
                     state: .error(.loadFailed()),
                     fetchErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
                 )
-            ),
+            )
         ]
     }
 
@@ -791,8 +790,8 @@ extension CharacterListViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidTapOnLoadMoreButtonScenario] = [
-            DidTapOnLoadMoreButtonScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success appends characters and updates state",
                 given: Given(
                     charactersPageResult: .success(.stub(
@@ -811,7 +810,7 @@ extension CharacterListViewModelTests {
                     loadMoreErrorDescriptions: []
                 )
             ),
-            DidTapOnLoadMoreButtonScenario(
+            Self(
                 testDescription: "On failure keeps existing data and tracks load more error",
                 given: Given(
                     charactersPageResult: .failure(.loadFailed())
@@ -824,7 +823,7 @@ extension CharacterListViewModelTests {
                     )),
                     loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
                 )
-            ),
+            )
         ]
     }
 
@@ -843,8 +842,8 @@ extension CharacterListViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidTapOnLoadMoreButtonWithSearchQueryScenario] = [
-            DidTapOnLoadMoreButtonWithSearchQueryScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success appends characters and updates state",
                 given: Given(
                     charactersPageResult: .success(.stub(
@@ -864,7 +863,7 @@ extension CharacterListViewModelTests {
                     loadMoreErrorDescriptions: []
                 )
             ),
-            DidTapOnLoadMoreButtonWithSearchQueryScenario(
+            Self(
                 testDescription: "On failure keeps existing data and tracks load more error",
                 given: Given(
                     charactersPageResult: .failure(.loadFailed()),
@@ -878,7 +877,7 @@ extension CharacterListViewModelTests {
                     )),
                     loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
                 )
-            ),
+            )
         ]
     }
 
@@ -897,8 +896,8 @@ extension CharacterListViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidTapOnLoadMoreButtonWithCharacterFilterScenario] = [
-            DidTapOnLoadMoreButtonWithCharacterFilterScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success appends characters and updates state",
                 given: Given(
                     charactersPageResult: .success(.stub(
@@ -918,7 +917,7 @@ extension CharacterListViewModelTests {
                     loadMoreErrorDescriptions: []
                 )
             ),
-            DidTapOnLoadMoreButtonWithCharacterFilterScenario(
+            Self(
                 testDescription: "On failure keeps existing data and tracks load more error",
                 given: Given(
                     charactersPageResult: .failure(.loadFailed()),
@@ -932,7 +931,7 @@ extension CharacterListViewModelTests {
                     )),
                     loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
                 )
-            ),
+            )
         ]
     }
 
@@ -951,18 +950,18 @@ extension CharacterListViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidPullToRefreshScenario] = [
-            DidPullToRefreshScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(charactersPageResult: .success(.stub()), loadMoreBeforeRefresh: false),
                 expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
             ),
-            DidPullToRefreshScenario(
+            Self(
                 testDescription: "On success with empty characters sets empty state",
                 given: Given(charactersPageResult: .success(.stub(characters: [])), loadMoreBeforeRefresh: false),
                 expected: Expected(state: .empty, refreshErrorDescriptions: [])
             ),
-            DidPullToRefreshScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks refresh error",
                 given: Given(charactersPageResult: .failure(.loadFailed()), loadMoreBeforeRefresh: false),
                 expected: Expected(
@@ -970,11 +969,11 @@ extension CharacterListViewModelTests {
                     refreshErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
                 )
             ),
-            DidPullToRefreshScenario(
+            Self(
                 testDescription: "After loading more pages resets to page one on success",
                 given: Given(charactersPageResult: .success(.stub()), loadMoreBeforeRefresh: true),
                 expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
-            ),
+            )
         ]
     }
 }

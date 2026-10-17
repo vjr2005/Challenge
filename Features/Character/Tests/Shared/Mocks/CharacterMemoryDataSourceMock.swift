@@ -38,7 +38,7 @@ actor CharacterMemoryDataSourceMock: CharacterLocalDataSourceContract {
     }
 
     func getPage(_ page: Int) -> CharactersResponseDTO? {
-        return pageToReturn
+        pageToReturn
     }
 
     func savePage(_ response: CharactersResponseDTO, page: Int) {

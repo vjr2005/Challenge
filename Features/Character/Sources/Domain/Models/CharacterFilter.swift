@@ -34,5 +34,5 @@ nonisolated public struct CharacterFilter: Equatable, Sendable {
         return count
     }
 
-    static let empty = CharacterFilter()
+    static let empty = Self()
 }

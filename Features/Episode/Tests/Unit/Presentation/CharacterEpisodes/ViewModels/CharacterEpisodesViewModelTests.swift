@@ -159,20 +159,20 @@ extension CharacterEpisodesViewModelTests {
 		let given: Given
 		let expected: Expected
 
-		static let all: [DidAppearScenario] = [
-			DidAppearScenario(
+		static let all: [Self] = [
+			Self(
 				testDescription: "On success sets loaded state without tracking error",
 				given: Given(characterWithEpisodesResult: .success(.stub())),
 				expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
 			),
-			DidAppearScenario(
+			Self(
 				testDescription: "On failure sets error state and tracks load error",
 				given: Given(characterWithEpisodesResult: .failure(.loadFailed())),
 				expected: Expected(
 					state: .error(.loadFailed()),
 					loadErrorDescriptions: [EpisodeError.loadFailed().debugDescription]
 				)
-			),
+			)
 		]
 	}
 
@@ -190,20 +190,20 @@ extension CharacterEpisodesViewModelTests {
 		let given: Given
 		let expected: Expected
 
-		static let all: [DidTapOnRetryButtonScenario] = [
-			DidTapOnRetryButtonScenario(
+		static let all: [Self] = [
+			Self(
 				testDescription: "On success sets loaded state without tracking error",
 				given: Given(characterWithEpisodesResult: .success(.stub())),
 				expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
 			),
-			DidTapOnRetryButtonScenario(
+			Self(
 				testDescription: "On failure sets error state and tracks load error",
 				given: Given(characterWithEpisodesResult: .failure(.loadFailed())),
 				expected: Expected(
 					state: .error(.loadFailed()),
 					loadErrorDescriptions: [EpisodeError.loadFailed().debugDescription]
 				)
-			),
+			)
 		]
 	}
 
@@ -221,21 +221,20 @@ extension CharacterEpisodesViewModelTests {
 		let given: Given
 		let expected: Expected
 
-		static let all: [DidPullToRefreshScenario] = [
-			DidPullToRefreshScenario(
+		static let all: [Self] = [
+			Self(
 				testDescription: "On success sets loaded state without tracking error",
 				given: Given(characterWithEpisodesResult: .success(.stub())),
 				expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
 			),
-			DidPullToRefreshScenario(
+			Self(
 				testDescription: "On failure sets error state and tracks refresh error",
 				given: Given(characterWithEpisodesResult: .failure(.loadFailed())),
 				expected: Expected(
 					state: .error(.loadFailed()),
 					refreshErrorDescriptions: [EpisodeError.loadFailed().debugDescription]
 				)
-			),
+			)
 		]
 	}
-
 }

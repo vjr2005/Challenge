@@ -1,5 +1,5 @@
-import Lottie
 import ChallengeSnapshotTestKit
+import Lottie
 import SwiftUI
 import Testing
 

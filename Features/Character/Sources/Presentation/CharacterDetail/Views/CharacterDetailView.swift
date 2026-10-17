@@ -1,6 +1,6 @@
-import ChallengeResources
 import ChallengeCore
 import ChallengeDesignSystem
+import ChallengeResources
 import SwiftUI
 
 struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {

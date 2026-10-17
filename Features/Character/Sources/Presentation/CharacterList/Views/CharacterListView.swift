@@ -1,6 +1,6 @@
-import ChallengeResources
 import ChallengeCore
 import ChallengeDesignSystem
+import ChallengeResources
 import SwiftUI
 
 struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
@@ -34,7 +34,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 									Button(role: .destructive) {
 										Task {
 										await viewModel.didDeleteRecentSearch(query)
-									}
+          }
 									} label: {
 										Label(
 											LocalizedStrings.deleteAction,

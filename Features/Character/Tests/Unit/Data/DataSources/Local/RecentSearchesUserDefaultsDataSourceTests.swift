@@ -8,7 +8,7 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 	// MARK: - Properties
 
 	private let sut: RecentSearchesUserDefaultsDataSource
-	private nonisolated(unsafe) let userDefaults: UserDefaults
+	nonisolated(unsafe) private let userDefaults: UserDefaults
 
 	// MARK: - Initialization
 

@@ -139,19 +139,19 @@ extension CharacterFilterViewModelTests {
         let testDescription: String
         let given: Given
 
-        static let all: [DidTapResetScenario] = [
-            DidTapResetScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "With all filters set clears to empty",
                 given: Given(filter: CharacterFilter(status: .alive, species: "Human", type: "Parasite", gender: .male))
             ),
-            DidTapResetScenario(
+            Self(
                 testDescription: "With single filter set clears to empty",
                 given: Given(filter: CharacterFilter(status: .alive))
             ),
-            DidTapResetScenario(
+            Self(
                 testDescription: "With empty filter remains empty",
                 given: Given(filter: .empty)
-            ),
+            )
         ]
     }
 
@@ -169,8 +169,8 @@ extension CharacterFilterViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidTapApplyScenario] = [
-            DidTapApplyScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "With all filters applies full filter and tracks count 4",
                 given: Given(filter: CharacterFilter(status: .dead, species: "Alien", type: "Robot", gender: .genderless)),
                 expected: Expected(
@@ -178,7 +178,7 @@ extension CharacterFilterViewModelTests {
                     filterCount: 4
                 )
             ),
-            DidTapApplyScenario(
+            Self(
                 testDescription: "With partial filters applies partial filter and tracks count 2",
                 given: Given(filter: CharacterFilter(status: .alive, gender: .male)),
                 expected: Expected(
@@ -186,14 +186,14 @@ extension CharacterFilterViewModelTests {
                     filterCount: 2
                 )
             ),
-            DidTapApplyScenario(
+            Self(
                 testDescription: "With empty filter applies empty filter and tracks count 0",
                 given: Given(filter: .empty),
                 expected: Expected(
                     appliedFilter: .empty,
                     filterCount: 0
                 )
-            ),
+            )
         ]
     }
 
@@ -210,32 +210,32 @@ extension CharacterFilterViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [HasActiveFiltersScenario] = [
-            HasActiveFiltersScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "Returns true when status is set",
                 given: Given(filter: CharacterFilter(status: .alive)),
                 expected: Expected(hasActiveFilters: true)
             ),
-            HasActiveFiltersScenario(
+            Self(
                 testDescription: "Returns true when species is set",
                 given: Given(filter: CharacterFilter(species: "Human")),
                 expected: Expected(hasActiveFilters: true)
             ),
-            HasActiveFiltersScenario(
+            Self(
                 testDescription: "Returns true when type is set",
                 given: Given(filter: CharacterFilter(type: "Parasite")),
                 expected: Expected(hasActiveFilters: true)
             ),
-            HasActiveFiltersScenario(
+            Self(
                 testDescription: "Returns true when gender is set",
                 given: Given(filter: CharacterFilter(gender: .female)),
                 expected: Expected(hasActiveFilters: true)
             ),
-            HasActiveFiltersScenario(
+            Self(
                 testDescription: "Returns false when all fields are empty",
                 given: Given(filter: .empty),
                 expected: Expected(hasActiveFilters: false)
-            ),
+            )
         ]
     }
 }

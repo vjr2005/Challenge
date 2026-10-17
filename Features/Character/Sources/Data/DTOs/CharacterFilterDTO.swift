@@ -5,5 +5,5 @@ nonisolated struct CharacterFilterDTO: Equatable {
 	var type: String?
 	var gender: String?
 
-	static let empty = CharacterFilterDTO()
+	static let empty = Self()
 }

@@ -42,7 +42,7 @@ struct CharacterFilterMapperTests {
 	@Test("Maps alive status to lowercased string", arguments: [
 		(CharacterStatus.alive, "alive"),
 		(CharacterStatus.dead, "dead"),
-		(CharacterStatus.unknown, "unknown"),
+		(CharacterStatus.unknown, "unknown")
 	])
 	func mapsStatus(status: CharacterStatus, expected: String) {
 		// Given
@@ -61,7 +61,7 @@ struct CharacterFilterMapperTests {
 		(CharacterGender.female, "female"),
 		(CharacterGender.male, "male"),
 		(CharacterGender.genderless, "genderless"),
-		(CharacterGender.unknown, "unknown"),
+		(CharacterGender.unknown, "unknown")
 	])
 	func mapsGender(gender: CharacterGender, expected: String) {
 		// Given

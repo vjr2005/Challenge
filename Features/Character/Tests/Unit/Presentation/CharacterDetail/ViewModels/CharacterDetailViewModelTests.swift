@@ -165,13 +165,13 @@ extension CharacterDetailViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidAppearScenario] = [
-            DidAppearScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(characterResult: .success(.stub())),
                 expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks load error",
                 given: Given(characterResult: .failure(.loadFailed())),
                 expected: Expected(
@@ -196,13 +196,13 @@ extension CharacterDetailViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidTapOnRetryButtonScenario] = [
-            DidTapOnRetryButtonScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(characterResult: .success(.stub())),
                 expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
             ),
-            DidTapOnRetryButtonScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks load error",
                 given: Given(characterResult: .failure(.loadFailed())),
                 expected: Expected(
@@ -229,8 +229,8 @@ extension CharacterDetailViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidPullToRefreshScenario] = [
-            DidPullToRefreshScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success with image URL invalidates cache and updates refresh ID",
                 given: Given(characterResult: .success(.stub(imageURL: URL(string: "https://example.com/avatar.jpeg")))),
                 expected: Expected(
@@ -240,7 +240,7 @@ extension CharacterDetailViewModelTests {
                     refreshErrorDescriptions: []
                 )
             ),
-            DidPullToRefreshScenario(
+            Self(
                 testDescription: "On success without image URL skips cache invalidation",
                 given: Given(characterResult: .success(.stub(imageURL: nil))),
                 expected: Expected(
@@ -250,7 +250,7 @@ extension CharacterDetailViewModelTests {
                     refreshErrorDescriptions: []
                 )
             ),
-            DidPullToRefreshScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks refresh error",
                 given: Given(characterResult: .failure(.loadFailed())),
                 expected: Expected(
