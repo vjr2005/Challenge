@@ -274,3 +274,11 @@ custom_rules:
     match_kinds:
       - keyword
       - identifier
+
+  # @Test must carry a description
+  test_requires_description:
+    name: "Test Requires Description"
+    regex: "@Test(\\((?!\\s*\")|\\s+func)"
+    message: "@Test must include a description: @Test(\"Description\")"
+    severity: warning
+    included: ".*Tests/.*\\.swift"
