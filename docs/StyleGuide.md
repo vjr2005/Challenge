@@ -480,6 +480,23 @@ mise x -- swiftlint          # Run linter
 mise x -- swiftlint --fix    # Auto-fix issues
 ```
 
+The linter covers every module (`included` in `.swiftlint.yml`: `App`, `AppKit`, `Features`, `Libraries`, `Shared`). CI runs it with `--strict` before the tests, so any warning fails the build.
+
+### Suppressing Rules
+
+Fix the code instead of suppressing a rule. When a rule cannot reasonably be satisfied:
+
+- **Tests only:** suppress with a targeted `// swiftlint:disable:next <rule>` on the line it applies to, plus a comment explaining why.
+- **Production code (`Sources`):** never suppress; refactor (for example, extract subviews to satisfy `closure_body_length`).
+- **Configuration:** do not disable or loosen rules globally in `.swiftlint.yml` to silence existing code.
+
+```swift
+@Suite(.timeLimit(.minutes(1)))
+// One test per ViewModel action keeps this suite long; its scenarios live in independent files.
+// swiftlint:disable:next type_body_length
+struct CharacterListViewModelTests {
+```
+
 ### Enforced Limits
 
 | Rule | Warning | Error |
