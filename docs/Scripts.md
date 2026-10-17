@@ -115,6 +115,8 @@ Options can be combined:
 ./Scripts/generate.sh --clean --strategy framework
 ```
 
+> **Tip — switching strategy:** both strategies build into the same DerivedData folder. After switching from one to the other, stale build products can make the next build fail to link (e.g. `Undefined symbols` for a type of another module). Run `xcodebuild clean -workspace Challenge.xcworkspace -scheme "Challenge (Dev)"` after regenerating if that happens.
+
 > **Warning — SPM isolated usage:** You could open a single module's `Package.swift` in Xcode to work in isolation, but this is risky:
 >
 > | | `--focus Module` | SPM isolated |
