@@ -42,14 +42,8 @@ Use `registerCatchAll` to configure all routes for the test:
 | Method | Description |
 |--------|-------------|
 | `givenCharacterListSucceeds()` | Avatars + character list |
-| `givenCharacterListAndDetailSucceeds()` | Avatars + list + detail |
-| `givenCharacterListWithPaginationSucceeds()` | Avatars + list + page 2 |
 | `givenCharacterListWithPaginationAndEmptySearchSucceeds()` | Avatars + list + page 2 + empty when `name` param present |
-| `givenCharacterListWithEmptySearchSucceeds()` | Avatars + list + empty search |
 | `givenCharacterDetailSucceeds()` | Avatars + detail (no list) |
-| `givenCharacterListDetailAndEpisodesSucceeds()` | Avatars + list + detail + episodes (GraphQL) |
-| `givenCharacterDetailFailsButListSucceeds()` | Avatars + list OK, detail 500 |
-| `givenCharacterEpisodesFailsButListAndDetailSucceeds()` | Avatars + list + detail OK, GraphQL 500 |
 | `givenAllRequestsFail()` | All requests return 500 |
 | `givenAllRequestsReturnNotFound()` | All requests return 404 |
 
@@ -61,18 +55,15 @@ Two approaches for recovery:
 
 | Method | Description |
 |--------|-------------|
-| `givenCharacterListRecovers()` | Registers avatar prefix + list exact route |
 | `givenCharacterDetailRecovers()` | Registers detail prefix route |
 
 2. **Catch-all replacement** — `registerCatchAll` replaces the previous catch-all entirely. Any initial scenario can be called mid-test as recovery:
 
 | Method | Description |
 |--------|-------------|
-| `givenCharacterListWithPaginationSucceeds()` | Replaces catch-all with pagination support |
 | `givenCharacterListWithPaginationAndEmptySearchSucceeds()` | Replaces catch-all with pagination + empty search |
 | `givenCharacterDetailSucceeds()` | Replaces catch-all with detail + avatars |
 | `givenCharacterEpisodesRecovers()` | Replaces catch-all with detail + avatars + episodes (GraphQL) |
-| `givenCharacterEpisodesFails()` | Replaces catch-all with detail + avatars, GraphQL 500 |
 
 ### Naming Convention
 
@@ -109,13 +100,11 @@ func givenCharacterListSucceeds() async throws {
 ### Recovery Scenario (targeted override)
 
 ```swift
-func givenCharacterListRecovers() async throws {
+func givenCharacterDetailRecovers() async throws {
     let baseURL = try XCTUnwrap(serverBaseURL)
-    let charactersData = Data.fixture("characters_response", baseURL: baseURL)
-    let imageData = Data.stubAvatarImage
+    let characterData = Data.fixture("character", baseURL: baseURL)
 
-    await serverMock.registerPrefix(.GET, "/avatar/") { _ in .image(imageData) }
-    await serverMock.register(.GET, "/api/character") { _ in .json(charactersData) }
+    await serverMock.registerPrefix(.GET, "/api/character/") { _ in .json(characterData) }
 }
 ```
 
@@ -154,7 +143,7 @@ final class CharacterFlowUITests: UITestCase {
     @MainActor
     func testNavigationFromListToDetailAndBack() async throws {
         // Given
-        try await givenCharacterListAndDetailSucceeds()
+        try await givenCharacterListWithPaginationAndEmptySearchSucceeds()
 
         // When
         launch()

@@ -70,7 +70,7 @@ Mock server configurations are extracted into reusable methods on `UITestCase`:
 | Type | Purpose | Example |
 |------|---------|---------|
 | **Initial** | Configure all routes before `launch()` | `givenCharacterListSucceeds()` |
-| **Recovery** | Override specific routes mid-test for retry flows | `givenCharacterListRecovers()` |
+| **Recovery** | Override specific routes mid-test for retry flows | `givenCharacterDetailRecovers()` |
 
 Scenarios live in `App/Tests/Shared/Scenarios/UITestCase+Scenarios.swift`. See the `/ui-tests` skill for the full list and implementation details.
 
@@ -82,7 +82,7 @@ Each screen has a Robot struct that encapsulates UI interactions and verificatio
 @MainActor
 func testNavigationFlow() async throws {
     // Given
-    try await givenCharacterListAndDetailSucceeds()
+    try await givenCharacterListWithPaginationAndEmptySearchSucceeds()
 
     // When
     launch()
