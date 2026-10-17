@@ -6,7 +6,7 @@ import Testing
 struct CharactersPageErrorTests {
     // MARK: - Equatability
 
-    @Test(arguments: [
+    @Test("Equality compares error cases and associated values", arguments: [
         (CharactersPageError.loadFailed(), CharactersPageError.loadFailed(), true),
         (CharactersPageError.invalidPage(page: 1), CharactersPageError.invalidPage(page: 1), true),
         (CharactersPageError.invalidPage(page: 1), CharactersPageError.invalidPage(page: 2), false),

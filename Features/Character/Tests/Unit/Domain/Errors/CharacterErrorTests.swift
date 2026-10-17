@@ -6,7 +6,7 @@ import Testing
 struct CharacterErrorTests {
     // MARK: - Equatability
 
-    @Test(arguments: [
+    @Test("Equality compares error cases and associated values", arguments: [
         (CharacterError.loadFailed(), CharacterError.loadFailed(), true),
         (CharacterError.notFound(identifier: 1), CharacterError.notFound(identifier: 1), true),
         (CharacterError.notFound(identifier: 1), CharacterError.notFound(identifier: 2), false),

@@ -6,7 +6,7 @@ import Testing
 struct EpisodeErrorTests {
 	// MARK: - Equatability
 
-	@Test(arguments: [
+	@Test("Equality compares error cases and associated values", arguments: [
 		(EpisodeError.loadFailed(), EpisodeError.loadFailed(), true),
 		(EpisodeError.notFound(identifier: 1), EpisodeError.notFound(identifier: 1), true),
 		(EpisodeError.notFound(identifier: 1), EpisodeError.notFound(identifier: 2), false),

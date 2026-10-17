@@ -5,7 +5,7 @@ import Testing
 
 @Suite(.timeLimit(.minutes(1)))
 struct APIErrorTests {
-	@Test(arguments: [
+	@Test("Equality compares error cases", arguments: [
 		(APIError.invalidRequest, APIError.invalidRequest, true),
 		(APIError.invalidResponse, APIError.invalidResponse, true),
 		(APIError.notFound, APIError.notFound, true),
@@ -20,7 +20,7 @@ struct APIErrorTests {
 		#expect(areEqual == expectedEqual)
 	}
 
-	@Test(arguments: [
+	@Test("Server error equality compares status codes", arguments: [
 		(500, 500, true),
 		(500, 502, false),
 		(404, 404, true)
