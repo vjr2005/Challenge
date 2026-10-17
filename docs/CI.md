@@ -18,9 +18,11 @@ The CI workflow (`.github/workflows/quality-checks.yml`) runs three jobs in para
 
 | Job | Runner | Description |
 |-----|--------|-------------|
-| **Unit & Snapshot Tests** | `xcode-27` | Runs unit and snapshot tests, then Periphery dead code detection |
+| **Unit & Snapshot Tests** | `xcode-27` | Runs SwiftLint in strict mode, then unit and snapshot tests, then Periphery dead code detection |
 | **UI Tests** | `xcode-27` | Runs UI tests with SwiftMockServer |
 | **Quality Gate** | `xcode-27` | Verifies both test jobs passed, merges coverage data, enforces coverage threshold |
+
+The **Lint** step of the Unit & Snapshot Tests job runs `swiftlint lint --strict` on every module (`included` in `.swiftlint.yml`: `App`, `AppKit`, `Features`, `Libraries`, `Shared`) before the tests, so any SwiftLint warning fails the job and, through the Quality Gate, the PR. Violations are reported as GitHub annotations.
 
 Unit & Snapshot Tests and UI Tests run **in parallel** on separate macOS runners. The Quality Gate job waits for both to complete before reporting the final status.
 

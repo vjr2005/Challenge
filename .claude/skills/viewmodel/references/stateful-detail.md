@@ -311,7 +311,11 @@ struct {Screen}ViewModelTests {
     }
 }
 
-// MARK: - Test Helpers
+// {Screen}ViewModelTests+DidAppearScenario.swift (one file per scenario)
+
+import Testing
+
+@testable import Challenge{Feature}
 
 extension {Screen}ViewModelTests {
     nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
@@ -328,23 +332,23 @@ extension {Screen}ViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidAppearScenario] = [
-            DidAppearScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(result: .success(.stub())),
                 expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks load error",
                 given: Given(result: .failure(.loadFailed())),
                 expected: Expected(
                     state: .error(.loadFailed()),
                     loadErrorDescriptions: [{Feature}Error.loadFailed().debugDescription]
                 )
-            ),
+            )
         ]
     }
 
-    // DidTapOnRetryButtonScenario and DidPullToRefreshScenario follow the same pattern
+    // DidTapOnRetryButtonScenario and DidPullToRefreshScenario follow the same pattern, each in its own file
 }
 ```

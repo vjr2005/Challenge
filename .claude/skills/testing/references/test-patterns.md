@@ -97,7 +97,11 @@ For ViewModel actions with multiple outcomes (success/failure/edge cases), use *
 ### Scenario Struct Pattern
 
 ```swift
-// MARK: - Test Helpers
+// {Screen}ViewModelTests+DidAppearScenario.swift (one file per scenario)
+
+import Testing
+
+@testable import Challenge{Feature}
 
 extension {Screen}ViewModelTests {
     nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
@@ -114,20 +118,20 @@ extension {Screen}ViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [DidAppearScenario] = [
-            DidAppearScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "On success sets loaded state without tracking error",
                 given: Given(result: .success(.stub())),
                 expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
             ),
-            DidAppearScenario(
+            Self(
                 testDescription: "On failure sets error state and tracks load error",
                 given: Given(result: .failure(.loadFailed())),
                 expected: Expected(
                     state: .error(.loadFailed()),
                     loadErrorDescriptions: [{Feature}Error.loadFailed().debugDescription]
                 )
-            ),
+            )
         ]
     }
 }
@@ -138,7 +142,8 @@ extension {Screen}ViewModelTests {
 - Inner `Given` and `Expected` structs for clear input/output separation
 - `testDescription` provides readable test names in output
 - `static let all` defines all scenarios in one place
-- Place in `// MARK: - Test Helpers` extension at the end of the test file
+- Place each scenario in its own file named `{Screen}ViewModelTests+{Action}Scenario.swift`, next to the suite, as an extension of the test suite (never in a helpers extension at the end of the suite file)
+- Use `Self` for the scenario type inside `static let all` and no trailing commas (SwiftLint `prefer_self_in_static_references`, `trailing_comma`)
 
 ### Using Scenarios in Tests
 
