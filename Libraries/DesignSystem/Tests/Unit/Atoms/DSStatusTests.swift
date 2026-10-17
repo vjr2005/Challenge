@@ -26,49 +26,29 @@ struct DSStatusTests {
 
 	// MARK: - Raw Values
 
-	@Test("Alive status has correct raw value")
-	func aliveRawValue() {
-		#expect(DSStatus.alive.rawValue == "alive")
-	}
-
-	@Test("Dead status has correct raw value")
-	func deadRawValue() {
-		#expect(DSStatus.dead.rawValue == "dead")
-	}
-
-	@Test("Unknown status has correct raw value")
-	func unknownRawValue() {
-		#expect(DSStatus.unknown.rawValue == "unknown")
+	@Test("Status has the expected raw value", arguments: [
+		(DSStatus.alive, "alive"),
+		(DSStatus.dead, "dead"),
+		(DSStatus.unknown, "unknown")
+	])
+	func rawValue(status: DSStatus, expected: String) {
+		#expect(status.rawValue == expected)
 	}
 
 	// MARK: - From String Conversion
 
-	@Test("From string creates alive status")
-	func fromStringAlive() {
-		#expect(DSStatus.from("alive") == .alive)
-		#expect(DSStatus.from("Alive") == .alive)
-		#expect(DSStatus.from("ALIVE") == .alive)
+	@Test("From string creates the expected status regardless of case", arguments: [
+		("alive", DSStatus.alive), ("Alive", DSStatus.alive), ("ALIVE", DSStatus.alive),
+		("dead", DSStatus.dead), ("Dead", DSStatus.dead), ("DEAD", DSStatus.dead),
+		("unknown", DSStatus.unknown), ("Unknown", DSStatus.unknown), ("UNKNOWN", DSStatus.unknown)
+	])
+	func fromString(input: String, expected: DSStatus) {
+		#expect(DSStatus.from(input) == expected)
 	}
 
-	@Test("From string creates dead status")
-	func fromStringDead() {
-		#expect(DSStatus.from("dead") == .dead)
-		#expect(DSStatus.from("Dead") == .dead)
-		#expect(DSStatus.from("DEAD") == .dead)
-	}
-
-	@Test("From string creates unknown status")
-	func fromStringUnknown() {
-		#expect(DSStatus.from("unknown") == .unknown)
-		#expect(DSStatus.from("Unknown") == .unknown)
-		#expect(DSStatus.from("UNKNOWN") == .unknown)
-	}
-
-	@Test("From string returns unknown for invalid value")
-	func fromStringInvalid() {
-		#expect(DSStatus.from("invalid") == .unknown)
-		#expect(DSStatus.from("") == .unknown)
-		#expect(DSStatus.from("something else") == .unknown)
+	@Test("From string returns unknown for invalid value", arguments: ["invalid", "", "something else"])
+	func fromStringInvalid(input: String) {
+		#expect(DSStatus.from(input) == .unknown)
 	}
 
 	// MARK: - CaseIterable

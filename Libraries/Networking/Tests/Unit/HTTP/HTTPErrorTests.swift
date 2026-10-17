@@ -4,7 +4,7 @@ import Testing
 @testable import ChallengeNetworking
 
 struct HTTPErrorTests {
-	@Test(arguments: [
+	@Test("Equality compares error cases", arguments: [
 		(HTTPError.invalidURL, HTTPError.invalidURL, true),
 		(HTTPError.invalidResponse, HTTPError.invalidResponse, true),
 		(HTTPError.invalidURL, HTTPError.invalidResponse, false)
@@ -21,7 +21,7 @@ struct HTTPErrorTests {
 		#expect(areEqual == expectedEqual)
 	}
 
-	@Test(arguments: [
+	@Test("Status code equality compares codes", arguments: [
 		(404, 404, true),
 		(404, 500, false),
 		(200, 200, true)
@@ -68,11 +68,6 @@ struct HTTPErrorTests {
 		let sut = HTTPError.statusCode(code, data)
 
 		// Then
-		if case let .statusCode(errorCode, errorData) = sut {
-			#expect(errorCode == code)
-			#expect(errorData == data)
-		} else {
-			Issue.record("Expected statusCode error")
-		}
+		#expect(sut == .statusCode(code, data))
 	}
 }

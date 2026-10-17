@@ -31,7 +31,7 @@ struct AppEnvironmentTests {
 		#expect(value == true)
 	}
 
-	@Test(arguments: [AppEnvironment.staging, AppEnvironment.production])
+	@Test("isDebug returns false for non-development environments", arguments: [AppEnvironment.staging, AppEnvironment.production])
 	func isDebugReturnsFalseForNonDevelopment(_ environment: AppEnvironment) {
 		// Given
 		let sut = environment
@@ -57,7 +57,7 @@ struct AppEnvironmentTests {
 		#expect(value == true)
 	}
 
-	@Test(arguments: [AppEnvironment.development, AppEnvironment.staging])
+	@Test("isRelease returns false for non-production environments", arguments: [AppEnvironment.development, AppEnvironment.staging])
 	func isReleaseReturnsFalseForNonProduction(_ environment: AppEnvironment) {
 		// Given
 		let sut = environment

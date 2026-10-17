@@ -4,7 +4,7 @@ import Testing
 @testable import ChallengeNetworking
 
 struct GraphQLErrorTests {
-	@Test(arguments: [
+	@Test("Equality compares error cases and status codes", arguments: [
 		(GraphQLError.invalidResponse, GraphQLError.invalidResponse, true),
 		(GraphQLError.statusCode(404, Data()), GraphQLError.statusCode(404, Data()), true),
 		(GraphQLError.statusCode(404, Data()), GraphQLError.statusCode(500, Data()), false),

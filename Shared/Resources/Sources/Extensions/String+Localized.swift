@@ -1,6 +1,6 @@
 import Foundation
 
-public nonisolated extension String {
+nonisolated public extension String {
     /// Returns the localized version of the string from the module's `Localizable` table.
     ///
     /// Uses `Bundle.module` to resolve the localization, falling back to the original key

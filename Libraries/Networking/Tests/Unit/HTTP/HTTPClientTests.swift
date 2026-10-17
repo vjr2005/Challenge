@@ -132,7 +132,7 @@ struct HTTPClientTests {
         #expect(user.name == "John")
     }
 
-    @Test(arguments: [400, 401, 403, 404, 500, 502, 503])
+    @Test("Throws status code error for HTTP error statuses", arguments: [400, 401, 403, 404, 500, 502, 503])
     func throwsStatusCodeErrorForHTTPErrors(_ statusCode: Int) async throws {
         // Given
         let (sut, baseURL) = try makeSUT(host: "test-status-\(statusCode)")

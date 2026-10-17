@@ -34,7 +34,7 @@ struct EndpointTests {
 		#expect(sut.queryItems?.last?.value == "20")
 	}
 
-	@Test(arguments: [
+	@Test("Endpoint supports every HTTP method", arguments: [
 		HTTPMethod.get,
 		HTTPMethod.post,
 		HTTPMethod.put,
@@ -53,7 +53,7 @@ struct EndpointTests {
 		#expect(sut.path == path)
 	}
 
-	@Test(arguments: [
+	@Test("Endpoint preserves the provided path", arguments: [
 		"/users",
 		"/posts/123",
 		"/api/v1/items"
