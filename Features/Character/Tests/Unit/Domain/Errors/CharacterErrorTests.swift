@@ -75,7 +75,7 @@ struct CharacterErrorTests {
         let result = sut.debugDescription
 
         // Then
-        #expect(result == "")
+        #expect(result.isEmpty)
     }
 
     @Test("Not found debugDescription contains identifier")

@@ -27,7 +27,7 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 		let result = await sut.getRecentSearches()
 
 		// Then
-		#expect(result == [])
+		#expect(result.isEmpty)
 	}
 
 	// MARK: - saveSearch
@@ -137,7 +137,7 @@ struct RecentSearchesUserDefaultsDataSourceTests {
 
 		// Then
 		let result = await sut.getRecentSearches()
-		#expect(result == [])
+		#expect(result.isEmpty)
 	}
 
 	@Test("Delete non-existing search does not modify list")

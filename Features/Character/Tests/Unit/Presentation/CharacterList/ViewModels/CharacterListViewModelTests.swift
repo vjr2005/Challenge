@@ -306,7 +306,9 @@ struct CharacterListViewModelTests {
 
         var statesDuringRefresh: [CharacterListViewState] = []
         refreshCharactersPageUseCaseMock.onExecute = { [weak sut] in
-            guard let sut else { return }
+            guard let sut else {
+                return
+            }
             statesDuringRefresh.append(sut.state)
         }
 

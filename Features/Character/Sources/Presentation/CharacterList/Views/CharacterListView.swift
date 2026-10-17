@@ -68,18 +68,18 @@ private extension CharacterListView {
     @ViewBuilder
     var content: some View {
         switch viewModel.state {
-            case .idle:
-                Color.clear
-            case .loading:
-                loadingView
-            case .loaded(let page):
-                characterList(page: page)
-            case .empty:
-                emptyView
-            case .emptySearch:
-                emptySearchView
-            case .error(let error):
-                errorView(error: error)
+        case .idle:
+            Color.clear
+        case .loading:
+            loadingView
+        case .loaded(let page):
+            characterList(page: page)
+        case .empty:
+            emptyView
+        case .emptySearch:
+            emptySearchView
+        case .error(let error):
+            errorView(error: error)
         }
     }
 

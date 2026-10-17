@@ -24,7 +24,7 @@ struct CharacterDetailEventTests {
 
         // Then
         #expect(sut.name == "character_detail_retry_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - pullToRefreshTriggered
@@ -36,7 +36,7 @@ struct CharacterDetailEventTests {
 
         // Then
         #expect(sut.name == "character_detail_pull_to_refresh")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - episodesButtonTapped

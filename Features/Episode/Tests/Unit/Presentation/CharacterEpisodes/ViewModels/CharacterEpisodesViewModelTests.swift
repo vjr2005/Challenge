@@ -100,7 +100,9 @@ struct CharacterEpisodesViewModelTests {
 
 		var statesDuringRefresh: [CharacterEpisodesViewState] = []
 		refreshCharacterEpisodesUseCaseMock.onExecute = { [weak sut] in
-			guard let sut else { return }
+			guard let sut else {
+				return
+			}
 			statesDuringRefresh.append(sut.state)
 		}
 

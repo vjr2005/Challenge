@@ -139,7 +139,9 @@ private extension CharacterListViewModel {
         searchTask?.cancel()
         searchTask = Task { [weak self, debounceInterval] in
             try? await Task.sleep(for: debounceInterval)
-            guard let self, !Task.isCancelled else { return }
+            guard let self, !Task.isCancelled else {
+                return
+            }
             if let name = normalizedQuery {
                 tracker.trackSearchPerformed(query: name)
                 await saveRecentSearchUseCase.execute(query: name)
@@ -171,7 +173,9 @@ private extension CharacterListViewModel {
                 state = .loaded(result)
             }
         } catch {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else {
+                return
+            }
             tracker.trackFetchError(description: error.debugDescription)
             state = .error(error)
         }
