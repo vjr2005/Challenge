@@ -74,7 +74,7 @@ struct CharacterRESTDataSourceTests {
 		}
 	}
 
-	@Test(arguments: [1, 2, 42, 826])
+	@Test("Fetch character uses the provided identifier in the endpoint path", arguments: [1, 2, 42, 826])
 	func fetchCharacterUsesProvidedId(_ identifier: Int) async throws {
 		// Given
 		let jsonData = try loadJSONData("character")

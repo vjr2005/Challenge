@@ -6,7 +6,10 @@ import Testing
 struct AppEnvironmentAPITests {
 	// MARK: - rickAndMorty API
 
-	@Test(arguments: [AppEnvironment.development, AppEnvironment.staging, AppEnvironment.production])
+	@Test(
+		"Rick and Morty API returns a valid HTTPS URL for every environment",
+		arguments: [AppEnvironment.development, AppEnvironment.staging, AppEnvironment.production]
+	)
 	func rickAndMortyReturnsValidURL(_ environment: AppEnvironment) {
 		// Given
 		let sut = environment
