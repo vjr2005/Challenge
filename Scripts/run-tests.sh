@@ -13,7 +13,7 @@ cd "$(dirname "$0")/.." || exit 1
 
 WORKSPACE="Challenge.xcworkspace"
 DEVICE="iPhone 17 Pro"
-OS="26.1"
+OS="27.0"
 OUTPUT_DIR="test_output"
 UNIT_XCRESULT="$OUTPUT_DIR/UnitSnapshot.xcresult"
 UI_XCRESULT="$OUTPUT_DIR/UITests.xcresult"

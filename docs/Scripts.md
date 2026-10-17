@@ -185,7 +185,7 @@ Runs unit+snapshot tests first, then UI tests. Output streams to the terminal vi
 
 ### Parallel Mode
 
-Reuses an existing "iPhone 17 Pro (Tests Clone)" simulator if one exists with iOS 26.1; otherwise creates one with English locale and keeps it for future runs. Output is redirected to log files (use `tail -f test_output/unit_snapshot.log` to follow progress).
+Reuses an existing "iPhone 17 Pro (Tests Clone)" simulator if one exists with iOS 27.0; otherwise creates one with English locale and keeps it for future runs. Output is redirected to log files (use `tail -f test_output/unit_snapshot.log` to follow progress).
 
 ### Result Merging
 

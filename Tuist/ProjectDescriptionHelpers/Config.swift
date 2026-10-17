@@ -1,6 +1,6 @@
 import ProjectDescription
 
-private let swiftVersion = "6.2"
+private let swiftVersion = "6.4"
 private let iosMajorVersion = "17"
 
 /// Single source of truth for project-wide configuration.

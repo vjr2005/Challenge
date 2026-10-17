@@ -18,9 +18,9 @@ The CI workflow (`.github/workflows/quality-checks.yml`) runs three jobs in para
 
 | Job | Runner | Description |
 |-----|--------|-------------|
-| **Unit & Snapshot Tests** | `macos-15` | Runs unit and snapshot tests, then Periphery dead code detection |
-| **UI Tests** | `macos-15` | Runs UI tests with SwiftMockServer |
-| **Quality Gate** | `macos-15` | Verifies both test jobs passed, merges coverage data, enforces coverage threshold |
+| **Unit & Snapshot Tests** | `xcode-27` | Runs unit and snapshot tests, then Periphery dead code detection |
+| **UI Tests** | `xcode-27` | Runs UI tests with SwiftMockServer |
+| **Quality Gate** | `xcode-27` | Verifies both test jobs passed, merges coverage data, enforces coverage threshold |
 
 Unit & Snapshot Tests and UI Tests run **in parallel** on separate macOS runners. The Quality Gate job waits for both to complete before reporting the final status.
 
@@ -58,7 +58,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 
 ### Quality Gate
 
-The Quality Gate job runs on `macos-15` (requires Xcode tools for coverage merging) and:
+The Quality Gate job runs on `xcode-27` (requires Xcode tools for coverage merging) and:
 
 1. **Verifies** both test jobs succeeded
 2. **Downloads** coverage artifacts from both test jobs
@@ -189,7 +189,7 @@ After pushing the workflow file, configure the repository:
 
 - **Composite actions**: Shared steps are extracted into reusable composite actions (`.github/actions/setup/` and `.github/actions/test-report/`). Both test jobs invoke the test-report action with `if: always()` so it runs regardless of test outcome. The action handles artifact upload (on failure only), failure/retry detection, Actions Summary, and PR comments. This eliminates duplication between the unit+snapshot and UI test jobs.
 - **Parallel jobs**: Unit+snapshot tests and UI tests run in separate macOS jobs to reduce total CI time. Total time = `max(unit+snapshot, UI)` instead of `sum()`.
-- **Quality Gate**: A `macos-15` job aggregates results from both test jobs, merges coverage data, and enforces the coverage threshold. It uses macOS because `xcresulttool merge` and `xccov` require Xcode tools. This is the single required status check for branch protection.
+- **Quality Gate**: A `xcode-27` job aggregates results from both test jobs, merges coverage data, and enforces the coverage threshold. It uses macOS because `xcresulttool merge` and `xccov` require Xcode tools. This is the single required status check for branch protection.
 - **Coverage merging**: Both test jobs upload their `.xcresult` bundles as artifacts (1-day retention). The Quality Gate downloads and merges them with `xcresulttool merge` to produce accurate line-level coverage union, then extracts the report with `xccov`.
 - **Periphery in unit tests job**: Periphery reuses the index store from the test build, so it runs in the same job as unit+snapshot tests.
 - **Concurrency group**: Concurrent runs on the same branch are cancelled automatically, saving CI minutes.

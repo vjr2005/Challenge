@@ -28,12 +28,12 @@ permissions:
 jobs:
   unit-and-snapshot-tests:
     name: Unit & Snapshot Tests
-    runs-on: macos-15
+    runs-on: xcode-27
     timeout-minutes: 40
 
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
-      TUIST_TEST_OS: "26.1"
+      TUIST_TEST_OS: "27.0"
       DERIVED_DATA_PATH: derived_data
       RESULT_BUNDLE_PATH: test_output/UnitSnapshot.xcresult
 
@@ -45,6 +45,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
+          os: ${{ env.TUIST_TEST_OS }}
           derived-data-prefix: unit
           module-strategy: ${{ env.MODULE_STRATEGY }}
 
@@ -123,12 +124,12 @@ jobs:
 
   ui-tests:
     name: UI Tests
-    runs-on: macos-15
+    runs-on: xcode-27
     timeout-minutes: 40
 
     env:
       TUIST_TEST_DEVICE: iPhone 17 Pro
-      TUIST_TEST_OS: "26.1"
+      TUIST_TEST_OS: "27.0"
       DERIVED_DATA_PATH: derived_data
       RESULT_BUNDLE_PATH: test_output/UITests.xcresult
 
@@ -140,6 +141,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           device: ${{ env.TUIST_TEST_DEVICE }}
+          os: ${{ env.TUIST_TEST_OS }}
           derived-data-prefix: ui
           module-strategy: ${{ env.MODULE_STRATEGY }}
 
@@ -172,7 +174,7 @@ jobs:
 
   quality-gate:
     name: Quality Gate
-    runs-on: macos-15
+    runs-on: xcode-27
     needs: [unit-and-snapshot-tests, ui-tests]
     if: always()
     timeout-minutes: 10
