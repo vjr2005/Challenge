@@ -118,22 +118,20 @@ struct FileSystemTests {
 	// MARK: - Update Modification Date
 
 	@Test("Updates file modification date")
-	func updatesModificationDate() async throws {
+	func updatesModificationDate() throws {
 		// Given
 		let directory = makeTemporaryDirectory()
 		let fileURL = directory.appendingPathComponent("touch-test")
 		try sut.write(testData, to: fileURL)
-		let originalAttributes = try sut.fileAttributes(at: fileURL)
-
-		// Small delay to ensure date difference
-		try await Task.sleep(for: .milliseconds(10))
+		let oldDate = Date(timeIntervalSince1970: 1_000_000_000)
+		try FileManager.default.setAttributes([.modificationDate: oldDate], ofItemAtPath: fileURL.path)
 
 		// When
 		try sut.updateModificationDate(at: fileURL)
 
 		// Then
 		let updatedAttributes = try sut.fileAttributes(at: fileURL)
-		#expect(updatedAttributes.modified >= originalAttributes.modified)
+		#expect(updatedAttributes.modified > oldDate)
 	}
 }
 

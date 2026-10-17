@@ -1,5 +1,6 @@
 import ChallengeCoreMocks
 import Foundation
+import os
 import Testing
 import UIKit
 
@@ -117,7 +118,7 @@ struct CachedImageLoaderTests {
 		let url = try #require(URL(string: "https://test-cached-second.example.com/image.png"))
 		let requestCount = RequestCounter()
 		givenSuccessResponse(for: url, data: testImageData) {
-			Task { await requestCount.increment() }
+			requestCount.increment()
 		}
 		let sut = makeSUT()
 
@@ -126,9 +127,7 @@ struct CachedImageLoaderTests {
 		_ = await sut.image(for: url)
 
 		// Then
-		try await Task.sleep(for: .milliseconds(50))
-		let count = await requestCount.value
-		#expect(count == 1)
+		#expect(requestCount.value == 1)
 	}
 
 	// MARK: - Request Deduplication
@@ -138,11 +137,19 @@ struct CachedImageLoaderTests {
 		// Given
 		let url = try #require(URL(string: "https://test-dedup-same.example.com/image.png"))
 		let requestCount = RequestCounter()
-		givenSuccessResponse(for: url, data: testImageData) {
-			Task { await requestCount.increment() }
-			Thread.sleep(forTimeInterval: 0.1)
+		// Holds the network response until both callers have passed the disk cache lookup,
+		// the last step before they reach the request coordinator. Signaled twice so a
+		// (wrongly) duplicated request fails the count assertion instead of hanging.
+		let gate = DispatchSemaphore(value: 0)
+		let diskCache = LookupObservingDiskCache(expectedLookups: 2) {
+			gate.signal()
+			gate.signal()
 		}
-		let sut = makeSUT()
+		givenSuccessResponse(for: url, data: testImageData) {
+			requestCount.increment()
+			_ = gate.wait(timeout: .now() + 10)
+		}
+		let sut = CachedImageLoader(session: .mockSession(), memoryCache: ImageMemoryCacheMock(), diskCache: diskCache)
 
 		// When - Launch two concurrent requests for the same URL
 		async let image1 = sut.image(for: url)
@@ -153,8 +160,7 @@ struct CachedImageLoaderTests {
 		// Then - Both should succeed but only one network request should be made
 		#expect(results[0] != nil)
 		#expect(results[1] != nil)
-		let count = await requestCount.value
-		#expect(count == 1)
+		#expect(requestCount.value == 1)
 	}
 
 	@Test("Concurrent requests for different URLs make separate network requests")
@@ -164,8 +170,7 @@ struct CachedImageLoaderTests {
 		let url2 = try #require(URL(string: "https://test-dedup-different.example.com/image2.png"))
 		let requestCount = RequestCounter()
 		givenSuccessResponse(for: url1, data: testImageData) {
-			Task { await requestCount.increment() }
-			Thread.sleep(forTimeInterval: 0.05)
+			requestCount.increment()
 		}
 		let sut = makeSUT()
 
@@ -178,8 +183,7 @@ struct CachedImageLoaderTests {
 		// Then - Both should make separate network requests
 		#expect(results[0] != nil)
 		#expect(results[1] != nil)
-		let count = await requestCount.value
-		#expect(count == 2)
+		#expect(requestCount.value == 2)
 	}
 
 	// MARK: - Disk Cache Integration
@@ -212,7 +216,7 @@ struct CachedImageLoaderTests {
 		await diskCacheMock.setImageToReturn(testImage)
 		let requestCount = RequestCounter()
 		givenSuccessResponse(for: url, data: testImageData) {
-			Task { await requestCount.increment() }
+			requestCount.increment()
 		}
 		let sut = CachedImageLoader(session: .mockSession(), memoryCache: ImageMemoryCacheMock(), diskCache: diskCacheMock)
 
@@ -221,8 +225,7 @@ struct CachedImageLoaderTests {
 
 		// Then
 		#expect(result != nil)
-		let count = await requestCount.value
-		#expect(count == 0)
+		#expect(requestCount.value == 0)
 	}
 
 	@Test("Image loaded from disk is stored in memory cache")
@@ -324,10 +327,41 @@ private extension CachedImageLoaderTests {
 
 // MARK: - Request Counter
 
-private actor RequestCounter {
-	var value = 0
+nonisolated private final class RequestCounter: Sendable {
+	private let count = OSAllocatedUnfairLock(initialState: 0)
+
+	var value: Int {
+		count.withLock { $0 }
+	}
 
 	func increment() {
-		value += 1
+		count.withLock { $0 += 1 }
 	}
+}
+
+// MARK: - Lookup Observing Disk Cache
+
+private actor LookupObservingDiskCache: ImageDiskCacheContract {
+	private let expectedLookups: Int
+	private let onExpectedLookups: @Sendable () -> Void
+	private var lookups = 0
+
+	init(expectedLookups: Int, onExpectedLookups: @escaping @Sendable () -> Void) {
+		self.expectedLookups = expectedLookups
+		self.onExpectedLookups = onExpectedLookups
+	}
+
+	func image(for url: URL) -> UIImage? {
+		lookups += 1
+		if lookups == expectedLookups {
+			onExpectedLookups()
+		}
+		return nil
+	}
+
+	func store(_ data: Data, for url: URL) {}
+
+	func remove(for url: URL) {}
+
+	func removeAll() {}
 }
