@@ -102,7 +102,7 @@ The test command is the same for both:
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
 Tests run via `xcodebuild test` (not `tuist test`) because Tuist can't resolve SPM package test targets when using `.testPlans()`.

@@ -811,7 +811,7 @@ Add to `Shared/Resources/Sources/Resources/Localizable.xcstrings`:
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
 ## Next steps

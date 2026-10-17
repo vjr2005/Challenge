@@ -95,7 +95,7 @@ Build and execute **all tests** in the workspace:
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
 If tests fail:

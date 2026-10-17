@@ -6,6 +6,10 @@ inputs:
     description: Simulator device name
     required: false
     default: iPhone 17 Pro
+  os:
+    description: Simulator iOS version
+    required: false
+    default: "27.0"
   derived-data-prefix:
     description: Cache key prefix for DerivedData (e.g., unit, ui)
     required: true
@@ -17,10 +21,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Select Xcode 26.1.1
+    - name: Select Xcode 27.0
       shell: bash
       run: |
-        sudo xcode-select -s /Applications/Xcode_26.1.1.app
+        sudo xcode-select -s /Applications/Xcode_27.0.app
         xcodebuild -version
 
     - name: Install mise tools
@@ -87,15 +91,28 @@ runs:
       shell: bash
       run: |
         xcrun simctl shutdown all
+        RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.iOS-$(echo '${{ inputs.os }}' | tr . -)"
+        DEVICE_TYPE_ID="com.apple.CoreSimulator.SimDeviceType.$(echo '${{ inputs.device }}' | tr ' ' -)"
         DEVICE_UDID=$(xcrun simctl list devices available -j | python3 -c "
         import json, sys
         data = json.load(sys.stdin)
-        for runtime, devices in data['devices'].items():
-            for d in devices:
-                if d['name'] == '${{ inputs.device }}' and d['isAvailable']:
-                    print(d['udid'])
-                    sys.exit(0)
+        for d in data['devices'].get('$RUNTIME_ID', []):
+            if d['name'] == '${{ inputs.device }}' and d['isAvailable']:
+                print(d['udid'])
+                sys.exit(0)
         ")
+        # Runner images may ship the iOS runtime without this device type (e.g. iPhone 17 Pro on iOS 27)
+        if [ -z "$DEVICE_UDID" ]; then
+          echo "Creating simulator: ${{ inputs.device }} ($RUNTIME_ID)"
+          DEVICE_UDID=$(xcrun simctl create "${{ inputs.device }}" "$DEVICE_TYPE_ID" "$RUNTIME_ID" || true)
+          if [ -n "$DEVICE_UDID" ]; then
+            # Snapshots require English (boot → configure → shutdown, booted again below)
+            xcrun simctl boot "$DEVICE_UDID"
+            xcrun simctl spawn "$DEVICE_UDID" defaults write "Apple Global Domain" AppleLanguages -array en
+            xcrun simctl spawn "$DEVICE_UDID" defaults write "Apple Global Domain" AppleLocale -string en_US
+            xcrun simctl shutdown "$DEVICE_UDID"
+          fi
+        fi
         if [ -n "$DEVICE_UDID" ]; then
           echo "Booting simulator: $DEVICE_UDID"
           xcrun simctl boot "$DEVICE_UDID"

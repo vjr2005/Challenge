@@ -49,7 +49,7 @@ Tuist/
 ```swift
 // ProjectConfig.swift
 appName = "Challenge"
-swiftToolsVersion = "6.2"
+swiftToolsVersion = "6.4"
 iosMajorVersion = "17"
 destinations = [.iPhone, .iPad]
 ```
@@ -264,7 +264,7 @@ The project uses strict Swift 6 concurrency with MainActor isolation by default:
 
 ```swift
 // ProjectConfig.swift — baseSettings (shared across all targets)
-"SWIFT_VERSION": "6.2"
+"SWIFT_VERSION": "6.4"
 "SWIFT_APPROACHABLE_CONCURRENCY": "YES"
 "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor"
 ```
@@ -424,7 +424,7 @@ Module tests use `xcodebuild test` with the `Challenge (Dev)` scheme. `ModuleAgg
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
 UI tests always use Tuist:
@@ -452,7 +452,7 @@ mise x -- tuist build
 xcodebuild test \
   -workspace Challenge.xcworkspace \
   -scheme "Challenge (Dev)" \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 
 # Run UI tests
 mise x -- tuist test "ChallengeUITests"

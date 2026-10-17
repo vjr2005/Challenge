@@ -4,7 +4,7 @@ This document defines the coding standards, architecture patterns, and developme
 
 ## Target Configuration
 
-- **Swift 6.2** with **complete strict concurrency**
+- **Swift 6.4** with **complete strict concurrency**
 - **iOS 17+**
 - `SWIFT_APPROACHABLE_CONCURRENCY` = `YES`
 - `SWIFT_DEFAULT_ACTOR_ISOLATION` = `MainActor`
@@ -22,7 +22,7 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **Before generating Swift code**, always consult the `/concurrency` and `/style-guide` skills to ensure compliance with project standards. **After generating code**, use the `/testing` skill to create corresponding tests.
 >
-> **After writing code, always verify compilation** by running module tests via `xcodebuild test -workspace Challenge.xcworkspace -scheme "Challenge (Dev)" -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1'`.
+> **After writing code, always verify compilation** by running module tests via `xcodebuild test -workspace Challenge.xcworkspace -scheme "Challenge (Dev)" -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'`.
 >
 > **All code must pass SwiftLint validation.**
 >
@@ -181,7 +181,7 @@ Module/Tests/
 | UI tests | Use XCTest (`XCTestCase`, `XCUIApplication`) - required for UI testing |
 | **Previews** | All Views must have `#Preview` blocks (commented out with `/* */`) covering every visual state. Preview stubs wrapped in `#if DEBUG`. Code must compile and stay in sync with the View. |
 
-| Simulator | Tests run on **iPhone 17 Pro** simulator. The simulator language must be set to **English** to prevent snapshot test failures |
+| Simulator | Tests run on **iPhone 17 Pro** simulator. The simulator language must be set to **English** to prevent snapshot test failures. iOS 27 runtimes ship without iPhone 17 Pro: create it with `xcrun simctl create "iPhone 17 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-27-0` and set English (`simctl spawn <udid> defaults write -g AppleLanguages -array en`) |
 
 For details, see `/testing` skill.
 

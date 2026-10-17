@@ -57,6 +57,7 @@ public struct DSCardInfoRow: View {
 				}
 			}
 		}
+		.accessibilityElement(children: .contain)
 		.accessibilityIdentifier(accessibilityIdentifier ?? "")
 	}
 }

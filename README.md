@@ -14,10 +14,10 @@ iOS application built with **Swift 6**, **SwiftUI**, **Clean Architecture**, and
 
 | Tool | Version |
 |------|---------|
-| Xcode | 26+ |
+| Xcode | 27+ |
 | iOS | 17.0+ |
-| Swift | 6.2 |
-| macOS | Sequoia 15.6+ |
+| Swift | 6.4 |
+| macOS | Tahoe 26.6+ |
 
 ## Quick Start
 
