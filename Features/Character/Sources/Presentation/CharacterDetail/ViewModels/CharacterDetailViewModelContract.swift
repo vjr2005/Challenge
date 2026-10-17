@@ -8,4 +8,3 @@ protocol CharacterDetailViewModelContract: AnyObject {
 	func didPullToRefresh() async
 	func didTapOnEpisodes()
 }
-

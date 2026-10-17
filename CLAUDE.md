@@ -24,7 +24,7 @@ This document defines the coding standards, architecture patterns, and developme
 >
 > **After writing code, always verify compilation** by running module tests via `xcodebuild test -workspace Challenge.xcworkspace -scheme "Challenge (Dev)" -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'`.
 >
-> **All code must pass SwiftLint validation.**
+> **All code must pass SwiftLint validation.** It covers every module and CI runs it in strict mode. Suppress a rule only with a targeted `// swiftlint:disable:next` and only in tests, never in production code (see `docs/StyleGuide.md`).
 >
 > **Maximum test coverage is required.** When creating or modifying any component, all related changes must be fully tested.
 >

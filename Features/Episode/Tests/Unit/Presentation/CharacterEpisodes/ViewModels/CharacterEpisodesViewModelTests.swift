@@ -100,7 +100,9 @@ struct CharacterEpisodesViewModelTests {
 
 		var statesDuringRefresh: [CharacterEpisodesViewState] = []
 		refreshCharacterEpisodesUseCaseMock.onExecute = { [weak sut] in
-			guard let sut else { return }
+			guard let sut else {
+				return
+			}
 			statesDuringRefresh.append(sut.state)
 		}
 
@@ -140,102 +142,4 @@ struct CharacterEpisodesViewModelTests {
 		getCharacterEpisodesUseCaseMock.reset()
 		trackerMock.reset()
 	}
-}
-
-// MARK: - Test Helpers
-
-extension CharacterEpisodesViewModelTests {
-	nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
-		struct Given: Sendable {
-			let characterWithEpisodesResult: Result<EpisodeCharacterWithEpisodes, EpisodeError>
-		}
-
-		struct Expected: Sendable {
-			let state: CharacterEpisodesViewState
-			let loadErrorDescriptions: [String]
-		}
-
-		let testDescription: String
-		let given: Given
-		let expected: Expected
-
-		static let all: [DidAppearScenario] = [
-			DidAppearScenario(
-				testDescription: "On success sets loaded state without tracking error",
-				given: Given(characterWithEpisodesResult: .success(.stub())),
-				expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
-			),
-			DidAppearScenario(
-				testDescription: "On failure sets error state and tracks load error",
-				given: Given(characterWithEpisodesResult: .failure(.loadFailed())),
-				expected: Expected(
-					state: .error(.loadFailed()),
-					loadErrorDescriptions: [EpisodeError.loadFailed().debugDescription]
-				)
-			),
-		]
-	}
-
-	nonisolated struct DidTapOnRetryButtonScenario: Sendable, CustomTestStringConvertible {
-		struct Given: Sendable {
-			let characterWithEpisodesResult: Result<EpisodeCharacterWithEpisodes, EpisodeError>
-		}
-
-		struct Expected: Sendable {
-			let state: CharacterEpisodesViewState
-			let loadErrorDescriptions: [String]
-		}
-
-		let testDescription: String
-		let given: Given
-		let expected: Expected
-
-		static let all: [DidTapOnRetryButtonScenario] = [
-			DidTapOnRetryButtonScenario(
-				testDescription: "On success sets loaded state without tracking error",
-				given: Given(characterWithEpisodesResult: .success(.stub())),
-				expected: Expected(state: .loaded(.stub()), loadErrorDescriptions: [])
-			),
-			DidTapOnRetryButtonScenario(
-				testDescription: "On failure sets error state and tracks load error",
-				given: Given(characterWithEpisodesResult: .failure(.loadFailed())),
-				expected: Expected(
-					state: .error(.loadFailed()),
-					loadErrorDescriptions: [EpisodeError.loadFailed().debugDescription]
-				)
-			),
-		]
-	}
-
-	nonisolated struct DidPullToRefreshScenario: Sendable, CustomTestStringConvertible {
-		struct Given: Sendable {
-			let characterWithEpisodesResult: Result<EpisodeCharacterWithEpisodes, EpisodeError>
-		}
-
-		struct Expected: Sendable {
-			let state: CharacterEpisodesViewState
-			let refreshErrorDescriptions: [String]
-		}
-
-		let testDescription: String
-		let given: Given
-		let expected: Expected
-
-		static let all: [DidPullToRefreshScenario] = [
-			DidPullToRefreshScenario(
-				testDescription: "On success sets loaded state without tracking error",
-				given: Given(characterWithEpisodesResult: .success(.stub())),
-				expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
-			),
-			DidPullToRefreshScenario(
-				testDescription: "On failure sets error state and tracks refresh error",
-				given: Given(characterWithEpisodesResult: .failure(.loadFailed())),
-				expected: Expected(
-					state: .error(.loadFailed()),
-					refreshErrorDescriptions: [EpisodeError.loadFailed().debugDescription]
-				)
-			),
-		]
-	}
-
 }

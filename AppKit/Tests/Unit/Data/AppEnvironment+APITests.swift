@@ -20,7 +20,7 @@ struct AppEnvironmentAPITests {
 		// Then
 		#expect(api.baseURL.scheme == "https")
 		#expect(api.baseURL.host == "rickandmortyapi.com")
-		#expect(api.baseURL.path == "")
+		#expect(api.baseURL.path.isEmpty)
 	}
 
 	@Test("Rick and Morty API returns expected URL for development environment")

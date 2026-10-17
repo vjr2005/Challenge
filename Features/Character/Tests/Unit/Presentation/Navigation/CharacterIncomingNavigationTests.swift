@@ -47,17 +47,16 @@ struct CharacterIncomingNavigationTests {
     func hashValuesAreEqualForSameCases() {
         // Given
         let delegateMock = CharacterFilterDelegateMock()
+        let navigations: [(lhs: CharacterIncomingNavigation, rhs: CharacterIncomingNavigation)] = [
+            (.list, .list),
+            (.detail(identifier: 42), .detail(identifier: 42)),
+            (.characterFilter(delegate: delegateMock), .characterFilter(delegate: delegateMock))
+        ]
 
         // Then
-        #expect(
-            CharacterIncomingNavigation.list.hashValue == CharacterIncomingNavigation.list.hashValue
-        )
-        #expect(
-            CharacterIncomingNavigation.detail(identifier: 42).hashValue == CharacterIncomingNavigation.detail(identifier: 42).hashValue
-        )
-        #expect(
-            CharacterIncomingNavigation.characterFilter(delegate: delegateMock).hashValue == CharacterIncomingNavigation.characterFilter(delegate: delegateMock).hashValue
-        )
+        for navigation in navigations {
+            #expect(navigation.lhs.hashValue == navigation.rhs.hashValue)
+        }
     }
 
     @Test("Different cases produce different hash values")

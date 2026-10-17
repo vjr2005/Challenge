@@ -6,7 +6,7 @@ nonisolated enum CharactersPageError: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case invalidPage(page: Int)
 
-	static func == (lhs: CharactersPageError, rhs: CharactersPageError) -> Bool {
+	static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
 		case (.loadFailed, .loadFailed):
 			true

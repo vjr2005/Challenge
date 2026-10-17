@@ -12,7 +12,7 @@ struct HomeEventTests {
 
         // Then
         #expect(sut.name == "home_viewed")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - characterButtonTapped
@@ -24,7 +24,7 @@ struct HomeEventTests {
 
         // Then
         #expect(sut.name == "home_character_button_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - infoButtonTapped
@@ -36,6 +36,6 @@ struct HomeEventTests {
 
         // Then
         #expect(sut.name == "home_info_button_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 }

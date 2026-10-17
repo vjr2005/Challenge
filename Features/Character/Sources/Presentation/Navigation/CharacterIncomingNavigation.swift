@@ -9,7 +9,7 @@ public enum CharacterIncomingNavigation: IncomingNavigationContract {
         switch (lhs, rhs) {
         case (.list, .list):
             return true
-        case (.detail(let lhsID), .detail(let rhsID)):
+        case let (.detail(lhsID), .detail(rhsID)):
             return lhsID == rhsID
         case (.characterFilter, .characterFilter):
             return true

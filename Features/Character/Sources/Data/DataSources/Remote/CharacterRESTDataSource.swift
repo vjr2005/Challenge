@@ -47,4 +47,3 @@ nonisolated private extension CharacterRESTDataSource {
 		}
 	}
 }
-

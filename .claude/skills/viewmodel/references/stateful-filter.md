@@ -263,7 +263,11 @@ struct {Screen}ViewModelTests {
     }
 }
 
-// MARK: - Test Helpers
+// {Screen}ViewModelTests+HasActiveFiltersScenario.swift (one file per scenario)
+
+import Testing
+
+@testable import Challenge{Feature}
 
 extension {Screen}ViewModelTests {
     nonisolated struct HasActiveFiltersScenario: Sendable, CustomTestStringConvertible {
@@ -279,20 +283,20 @@ extension {Screen}ViewModelTests {
         let given: Given
         let expected: Expected
 
-        static let all: [HasActiveFiltersScenario] = [
-            HasActiveFiltersScenario(
+        static let all: [Self] = [
+            Self(
                 testDescription: "Returns true when status is set",
                 given: Given(filter: {Name}Filter(status: .alive)),
                 expected: Expected(hasActiveFilters: true)
             ),
-            HasActiveFiltersScenario(
+            Self(
                 testDescription: "Returns false when all fields are empty",
                 given: Given(filter: .empty),
                 expected: Expected(hasActiveFilters: false)
-            ),
+            )
         ]
     }
 
-    // DidTapApplyScenario and DidTapResetScenario follow the same pattern
+    // DidTapApplyScenario and DidTapResetScenario follow the same pattern, each in its own file
 }
 ```

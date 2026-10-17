@@ -49,6 +49,9 @@ jobs:
           derived-data-prefix: unit
           module-strategy: ${{ env.MODULE_STRATEGY }}
 
+      - name: Lint
+        run: mise x -- swiftlint lint --strict --reporter github-actions-logging
+
       - name: Run unit and snapshot tests
         timeout-minutes: 35
         env:

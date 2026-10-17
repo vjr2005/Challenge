@@ -12,7 +12,7 @@ struct CharacterFilterEventTests {
 
         // Then
         #expect(sut.name == "character_filter_viewed")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - filtersApplied
@@ -36,7 +36,7 @@ struct CharacterFilterEventTests {
 
         // Then
         #expect(sut.name == "character_filter_filters_reset")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - closeTapped
@@ -48,6 +48,6 @@ struct CharacterFilterEventTests {
 
         // Then
         #expect(sut.name == "character_filter_close_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 }

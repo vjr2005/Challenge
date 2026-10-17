@@ -75,7 +75,7 @@ struct CharactersPageErrorTests {
         let result = sut.debugDescription
 
         // Then
-        #expect(result == "")
+        #expect(result.isEmpty)
     }
 
     @Test("Invalid page debugDescription contains page number")

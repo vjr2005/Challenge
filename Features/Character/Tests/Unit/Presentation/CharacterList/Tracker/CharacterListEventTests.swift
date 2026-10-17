@@ -12,7 +12,7 @@ struct CharacterListEventTests {
 
         // Then
         #expect(sut.name == "character_list_viewed")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - characterSelected
@@ -48,7 +48,7 @@ struct CharacterListEventTests {
 
         // Then
         #expect(sut.name == "character_list_retry_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - pullToRefreshTriggered
@@ -60,7 +60,7 @@ struct CharacterListEventTests {
 
         // Then
         #expect(sut.name == "character_list_pull_to_refresh")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - loadMoreButtonTapped
@@ -72,7 +72,7 @@ struct CharacterListEventTests {
 
         // Then
         #expect(sut.name == "character_list_load_more_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - characterFilterButtonTapped
@@ -84,7 +84,7 @@ struct CharacterListEventTests {
 
         // Then
         #expect(sut.name == "character_list_character_filter_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - fetchError

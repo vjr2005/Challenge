@@ -16,7 +16,7 @@ struct CharacterEpisodesEventTests {
     @Test("Retry button tapped event has correct name and empty properties")
     func retryButtonTappedEvent() {
         #expect(CharacterEpisodesEvent.retryButtonTapped.name == "character_episodes_retry_tapped")
-        #expect(CharacterEpisodesEvent.retryButtonTapped.properties == [:])
+        #expect(CharacterEpisodesEvent.retryButtonTapped.properties.isEmpty)
     }
 
     // MARK: - pullToRefreshTriggered
@@ -24,7 +24,7 @@ struct CharacterEpisodesEventTests {
     @Test("Pull to refresh triggered event has correct name and empty properties")
     func pullToRefreshTriggeredEvent() {
         #expect(CharacterEpisodesEvent.pullToRefreshTriggered.name == "character_episodes_pull_to_refresh")
-        #expect(CharacterEpisodesEvent.pullToRefreshTriggered.properties == [:])
+        #expect(CharacterEpisodesEvent.pullToRefreshTriggered.properties.isEmpty)
     }
 
     // MARK: - characterAvatarTapped

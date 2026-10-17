@@ -177,6 +177,8 @@ func didAppear(scenario: DidAppearScenario) async {
 }
 ```
 
+Each scenario lives in its own file, `{Screen}ViewModelTests+{Action}Scenario.swift`, as an extension of the suite.
+
 See [references/test-patterns.md](references/test-patterns.md) for scenario struct pattern and helper methods.
 
 ---

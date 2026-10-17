@@ -12,7 +12,7 @@ struct NotFoundEventTests {
 
         // Then
         #expect(sut.name == "not_found_viewed")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 
     // MARK: - goBackButtonTapped
@@ -24,6 +24,6 @@ struct NotFoundEventTests {
 
         // Then
         #expect(sut.name == "not_found_go_back_tapped")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 }

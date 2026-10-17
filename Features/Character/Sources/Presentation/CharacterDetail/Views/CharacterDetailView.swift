@@ -1,6 +1,6 @@
-import ChallengeResources
 import ChallengeCore
 import ChallengeDesignSystem
+import ChallengeResources
 import SwiftUI
 
 struct CharacterDetailView<ViewModel: CharacterDetailViewModelContract>: View {
@@ -27,14 +27,14 @@ private extension CharacterDetailView {
     @ViewBuilder
     var content: some View {
         switch viewModel.state {
-            case .idle:
-                Color.clear
-            case .loading:
-                loadingView
-            case .loaded(let character):
-                characterContent(character)
-            case .error:
-                errorView
+        case .idle:
+            Color.clear
+        case .loading:
+            loadingView
+        case .loaded(let character):
+            characterContent(character)
+        case .error:
+            errorView
         }
     }
 

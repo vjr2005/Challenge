@@ -5,7 +5,7 @@ struct GetAboutInfoUseCase: GetAboutInfoUseCaseContract {
 		AboutInfo(sections: [
 			featuresSection,
 			dependenciesSection,
-			creditsSection,
+			creditsSection
 		])
 	}
 }
@@ -56,7 +56,7 @@ private extension GetAboutInfoUseCase {
 				icon: "globe",
 				title: "about.feature.localization".localized(),
 				description: "about.feature.localizationValue".localized()
-			),
+			)
 		])
 	}
 
@@ -79,7 +79,7 @@ private extension GetAboutInfoUseCase {
 				icon: "server.rack",
 				title: "about.dep.mockServer".localized(),
 				description: "about.dep.mockServerValue".localized()
-			),
+			)
 		])
 	}
 
@@ -102,7 +102,7 @@ private extension GetAboutInfoUseCase {
 				icon: "wrench.and.screwdriver",
 				title: "about.builtWith".localized(),
 				description: "about.builtWithValue".localized()
-			),
+			)
 		])
 	}
 }

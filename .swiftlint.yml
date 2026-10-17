@@ -4,7 +4,10 @@
 # Paths to include
 included:
   - App
+  - AppKit
+  - Features
   - Libraries
+  - Shared
 
 # Paths to exclude
 excluded:

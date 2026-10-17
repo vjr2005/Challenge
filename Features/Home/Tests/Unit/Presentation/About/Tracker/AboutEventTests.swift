@@ -12,6 +12,6 @@ struct AboutEventTests {
 
         // Then
         #expect(sut.name == "about_viewed")
-        #expect(sut.properties == [:])
+        #expect(sut.properties.isEmpty)
     }
 }

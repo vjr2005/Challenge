@@ -5,7 +5,7 @@ nonisolated enum EpisodeError: Error, Equatable, LocalizedError {
 	case loadFailed(description: String = "")
 	case notFound(identifier: Int)
 
-	static func == (lhs: EpisodeError, rhs: EpisodeError) -> Bool {
+	static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
 		case (.loadFailed, .loadFailed):
 			true

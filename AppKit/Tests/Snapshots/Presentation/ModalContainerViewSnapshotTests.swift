@@ -20,7 +20,7 @@ struct ModalContainerViewSnapshotTests {
 		let modal = ModalNavigation(navigation: HomeIncomingNavigation.main, style: .sheet())
 
 		// When
-		let view = ModalContainerView(modal: modal, appContainer: appContainer, onDismiss: {})
+		let view = ModalContainerView(modal: modal, appContainer: appContainer) {}
 
 		// Then
 		assertSnapshot(of: view, as: .device)

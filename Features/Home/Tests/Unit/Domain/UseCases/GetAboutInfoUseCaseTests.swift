@@ -33,7 +33,7 @@ struct GetAboutInfoUseCaseTests {
 			"about.feature.detail",
 			"about.feature.episodes",
 			"about.feature.navigation",
-			"about.feature.localization",
+			"about.feature.localization"
 		])
 		#expect(section.items.map(\.icon) == [
 			"person.2",
@@ -42,7 +42,7 @@ struct GetAboutInfoUseCaseTests {
 			"person.text.rectangle",
 			"tv",
 			"arrow.triangle.2.circlepath",
-			"globe",
+			"globe"
 		])
 	}
 
@@ -58,12 +58,12 @@ struct GetAboutInfoUseCaseTests {
 		#expect(section.items.map(\.id) == [
 			"about.dep.lottie",
 			"about.dep.snapshot",
-			"about.dep.mockServer",
+			"about.dep.mockServer"
 		])
 		#expect(section.items.map(\.icon) == [
 			"play.rectangle",
 			"camera.viewfinder",
-			"server.rack",
+			"server.rack"
 		])
 	}
 
@@ -79,12 +79,12 @@ struct GetAboutInfoUseCaseTests {
 		#expect(section.items.map(\.id) == [
 			"about.api",
 			"about.developer",
-			"about.builtWith",
+			"about.builtWith"
 		])
 		#expect(section.items.map(\.icon) == [
 			"network",
 			"person",
-			"wrench.and.screwdriver",
+			"wrench.and.screwdriver"
 		])
 	}
 

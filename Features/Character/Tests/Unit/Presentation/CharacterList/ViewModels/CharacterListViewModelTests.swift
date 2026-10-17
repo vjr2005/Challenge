@@ -4,6 +4,8 @@ import Testing
 @testable import ChallengeCharacter
 
 @Suite(.timeLimit(.minutes(1)))
+// One test per ViewModel action keeps this suite long; its scenarios live in independent files.
+// swiftlint:disable:next type_body_length
 struct CharacterListViewModelTests {
     // MARK: - Properties
 
@@ -106,7 +108,10 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
     }
 
-    @Test("didTapOnLoadMoreButton with search query produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonWithSearchQueryScenario.all)
+    @Test(
+        "didTapOnLoadMoreButton with search query produces expected outcome per scenario",
+        arguments: DidTapOnLoadMoreButtonWithSearchQueryScenario.all
+    )
     func didTapOnLoadMoreButtonWithSearchQuery(scenario: DidTapOnLoadMoreButtonWithSearchQueryScenario) async {
         // Given
         await givenLoadedStateWithNextPageAndSearchQuery(scenario.given.searchQuery)
@@ -125,7 +130,10 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
     }
 
-    @Test("didTapOnLoadMoreButton with character filter produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonWithCharacterFilterScenario.all)
+    @Test(
+        "didTapOnLoadMoreButton with character filter produces expected outcome per scenario",
+        arguments: DidTapOnLoadMoreButtonWithCharacterFilterScenario.all
+    )
     func didTapOnLoadMoreButtonWithCharacterFilter(scenario: DidTapOnLoadMoreButtonWithCharacterFilterScenario) async {
         // Given
         await givenLoadedStateWithNextPageAndCharacterFilter(scenario.given.characterFilter)
@@ -306,7 +314,9 @@ struct CharacterListViewModelTests {
 
         var statesDuringRefresh: [CharacterListViewState] = []
         refreshCharactersPageUseCaseMock.onExecute = { [weak sut] in
-            guard let sut else { return }
+            guard let sut else {
+                return
+            }
             statesDuringRefresh.append(sut.state)
         }
 
@@ -649,332 +659,5 @@ struct CharacterListViewModelTests {
         await sut.searchTask?.value
         searchCharactersPageUseCaseMock.reset()
         trackerMock.reset()
-    }
-
-}
-
-// MARK: - Test Helpers
-
-extension CharacterListViewModelTests {
-    nonisolated struct DidAppearScenario: Sendable, CustomTestStringConvertible {
-        struct Given: Sendable {
-            let charactersPageResult: Result<CharactersPage, CharactersPageError>
-            let recentSearches: [String]
-            let searchQuery: String
-        }
-
-        struct Expected: Sendable {
-            let state: CharacterListViewState
-            let fetchErrorDescriptions: [String]
-            let recentSearches: [String]
-            let getCharactersPageExecuteCallCount: Int
-            let lastRequestedPage: Int?
-            let searchCharactersPageExecuteCallCount: Int
-            let searchFilterName: String?
-        }
-
-        let testDescription: String
-        let given: Given
-        let expected: Expected
-
-        static let all: [DidAppearScenario] = [
-            DidAppearScenario(
-                testDescription: "On success sets loaded state without tracking error",
-                given: Given(charactersPageResult: .success(.stub()), recentSearches: [], searchQuery: ""),
-                expected: Expected(
-                    state: .loaded(.stub()),
-                    fetchErrorDescriptions: [],
-                    recentSearches: [],
-                    getCharactersPageExecuteCallCount: 1,
-                    lastRequestedPage: 1,
-                    searchCharactersPageExecuteCallCount: 0,
-                    searchFilterName: nil
-                )
-            ),
-            DidAppearScenario(
-                testDescription: "On success with empty characters sets empty state",
-                given: Given(charactersPageResult: .success(.stub(characters: [])), recentSearches: [], searchQuery: ""),
-                expected: Expected(
-                    state: .empty,
-                    fetchErrorDescriptions: [],
-                    recentSearches: [],
-                    getCharactersPageExecuteCallCount: 1,
-                    lastRequestedPage: 1,
-                    searchCharactersPageExecuteCallCount: 0,
-                    searchFilterName: nil
-                )
-            ),
-            DidAppearScenario(
-                testDescription: "On failure sets error state and tracks fetch error",
-                given: Given(charactersPageResult: .failure(.loadFailed()), recentSearches: [], searchQuery: ""),
-                expected: Expected(
-                    state: .error(.loadFailed()),
-                    fetchErrorDescriptions: [CharactersPageError.loadFailed().debugDescription],
-                    recentSearches: [],
-                    getCharactersPageExecuteCallCount: 1,
-                    lastRequestedPage: 1,
-                    searchCharactersPageExecuteCallCount: 0,
-                    searchFilterName: nil
-                )
-            ),
-            DidAppearScenario(
-                testDescription: "On success loads recent searches",
-                given: Given(charactersPageResult: .success(.stub()), recentSearches: ["Rick", "Morty"], searchQuery: ""),
-                expected: Expected(
-                    state: .loaded(.stub()),
-                    fetchErrorDescriptions: [],
-                    recentSearches: ["Rick", "Morty"],
-                    getCharactersPageExecuteCallCount: 1,
-                    lastRequestedPage: 1,
-                    searchCharactersPageExecuteCallCount: 0,
-                    searchFilterName: nil
-                )
-            ),
-            DidAppearScenario(
-                testDescription: "With search query uses search use case instead of get characters",
-                given: Given(charactersPageResult: .success(.stub()), recentSearches: [], searchQuery: "Morty"),
-                expected: Expected(
-                    state: .loaded(.stub()),
-                    fetchErrorDescriptions: [],
-                    recentSearches: [],
-                    getCharactersPageExecuteCallCount: 0,
-                    lastRequestedPage: nil,
-                    searchCharactersPageExecuteCallCount: 1,
-                    searchFilterName: "Morty"
-                )
-            ),
-        ]
-    }
-
-    nonisolated struct DidTapOnRetryButtonScenario: Sendable, CustomTestStringConvertible {
-        struct Given: Sendable {
-            let charactersPageResult: Result<CharactersPage, CharactersPageError>
-        }
-
-        struct Expected: Sendable {
-            let state: CharacterListViewState
-            let fetchErrorDescriptions: [String]
-        }
-
-        let testDescription: String
-        let given: Given
-        let expected: Expected
-
-        static let all: [DidTapOnRetryButtonScenario] = [
-            DidTapOnRetryButtonScenario(
-                testDescription: "On success sets loaded state without tracking error",
-                given: Given(charactersPageResult: .success(.stub())),
-                expected: Expected(state: .loaded(.stub()), fetchErrorDescriptions: [])
-            ),
-            DidTapOnRetryButtonScenario(
-                testDescription: "On failure sets error state and tracks fetch error",
-                given: Given(charactersPageResult: .failure(.loadFailed())),
-                expected: Expected(
-                    state: .error(.loadFailed()),
-                    fetchErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
-                )
-            ),
-        ]
-    }
-
-    nonisolated struct DidTapOnLoadMoreButtonScenario: Sendable, CustomTestStringConvertible {
-        struct Given: Sendable {
-            let charactersPageResult: Result<CharactersPage, CharactersPageError>
-        }
-
-        struct Expected: Sendable {
-            let state: CharacterListViewState
-            let loadMoreErrorDescriptions: [String]
-        }
-
-        let testDescription: String
-        let given: Given
-        let expected: Expected
-
-        static let all: [DidTapOnLoadMoreButtonScenario] = [
-            DidTapOnLoadMoreButtonScenario(
-                testDescription: "On success appends characters and updates state",
-                given: Given(
-                    charactersPageResult: .success(.stub(
-                        characters: [Character.stub(id: 2)],
-                        currentPage: 2,
-                        hasNextPage: false
-                    ))
-                ),
-                expected: Expected(
-                    state: .loaded(.stub(
-                        characters: [Character.stub(id: 1), Character.stub(id: 2)],
-                        currentPage: 2,
-                        hasNextPage: false,
-                        hasPreviousPage: false
-                    )),
-                    loadMoreErrorDescriptions: []
-                )
-            ),
-            DidTapOnLoadMoreButtonScenario(
-                testDescription: "On failure keeps existing data and tracks load more error",
-                given: Given(
-                    charactersPageResult: .failure(.loadFailed())
-                ),
-                expected: Expected(
-                    state: .loaded(.stub(
-                        characters: [Character.stub(id: 1)],
-                        currentPage: 1,
-                        hasNextPage: true
-                    )),
-                    loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
-                )
-            ),
-        ]
-    }
-
-    nonisolated struct DidTapOnLoadMoreButtonWithSearchQueryScenario: Sendable, CustomTestStringConvertible {
-        struct Given: Sendable {
-            let charactersPageResult: Result<CharactersPage, CharactersPageError>
-            let searchQuery: String
-        }
-
-        struct Expected: Sendable {
-            let state: CharacterListViewState
-            let loadMoreErrorDescriptions: [String]
-        }
-
-        let testDescription: String
-        let given: Given
-        let expected: Expected
-
-        static let all: [DidTapOnLoadMoreButtonWithSearchQueryScenario] = [
-            DidTapOnLoadMoreButtonWithSearchQueryScenario(
-                testDescription: "On success appends characters and updates state",
-                given: Given(
-                    charactersPageResult: .success(.stub(
-                        characters: [Character.stub(id: 2)],
-                        currentPage: 2,
-                        hasNextPage: false
-                    )),
-                    searchQuery: "Summer"
-                ),
-                expected: Expected(
-                    state: .loaded(.stub(
-                        characters: [Character.stub(id: 1), Character.stub(id: 2)],
-                        currentPage: 2,
-                        hasNextPage: false,
-                        hasPreviousPage: false
-                    )),
-                    loadMoreErrorDescriptions: []
-                )
-            ),
-            DidTapOnLoadMoreButtonWithSearchQueryScenario(
-                testDescription: "On failure keeps existing data and tracks load more error",
-                given: Given(
-                    charactersPageResult: .failure(.loadFailed()),
-                    searchQuery: "Summer"
-                ),
-                expected: Expected(
-                    state: .loaded(.stub(
-                        characters: [Character.stub(id: 1)],
-                        currentPage: 1,
-                        hasNextPage: true
-                    )),
-                    loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
-                )
-            ),
-        ]
-    }
-
-    nonisolated struct DidTapOnLoadMoreButtonWithCharacterFilterScenario: Sendable, CustomTestStringConvertible {
-        struct Given: Sendable {
-            let charactersPageResult: Result<CharactersPage, CharactersPageError>
-            let characterFilter: CharacterFilter
-        }
-
-        struct Expected: Sendable {
-            let state: CharacterListViewState
-            let loadMoreErrorDescriptions: [String]
-        }
-
-        let testDescription: String
-        let given: Given
-        let expected: Expected
-
-        static let all: [DidTapOnLoadMoreButtonWithCharacterFilterScenario] = [
-            DidTapOnLoadMoreButtonWithCharacterFilterScenario(
-                testDescription: "On success appends characters and updates state",
-                given: Given(
-                    charactersPageResult: .success(.stub(
-                        characters: [Character.stub(id: 2)],
-                        currentPage: 2,
-                        hasNextPage: false
-                    )),
-                    characterFilter: CharacterFilter(status: .dead)
-                ),
-                expected: Expected(
-                    state: .loaded(.stub(
-                        characters: [Character.stub(id: 1), Character.stub(id: 2)],
-                        currentPage: 2,
-                        hasNextPage: false,
-                        hasPreviousPage: false
-                    )),
-                    loadMoreErrorDescriptions: []
-                )
-            ),
-            DidTapOnLoadMoreButtonWithCharacterFilterScenario(
-                testDescription: "On failure keeps existing data and tracks load more error",
-                given: Given(
-                    charactersPageResult: .failure(.loadFailed()),
-                    characterFilter: CharacterFilter(status: .dead)
-                ),
-                expected: Expected(
-                    state: .loaded(.stub(
-                        characters: [Character.stub(id: 1)],
-                        currentPage: 1,
-                        hasNextPage: true
-                    )),
-                    loadMoreErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
-                )
-            ),
-        ]
-    }
-
-    nonisolated struct DidPullToRefreshScenario: Sendable, CustomTestStringConvertible {
-        struct Given: Sendable {
-            let charactersPageResult: Result<CharactersPage, CharactersPageError>
-            let loadMoreBeforeRefresh: Bool
-        }
-
-        struct Expected: Sendable {
-            let state: CharacterListViewState
-            let refreshErrorDescriptions: [String]
-        }
-
-        let testDescription: String
-        let given: Given
-        let expected: Expected
-
-        static let all: [DidPullToRefreshScenario] = [
-            DidPullToRefreshScenario(
-                testDescription: "On success sets loaded state without tracking error",
-                given: Given(charactersPageResult: .success(.stub()), loadMoreBeforeRefresh: false),
-                expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
-            ),
-            DidPullToRefreshScenario(
-                testDescription: "On success with empty characters sets empty state",
-                given: Given(charactersPageResult: .success(.stub(characters: [])), loadMoreBeforeRefresh: false),
-                expected: Expected(state: .empty, refreshErrorDescriptions: [])
-            ),
-            DidPullToRefreshScenario(
-                testDescription: "On failure sets error state and tracks refresh error",
-                given: Given(charactersPageResult: .failure(.loadFailed()), loadMoreBeforeRefresh: false),
-                expected: Expected(
-                    state: .error(.loadFailed()),
-                    refreshErrorDescriptions: [CharactersPageError.loadFailed().debugDescription]
-                )
-            ),
-            DidPullToRefreshScenario(
-                testDescription: "After loading more pages resets to page one on success",
-                given: Given(charactersPageResult: .success(.stub()), loadMoreBeforeRefresh: true),
-                expected: Expected(state: .loaded(.stub()), refreshErrorDescriptions: [])
-            ),
-        ]
     }
 }
