@@ -27,7 +27,7 @@ struct CharactersPageErrorTests {
     // MARK: - LocalizedError
 
     @Test("Load failed error description is localized")
-    func loadFailedErrorDescriptionIsLocalized() {
+    func loadFailedErrorDescriptionIsLocalized() throws {
         // Given
         let sut = CharactersPageError.loadFailed()
 
@@ -35,12 +35,12 @@ struct CharactersPageErrorTests {
         let description = sut.errorDescription
 
         // Then
-        #expect(description != nil)
-        #expect(description?.isEmpty == false)
+        let message = try #require(description)
+        #expect(!message.isEmpty)
     }
 
     @Test("Invalid page error description contains page number")
-    func invalidPageErrorDescriptionContainsPage() {
+    func invalidPageErrorDescriptionContainsPage() throws {
         // Given
         let sut = CharactersPageError.invalidPage(page: 5)
 
@@ -48,8 +48,8 @@ struct CharactersPageErrorTests {
         let description = sut.errorDescription
 
         // Then
-        #expect(description != nil)
-        #expect(description?.contains("5") == true)
+        let message = try #require(description)
+        #expect(message.contains("5"))
     }
 
     // MARK: - CustomDebugStringConvertible

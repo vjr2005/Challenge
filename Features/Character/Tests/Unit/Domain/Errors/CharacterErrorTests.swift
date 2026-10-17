@@ -27,7 +27,7 @@ struct CharacterErrorTests {
     // MARK: - LocalizedError
 
     @Test("Load failed error description is localized")
-    func loadFailedErrorDescriptionIsLocalized() {
+    func loadFailedErrorDescriptionIsLocalized() throws {
         // Given
         let sut = CharacterError.loadFailed()
 
@@ -35,12 +35,12 @@ struct CharacterErrorTests {
         let description = sut.errorDescription
 
         // Then
-        #expect(description != nil)
-        #expect(description?.isEmpty == false)
+        let message = try #require(description)
+        #expect(!message.isEmpty)
     }
 
     @Test("Not found error description contains id")
-    func notFoundErrorDescriptionContainsId() {
+    func notFoundErrorDescriptionContainsId() throws {
         // Given
         let sut = CharacterError.notFound(identifier: 42)
 
@@ -48,8 +48,8 @@ struct CharacterErrorTests {
         let description = sut.errorDescription
 
         // Then
-        #expect(description != nil)
-        #expect(description?.contains("42") == true)
+        let message = try #require(description)
+        #expect(message.contains("42"))
     }
 
     // MARK: - CustomDebugStringConvertible
