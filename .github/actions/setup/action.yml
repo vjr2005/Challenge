@@ -28,12 +28,12 @@ runs:
         xcodebuild -version
 
     - name: Install mise tools
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v5
       with:
         cache: true
 
     - name: Cache Tuist and SPM dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           Tuist/.build
@@ -43,7 +43,7 @@ runs:
           tuist-${{ runner.os }}-
 
     - name: Cache DerivedData
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: derived_data
         key: derived-data-${{ inputs.derived-data-prefix }}-${{ runner.os }}-${{ hashFiles('**/Project.swift', 'Tuist/Package.resolved') }}-${{ inputs.module-strategy }}-${{ github.sha }}
