@@ -208,11 +208,13 @@ All external SPM dependencies are centralized in `ExternalPackages.swift`:
 
 | Package | Product | Version | Product Type |
 |---------|---------|---------|--------------|
-| swift-snapshot-testing | SnapshotTesting | 1.17.0 | .framework |
-| lottie-ios | Lottie | 4.6.0 | .framework |
+| swift-snapshot-testing | SnapshotTesting | 1.19.6 | .framework |
+| lottie-ios | Lottie | 4.6.1 | .framework |
 | SwiftMockServer | SwiftMockServerBinary | 1.1.1 | .framework |
 
 `Tuist/Package.swift` uses `#if TUIST` to derive dependencies and settings from `allExternalPackages`. The `#else` branch has a hardcoded fallback for `tuist install` (pure SPM mode).
+
+`Tuist/Package.resolved` is versioned, so local builds and CI resolve the same versions (the CI cache keys hash it). `tuist install` only updates a package whose minimum no longer fits the pinned version; to update the transitive dependencies too, run `mise x -- tuist install --update` and commit the new `Package.resolved`.
 
 ### Adding an External Package
 
