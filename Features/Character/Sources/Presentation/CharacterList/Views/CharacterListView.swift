@@ -20,30 +20,7 @@ struct CharacterListView<ViewModel: CharacterListViewModelContract>: View {
 						prompt: LocalizedStrings.searchPlaceholder
 					)
 					.searchSuggestions {
-						if viewModel.searchQuery.isEmpty {
-							ForEach(viewModel.recentSearches, id: \.self) { query in
-								Button {
-									Task {
-										await viewModel.didSelectRecentSearch(query)
-									}
-								} label: {
-									Label(query, systemImage: "clock.arrow.circlepath")
-								}
-								.accessibilityIdentifier(AccessibilityIdentifier.recentSearch(query: query))
-								.swipeActions(edge: .trailing) {
-									Button(role: .destructive) {
-										Task {
-										await viewModel.didDeleteRecentSearch(query)
-          }
-									} label: {
-										Label(
-											LocalizedStrings.deleteAction,
-											systemImage: "trash"
-										)
-									}
-								}
-							}
-						}
+						recentSearchSuggestions
 					}
 			} else {
 				content
@@ -80,6 +57,38 @@ private extension CharacterListView {
             emptySearchView
         case .error(let error):
             errorView(error: error)
+        }
+    }
+
+    @ViewBuilder
+    var recentSearchSuggestions: some View {
+        if viewModel.searchQuery.isEmpty {
+            ForEach(viewModel.recentSearches, id: \.self) { query in
+                recentSearchRow(query)
+            }
+        }
+    }
+
+    func recentSearchRow(_ query: String) -> some View {
+        Button {
+            Task {
+                await viewModel.didSelectRecentSearch(query)
+            }
+        } label: {
+            Label(query, systemImage: "clock.arrow.circlepath")
+        }
+        .accessibilityIdentifier(AccessibilityIdentifier.recentSearch(query: query))
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                Task {
+                    await viewModel.didDeleteRecentSearch(query)
+                }
+            } label: {
+                Label(
+                    LocalizedStrings.deleteAction,
+                    systemImage: "trash"
+                )
+            }
         }
     }
 

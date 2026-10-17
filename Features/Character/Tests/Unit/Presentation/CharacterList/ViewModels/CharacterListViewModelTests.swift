@@ -106,7 +106,10 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
     }
 
-    @Test("didTapOnLoadMoreButton with search query produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonWithSearchQueryScenario.all)
+    @Test(
+        "didTapOnLoadMoreButton with search query produces expected outcome per scenario",
+        arguments: DidTapOnLoadMoreButtonWithSearchQueryScenario.all
+    )
     func didTapOnLoadMoreButtonWithSearchQuery(scenario: DidTapOnLoadMoreButtonWithSearchQueryScenario) async {
         // Given
         await givenLoadedStateWithNextPageAndSearchQuery(scenario.given.searchQuery)
@@ -125,7 +128,10 @@ struct CharacterListViewModelTests {
         #expect(trackerMock.loadMoreErrorDescriptions == scenario.expected.loadMoreErrorDescriptions)
     }
 
-    @Test("didTapOnLoadMoreButton with character filter produces expected outcome per scenario", arguments: DidTapOnLoadMoreButtonWithCharacterFilterScenario.all)
+    @Test(
+        "didTapOnLoadMoreButton with character filter produces expected outcome per scenario",
+        arguments: DidTapOnLoadMoreButtonWithCharacterFilterScenario.all
+    )
     func didTapOnLoadMoreButtonWithCharacterFilter(scenario: DidTapOnLoadMoreButtonWithCharacterFilterScenario) async {
         // Given
         await givenLoadedStateWithNextPageAndCharacterFilter(scenario.given.characterFilter)

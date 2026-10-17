@@ -15,7 +15,10 @@ nonisolated struct EpisodeRepository: EpisodeRepositoryContract {
 		self.memoryDataSource = memoryDataSource
 	}
 
-	@concurrent func getEpisodes(characterIdentifier: Int, cachePolicy: CachePolicy) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
+	@concurrent func getEpisodes(
+		characterIdentifier: Int,
+		cachePolicy: CachePolicy
+	) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
 		do {
 			let dto = try await cachePolicy.fetch(
 				fromRemote: { try await remoteDataSource.fetchEpisodes(characterIdentifier: characterIdentifier) },

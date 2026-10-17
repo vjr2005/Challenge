@@ -9,7 +9,10 @@ nonisolated final class EpisodeRepositoryMock: EpisodeRepositoryContract, @unche
 	private(set) var lastRequestedCharacterIdentifier: Int?
 	private(set) var lastCachePolicy: CachePolicy?
 
-	@concurrent func getEpisodes(characterIdentifier: Int, cachePolicy: CachePolicy) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
+	@concurrent func getEpisodes(
+		characterIdentifier: Int,
+		cachePolicy: CachePolicy
+	) async throws(EpisodeError) -> EpisodeCharacterWithEpisodes {
 		getEpisodesCallCount += 1
 		lastRequestedCharacterIdentifier = characterIdentifier
 		lastCachePolicy = cachePolicy
