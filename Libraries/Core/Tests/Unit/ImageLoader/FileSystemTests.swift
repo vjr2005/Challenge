@@ -29,13 +29,9 @@ struct FileSystemTests {
 		// Given
 		let fileURL = URL(fileURLWithPath: "/tmp/non-existent-\(UUID().uuidString)")
 
-		// Then
-		do {
-			// When
-			_ = try sut.contents(at: fileURL)
-			Issue.record("Expected error to be thrown")
-		} catch {
-			// Expected
+		// When / Then
+		#expect(throws: (any Error).self) {
+			try sut.contents(at: fileURL)
 		}
 	}
 

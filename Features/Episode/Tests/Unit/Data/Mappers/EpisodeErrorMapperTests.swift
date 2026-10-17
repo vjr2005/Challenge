@@ -73,11 +73,8 @@ struct EpisodeErrorMapperTests {
 		let result = sut.map(input)
 
 		// Then
-		if case .loadFailed(let description) = result {
-			#expect(description.contains("500"))
-		} else {
-			Issue.record("Expected loadFailed, got \(result)")
-		}
+		#expect(result == .loadFailed())
+		#expect(result.debugDescription.contains("500"))
 	}
 
 	@Test("Maps DecodingError description into loadFailed")
@@ -92,11 +89,8 @@ struct EpisodeErrorMapperTests {
 		let result = sut.map(input)
 
 		// Then
-		if case .loadFailed(let description) = result {
-			#expect(!description.isEmpty)
-		} else {
-			Issue.record("Expected loadFailed, got \(result)")
-		}
+		#expect(result == .loadFailed())
+		#expect(!result.debugDescription.isEmpty)
 	}
 
 	// MARK: - Generic Error Tests

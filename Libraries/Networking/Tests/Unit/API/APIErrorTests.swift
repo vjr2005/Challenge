@@ -66,10 +66,6 @@ struct APIErrorTests {
 		let sut = APIError.serverError(statusCode: code)
 
 		// Then
-		if case .serverError(let statusCode) = sut {
-			#expect(statusCode == code)
-		} else {
-			Issue.record("Expected serverError, got \(sut)")
-		}
+		#expect(sut == .serverError(statusCode: code))
 	}
 }

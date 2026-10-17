@@ -68,11 +68,6 @@ struct HTTPErrorTests {
 		let sut = HTTPError.statusCode(code, data)
 
 		// Then
-		if case let .statusCode(errorCode, errorData) = sut {
-			#expect(errorCode == code)
-			#expect(errorData == data)
-		} else {
-			Issue.record("Expected statusCode error")
-		}
+		#expect(sut == .statusCode(code, data))
 	}
 }
