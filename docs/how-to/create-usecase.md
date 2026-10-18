@@ -178,8 +178,6 @@ final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable 
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
 
-	@MainActor init() {}
-
 	func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
 		executeCallCount += 1
 		lastRequestedIdentifier = identifier
@@ -197,8 +195,6 @@ final class Refresh{Name}UseCaseMock: Refresh{Name}UseCaseContract, @unchecked S
 	var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
-
-	@MainActor init() {}
 
 	func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
 		executeCallCount += 1
@@ -308,8 +304,6 @@ final class Search{Name}sPageUseCaseMock: Search{Name}sPageUseCaseContract, @unc
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedPage: Int?
 	private(set) var lastRequestedFilter: {Name}Filter?
-
-	@MainActor init() {}
 
 	func execute(page: Int, filter: {Name}Filter) async throws({Feature}Error) -> {Name}sPage {
 		executeCallCount += 1
@@ -615,8 +609,6 @@ final class Get{Name}With{Related}sUseCaseMock: Get{Name}With{Related}sUseCaseCo
 	var result: Result<{Name}With{Related}s, {Feature}Error> = .failure(.loadFailed())
 	private(set) var executeCallCount = 0
 	private(set) var lastRequestedIdentifier: Int?
-
-	@MainActor init() {}
 
 	func execute(identifier: Int) async throws({Feature}Error) -> {Name}With{Related}s {
 		executeCallCount += 1

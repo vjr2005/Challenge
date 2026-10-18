@@ -99,7 +99,7 @@ nonisolated final class CharacterRepositoryMock: CharacterRepositoryContract, @u
 
 ### Mock Pattern for Sendable Contracts with `nonisolated` Methods
 
-When mocking `: Sendable` protocols with explicit `nonisolated` methods (e.g., FileSystem wrapping a thread-safe API), use `final class` + `@unchecked Sendable` + `nonisolated(unsafe)` properties + `nonisolated` methods:
+`: Sendable` contracts whose methods are explicitly `nonisolated` (e.g. `FileSystemContract`, a thin wrapper around a thread-safe API) use the same `nonisolated final class` + `@unchecked Sendable` pattern as above, with plain properties and no `@MainActor init()`:
 
 ```swift
 // Contract — Sendable with nonisolated methods (NOT Actor)
@@ -108,20 +108,18 @@ protocol FileSystemContract: Sendable {
     nonisolated func write(_ data: Data, to url: URL) throws
 }
 
-// Mock — final class with nonisolated(unsafe) properties
-final class FileSystemMock: FileSystemContract, @unchecked Sendable {
-    nonisolated(unsafe) var files: [URL: Data] = [:]
-    nonisolated(unsafe) var writeError: (any Error)?
-    nonisolated(unsafe) private(set) var writeCallCount = 0
+// Mock — nonisolated final class, plain properties
+nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable {
+    var files: [URL: Data] = [:]
+    var writeError: (any Error)?
+    private(set) var writeCallCount = 0
 
-    @MainActor init() {}
-
-    nonisolated func contents(at url: URL) throws -> Data {
+    func contents(at url: URL) throws -> Data {
         guard let data = files[url] else { throw CocoaError(.fileReadNoSuchFile) }
         return data
     }
 
-    nonisolated func write(_ data: Data, to url: URL) throws {
+    func write(_ data: Data, to url: URL) throws {
         writeCallCount += 1
         if let writeError { throw writeError }
         files[url] = data
@@ -129,7 +127,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 }
 ```
 
-**Why this is safe:** The actor that owns the mock serializes all calls. Tests configure the mock on MainActor (setup) and verify on MainActor (assertions) — no concurrent access. No `await` needed for mock property reads/writes.
+**Why this is safe:** tests configure the mock during setup and verify it afterwards, with no concurrent access, so `@unchecked Sendable` is enough. No `await` is needed for mock property reads/writes.
 
 ### Mock Pattern for MainActor-Isolated Contracts (Navigator, Tracker, Delegate, ViewModel)
 
@@ -158,6 +156,8 @@ final class {Screen}NavigatorMock: {Screen}NavigatorContract {
 ```
 
 **Why no `@unchecked Sendable`:** With `SWIFT_APPROACHABLE_CONCURRENCY = YES`, MainActor-isolated types are implicitly Sendable.
+
+**Exception — `Sendable` contracts:** a delegate declared `: AnyObject, Sendable` (e.g. `CharacterFilterDelegate`) needs `@unchecked Sendable` on its mock, and `CharacterFilterDelegateMock` also declares an explicit `@MainActor init() {}`.
 
 ### Mock `reset()` Method
 
@@ -227,10 +227,10 @@ func didPullToRefreshKeepsLoadedStateDuringRequest() async {
 
 | Protocol type | Mock type | Properties | Methods | `await` in tests |
 |--------------|-----------|------------|---------|-----------------|
-| MainActor-isolated (default) | `final class` | Direct `var`/`private(set)` | Default-isolated | No |
+| MainActor-isolated (default) | `final class` (add `@unchecked Sendable` when the contract is `Sendable`, e.g. UseCases) | Direct `var`/`private(set)` | Default-isolated | No |
 | `: Actor` | `actor` | `private(set)` + setter methods | Actor-isolated | Yes, for all access |
 | `nonisolated protocol` + `@concurrent` | `nonisolated final class @unchecked Sendable` | Direct `var`/`private(set)` | `@concurrent` | No |
-| `: Sendable` + `nonisolated` methods | `final class @unchecked Sendable` | `nonisolated(unsafe)` | `nonisolated` | No |
+| `: Sendable` + `nonisolated` methods | `nonisolated final class @unchecked Sendable` | Direct `var`/`private(set)` | `nonisolated` (inherited from the class) | No |
 
 ---
 

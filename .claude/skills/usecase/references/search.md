@@ -33,8 +33,6 @@ final class Search{Name}sPageUseCaseMock: Search{Name}sPageUseCaseContract, @unc
     private(set) var lastRequestedPage: Int?
     private(set) var lastRequestedFilter: {Name}Filter?
 
-    @MainActor init() {}
-
     func execute(page: Int, filter: {Name}Filter) async throws({Feature}Error) -> {Name}sPage {
         executeCallCount += 1
         lastRequestedPage = page

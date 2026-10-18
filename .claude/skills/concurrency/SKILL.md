@@ -464,14 +464,12 @@ struct FileSystem: FileSystemContract {
 ### Mock pattern for Sendable protocols with nonisolated methods
 
 ```swift
-final class FileSystemMock: FileSystemContract, @unchecked Sendable {
-    nonisolated(unsafe) var files: [URL: Data] = [:]
-    nonisolated(unsafe) var writeError: (any Error)?
-    nonisolated(unsafe) private(set) var writeCallCount = 0
+nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable {
+    var files: [URL: Data] = [:]
+    var writeError: (any Error)?
+    private(set) var writeCallCount = 0
 
-    @MainActor init() {}
-
-    nonisolated func write(_ data: Data, to url: URL) throws {
+    func write(_ data: Data, to url: URL) throws {
         writeCallCount += 1
         if let writeError { throw writeError }
         files[url] = data
@@ -479,7 +477,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 }
 ```
 
-This is safe in practice because the actor serializes all calls to the mock. Tests configure the mock on MainActor (setup) and verify on MainActor (assertions) — no concurrent access.
+`nonisolated` on the class opts every member out of MainActor, so neither `nonisolated(unsafe)` on each property nor an explicit `@MainActor init()` is needed. It is safe in practice because tests configure the mock during setup and verify it afterwards — no concurrent access.
 
 ---
 

@@ -43,8 +43,6 @@ final class Get{Name}With{Related}sUseCaseMock: Get{Name}With{Related}sUseCaseCo
     private(set) var executeCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
 
-    @MainActor init() {}
-
     func execute(identifier: Int) async throws({Feature}Error) -> {Name}With{Related}s {
         executeCallCount += 1
         lastRequestedIdentifier = identifier
