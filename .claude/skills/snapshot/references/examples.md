@@ -374,18 +374,22 @@ struct HomeViewSnapshotTests {
 ### Test Dependencies
 
 ```swift
-public let exampleModule = Module.create(
+public let exampleModule = ModuleFactory.create(
     directory: "Features/Example",
     dependencies: [
-        coreModule.targetDependency,
+        .module(coreModule)
     ],
     testDependencies: [
-        coreModule.mocksTargetDependency,
+        .moduleMocks(coreModule)
+    ],
+    snapshotTestDependencies: [
+        .module(snapshotTestKitModule),
+        .moduleMocks(coreModule)
     ]
 )
 ```
 
-Note: `ChallengeSnapshotTestKit` is automatically added to all snapshot test targets by `Module.create`. No manual dependency configuration is needed. Tests must only import `ChallengeSnapshotTestKit` — never import the underlying library directly.
+Note: `ChallengeSnapshotTestKit` is **not** added automatically: list `.module(snapshotTestKitModule)` in `snapshotTestDependencies` (as `HomeModule` and `SystemModule` do). Tests must only import `ChallengeSnapshotTestKit` — never import the underlying library directly.
 
 Mocks, Tests, and Resources targets are automatically created if the corresponding folders exist:
 - `Libraries/{path}/Mocks/` with Swift files → Creates Mocks target

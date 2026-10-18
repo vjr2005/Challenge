@@ -89,10 +89,24 @@ Create `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`:
 ```swift
 import ProjectDescription
 
-public let {feature}Module = Module.create(directory: "Features/{Feature}")
+public let {feature}Module = ModuleFactory.create(
+    directory: "Features/{Feature}",
+    dependencies: [
+        .module(coreModule),
+        .module(designSystemModule),
+        .module(resourcesModule)
+    ],
+    testDependencies: [
+        .moduleMocks(coreModule)
+    ],
+    snapshotTestDependencies: [
+        .module(snapshotTestKitModule),
+        .moduleMocks(coreModule)
+    ]
+)
 ```
 
-Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's package in the root project and its test target in the Dev scheme (Framework: via `testableTargets`, SPM: via `Challenge.xctestplan`).
+Register the module in **`MainApp.swift`** — add `{feature}Module` to the `modules` array of `mainApp`, and add it to the `dependencies` of `appKitModule` (`Modules/AppKitModule.swift`) so the app links it. This registration includes the module in the root project and its test targets in the Dev scheme (Framework: via `testableTargets`, SPM: via `Challenge.xctestplan`).
 
 ### Step 2: Source Files
 
