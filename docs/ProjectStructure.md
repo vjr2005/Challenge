@@ -13,52 +13,42 @@ Challenge/
 │   └── Tests/
 │       ├── Shared/                  # Robots, Scenarios, Stubs, Fixtures
 │       └── UI/                      # UI tests (XCTest)
-├── AppKit/                          # Composition layer (SPM local package)
-│   ├── Package.swift
+├── AppKit/                          # Composition layer
 │   ├── Sources/
 │   │   ├── Data/                    # App-level data configuration
 │   │   └── Presentation/            # Root views and navigation
 │   └── Tests/
 │       ├── Unit/
 │       └── Snapshots/
-├── Features/                        # Feature modules (SPM local packages)
+├── Features/                        # Feature modules
 │   ├── Character/
-│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Home/
-│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   ├── Episode/
-│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── System/
-│       ├── Package.swift
 │       ├── Sources/
 │       └── Tests/
-├── Libraries/                       # Shared libraries (SPM local packages)
+├── Libraries/                       # Shared libraries
 │   ├── Core/                        # Navigation, routing, image loading
-│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── Networking/                  # HTTP client
-│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   ├── Tests/
 │   │   └── Mocks/
 │   ├── DesignSystem/                # UI components (Atomic Design)
-│   │   ├── Package.swift
 │   │   ├── Sources/
 │   │   └── Tests/
 │   └── SnapshotTestKit/             # Snapshot testing framework
-│       ├── Package.swift
 │       └── Sources/
 ├── Shared/
 │   └── Resources/                   # Localization, shared resources
-│       ├── Package.swift
 │       └── Sources/
 ├── Tuist/
 │   ├── ProjectDescriptionHelpers/
@@ -72,6 +62,8 @@ Challenge/
 ├── Tuist.swift
 └── .mise.toml
 ```
+
+> **Note:** Modules are built as framework targets by default. A `Package.swift` inside a module is generated only with the SPM strategy (`./Scripts/generate.sh --strategy spm`) and is git-ignored (`**/Package.swift`); the only versioned `Package.swift` is `Tuist/Package.swift`. See [Tuist](Tuist.md).
 
 ## Modules
 
@@ -110,7 +102,7 @@ Composition layer that wires all features together.
 | **ChallengeCharacter** | Character list and detail screens (Rick & Morty REST API) |
 | **ChallengeEpisode** | Character episodes list (Rick & Morty GraphQL API) |
 | **ChallengeHome** | Home screen with logo animation |
-| **ChallengeSystem** | System settings and configuration |
+| **ChallengeSystem** | Fallback screens (Not Found) for unknown routes |
 
 ## Dependency Graph
 
@@ -141,7 +133,7 @@ Challenge (App)
 
 Libraries (base dependencies):
 ├── ChallengeCore (no dependencies)
-├── ChallengeNetworking (no dependencies)
+├── ChallengeNetworking → ChallengeCore
 ├── ChallengeResources → ChallengeCore
 ├── ChallengeDesignSystem → ChallengeCore
 └── ChallengeSnapshotTestKit (test-only, wraps swift-snapshot-testing)
