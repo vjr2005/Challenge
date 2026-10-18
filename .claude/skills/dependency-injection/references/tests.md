@@ -45,7 +45,8 @@ struct CharacterFeatureTests {
         let result = sut.makeMainView(navigator: navigatorMock)
 
         // Then
-        _ = result
+        let viewName = String(describing: result)
+        #expect(viewName.contains("CharacterListView"))
     }
 
     @Test("Resolve list navigation returns view")
@@ -117,10 +118,11 @@ struct HomeFeatureTests {
     @Test("Make main view returns home view")
     func makeMainViewReturnsHomeView() {
         // When
-        let view = sut.makeMainView(navigator: navigatorMock)
+        let result = sut.makeMainView(navigator: navigatorMock)
 
         // Then
-        _ = view
+        let viewName = String(describing: result)
+        #expect(viewName.contains("HomeView"))
     }
 
     @Test("Resolve main navigation returns view")
