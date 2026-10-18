@@ -127,9 +127,9 @@ Create `Sources/Presentation/{ScreenName}/Tracker/{ScreenName}Tracker.swift`:
 import ChallengeCore
 
 struct {ScreenName}Tracker: {ScreenName}TrackerContract {
-    private let tracker: TrackerContract
+    private let tracker: any TrackerContract
 
-    init(tracker: TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 
@@ -145,9 +145,9 @@ For trackers with parametric events:
 import ChallengeCore
 
 struct {ScreenName}Tracker: {ScreenName}TrackerContract {
-    private let tracker: TrackerContract
+    private let tracker: any TrackerContract
 
-    init(tracker: TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 

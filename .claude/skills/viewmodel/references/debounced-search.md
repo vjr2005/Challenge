@@ -53,9 +53,9 @@ final class {Screen}ViewModel: {Screen}ViewModelContract {
 
     private let get{Name}sUseCase: Get{Name}sUseCaseContract
     private let search{Name}sUseCase: Search{Name}sUseCaseContract
-    private let getRecentSearchesUseCase: GetRecentSearchesUseCaseContract
-    private let saveRecentSearchUseCase: SaveRecentSearchUseCaseContract
-    private let deleteRecentSearchUseCase: DeleteRecentSearchUseCaseContract
+    private let getRecentSearchesUseCase: any GetRecentSearchesUseCaseContract
+    private let saveRecentSearchUseCase: any SaveRecentSearchUseCaseContract
+    private let deleteRecentSearchUseCase: any DeleteRecentSearchUseCaseContract
     private let navigator: {Screen}NavigatorContract
     private let tracker: {Screen}TrackerContract
     private let debounceInterval: Duration

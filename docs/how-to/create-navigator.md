@@ -154,9 +154,9 @@ Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 
@@ -236,9 +236,9 @@ Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 
@@ -332,9 +332,9 @@ Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 
@@ -494,9 +494,9 @@ Create `Sources/Presentation/{Screen}/Navigator/{Screen}Navigator.swift`:
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 
