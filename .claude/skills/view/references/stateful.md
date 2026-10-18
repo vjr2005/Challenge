@@ -162,7 +162,7 @@ Format: `{screenName}.{elementType}`. Use static functions for dynamic IDs. Use 
 
 ## Previews
 
-Previews are **commented out** (`/* */`) to avoid negatively impacting test coverage. Keep code maintained and in sync with the View. One preview per visual state except `idle`.
+Previews are **commented out** (`/* */`) to avoid negatively impacting test coverage. Keep code maintained and in sync with the View. One preview per visual state; `idle` is optional because it renders nothing.
 
 ```swift
 /*
@@ -188,7 +188,7 @@ Previews are **commented out** (`/* */`) to avoid negatively impacting test cove
 
 #Preview("Error") {
     NavigationStack {
-        {Screen}View(viewModel: {Screen}ViewModelPreviewStub(state: .error(PreviewError.failed)))
+        {Screen}View(viewModel: {Screen}ViewModelPreviewStub(state: .error(.loadFailed())))
     }
 }
 */
@@ -196,7 +196,7 @@ Previews are **commented out** (`/* */`) to avoid negatively impacting test cove
 // MARK: - Preview Stubs
 
 #if DEBUG
-@Observable
+// Add `@Observable` only if the screen edits stub state (bindings), as the list and filter stubs do
 private final class {Screen}ViewModelPreviewStub: {Screen}ViewModelContract {
     var state: {Screen}ViewState
 
@@ -217,11 +217,6 @@ private extension {Name} {
     ) -> {Name} {
         {Name}(id: id, name: name)
     }
-}
-
-private enum PreviewError: LocalizedError {
-    case failed
-    var errorDescription: String? { "Failed to load" }
 }
 #endif
 ```
