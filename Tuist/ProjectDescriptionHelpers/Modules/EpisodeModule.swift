@@ -13,6 +13,5 @@ public let episodeModule = ModuleFactory.create(
 	snapshotTestDependencies: [
 		.module(snapshotTestKitModule),
 		.moduleMocks(coreModule),
-		.moduleMocks(networkingModule),
 	]
 )

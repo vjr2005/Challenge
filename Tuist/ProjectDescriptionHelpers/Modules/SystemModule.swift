@@ -10,6 +10,5 @@ public let systemModule = ModuleFactory.create(
 	],
 	snapshotTestDependencies: [
 		.module(snapshotTestKitModule),
-		.moduleMocks(coreModule),
 	]
 )

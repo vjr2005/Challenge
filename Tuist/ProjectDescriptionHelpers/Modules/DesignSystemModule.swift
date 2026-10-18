@@ -3,9 +3,6 @@ public let designSystemModule = ModuleFactory.create(
 	dependencies: [
 		.module(coreModule),
 	],
-	testDependencies: [
-		.moduleMocks(coreModule),
-	],
 	snapshotTestDependencies: [
 		.module(snapshotTestKitModule),
 		.moduleMocks(coreModule),
