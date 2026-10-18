@@ -109,7 +109,7 @@ The project uses a **three-level parallelization strategy** to optimize test exe
 
 ### Intra-target Parallelism
 
-Swift Testing runs tests in parallel within each target by default. XCTest-based tests (snapshot tests) run serially.
+Swift Testing runs tests in parallel within each target by default, for both unit and snapshot tests. Only the UI tests (XCTest) run serially.
 
 To support safe parallel execution:
 - **`HTTPClientTests`** uses unique hosts per test (e.g., `test-builds-url.example.com`) to prevent `URLProtocolMock` handler collisions.
@@ -130,7 +130,7 @@ A benchmark study found inter-target parallelization (simulator cloning) is **~4
 
 **Why inter-target parallelization is slower:**
 
-- **Unit + Snapshot Tests:** 12 test targets compete for CPU/GPU when running concurrently on a cloned simulator. Simulator cloning overhead, cold caches, and rendering contention nearly double the time.
+- **Unit + Snapshot Tests:** 12 test targets (at measurement time; there are 14 now) compete for CPU/GPU when running concurrently on a cloned simulator. Simulator cloning overhead, cold caches, and rendering contention nearly double the time.
 - **UI Tests:** Xcode distributes by class, using 4 clones. Booting each clone (~15s) costs more than it saves with only 5 tests.
 
 ### When to Re-evaluate Inter-target
@@ -166,7 +166,7 @@ No local action is needed. If both layers fail and the test still crashes after 
 
 ## Coverage
 
-The project achieves **100% code coverage** across all modules.
+Line coverage is close to 100% in every module (99.9% overall at the time of writing). The Quality Gate posts the per-module report on every PR.
 
 <img src="screenshots/coverage.png" width="100%">
 
@@ -174,4 +174,4 @@ The project achieves **100% code coverage** across all modules.
 
 - All production code must be tested
 - Only source targets are measured (mocks and test helpers are excluded)
-- Coverage is enforced in CI pipeline
+- CI enforces a minimum of 80% total line coverage (the Quality Gate fails below it); Use Cases require 100% (see the `/testing` skill)

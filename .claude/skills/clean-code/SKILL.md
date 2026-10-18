@@ -50,14 +50,14 @@ For each unused item reported by Periphery:
 
 ```bash
 # Search for references in Tests directories
-grep -r "functionName\|ClassName" Libraries/**/Tests/
+grep -rn "functionName\|ClassName" Features/*/Tests Libraries/*/Tests AppKit/Tests
 ```
 
 **Check these locations:**
-- `Tests/Mocks/` - Mock implementations of protocols
-- `Tests/Data/` - Repository and DataSource tests
-- `Tests/Domain/` - UseCase tests
-- `Tests/Presentation/` - ViewModel tests
+- `Tests/Shared/Mocks/` (internal) and `Mocks/` (public) - Mock implementations of protocols
+- `Tests/Unit/Data/` - Repository, DataSource and Mapper tests
+- `Tests/Unit/Domain/` - UseCase tests
+- `Tests/Unit/Presentation/` - ViewModel tests
 
 **If references are found:**
 1. Note which test files and mocks need updating
@@ -77,7 +77,7 @@ For each warning reported by Periphery:
    - Update any test that calls the removed code
 
 3. **For ViewState Equatable removals:**
-   - Create Equatable extension in `Tests/Extensions/` (see below)
+   - Create Equatable extension in `Tests/Shared/Extensions/` (see below)
 
 ### Step 4: Run SwiftLint Auto-fix
 
@@ -106,7 +106,7 @@ If tests fail:
 
 ### Step 6: Final Verification
 
-Run Periphery again to confirm no unused code remains. The `tuist test` build from the previous step provides a fresh index store:
+Run Periphery again to confirm no unused code remains. The test build from the previous step (`xcodebuild test`) provides a fresh index store:
 
 ```bash
 INDEX_STORE=$(find ~/Library/Developer/Xcode/DerivedData/Challenge-*/Index.noindex/DataStore -maxdepth 0 2>/dev/null | head -1)
@@ -175,10 +175,10 @@ Custom `==` implementations on ViewState enums may be reported as unused because
 **When removing `==` from ViewState:**
 
 1. Remove the `==` function from production code
-2. Create an Equatable extension in `Tests/Extensions/`:
+2. Create an Equatable extension in `Tests/Shared/Extensions/`:
 
 ```swift
-// Tests/Extensions/MyViewState+Equatable.swift
+// Tests/Shared/Extensions/MyViewState+Equatable.swift
 @testable import MyModule
 
 extension MyViewState: @retroactive Equatable {
@@ -219,7 +219,7 @@ If a Domain Model property is unused:
 - [ ] All unused code removed from production
 - [ ] Related mocks updated (removed methods)
 - [ ] Related tests deleted or updated
-- [ ] Equatable extensions created in Tests/Extensions/ if needed
+- [ ] Equatable extensions created in Tests/Shared/Extensions/ if needed
 - [ ] SwiftLint auto-fix executed
 - [ ] All module tests pass (build + tests)
 - [ ] Final Periphery scan shows no unused code
