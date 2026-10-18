@@ -106,8 +106,6 @@ final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable 
     private(set) var executeCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
 
-    @MainActor init() {}
-
     func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
         executeCallCount += 1
         lastRequestedIdentifier = identifier
@@ -116,7 +114,7 @@ final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable 
 }
 ```
 
-`Mock` suffix, `@unchecked Sendable`, `@MainActor init() {}`, default `.failure` result, call tracking, no cachePolicy tracking.
+`Mock` suffix, `@unchecked Sendable` (the contract is `Sendable`), default `.failure` result, call tracking, no cachePolicy tracking. No explicit initializer: UseCases and their mocks use the MainActor default isolation, like the tests.
 
 ---
 

@@ -56,9 +56,9 @@ protocol {Screen}NavigatorContract {
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-	private let navigator: NavigatorContract
+	private let navigator: any NavigatorContract
 
-	init(navigator: NavigatorContract) {
+	init(navigator: any NavigatorContract) {
 		self.navigator = navigator
 	}
 }
@@ -78,9 +78,9 @@ protocol {Screen}TrackerContract {
 import ChallengeCore
 
 struct {Screen}Tracker: {Screen}TrackerContract {
-	private let tracker: TrackerContract
+	private let tracker: any TrackerContract
 
-	init(tracker: TrackerContract) {
+	init(tracker: any TrackerContract) {
 		self.tracker = tracker
 	}
 

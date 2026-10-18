@@ -91,9 +91,9 @@ protocol {Screen}NavigatorContract {
 import ChallengeCore
 
 struct {Screen}Navigator: {Screen}NavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 
@@ -117,9 +117,9 @@ struct {Screen}Navigator: {Screen}NavigatorContract {
 import ChallengeCore
 
 struct HomeNavigator: HomeNavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 
@@ -148,9 +148,9 @@ protocol FilterNavigatorContract {
 }
 
 struct FilterNavigator: FilterNavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
-    init(navigator: NavigatorContract) {
+    init(navigator: any NavigatorContract) {
         self.navigator = navigator
     }
 

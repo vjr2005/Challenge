@@ -49,8 +49,8 @@ nonisolated protocol CharactersPageRepositoryContract: Sendable {
 
 // Concrete implementations (Data layer) — nonisolated struct with @concurrent methods
 nonisolated struct CharacterRepository: CharacterRepositoryContract {
-    private let remoteDataSource: CharacterRemoteDataSourceContract
-    private let memoryDataSource: CharacterLocalDataSourceContract
+    private let remoteDataSource: any CharacterRemoteDataSourceContract
+    private let memoryDataSource: any CharacterLocalDataSourceContract
 
     // Dependencies injected through initializer
     init(

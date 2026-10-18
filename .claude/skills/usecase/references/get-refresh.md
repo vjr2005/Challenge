@@ -93,8 +93,6 @@ final class Get{Name}UseCaseMock: Get{Name}UseCaseContract, @unchecked Sendable 
     private(set) var executeCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
 
-    @MainActor init() {}
-
     func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
         executeCallCount += 1
         lastRequestedIdentifier = identifier
@@ -106,8 +104,6 @@ final class Refresh{Name}UseCaseMock: Refresh{Name}UseCaseContract, @unchecked S
     var result: Result<{Name}, {Feature}Error> = .failure(.loadFailed())
     private(set) var executeCallCount = 0
     private(set) var lastRequestedIdentifier: Int?
-
-    @MainActor init() {}
 
     func execute(identifier: Int) async throws({Feature}Error) -> {Name} {
         executeCallCount += 1

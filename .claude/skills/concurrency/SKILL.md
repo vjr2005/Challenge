@@ -159,8 +159,8 @@ nonisolated protocol CharacterRepositoryContract: Sendable {
 
 // Implementation — nonisolated struct with @concurrent
 nonisolated struct CharacterRepository: CharacterRepositoryContract {
-    private let remoteDataSource: CharacterRemoteDataSourceContract
-    private let memoryDataSource: CharacterLocalDataSourceContract
+    private let remoteDataSource: any CharacterRemoteDataSourceContract
+    private let memoryDataSource: any CharacterLocalDataSourceContract
     private let mapper = CharacterMapper()
     private let errorMapper = CharacterErrorMapper()
 
@@ -372,7 +372,7 @@ Every `await` inside an actor is a **suspension point** where actor state can ch
 ```swift
 // DANGEROUS — reentrancy can break invariants
 actor ImageDiskCache: ImageDiskCacheContract {
-    private let fileSystem: FileSystemContract // `: Actor`
+    private let fileSystem: any FileSystemContract // `: Actor`
 
     func image(for url: URL) async -> UIImage? {
         guard let data = try? await fileSystem.contents(at: fileURL) else {
@@ -417,7 +417,7 @@ struct FileSystem: FileSystemContract {
 }
 
 actor ImageDiskCache: ImageDiskCacheContract {
-    private let fileSystem: FileSystemContract
+    private let fileSystem: any FileSystemContract
 
     func image(for url: URL) -> UIImage? { // No `async` — fully synchronous
         guard let data = try? fileSystem.contents(at: fileURL) else { return nil }
@@ -443,7 +443,7 @@ With `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, protocol methods **without** `
 
 ```swift
 actor ImageDiskCache {
-    nonisolated(unsafe) private let fileSystem: FileSystemContract
+    nonisolated(unsafe) private let fileSystem: any FileSystemContract
     // ❌ fileSystem.contents(at:) is still MainActor-isolated per protocol
     // ❌ Compiler error: "Call to main actor-isolated instance method in a synchronous actor-isolated context"
 }
@@ -464,14 +464,12 @@ struct FileSystem: FileSystemContract {
 ### Mock pattern for Sendable protocols with nonisolated methods
 
 ```swift
-final class FileSystemMock: FileSystemContract, @unchecked Sendable {
-    nonisolated(unsafe) var files: [URL: Data] = [:]
-    nonisolated(unsafe) var writeError: (any Error)?
-    nonisolated(unsafe) private(set) var writeCallCount = 0
+nonisolated final class FileSystemMock: FileSystemContract, @unchecked Sendable {
+    var files: [URL: Data] = [:]
+    var writeError: (any Error)?
+    private(set) var writeCallCount = 0
 
-    @MainActor init() {}
-
-    nonisolated func write(_ data: Data, to url: URL) throws {
+    func write(_ data: Data, to url: URL) throws {
         writeCallCount += 1
         if let writeError { throw writeError }
         files[url] = data
@@ -479,7 +477,7 @@ final class FileSystemMock: FileSystemContract, @unchecked Sendable {
 }
 ```
 
-This is safe in practice because the actor serializes all calls to the mock. Tests configure the mock on MainActor (setup) and verify on MainActor (assertions) — no concurrent access.
+`nonisolated` on the class opts every member out of MainActor, so neither `nonisolated(unsafe)` on each property nor an explicit `@MainActor init()` is needed. It is safe in practice because tests configure the mock during setup and verify it afterwards — no concurrent access.
 
 ---
 

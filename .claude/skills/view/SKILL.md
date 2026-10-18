@@ -88,14 +88,14 @@ Pass `accessibilityIdentifier:` parameter or `.dsAccessibilityIdentifier()` to D
 ### Previews
 
 - Commented out (`/* */`) to exclude from coverage
-- One preview per visual state except `idle`
+- One preview per visual state; `idle` is optional because it renders nothing (the Detail and Episodes views include it, List and Filter do not)
 - Stubs wrapped in `#if DEBUG`
-- Stateful: `@Observable` stub with state injection + `PreviewError` enum
+- Stateful: `{Screen}ViewModelPreviewStub` with the state injected through `init(state:)`; errors are the domain error (`.error(.loadFailed())`). Add `@Observable` only when the screen edits stub state (the list and filter stubs do)
 - Stateless: plain `final class` stub with no-op methods, single preview
 
 ### App-Level Exception
 
-`RootContainerView` and similar app-level containers are exceptions: not generic, no `LocalizedStrings`, no `AccessibilityIdentifier`, no `.onFirstAppear`. Located at `AppKit/Sources/Presentation/Views/`.
+`RootContainerView`, `NavigationContainerView`, `ModalContainerView` and similar app-level containers are exceptions: not generic, no `LocalizedStrings`, no `AccessibilityIdentifier`, no `.onFirstAppear`, and previews are optional (`ModalContainerView` and `NavigationContainerView` have none). Located at `AppKit/Sources/Presentation/Views/`.
 
 ---
 
@@ -140,7 +140,7 @@ Features/{Feature}/
 - [ ] Add private `AccessibilityIdentifier` enum
 - [ ] Apply accessibility identifiers (SwiftUI + DS propagation)
 - [ ] Delegate user actions to ViewModel methods
-- [ ] Add previews for each visual state (except `idle`)
+- [ ] Add previews for each visual state (`idle` is optional)
 - [ ] Create snapshot test stub and tests
 
 ### Stateful Views

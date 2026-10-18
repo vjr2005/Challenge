@@ -131,8 +131,8 @@ Each contract has its own implementation that handles **how** data is fetched, c
 
 ```swift
 nonisolated struct CharacterRepository: CharacterRepositoryContract {
-    private let remoteDataSource: CharacterRemoteDataSourceContract
-    private let memoryDataSource: CharacterLocalDataSourceContract
+    private let remoteDataSource: any CharacterRemoteDataSourceContract
+    private let memoryDataSource: any CharacterLocalDataSourceContract
     private let mapper = CharacterMapper()
     private let errorMapper = CharacterErrorMapper()
 
@@ -335,7 +335,7 @@ Uses outgoing navigation without importing the target feature:
 
 ```swift
 struct HomeNavigator: HomeNavigatorContract {
-    private let navigator: NavigatorContract
+    private let navigator: any NavigatorContract
 
     func navigateToCharacters() {
         // Uses HomeOutgoingNavigation, NOT CharacterIncomingNavigation

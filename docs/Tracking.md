@@ -172,9 +172,9 @@ Bridges screen methods to `TrackerContract` using event enums:
 import ChallengeCore
 
 struct CharacterListTracker: CharacterListTrackerContract {
-    private let tracker: TrackerContract
+    private let tracker: any TrackerContract
 
-    init(tracker: TrackerContract) {
+    init(tracker: any TrackerContract) {
         self.tracker = tracker
     }
 
