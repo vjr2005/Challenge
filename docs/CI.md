@@ -11,6 +11,7 @@ The project uses [GitHub Actions](https://github.com/features/actions) to run qu
 | `pull_request` | Quality Checks | Automatically on every PR targeting `main` |
 | `workflow_dispatch` | Quality Checks | Manually from **Actions** > **Quality Checks** > **Run workflow** |
 | `workflow_dispatch` | [Run Single Test](#run-single-test) | Manually — runs a specific test N times to reproduce flaky failures |
+| `workflow_dispatch` | [Clear Caches](#clear-caches) | Manually — deletes the selected GitHub Actions caches |
 
 ### Jobs
 
@@ -32,7 +33,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 
 | Action | Path | Description |
 |--------|------|-------------|
-| **Setup** | `.github/actions/setup/` | Select Xcode, install mise tools, cache and install SPM dependencies, generate Xcode project, boot simulator |
+| **Setup** | `.github/actions/setup/` | Select Xcode, install mise tools, cache and install SPM dependencies, generate Xcode project, create the simulator if the runtime does not ship the device (English locale), boot simulator |
 | **Test Report** | `.github/actions/test-report/` | Upload `.xcresult` artifact, parse failures and retried tests into combined markdown summary, comment on PR |
 
 ### Unit & Snapshot Tests Steps
@@ -41,6 +42,7 @@ Both test jobs share common steps extracted into reusable composite actions:
 |------|-------------|
 | Checkout | Clone the repository |
 | Setup environment | Composite action: Xcode, mise, caching, SPM, project generation, simulator boot |
+| Lint | `mise x -- swiftlint lint --strict --reporter github-actions-logging` over every module (`included` in `.swiftlint.yml`); any warning fails the job before the tests run |
 | Run unit and snapshot tests | Sources `Scripts/test-helpers.sh` and calls `run_tests` with `Challenge (Dev)` scheme, retry-on-failure (35 min timeout) |
 | Upload coverage data | Uploads `.xcresult` bundle as artifact for coverage merging (1-day retention) |
 | Test report | Always: composite action that uploads `.xcresult` artifact (on failure), parses failures and retried tests, writes combined summary to Actions Summary and PR comment |
@@ -136,7 +138,7 @@ Manual only: **Actions** > **Run Single Test** > **Run workflow**.
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `test-target` | Yes | — | Test identifier in `TestTarget/TestClass/testMethod` format (e.g., `ChallengeUITests/CharacterFlowUITests/testEpisodesShowsErrorAndRetryLoadsThenNavigatesToCharacterDetail`) |
+| `test-target` | Yes | — | Test identifier in `TestTarget/TestClass/testMethod` format (e.g., `ChallengeUITests/CharacterDetailUITests/testCharacterDetailErrorRetryRefreshEpisodesAndBack`) |
 | `repeat-count` | No | `1` | Number of times to run the test |
 
 ### Behavior
@@ -146,6 +148,22 @@ Manual only: **Actions** > **Run Single Test** > **Run workflow**.
 - The workflow logs a pass/fail result per run and prints a summary at the end.
 - If **any** run fails, the workflow fails.
 - All `.xcresult` bundles are uploaded as a single artifact (`test-results`, 7-day retention) for post-mortem inspection.
+
+## Clear Caches
+
+A separate workflow (`.github/workflows/clear-caches.yml`) deletes GitHub Actions caches on demand, for example when a stale DerivedData or Tuist cache causes build failures that do not reproduce locally.
+
+### Trigger
+
+Manual only: **Actions** > **Clear Caches** > **Run workflow**.
+
+### Inputs
+
+| Input | Required | Options | Description |
+|-------|----------|---------|-------------|
+| `scope` | Yes | `all`, `derived-data`, `tuist`, `mise` | Which caches to delete, matched by key prefix (`derived-data-`, `tuist-`, `mise-`); `all` clears the three |
+
+The job lists up to 100 caches with `gh cache list` and deletes the ones that match, logging each deletion.
 
 ## GitHub Configuration
 
@@ -186,6 +204,8 @@ After pushing the workflow file, configure the repository:
 5. Click **Create**
 
 > **Note:** The `Quality Gate` status check will only appear after the workflow has run at least once. Create a test PR to trigger the first execution before configuring the ruleset.
+
+> **Note:** The current `Protect main` ruleset also has one bypass actor, the repository **Admin** role (always), so an administrator can merge without waiting for the required check or the approval. Without the bypass, the rules above apply to everyone.
 
 ## Design Decisions
 

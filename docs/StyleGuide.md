@@ -505,6 +505,7 @@ struct CharacterListViewModelTests {
 | File length | 500 | 1000 |
 | Type body length | 300 | 500 |
 | Function body length | 50 | 100 |
+| Function parameter count | 6 | 8 |
 | Closure body length | 30 | 50 |
 | Cyclomatic complexity | 10 | 20 |
 | Enum associated values | 4 | 6 |
@@ -521,3 +522,4 @@ struct CharacterListViewModelTests {
 | `no_mock_prefix` | error | `Mock` cannot be used as prefix |
 | `no_dispatch_queue` | error | Use async/await, not DispatchQueue |
 | `no_completion_handler` | warning | Use async/await, not completion handlers |
+| `test_requires_description` | warning | Every `@Test` in a `Tests/` folder must include a description: `@Test("Description")` |
