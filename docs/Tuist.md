@@ -29,6 +29,7 @@ Tuist/
 │   │   │   └── ExternalPackage.swift         # External package wrapper
 │   │   └── Generators/                       # Manifest-time code generation
 │   │       ├── PackageSwiftGenerator.swift   # Auto-generates Package.swift for SPM modules
+│   │       ├── TestPlan.swift                # Type-safe model of the .xctestplan JSON schema
 │   │       └── TestPlanGenerator.swift       # Auto-generates test plans (SPM strategy only)
 │   └── Modules/                              # Individual module instantiations
 │       ├── CoreModule.swift
@@ -429,14 +430,17 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
-UI tests always use Tuist:
+UI tests use the `ChallengeUITests` scheme with the same destination:
 
 ```bash
 # Run UI tests
-mise x -- tuist test "ChallengeUITests"
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
-Always use `xcodebuild test` for module tests (not `tuist test`).
+Always use `xcodebuild test` (not `tuist test`): `tuist test` chooses the destination itself (it picked an iPad in our runs), so it does not guarantee the iPhone 17 Pro simulator the project targets.
 
 ## Commands
 
@@ -457,7 +461,10 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 
 # Run UI tests
-mise x -- tuist test "ChallengeUITests"
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 
 # Clean and regenerate
 mise x -- tuist clean && mise x -- tuist generate
@@ -478,52 +485,16 @@ Derived/
 
 **Git:** The `Derived/` folder is in `.gitignore`.
 
-## Adding an XCFramework as a Dependency
+## Adding a Binary Framework (XCFramework)
 
-### 1. XCFramework Location
+The module kit only supports dependencies on other modules and on external SPM packages (`ModuleDependency`: `.module`, `.moduleMocks` and `.external`), and `Project.swift` only delegates to `mainApp.project`. A loose `.xcframework` file cannot be attached to a module.
 
-Place the `.xcframework` file in the `Tuist/Dependencies/` directory:
+To use a binary framework, distribute it as an SPM package with a `binaryTarget` and declare it like any other external package, as `SwiftMockServerBinary` does:
 
-```
-Challenge/
-├── Tuist/
-│   ├── Dependencies/
-│   │   └── FrameworkName.xcframework
-│   └── ProjectDescriptionHelpers/
-├── Libraries/
-├── App/
-└── Project.swift
-```
-
-> **Note:** The `Tuist/Dependencies/` directory is ignored by git. Do not commit xcframeworks to the repository.
-
-### 2. Create the XCFrameworks Helper
-
-If it doesn't exist, create the file `Tuist/ProjectDescriptionHelpers/Dependencies.swift`:
-
-```swift
-import ProjectDescription
-
-public enum XCFrameworks {
-  public static let frameworkName: TargetDependency = .xcframework(path: "Tuist/Dependencies/FrameworkName.xcframework")
-}
-```
-
-### 3. Add the Dependency to a Module
-
-Use `.external()` or add directly to the module's dependencies:
-
-```swift
-public let myModule = Module(
-    directory: "Features/MyFeature",
-    dependencies: [
-        .module(coreModule),
-        // XCFramework dependency would go in the target directly
-    ]
-)
-```
-
-### 4. Regenerate the Project
+1. Define it in `ExternalPackages.swift` with the product name the package exposes (see [Adding an External Package](#adding-an-external-package)).
+2. Add it to the `Package.swift` `#else` fallback block (keep in sync).
+3. Use it in a module: `.external(newPackage)`.
+4. Regenerate the project:
 
 ```bash
 ./Scripts/generate.sh

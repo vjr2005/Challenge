@@ -83,12 +83,26 @@ Create `Tuist/ProjectDescriptionHelpers/Modules/{Feature}Module.swift`:
 ```swift
 import ProjectDescription
 
-public let {feature}Module = Module.create(directory: "Features/{Feature}")
+public let {feature}Module = ModuleFactory.create(
+    directory: "Features/{Feature}",
+    dependencies: [
+        .module(coreModule),
+        .module(designSystemModule),
+        .module(resourcesModule)
+    ],
+    testDependencies: [
+        .moduleMocks(coreModule)
+    ],
+    snapshotTestDependencies: [
+        .module(snapshotTestKitModule),
+        .moduleMocks(coreModule)
+    ]
+)
 ```
 
-Register the module in **`Modules.swift`** — Add `{feature}Module` to the `Modules.all` array. This single registration automatically includes the module's package in the root project and its test target in the Dev scheme (Framework: via `testableTargets`, SPM: via `Challenge.xctestplan`).
+Register the module in **`MainApp.swift`** — add `{feature}Module` to the `modules` array of `mainApp`, and add it to the `dependencies` of `appKitModule` (`Modules/AppKitModule.swift`) so the app links it. This registration includes the module in the root project and its test targets in the Dev scheme (Framework: via `testableTargets`, SPM: via `Challenge.xctestplan`).
 
-> **Note:** Each module is an SPM local package with its own `Package.swift`. Dependencies (source, mocks, tests) are defined there. The `Mocks/` folder produces the `Challenge{Feature}Mocks` product and the `Tests/` folder produces the `Challenge{Feature}Tests` test target. `Tests/Shared/` contents are included in the test target automatically.
+> **Note:** Dependencies (source, mocks, tests, snapshot tests) are declared in `{Feature}Module.swift`. With the default framework strategy a module becomes framework targets (`Challenge{Feature}`, `Challenge{Feature}Mocks`, `Challenge{Feature}Tests`, `Challenge{Feature}SnapshotTests`) created from the folders that exist; the SPM strategy generates a `Package.swift` instead. `Tests/Shared/` contents are included in the test targets automatically.
 
 ---
 

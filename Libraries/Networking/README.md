@@ -169,6 +169,14 @@ do {
 }
 ```
 
+## Targets
+
+| Target | Type | Purpose |
+|--------|------|---------|
+| `ChallengeNetworking` | Framework | HTTP and GraphQL clients |
+| `ChallengeNetworkingMocks` | Framework | Test doubles for other modules (`HTTPClientMock`, `GraphQLClientMock`) |
+| `ChallengeNetworkingTests` | Test | Unit tests |
+
 ## Testing
 
 Use `HTTPClientMock` from `ChallengeNetworkingMocks` for unit testing.

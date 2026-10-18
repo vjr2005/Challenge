@@ -3,7 +3,7 @@
 ## Navigator Mock
 
 ```swift
-// Features/{Feature}/Tests/Mocks/{Screen}NavigatorMock.swift
+// Features/{Feature}/Tests/Shared/Mocks/{Screen}NavigatorMock.swift
 @testable import Challenge{Feature}
 
 final class {Screen}NavigatorMock: {Screen}NavigatorContract {

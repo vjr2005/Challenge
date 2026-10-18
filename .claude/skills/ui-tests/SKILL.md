@@ -233,13 +233,20 @@ When using `accessibilityIdentifier: "characterList.row.1"` on `DSCardInfoRow`:
 Run a specific test class:
 
 ```bash
-mise x -- tuist test "ChallengeUITests" -- -only-testing:ChallengeUITests/CharacterDetailUITests
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' \
+  -only-testing:ChallengeUITests/CharacterDetailUITests
 ```
 
 Run all UI tests:
 
 ```bash
-mise x -- tuist test "ChallengeUITests" 2>&1 | tee /tmp/ui-tests.txt | tail -30
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' 2>&1 | tee /tmp/ui-tests.txt | tail -30
 ```
 
 ---

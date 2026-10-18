@@ -83,7 +83,7 @@ Self-contained modules with Presentation, Domain, and Data layers:
 | **ChallengeCharacter** | Character list and detail screens (Rick & Morty API) |
 | **ChallengeEpisode** | Character episodes screen (Rick & Morty GraphQL API) |
 | **ChallengeHome** | Home screen with animated logo |
-| **ChallengeSystem** | System settings and configuration |
+| **ChallengeSystem** | Fallback screens (Not Found) for unknown routes |
 
 ### Composition
 

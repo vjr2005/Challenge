@@ -117,5 +117,8 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 
 # Run UI tests
-mise x -- tuist test "ChallengeUITests"
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
