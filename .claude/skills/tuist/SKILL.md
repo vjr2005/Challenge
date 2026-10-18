@@ -199,93 +199,45 @@ Derived/
 
 ---
 
-## Adding an XCFramework as a Dependency
+## Adding a Binary Framework (XCFramework)
 
-### 1. XCFramework Location
+The module kit only supports dependencies on other modules and on external SPM packages (`ModuleDependency`: `.module`, `.moduleMocks` and `.external`), and `Project.swift` only delegates to `mainApp.project`. A loose `.xcframework` file cannot be attached to a module.
 
-Place the `.xcframework` file in the `Tuist/Dependencies/` directory:
+To use a binary framework, distribute it as an SPM package with a `binaryTarget` and declare it like any other external package, as `SwiftMockServerBinary` does.
 
-```
-{AppName}/
-├── Tuist/
-│   ├── Dependencies/
-│   │   └── FrameworkName.xcframework
-│   └── ProjectDescriptionHelpers/
-├── Libraries/
-├── App/
-└── Project.swift
-```
+### 1. Define the Package
 
-> **Note:** The `Tuist/Dependencies/` directory is ignored by git. Do not commit xcframeworks to the repository.
-
-### 2. Create the XCFrameworks Helper
-
-If it doesn't exist, create the file `Tuist/ProjectDescriptionHelpers/Dependencies.swift`:
+In `Tuist/ProjectDescriptionHelpers/ExternalPackages.swift`:
 
 ```swift
-import ProjectDescription
-
-public enum XCFrameworks {
-  public static let frameworkName: TargetDependency = .xcframework(path: "Tuist/Dependencies/FrameworkName.xcframework")
-}
+public let newPackage = ExternalPackage(
+  productName: "PackageName",
+  url: "https://github.com/owner/repo",
+  version: "1.0.0",
+  productType: .framework
+)
 ```
 
-### 3. Add the Dependency to a Target
+Add it to the `allExternalPackages` array.
 
-In `Project.swift`, add the dependency to the target that needs it:
+### 2. Keep the Fallback in Sync
+
+Add the same URL and version to the `#else` fallback block of `Tuist/Package.swift` (used by `tuist install`).
+
+### 3. Use It in a Module
 
 ```swift
-.target(
-  name: appName,
-  destinations: [.iPhone, .iPad],
-  product: .app,
-  bundleId: "com.app.\(appName)",
-  deploymentTargets: developmentTarget,
-  sources: ["App/Sources/**"],
-  resources: ["App/Sources/Resources/**"],
+public let myModule = ModuleFactory.create(
+  directory: "Features/MyFeature",
   dependencies: [
-    XCFrameworks.frameworkName,
+    .module(coreModule),
+    .external(newPackage)
   ]
 )
 ```
 
-### 4. For Internal Frameworks
-
-If the xcframework is a dependency of an internal framework in `Libraries/`, update `Target+Framework.swift`:
-
-```swift
-public extension Target {
-  static func createFramework(
-    name: String,
-    destinations: ProjectDescription.Destinations = [.iPhone, .iPad],
-    dependencies: [TargetDependency] = []
-  ) -> Self {
-    let targetName = "\(appName)\(name)"
-    return .target(
-      name: targetName,
-      destinations: destinations,
-      product: .framework,
-      bundleId: "${PRODUCT_BUNDLE_IDENTIFIER}.\(targetName)",
-      sources: ["Libraries/\(name)/**"],
-      dependencies: dependencies
-    )
-  }
-}
-```
-
-Then in `Project.swift`:
-
-```swift
-.createFramework(
-  name: "Features/UserFeature",
-  dependencies: [
-    XCFrameworks.frameworkName,
-  ]
-)
-```
-
-### 5. Regenerate the Project
+### 4. Regenerate the Project
 
 ```bash
-tuist generate
+./Scripts/generate.sh
 ```
