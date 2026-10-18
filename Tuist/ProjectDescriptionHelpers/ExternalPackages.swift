@@ -5,14 +5,14 @@ import ProjectDescription
 public let snapshotTestingPackage = ExternalPackage(
 	productName: "SnapshotTesting",
 	url: "https://github.com/pointfreeco/swift-snapshot-testing",
-	version: "1.17.0",
+	version: "1.19.6",
 	productType: .framework
 )
 
 public let lottiePackage = ExternalPackage(
 	productName: "Lottie",
 	url: "https://github.com/airbnb/lottie-ios",
-	version: "4.6.0",
+	version: "4.6.1",
 	productType: .framework
 )
 

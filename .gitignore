@@ -38,6 +38,7 @@ Packages/
 Package.pins
 Package.resolved
 .package.resolved
+!Tuist/Package.resolved
 
 # Test output
 test_output/
