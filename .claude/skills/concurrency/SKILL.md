@@ -116,16 +116,13 @@ final class URLProtocolMock: URLProtocol, @unchecked Sendable {
 ### UI Test classes
 
 ```swift
-// XCTestCase subclasses need nonisolated for XCTest compatibility
-nonisolated final class CharacterFlowUITests: XCTestCase {
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-    }
-
+// The XCTestCase base class is nonisolated for XCTest compatibility
+// (see UITestCase); subclasses only mark each test method @MainActor
+final class HomeUITests: UITestCase {
     @MainActor
-    func testCharacterFlow() throws {
-        let app = XCUIApplication()
-        app.launch()
+    func testHomeFlowAboutSheetCharacterListAndBack() async throws {
+        try await givenCharacterListSucceeds()
+        launch()
         // ...
     }
 }
