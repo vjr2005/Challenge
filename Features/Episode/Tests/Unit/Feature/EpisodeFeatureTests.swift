@@ -22,7 +22,11 @@ struct EpisodeFeatureTests {
 
 	@Test("Deep link handler is not nil")
 	func deepLinkHandlerIsNotNil() {
-		#expect(sut.deepLinkHandler != nil)
+		// When
+		let deepLinkHandler = sut.deepLinkHandler
+
+		// Then
+		#expect(deepLinkHandler != nil)
 	}
 
 	// MARK: - Make Main View

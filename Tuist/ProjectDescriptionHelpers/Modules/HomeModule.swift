@@ -11,6 +11,5 @@ public let homeModule = ModuleFactory.create(
 	],
 	snapshotTestDependencies: [
 		.module(snapshotTestKitModule),
-		.moduleMocks(coreModule),
 	]
 )

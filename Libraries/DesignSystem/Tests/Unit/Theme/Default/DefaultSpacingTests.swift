@@ -8,24 +8,46 @@ struct DefaultSpacingTests {
 
 	@Test("Spacing values are correct")
 	func spacingValues() {
-		#expect(sut.xxs == 2)
-		#expect(sut.xs == 4)
-		#expect(sut.sm == 8)
-		#expect(sut.md == 12)
-		#expect(sut.lg == 16)
-		#expect(sut.xl == 20)
-		#expect(sut.xxl == 24)
-		#expect(sut.xxxl == 32)
+		// When
+		let xxs = sut.xxs
+		let xs = sut.xs
+		let sm = sut.sm
+		let md = sut.md
+		let lg = sut.lg
+		let xl = sut.xl
+		let xxl = sut.xxl
+		let xxxl = sut.xxxl
+
+		// Then
+		#expect(xxs == 2)
+		#expect(xs == 4)
+		#expect(sm == 8)
+		#expect(md == 12)
+		#expect(lg == 16)
+		#expect(xl == 20)
+		#expect(xxl == 24)
+		#expect(xxxl == 32)
 	}
 
 	@Test("Spacing values increase monotonically")
 	func spacingValuesIncrease() {
-		#expect(sut.xxs < sut.xs)
-		#expect(sut.xs < sut.sm)
-		#expect(sut.sm < sut.md)
-		#expect(sut.md < sut.lg)
-		#expect(sut.lg < sut.xl)
-		#expect(sut.xl < sut.xxl)
-		#expect(sut.xxl < sut.xxxl)
+		// When
+		let xxs = sut.xxs
+		let xs = sut.xs
+		let sm = sut.sm
+		let md = sut.md
+		let lg = sut.lg
+		let xl = sut.xl
+		let xxl = sut.xxl
+		let xxxl = sut.xxxl
+
+		// Then
+		#expect(xxs < xs)
+		#expect(xs < sm)
+		#expect(sm < md)
+		#expect(md < lg)
+		#expect(lg < xl)
+		#expect(xl < xxl)
+		#expect(xxl < xxxl)
 	}
 }

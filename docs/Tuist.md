@@ -172,7 +172,6 @@ public let characterModule = ModuleFactory.create(
     snapshotTestDependencies: [
         .module(snapshotTestKitModule),
         .moduleMocks(coreModule),
-        .moduleMocks(networkingModule),
     ]
 )
 ```

@@ -13,14 +13,22 @@ struct CharacterDeepLinkHandlerTests {
 
     @Test("Scheme is challenge")
     func schemeIsChallenge() {
-        #expect(sut.scheme == "challenge")
+        // When
+        let scheme = sut.scheme
+
+        // Then
+        #expect(scheme == "challenge")
     }
 
     // MARK: - Host
 
     @Test("Host is character")
     func hostIsCharacter() {
-        #expect(sut.host == "character")
+        // When
+        let host = sut.host
+
+        // Then
+        #expect(host == "character")
     }
 
     // MARK: - Resolve

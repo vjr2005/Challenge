@@ -11,7 +11,11 @@ struct CharacterListViewStateTests {
 		.emptySearch
 	])
 	func isSearchAvailableReturnsTrue(state: CharacterListViewState) {
-		#expect(state.isSearchAvailable == true)
+		// When
+		let stateIsSearchAvailable = state.isSearchAvailable
+
+		// Then
+		#expect(stateIsSearchAvailable == true)
 	}
 
 	@Test("isSearchAvailable returns false", arguments: [
@@ -21,6 +25,10 @@ struct CharacterListViewStateTests {
 		.error(.loadFailed())
 	])
 	func isSearchAvailableReturnsFalse(state: CharacterListViewState) {
-		#expect(state.isSearchAvailable == false)
+		// When
+		let stateIsSearchAvailable = state.isSearchAvailable
+
+		// Then
+		#expect(stateIsSearchAvailable == false)
 	}
 }

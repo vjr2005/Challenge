@@ -8,27 +8,43 @@ struct DefaultOpacityTests {
 
 	@Test("Opacity values are correct")
 	func opacityValues() {
-		#expect(sut.subtle == 0.1)
-		#expect(sut.light == 0.15)
-		#expect(sut.medium == 0.4)
-		#expect(sut.heavy == 0.6)
-		#expect(sut.almostOpaque == 0.8)
+		// When
+		let subtle = sut.subtle
+		let light = sut.light
+		let medium = sut.medium
+		let heavy = sut.heavy
+		let almostOpaque = sut.almostOpaque
+
+		// Then
+		#expect(subtle == 0.1)
+		#expect(light == 0.15)
+		#expect(medium == 0.4)
+		#expect(heavy == 0.6)
+		#expect(almostOpaque == 0.8)
 	}
 
 	@Test("Opacity values increase monotonically")
 	func opacityValuesIncrease() {
-		#expect(sut.subtle < sut.light)
-		#expect(sut.light < sut.medium)
-		#expect(sut.medium < sut.heavy)
-		#expect(sut.heavy < sut.almostOpaque)
+		// When
+		let subtle = sut.subtle
+		let light = sut.light
+		let medium = sut.medium
+		let heavy = sut.heavy
+		let almostOpaque = sut.almostOpaque
+
+		// Then
+		#expect(subtle < light)
+		#expect(light < medium)
+		#expect(medium < heavy)
+		#expect(heavy < almostOpaque)
 	}
 
 	@Test("Opacity values are within valid range")
 	func opacityValuesAreValid() {
-		#expect(sut.subtle >= 0 && sut.subtle <= 1)
-		#expect(sut.light >= 0 && sut.light <= 1)
-		#expect(sut.medium >= 0 && sut.medium <= 1)
-		#expect(sut.heavy >= 0 && sut.heavy <= 1)
-		#expect(sut.almostOpaque >= 0 && sut.almostOpaque <= 1)
+		// When
+		let values = [sut.subtle, sut.light, sut.medium, sut.heavy, sut.almostOpaque]
+
+		// Then
+		#expect(values.allSatisfy { $0 >= 0 && $0 <= 1 })
 	}
 }

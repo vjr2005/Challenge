@@ -22,22 +22,34 @@ struct FileAttributesTests {
 
 	@Test("Throws when file size is missing")
 	func throwsWhenFileSizeIsMissing() {
-		#expect(throws: CocoaError.self) {
+		// When
+		let error = #expect(throws: CocoaError.self) {
 			_ = try FileAttributes(fileSize: nil, modificationDate: Date(), creationDate: Date())
 		}
+
+		// Then
+		#expect(error != nil)
 	}
 
 	@Test("Throws when modification date is missing")
 	func throwsWhenModificationDateIsMissing() {
-		#expect(throws: CocoaError.self) {
+		// When
+		let error = #expect(throws: CocoaError.self) {
 			_ = try FileAttributes(fileSize: 100, modificationDate: nil, creationDate: Date())
 		}
+
+		// Then
+		#expect(error != nil)
 	}
 
 	@Test("Throws when creation date is missing")
 	func throwsWhenCreationDateIsMissing() {
-		#expect(throws: CocoaError.self) {
+		// When
+		let error = #expect(throws: CocoaError.self) {
 			_ = try FileAttributes(fileSize: 100, modificationDate: Date(), creationDate: nil)
 		}
+
+		// Then
+		#expect(error != nil)
 	}
 }

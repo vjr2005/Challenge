@@ -11,17 +11,29 @@ struct DSStatusTests {
 
 	@Test("Alive status has success color")
 	func aliveStatusColor() {
-		#expect(DSStatus.alive.color(in: palette) == palette.statusSuccess)
+		// When
+		let aliveColor = DSStatus.alive.color(in: palette)
+
+		// Then
+		#expect(aliveColor == palette.statusSuccess)
 	}
 
 	@Test("Dead status has error color")
 	func deadStatusColor() {
-		#expect(DSStatus.dead.color(in: palette) == palette.statusError)
+		// When
+		let deadColor = DSStatus.dead.color(in: palette)
+
+		// Then
+		#expect(deadColor == palette.statusError)
 	}
 
 	@Test("Unknown status has neutral color")
 	func unknownStatusColor() {
-		#expect(DSStatus.unknown.color(in: palette) == palette.statusNeutral)
+		// When
+		let unknownColor = DSStatus.unknown.color(in: palette)
+
+		// Then
+		#expect(unknownColor == palette.statusNeutral)
 	}
 
 	// MARK: - Raw Values
@@ -32,7 +44,11 @@ struct DSStatusTests {
 		(DSStatus.unknown, "unknown")
 	])
 	func rawValue(status: DSStatus, expected: String) {
-		#expect(status.rawValue == expected)
+		// When
+		let rawValue = status.rawValue
+
+		// Then
+		#expect(rawValue == expected)
 	}
 
 	// MARK: - From String Conversion
@@ -43,19 +59,30 @@ struct DSStatusTests {
 		("unknown", DSStatus.unknown), ("Unknown", DSStatus.unknown), ("UNKNOWN", DSStatus.unknown)
 	])
 	func fromString(input: String, expected: DSStatus) {
-		#expect(DSStatus.from(input) == expected)
+		// When
+		let status = DSStatus.from(input)
+
+		// Then
+		#expect(status == expected)
 	}
 
 	@Test("From string returns unknown for invalid value", arguments: ["invalid", "", "something else"])
 	func fromStringInvalid(input: String) {
-		#expect(DSStatus.from(input) == .unknown)
+		// When
+		let status = DSStatus.from(input)
+
+		// Then
+		#expect(status == .unknown)
 	}
 
 	// MARK: - CaseIterable
 
 	@Test("All cases are present")
 	func allCasesPresent() {
+		// When
 		let allCases = DSStatus.allCases
+
+		// Then
 		#expect(allCases.count == 3)
 		#expect(allCases.contains(.alive))
 		#expect(allCases.contains(.dead))

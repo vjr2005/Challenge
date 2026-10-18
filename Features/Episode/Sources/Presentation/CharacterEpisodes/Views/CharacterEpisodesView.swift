@@ -135,7 +135,7 @@ private extension CharacterEpisodesView {
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
 		}
-		.accessibilityIdentifier(AccessibilityIdentifier.episodeCard(id: episode.id))
+		.accessibilityIdentifier(AccessibilityIdentifier.episodeCard(identifier: episode.id))
 	}
 
 	func characterAvatar(_ character: EpisodeCharacter) -> some View {
@@ -146,7 +146,7 @@ private extension CharacterEpisodesView {
 				DSAsyncImage(url: character.imageURL)
 					.frame(width: theme.dimensions.xxl, height: theme.dimensions.xxl)
 					.clipShape(Circle())
-					.accessibilityIdentifier(AccessibilityIdentifier.characterAvatar(id: character.id))
+					.accessibilityIdentifier(AccessibilityIdentifier.characterAvatar(identifier: character.id))
 
 				Text(character.name)
 					.font(theme.typography.caption2)
@@ -185,12 +185,12 @@ private enum AccessibilityIdentifier {
 	static let headerName = "characterEpisodes.headerName"
 	static let errorView = "characterEpisodes.errorView"
 
-	static func episodeCard(id: Int) -> String {
-		"characterEpisodes.episode.\(id)"
+	static func episodeCard(identifier: Int) -> String {
+		"characterEpisodes.episode.\(identifier)"
 	}
 
-	static func characterAvatar(id: Int) -> String {
-		"characterEpisodes.character.\(id)"
+	static func characterAvatar(identifier: Int) -> String {
+		"characterEpisodes.character.\(identifier)"
 	}
 }
 

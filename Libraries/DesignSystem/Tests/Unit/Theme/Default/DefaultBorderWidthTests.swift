@@ -8,16 +8,30 @@ struct DefaultBorderWidthTests {
 
 	@Test("Border width values are correct")
 	func borderWidthValues() {
-		#expect(sut.hairline == 0.5)
-		#expect(sut.thin == 1)
-		#expect(sut.medium == 2)
-		#expect(sut.thick == 4)
+		// When
+		let hairline = sut.hairline
+		let thin = sut.thin
+		let medium = sut.medium
+		let thick = sut.thick
+
+		// Then
+		#expect(hairline == 0.5)
+		#expect(thin == 1)
+		#expect(medium == 2)
+		#expect(thick == 4)
 	}
 
 	@Test("Border width values increase monotonically")
 	func borderWidthValuesIncrease() {
-		#expect(sut.hairline < sut.thin)
-		#expect(sut.thin < sut.medium)
-		#expect(sut.medium < sut.thick)
+		// When
+		let hairline = sut.hairline
+		let thin = sut.thin
+		let medium = sut.medium
+		let thick = sut.thick
+
+		// Then
+		#expect(hairline < thin)
+		#expect(thin < medium)
+		#expect(medium < thick)
 	}
 }

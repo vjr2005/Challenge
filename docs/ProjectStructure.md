@@ -133,8 +133,8 @@ Challenge (App)
 
 Libraries (base dependencies):
 ├── ChallengeCore (no dependencies)
-├── ChallengeNetworking → ChallengeCore
-├── ChallengeResources → ChallengeCore
+├── ChallengeNetworking (no dependencies)
+├── ChallengeResources (no dependencies)
 ├── ChallengeDesignSystem → ChallengeCore
 └── ChallengeSnapshotTestKit (test-only, wraps swift-snapshot-testing)
 ```
