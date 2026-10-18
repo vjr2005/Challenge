@@ -29,6 +29,7 @@ Tuist/
 │   │   │   └── ExternalPackage.swift         # External package wrapper
 │   │   └── Generators/                       # Manifest-time code generation
 │   │       ├── PackageSwiftGenerator.swift   # Auto-generates Package.swift for SPM modules
+│   │       ├── TestPlan.swift                # Type-safe model of the .xctestplan JSON schema
 │   │       └── TestPlanGenerator.swift       # Auto-generates test plans (SPM strategy only)
 │   └── Modules/                              # Individual module instantiations
 │       ├── CoreModule.swift

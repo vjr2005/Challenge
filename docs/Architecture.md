@@ -52,7 +52,7 @@ The codebase adheres to SOLID principles to ensure maintainable, extensible, and
 
 | Principle | Description | Example in Codebase |
 |-----------|-------------|---------------------|
-| **S**ingle Responsibility | Each class/struct has only one reason to change | `GetCharactersPageUseCase` only handles fetching characters page; `CharacterViewModel` only manages character list state |
+| **S**ingle Responsibility | Each class/struct has only one reason to change | `GetCharactersPageUseCase` only handles fetching characters page; `CharacterListViewModel` only manages character list state |
 | **O**pen/Closed | Open for extension, closed for modification | Protocols like `CharacterRepositoryContract` allow new implementations without modifying existing code |
 | **L**iskov Substitution | Subtypes must be substitutable for their base types | `CharacterRepositoryMock` substitutes `CharacterRepository` via `CharacterRepositoryContract` in tests |
 | **I**nterface Segregation | Prefer small, specific protocols over large ones | Separate contracts for `CharacterRepositoryContract`, `CharactersPageRepositoryContract` instead of one large protocol |

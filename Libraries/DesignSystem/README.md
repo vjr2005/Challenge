@@ -77,7 +77,8 @@ DesignSystem/
 | Target | Type | Purpose |
 |--------|------|---------|
 | `ChallengeDesignSystem` | Framework | UI components and tokens |
-| `ChallengeDesignSystemTests` | Test | Unit and snapshot tests |
+| `ChallengeDesignSystemTests` | Test | Unit tests |
+| `ChallengeDesignSystemSnapshotTests` | Test | Snapshot tests |
 
 ## Dependencies
 

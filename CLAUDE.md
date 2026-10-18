@@ -121,6 +121,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 | Package | Purpose |
 |---------|---------|
 | lottie-ios | Lottie animations (Airbnb) |
+| swift-snapshot-testing | Snapshot testing (wrapped by `ChallengeSnapshotTestKit`) |
 | SwiftMockServer | Mock HTTP server for UI tests |
 
 ### Tools (via mise)
@@ -135,6 +136,7 @@ For detailed patterns, see skills: `/view`, `/viewmodel`, `/usecase`, `/reposito
 
 | Script | Purpose | Command |
 |--------|---------|---------|
+| `setup.sh` | Install Homebrew, mise and the project tools | `./Scripts/setup.sh` |
 | `generate.sh` | Project generation (with optional `--clean`, `--focus`) | `./Scripts/generate.sh [--clean] [--focus <modules>]` |
 | `reset-simulators.sh` | Deep simulator reset when corrupted data is suspected | `./Scripts/reset-simulators.sh` |
 | `run-tests.sh` | Run unit, snapshot, and UI tests with merged xcresult | `./Scripts/run-tests.sh [--parallel] [--unit] [--ui]` |
