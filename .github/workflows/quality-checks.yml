@@ -26,9 +26,49 @@ permissions:
   pull-requests: write
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: Scripts/CI
+
+      # Pull requests that only touch documentation skip the test jobs. Anything that
+      # cannot be classified runs the full pipeline.
+      - name: Detect code changes
+        id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "Manual run: running the full pipeline"
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if FILES=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate --jq '.[] | .filename, (.previous_filename // empty)'); then
+            CODE=$(echo "$FILES" | bash Scripts/CI/detect-code-changes.sh)
+          else
+            echo "::warning::Could not list the changed files: running the full pipeline"
+            CODE=true
+          fi
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "Changed files:" && echo "$FILES" | sed 's/^/  /'
+          echo "Code changes: $CODE"
+
   unit-and-snapshot-tests:
     name: Unit & Snapshot Tests
     runs-on: xcode-27
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     timeout-minutes: 40
 
     env:
@@ -128,6 +168,8 @@ jobs:
   ui-tests:
     name: UI Tests
     runs-on: xcode-27
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     timeout-minutes: 40
 
     env:
@@ -175,10 +217,12 @@ jobs:
           artifact-name: ui-test-results
           result-bundle-path: ${{ env.RESULT_BUNDLE_PATH }}
 
+  # Required status check. It always runs so the check is reported, but the macOS work
+  # (coverage merge and threshold) only happens when the test jobs ran.
   quality-gate:
     name: Quality Gate
-    runs-on: xcode-27
-    needs: [unit-and-snapshot-tests, ui-tests]
+    runs-on: ${{ needs.changes.outputs.code == 'true' && 'xcode-27' || 'ubuntu-latest' }}
+    needs: [changes, unit-and-snapshot-tests, ui-tests]
     if: always()
     timeout-minutes: 10
 
@@ -193,20 +237,32 @@ jobs:
 
       - name: Check job results
         run: |
+          echo "Detect Changes: ${{ needs.changes.result }} (code changes: ${{ needs.changes.outputs.code }})"
           echo "Unit & Snapshot Tests: ${{ needs.unit-and-snapshot-tests.result }}"
           echo "UI Tests: ${{ needs.ui-tests.result }}"
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "::error::Change detection failed"
+            exit 1
+          fi
+          if [ "${{ needs.changes.outputs.code }}" != "true" ]; then
+            echo "Documentation-only change: test jobs skipped, nothing to verify."
+            echo "Documentation-only change: the test jobs were skipped." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           if [ "${{ needs.unit-and-snapshot-tests.result }}" != "success" ] || [ "${{ needs.ui-tests.result }}" != "success" ]; then
             echo "::error::One or more test jobs failed"
             exit 1
           fi
 
       - name: Download coverage artifacts
+        if: needs.changes.outputs.code == 'true'
         uses: actions/download-artifact@v8
         with:
           pattern: '*-coverage'
 
       - name: Merge coverage data
         id: merge
+        if: needs.changes.outputs.code == 'true'
         run: |
           mkdir -p merged-output
           if xcrun xcresulttool merge \
@@ -223,7 +279,7 @@ jobs:
           fi
 
       - name: Upload merged xcresult
-        if: steps.merge.outputs.merge_ok == 'true'
+        if: needs.changes.outputs.code == 'true' && steps.merge.outputs.merge_ok == 'true'
         id: upload-merged
         uses: actions/upload-artifact@v7
         with:
@@ -232,7 +288,7 @@ jobs:
           retention-days: 7
 
       - name: Upload unit xcresult
-        if: steps.merge.outputs.merge_ok != 'true'
+        if: needs.changes.outputs.code == 'true' && steps.merge.outputs.merge_ok != 'true'
         id: upload-unit
         uses: actions/upload-artifact@v7
         with:
@@ -241,7 +297,7 @@ jobs:
           retention-days: 7
 
       - name: Upload UI xcresult
-        if: steps.merge.outputs.merge_ok != 'true'
+        if: needs.changes.outputs.code == 'true' && steps.merge.outputs.merge_ok != 'true'
         id: upload-ui
         uses: actions/upload-artifact@v7
         with:
@@ -251,6 +307,7 @@ jobs:
 
       - name: Coverage report
         id: coverage
+        if: needs.changes.outputs.code == 'true'
         shell: bash
         env:
           THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
@@ -276,7 +333,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Comment PR with coverage
-        if: github.event_name == 'pull_request'
+        if: needs.changes.outputs.code == 'true' && github.event_name == 'pull_request'
         continue-on-error: true
         uses: actions/github-script@v9
         env:
@@ -291,7 +348,7 @@ jobs:
             });
 
       - name: Enforce coverage threshold
-        if: steps.coverage.outputs.passed == 'false'
+        if: needs.changes.outputs.code == 'true' && steps.coverage.outputs.passed == 'false'
         run: |
           echo "::error::Code coverage (${{ steps.coverage.outputs.total }}%) is below the minimum threshold (${{ env.COVERAGE_THRESHOLD }}%)"
           exit 1
