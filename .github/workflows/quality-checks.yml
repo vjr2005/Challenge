@@ -64,6 +64,44 @@ jobs:
           echo "Changed files:" && echo "$FILES" | sed 's/^/  /'
           echo "Code changes: $CODE"
 
+      # Keeps a single comment on the PR explaining why the tests are skipped. It is updated
+      # on every push and removed as soon as a commit touches code.
+      - name: Comment PR about skipped tests
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v9
+        env:
+          CODE_CHANGED: ${{ steps.filter.outputs.code }}
+        with:
+          script: |
+            const marker = '<!-- ci-documentation-only -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find(comment => comment.body && comment.body.includes(marker));
+
+            if (process.env.CODE_CHANGED === 'true') {
+              if (existing) {
+                await github.rest.issues.deleteComment({ owner, repo, comment_id: existing.id });
+              }
+              return;
+            }
+
+            const body = [
+              marker,
+              '## :information_source: Tests skipped: documentation-only change',
+              '',
+              'This pull request only changes documentation (`*.md`, `docs/**`, `.claude/**`), so the **Unit & Snapshot Tests**, **UI Tests** and the coverage report were not run. **Quality Gate** still reports success so the PR can be merged.',
+              '',
+              'Any commit that touches code (including `.github/**`, `Scripts/**`, `Tuist/**` and the tool configuration) runs the full pipeline again and removes this comment.'
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
   unit-and-snapshot-tests:
     name: Unit & Snapshot Tests
     runs-on: xcode-27

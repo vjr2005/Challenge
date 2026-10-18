@@ -32,6 +32,8 @@ Unit & Snapshot Tests and UI Tests run **in parallel** on separate macOS runners
 
 When a pull request only changes documentation (`*.md`, `docs/**` and `.claude/**`), the Unit & Snapshot Tests and UI Tests jobs are skipped and the Quality Gate reports success on an `ubuntu-latest` runner without merging coverage, so the required check is still reported in seconds instead of ~30 minutes. Everything else counts as code, including `.github/**`, `.swiftlint.yml`, `.mise.toml`, `Tuist/**` and `Scripts/**`, so changes to the CI itself or to the tool configuration always run the full pipeline.
 
+The Detect Changes job also keeps a **single comment on the PR** explaining that the tests were skipped because only documentation changed. The comment is updated on every push and removed as soon as a commit touches code, so it never describes a stale state. The Quality Gate also writes the same notice to the Actions Summary.
+
 The decision fails safe: manual runs (`workflow_dispatch`), an empty or unreadable file list, or a failure of the detection API call all run the full pipeline. If the Detect Changes job itself fails, the Quality Gate fails.
 
 ### Composite Actions
