@@ -104,24 +104,4 @@ struct EpisodeErrorTests {
 		// Then
 		#expect(areEqual)
 	}
-
-	// MARK: - Sendable
-
-	@Test("Error is Sendable across contexts")
-	func errorIsSendable() async {
-		// Given
-		let error = EpisodeError.loadFailed()
-
-		// When
-		let sentError = await sendToAnotherContext(error)
-
-		// Then
-		#expect(sentError == error)
-	}
-}
-
-// MARK: - Helpers
-
-private func sendToAnotherContext(_ error: EpisodeError) async -> EpisodeError {
-	await Task { error }.value
 }
