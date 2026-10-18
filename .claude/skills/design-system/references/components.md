@@ -44,7 +44,13 @@ DSBadge(count: 5) {
 
 ### DSButton
 
-Button with variants:
+Button with variants (`DSButtonVariant`):
+
+| Variant | Style |
+|---------|-------|
+| `.primary` (default) | Filled background |
+| `.secondary` | Outlined |
+| `.tertiary` | Subtle accent background |
 
 ```swift
 // Primary (filled)

@@ -138,32 +138,39 @@ func givenCharacterEpisodesRecovers() async throws {
 
 ### Flow Test — navigate from home
 
+Simplified from `HomeUITests`:
+
 ```swift
-final class CharacterFlowUITests: UITestCase {
+final class HomeUITests: UITestCase {
     @MainActor
-    func testNavigationFromListToDetailAndBack() async throws {
+    func testHomeFlowAboutSheetCharacterListAndBack() async throws {
         // Given
-        try await givenCharacterListWithPaginationAndEmptySearchSucceeds()
+        try await givenCharacterListSucceeds()
 
         // When
         launch()
 
         // Then
         home { robot in
+            robot.verifyIsVisible()
+            robot.tapInfoButton()
+        }
+
+        about { robot in
+            robot.verifyIsVisible()
+            robot.tapClose()
+        }
+
+        home { robot in
             robot.tapCharacterButton()
         }
 
         characterList { robot in
             robot.verifyIsVisible()
-            robot.tapCharacter(identifier: 1)
-        }
-
-        characterDetail { robot in
-            robot.verifyIsVisible()
             robot.tapBack()
         }
 
-        characterList { robot in
+        home { robot in
             robot.verifyIsVisible()
         }
     }
@@ -171,6 +178,8 @@ final class CharacterFlowUITests: UITestCase {
 ```
 
 ### Screen Test — deep link with error/retry flow
+
+Simplified from `CharacterEpisodesUITests`:
 
 ```swift
 final class CharacterEpisodesUITests: UITestCase {
