@@ -117,6 +117,8 @@ private struct TestEvent: TrackingEventContract {
 }
 ```
 
+These tests only check that the calls into the SDK do not crash, because a provider that wraps an SDK usually has no observable output. If your provider has logic of its own (formatting, filtering, mapping events to SDK calls), extract it into an internal function and test it with real assertions, as `ConsoleTrackingProvider` does with `formatted(_:)`.
+
 ---
 
 ## Generate and Verify
