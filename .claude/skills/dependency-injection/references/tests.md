@@ -183,13 +183,14 @@ struct {Feature}FeatureTests {
 
     // MARK: - Feature Protocol
 
-    @Test("Make main view returns view")
-    func makeMainViewReturnsView() {
+    @Test("Make main view returns {Screen}View")
+    func makeMainViewReturns{Screen}View() {
         // When
         let result = sut.makeMainView(navigator: navigatorMock)
 
         // Then
-        _ = result
+        let viewName = String(describing: result)
+        #expect(viewName.contains("{Screen}View"))
     }
 
     @Test("Resolve list navigation returns view")

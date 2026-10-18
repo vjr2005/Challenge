@@ -27,13 +27,14 @@ struct EpisodeFeatureTests {
 
 	// MARK: - Make Main View
 
-	@Test("Make main view returns a view")
-	func makeMainViewReturnsView() {
+	@Test("Make main view returns CharacterEpisodesView")
+	func makeMainViewReturnsCharacterEpisodesView() {
 		// When
 		let result = sut.makeMainView(navigator: navigatorMock)
 
 		// Then
-		_ = result
+		let viewName = String(describing: result)
+		#expect(viewName.contains("CharacterEpisodesView"))
 	}
 
 	// MARK: - Resolve
