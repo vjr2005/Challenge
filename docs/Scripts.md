@@ -33,7 +33,8 @@ Scripts/
 └── CI/
     ├── test-results-summary.py  # Test failure/retry markdown report
     ├── coverage-report.js       # Coverage table + threshold check
-    └── periphery-summary.js     # Periphery dead code markdown report
+    ├── periphery-summary.js     # Periphery dead code markdown report
+    └── detect-code-changes.sh   # Documentation-only vs code change detection
 ```
 
 `test-helpers.sh` is compatible with both bash (CI) and zsh (local). CI workflows source it and call `run_tests` with `-resultBundlePath` for predictable artifact paths. See [CI](CI.md) for details.
@@ -209,5 +210,6 @@ The `Scripts/CI/` directory contains report generation scripts used by GitHub Ac
 | `test-results-summary.py` | Python | Parses `.xcresult` for test failures and retries, generates markdown summary |
 | `coverage-report.js` | Node.js | Merges coverage data, generates coverage table, checks threshold |
 | `periphery-summary.js` | Node.js | Parses Periphery output, generates markdown table of unused code |
+| `detect-code-changes.sh` | Bash | Reads changed file paths from stdin and prints `true` unless all of them are documentation (`*.md`, `docs/**`, `.claude/**`) |
 
 Workflows capture stdout and handle GitHub-specific plumbing (`GITHUB_STEP_SUMMARY`, `GITHUB_OUTPUT`, PR comments) separately. See [CI](CI.md) for details.
