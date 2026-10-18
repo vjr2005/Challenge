@@ -15,13 +15,16 @@ struct CachedImageLoaderTests {
 
 	// MARK: - Init
 
-	@Test("Convenience init creates a valid instance")
-	func convenienceInitCreatesValidInstance() {
+	@Test("Convenience init starts with an empty memory cache")
+	func convenienceInitStartsWithEmptyMemoryCache() throws {
+		// Given
+		let url = try #require(URL(string: "https://test-convenience-init.example.com/image.png"))
+
 		// When
-		let sut: any ImageLoaderContract = CachedImageLoader()
+		let sut = CachedImageLoader()
 
 		// Then
-		#expect(sut is CachedImageLoader)
+		#expect(sut.cachedImage(for: url) == nil)
 	}
 
 	// MARK: - Cached Image
