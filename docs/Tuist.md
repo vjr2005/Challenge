@@ -429,14 +429,17 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
-UI tests always use Tuist:
+UI tests use the `ChallengeUITests` scheme with the same destination:
 
 ```bash
 # Run UI tests
-mise x -- tuist test "ChallengeUITests"
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 ```
 
-Always use `xcodebuild test` for module tests (not `tuist test`).
+Always use `xcodebuild test` (not `tuist test`): `tuist test` chooses the destination itself (it picked an iPad in our runs), so it does not guarantee the iPhone 17 Pro simulator the project targets.
 
 ## Commands
 
@@ -457,7 +460,10 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 
 # Run UI tests
-mise x -- tuist test "ChallengeUITests"
+xcodebuild test \
+  -workspace Challenge.xcworkspace \
+  -scheme ChallengeUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0'
 
 # Clean and regenerate
 mise x -- tuist clean && mise x -- tuist generate
