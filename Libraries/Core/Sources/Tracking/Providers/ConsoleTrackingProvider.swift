@@ -12,11 +12,15 @@ public struct ConsoleTrackingProvider: TrackingProviderContract {
         if event.properties.isEmpty {
             logger.info("[\(event.name)]")
         } else {
-            let formatted = event.properties
-                .sorted { $0.key < $1.key }
-                .map { "\($0.key): \($0.value)" }
-                .joined(separator: ", ")
-            logger.info("[\(event.name)] \(formatted)")
+            logger.info("[\(event.name)] \(Self.formatted(event.properties))")
         }
+    }
+
+    /// Formats the properties as `key: value` pairs sorted by key.
+    static func formatted(_ properties: [String: String]) -> String {
+        properties
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key): \($0.value)" }
+            .joined(separator: ", ")
     }
 }

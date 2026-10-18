@@ -75,13 +75,14 @@ struct {Feature}FeatureTests {
 
 	// MARK: - Make Main View
 
-	@Test("Make main view returns a view")
-	func makeMainViewReturnsView() {
+	@Test("Make main view returns {Screen}View")
+	func makeMainViewReturns{Screen}View() {
 		// When
 		let result = sut.makeMainView(navigator: navigatorMock)
 
 		// Then
-		_ = result
+		let viewName = String(describing: result)
+		#expect(viewName.contains("{Screen}View"))
 	}
 
 	// MARK: - Resolve
