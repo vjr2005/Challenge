@@ -121,7 +121,7 @@ This project uses [mise](https://mise.jdx.dev/) as a tool version manager. All t
 
 | Tool | Version | Description |
 |------|---------|-------------|
-| [Tuist](https://tuist.io/) | 4.129.0 | Xcode project generation and dependency management |
+| [Tuist](https://tuist.io/) | 4.212.0 | Xcode project generation and dependency management |
 | [SwiftLint](https://github.com/realm/SwiftLint) | 0.65.1 | Swift style and conventions linter |
 | [Periphery](https://github.com/peripheryapp/periphery) | 3.8.0 | Dead code detection for Swift |
 
