@@ -13,12 +13,20 @@ struct CharacterEpisodesViewStateTests {
 		(.error(.loadFailed()), .error(.loadFailed()))
 	])
 	func sameStatesAreEqual(lhs: CharacterEpisodesViewState, rhs: CharacterEpisodesViewState) {
-		#expect(lhs == rhs)
+		// When
+		let areEqual = lhs == rhs
+
+		// Then
+		#expect(areEqual)
 	}
 
 	@Test("Loaded states with different values are not equal")
 	func loadedStatesWithDifferentValuesAreNotEqual() {
-		#expect(CharacterEpisodesViewState.loaded(.stub(id: 1)) != .loaded(.stub(id: 2)))
+		// When
+		let loadedStub = CharacterEpisodesViewState.loaded(.stub(id: 1))
+
+		// Then
+		#expect(loadedStub != .loaded(.stub(id: 2)))
 	}
 
 	@Test("Different states are not equal", arguments: [
@@ -30,6 +38,10 @@ struct CharacterEpisodesViewStateTests {
 		(.loaded(.stub()), .error(.loadFailed()))
 	])
 	func differentStatesAreNotEqual(lhs: CharacterEpisodesViewState, rhs: CharacterEpisodesViewState) {
-		#expect(lhs != rhs)
+		// When
+		let areEqual = lhs == rhs
+
+		// Then
+		#expect(!areEqual)
 	}
 }

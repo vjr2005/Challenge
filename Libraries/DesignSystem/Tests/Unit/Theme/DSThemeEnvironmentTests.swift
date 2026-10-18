@@ -7,9 +7,13 @@ import Testing
 struct DSThemeEnvironmentTests {
 	@Test("Default theme uses DefaultColorPalette")
 	func defaultThemeUsesDefaultColorPalette() {
-		let theme = DSTheme.default
+		// Given
 		let palette = DefaultColorPalette()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.colors.accent == palette.accent)
 		#expect(theme.colors.statusSuccess == palette.statusSuccess)
 		#expect(theme.colors.textPrimary == palette.textPrimary)
@@ -17,9 +21,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultTypography")
 	func defaultThemeUsesDefaultTypography() {
-		let theme = DSTheme.default
+		// Given
 		let typography = DefaultTypography()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.typography.headline == typography.headline)
 		#expect(theme.typography.body == typography.body)
 		#expect(theme.typography.caption2 == typography.caption2)
@@ -27,9 +35,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultSpacing")
 	func defaultThemeUsesDefaultSpacing() {
-		let theme = DSTheme.default
+		// Given
 		let spacing = DefaultSpacing()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.spacing.sm == spacing.sm)
 		#expect(theme.spacing.lg == spacing.lg)
 		#expect(theme.spacing.xxl == spacing.xxl)
@@ -37,9 +49,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultDimensions")
 	func defaultThemeUsesDefaultDimensions() {
-		let theme = DSTheme.default
+		// Given
 		let dimensions = DefaultDimensions()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.dimensions.sm == dimensions.sm)
 		#expect(theme.dimensions.lg == dimensions.lg)
 		#expect(theme.dimensions.xxl == dimensions.xxl)
@@ -47,9 +63,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultBorderWidth")
 	func defaultThemeUsesDefaultBorderWidth() {
-		let theme = DSTheme.default
+		// Given
 		let borderWidth = DefaultBorderWidth()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.borderWidth.hairline == borderWidth.hairline)
 		#expect(theme.borderWidth.thin == borderWidth.thin)
 		#expect(theme.borderWidth.thick == borderWidth.thick)
@@ -57,9 +77,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultCornerRadius")
 	func defaultThemeUsesDefaultCornerRadius() {
-		let theme = DSTheme.default
+		// Given
 		let cornerRadius = DefaultCornerRadius()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.cornerRadius.sm == cornerRadius.sm)
 		#expect(theme.cornerRadius.lg == cornerRadius.lg)
 		#expect(theme.cornerRadius.full == cornerRadius.full)
@@ -67,9 +91,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultOpacity")
 	func defaultThemeUsesDefaultOpacity() {
-		let theme = DSTheme.default
+		// Given
 		let opacity = DefaultOpacity()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.opacity.subtle == opacity.subtle)
 		#expect(theme.opacity.medium == opacity.medium)
 		#expect(theme.opacity.almostOpaque == opacity.almostOpaque)
@@ -77,9 +105,13 @@ struct DSThemeEnvironmentTests {
 
 	@Test("Default theme uses DefaultShadow")
 	func defaultThemeUsesDefaultShadow() {
-		let theme = DSTheme.default
+		// Given
 		let shadow = DefaultShadow()
 
+		// When
+		let theme = DSTheme.default
+
+		// Then
 		#expect(theme.shadow.zero == shadow.zero)
 		#expect(theme.shadow.small == shadow.small)
 		#expect(theme.shadow.large == shadow.large)
@@ -87,14 +119,19 @@ struct DSThemeEnvironmentTests {
 
 	@Test("dsTheme view modifier sets theme in environment")
 	func dsThemeModifierSetsTheme() throws {
+		// Given
 		var environment = EnvironmentValues()
+
+		// When
 		environment.dsTheme = .default
 
+		// Then
 		#expect(environment.dsTheme.spacing.lg == DefaultSpacing().lg)
 	}
 
 	@Test("Custom theme can be created with different palette")
 	func customThemeCanBeCreated() {
+		// Given
 		let customPalette = DefaultColorPalette()
 		let customTypography = DefaultTypography()
 		let customSpacing = DefaultSpacing()
@@ -103,6 +140,8 @@ struct DSThemeEnvironmentTests {
 		let customCornerRadius = DefaultCornerRadius()
 		let customOpacity = DefaultOpacity()
 		let customShadow = DefaultShadow()
+
+		// When
 		let theme = DSTheme(
 			colors: customPalette,
 			typography: customTypography,
@@ -114,6 +153,7 @@ struct DSThemeEnvironmentTests {
 			shadow: customShadow
 		)
 
+		// Then
 		#expect(theme.colors.accent == customPalette.accent)
 		#expect(theme.typography.body == customTypography.body)
 		#expect(theme.spacing.lg == customSpacing.lg)

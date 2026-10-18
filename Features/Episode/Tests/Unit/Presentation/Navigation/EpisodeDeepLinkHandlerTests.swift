@@ -13,14 +13,22 @@ struct EpisodeDeepLinkHandlerTests {
 
 	@Test("Scheme is challenge")
 	func schemeIsChallenge() {
-		#expect(sut.scheme == "challenge")
+		// When
+		let scheme = sut.scheme
+
+		// Then
+		#expect(scheme == "challenge")
 	}
 
 	// MARK: - Host
 
 	@Test("Host is episode")
 	func hostIsEpisode() {
-		#expect(sut.host == "episode")
+		// When
+		let host = sut.host
+
+		// Then
+		#expect(host == "episode")
 	}
 
 	// MARK: - Resolve

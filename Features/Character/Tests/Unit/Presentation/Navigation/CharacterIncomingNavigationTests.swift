@@ -7,17 +7,29 @@ struct CharacterIncomingNavigationTests {
 
     @Test("Equality returns true for same list case")
     func equalityReturnsTrueForSameListCase() {
-        #expect(CharacterIncomingNavigation.list == .list)
+        // When
+        let navigation = CharacterIncomingNavigation.list
+
+        // Then
+        #expect(navigation == .list)
     }
 
     @Test("Equality returns true for detail cases with same identifier")
     func equalityReturnsTrueForDetailCasesWithSameIdentifier() {
-        #expect(CharacterIncomingNavigation.detail(identifier: 42) == .detail(identifier: 42))
+        // When
+        let navigation = CharacterIncomingNavigation.detail(identifier: 42)
+
+        // Then
+        #expect(navigation == .detail(identifier: 42))
     }
 
     @Test("Equality returns false for detail cases with different identifier")
     func equalityReturnsFalseForDetailCasesWithDifferentIdentifier() {
-        #expect(CharacterIncomingNavigation.detail(identifier: 42) != .detail(identifier: 99))
+        // When
+        let navigation = CharacterIncomingNavigation.detail(identifier: 42)
+
+        // Then
+        #expect(navigation != .detail(identifier: 99))
     }
 
     @Test("Equality returns true for character filter cases regardless of delegate")
