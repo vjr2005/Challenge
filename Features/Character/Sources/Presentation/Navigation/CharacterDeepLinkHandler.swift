@@ -13,10 +13,10 @@ struct CharacterDeepLinkHandler: DeepLinkHandlerContract {
             return CharacterIncomingNavigation.list
 
         case 3 where pathComponents[1] == "detail":
-            guard let id = Int(pathComponents[2]) else {
+            guard let identifier = Int(pathComponents[2]) else {
                 return nil
             }
-            return CharacterIncomingNavigation.detail(identifier: id)
+            return CharacterIncomingNavigation.detail(identifier: identifier)
 
         default:
             return nil

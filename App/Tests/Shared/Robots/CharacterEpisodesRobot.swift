@@ -35,8 +35,8 @@ extension CharacterEpisodesRobot {
 
 	@discardableResult
 	func tapCharacter(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let accessibilityId = AccessibilityIdentifier.characterAvatar(id: identifier)
-		let avatar = app.descendants(matching: .any)[accessibilityId].firstMatch
+		let accessibilityIdentifier = AccessibilityIdentifier.characterAvatar(identifier: identifier)
+		let avatar = app.descendants(matching: .any)[accessibilityIdentifier].firstMatch
 		XCTAssertTrue(avatar.waitForExistence(timeout: 10), file: file, line: line)
 		avatar.tap()
 		return self
@@ -68,7 +68,7 @@ private enum AccessibilityIdentifier {
 	static let errorTitle = "characterEpisodes.errorView.title"
 	static let retryButton = "characterEpisodes.errorView.button"
 
-	static func characterAvatar(id: Int) -> String {
-		"characterEpisodes.character.\(id)"
+	static func characterAvatar(identifier: Int) -> String {
+		"characterEpisodes.character.\(identifier)"
 	}
 }

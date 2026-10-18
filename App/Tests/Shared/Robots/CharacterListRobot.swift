@@ -9,8 +9,8 @@ struct CharacterListRobot {
 extension CharacterListRobot {
 	@discardableResult
 	func tapCharacter(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
-		let row = app.descendants(matching: .any)[accessibilityId].firstMatch
+		let accessibilityIdentifier = AccessibilityIdentifier.row(identifier: identifier)
+		let row = app.descendants(matching: .any)[accessibilityIdentifier].firstMatch
 		XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
 		row.tap()
 		return self
@@ -127,8 +127,8 @@ extension CharacterListRobot {
 	@discardableResult
 	func verifyCharacterExists(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
 		let scrollView = app.scrollViews[AccessibilityIdentifier.scrollView]
-		let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
-		let row = app.descendants(matching: .any)[accessibilityId].firstMatch
+		let accessibilityIdentifier = AccessibilityIdentifier.row(identifier: identifier)
+		let row = app.descendants(matching: .any)[accessibilityIdentifier].firstMatch
 		XCTAssertTrue(row.waitForExistence(timeout: 10), file: file, line: line)
 		// Scroll to make the row visible if needed
 		var attempts = 0
@@ -142,8 +142,8 @@ extension CharacterListRobot {
 
 	@discardableResult
 	func verifyCharacterDoesNotExist(identifier: Int, file: StaticString = #filePath, line: UInt = #line) -> Self {
-		let accessibilityId = AccessibilityIdentifier.row(identifier: identifier)
-		let row = app.descendants(matching: .any)[accessibilityId].firstMatch
+		let accessibilityIdentifier = AccessibilityIdentifier.row(identifier: identifier)
+		let row = app.descendants(matching: .any)[accessibilityIdentifier].firstMatch
 		XCTAssertFalse(row.waitForExistence(timeout: 2), "Character row \(identifier) should not exist", file: file, line: line)
 		return self
 	}
